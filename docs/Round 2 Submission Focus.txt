@@ -1,0 +1,29 @@
+﻿Round 2 Submission Focus
+
+
+As we move into this phase, the focus shifts from broad ideas to deep execution.
+Instead of building a full product, participants must:
+Identify ONE core feature and build it end-to-end with full functionality
+What We Expect
+* A complete full-stack implementation
+* A single-user flow (UI → blockchain interaction → transaction confirmation)
+* Direct integration with Algorand blockchain
+* A working product, not a prototype
+Note: Clickable prototypes or partial demos will NOT be accepted.
+Example
+If you're building in Future of Finance:
+* Focus on just lending flow OR
+* Just staking mechanism
+* But ensure it works perfectly from user click to on-chain execution.
+* You can leverage tools like VibeKit to accelerate development.
+Resources & Support
+We strongly recommend referring to the Technical Resource Guide, which includes:
+* Algorand development resources
+* Example implementations
+* VibeKit demo for quick start
+What’s Next?
+Top teams from Round 2 will:
+* Move to Round 3
+* Receive advanced mentorship & product guidance
+* Get shortlisted for the Goa Developer Retreat -> 30000$ in prizes
+* Continue toward startup acceleration & mainnet deployment
