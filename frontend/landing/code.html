@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "inverse-primary": "#4e635d",
+              "on-primary-fixed": "#0b1f1b",
+              "on-tertiary-fixed": "#101e21",
+              "secondary-fixed-dim": "#b1cbd1",
+              "on-secondary-fixed-variant": "#334b4f",
+              "on-primary-fixed-variant": "#374b45",
+              "surface-dim": "#101415",
+              "outline-variant": "#414846",
+              "surface-bright": "#363a3b",
+              "on-surface": "#e0e3e4",
+              "inverse-surface": "#e0e3e4",
+              "tertiary-fixed": "#d6e5e9",
+              "surface-variant": "#323536",
+              "primary-container": "#80958f",
+              "error": "#ffb4ab",
+              "surface-container-highest": "#323536",
+              "surface-tint": "#b5cbc4",
+              "on-primary": "#21342f",
+              "on-secondary": "#1c3438",
+              "surface-container-lowest": "#0b0f10",
+              "surface-container-low": "#191c1d",
+              "primary": "#b5cbc4",
+              "secondary-container": "#334b4f",
+              "on-tertiary": "#253336",
+              "on-error": "#690005",
+              "on-background": "#e0e3e4",
+              "primary-fixed": "#d1e7e0",
+              "primary-fixed-dim": "#b5cbc4",
+              "on-primary-container": "#1a2d29",
+              "inverse-on-surface": "#2d3132",
+              "on-secondary-fixed": "#051f23",
+              "on-tertiary-container": "#1e2c2f",
+              "on-secondary-container": "#a0babf",
+              "surface-container": "#1d2021",
+              "tertiary-fixed-dim": "#bac9cd",
+              "on-surface-variant": "#c1c8c5",
+              "on-tertiary-fixed-variant": "#3b494c",
+              "surface-container-high": "#272b2c",
+              "tertiary-container": "#849397",
+              "error-container": "#93000a",
+              "secondary-fixed": "#cde7ed",
+              "secondary": "#b1cbd1",
+              "outline": "#8b9290",
+              "on-error-container": "#ffdad6",
+              "background": "#101415",
+              "surface": "#101415",
+              "tertiary": "#bac9cd"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+      }
+      .no-line { border: none !important; }
+      .tonal-shift-only { background-color: rgba(16, 20, 21, 0.6); backdrop-filter: blur(20px); }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary/30">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-[#101415]/60 backdrop-blur-xl transition-all duration-500">
+<div class="flex justify-between items-center px-8 py-6 max-w-[1440px] mx-auto">
+<div class="text-xl font-bold tracking-tighter text-[#E0E3E4] font-headline">SERENE</div>
+<div class="hidden md:flex items-center space-x-12">
+<a class="text-[#B5CBC4] border-b border-[#B5CBC4]/30 pb-1 font-manrope tracking-tight font-light transition-all duration-300" href="#">Home</a>
+<a class="text-[#C1C8C5] hover:text-[#E0E3E4] font-manrope tracking-tight font-light transition-colors duration-300" href="#">Services</a>
+<a class="text-[#C1C8C5] hover:text-[#E0E3E4] font-manrope tracking-tight font-light transition-colors duration-300" href="#">About</a>
+<a class="text-[#C1C8C5] hover:text-[#E0E3E4] font-manrope tracking-tight font-light transition-colors duration-300" href="#">Contact</a>
+</div>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-md font-medium text-sm transition-all duration-300 cubic-bezier(0.4, 0, 0.2, 1) scale-95 hover:scale-100">
+                Get Started
+            </button>
+</div>
+</nav>
+<main class="pt-24">
+<!-- Hero Section -->
+<section class="relative min-h-[921px] flex items-center overflow-hidden px-8">
+<div class="absolute inset-0 z-0">
+<div class="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent"></div>
+<div class="absolute -top-48 -right-48 w-full h-full rounded-full bg-primary/5 blur-[120px]"></div>
+</div>
+<div class="max-w-[1440px] mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
+<div class="lg:col-span-7">
+<h1 class="font-headline text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1] mb-8 text-on-surface">
+                        The Silent Authority <br/>
+<span class="text-primary/60 font-light italic">of Digital Design.</span>
+</h1>
+<p class="text-on-surface-variant text-lg md:text-xl max-w-[60ch] leading-relaxed mb-12">
+                        Crafting museum-like digital experiences that breathe. We reject the frantic clutter of the modern web for grounded, atmospheric luxury.
+                    </p>
+<div class="flex flex-wrap gap-6">
+<button class="bg-primary text-on-primary px-8 py-4 rounded-md font-semibold transition-all duration-300 hover:bg-primary-fixed-dim hover:scale-105">
+                            Start Your Journey
+                        </button>
+<button class="border border-outline/30 text-on-surface px-8 py-4 rounded-md font-semibold transition-all duration-300 hover:bg-surface-container-high">
+                            View Portfolio
+                        </button>
+</div>
+</div>
+<div class="lg:col-span-5 relative">
+<div class="aspect-[4/5] rounded-2xl overflow-hidden bg-surface-container relative">
+<img alt="Modern Architecture" class="w-full h-full object-cover grayscale opacity-80 hover:scale-105 transition-transform duration-1000" data-alt="Minimalist architectural detail of a concrete building against a clear sky with sharp shadows and clean lines" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAu6gnuv6yPzuepHqbT_Jc5t6t4WwoL7FDCLx8S8wjNAJcIvNTMsreWH9s8nFTtFovpnVLt_TsWbovT-cyr9lFRHVaBCTlzynkjoSZ1BbPeTnPZMqy3nmggTtY5J5_0ek0OUcAHswmjO9F_LyD-W0h8CDIcm1fNI9ABh4AD1u8l0cXHDBeLKLcAlQ2l0HIILLOJnAsQ9YXzu4spaw2VeH-t1N3Xvber9iQVHdzzoHku_S6OfOqN9WJuWNiSORrJAptl9FQgw2oGzTY"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- How It Works Section -->
+<section class="py-32 px-8 bg-surface-container-low">
+<div class="max-w-[1440px] mx-auto">
+<div class="mb-24 max-w-2xl">
+<span class="text-primary font-label tracking-widest uppercase text-xs">Methodology</span>
+<h2 class="font-headline text-4xl md:text-5xl font-bold mt-4 mb-6">Designed for Depth</h2>
+<p class="text-on-surface-variant leading-relaxed">Our process is clinical and intentional, ensuring every pixel serves a purpose in the visual narrative.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-16">
+<div class="group">
+<div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center mb-8 group-hover:bg-primary transition-colors duration-500">
+<span class="material-symbols-outlined text-primary group-hover:text-on-primary transition-colors duration-500" data-icon="architecture">architecture</span>
+</div>
+<h3 class="font-headline text-2xl font-semibold mb-4">Structural Foundation</h3>
+<p class="text-on-surface-variant leading-relaxed">We build on a grid that allows for intentional asymmetry and calculated whitespace.</p>
+</div>
+<div class="group">
+<div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center mb-8 group-hover:bg-primary transition-colors duration-500">
+<span class="material-symbols-outlined text-primary group-hover:text-on-primary transition-colors duration-500" data-icon="palette">palette</span>
+</div>
+<h3 class="font-headline text-2xl font-semibold mb-4">Tonal Atmosphere</h3>
+<p class="text-on-surface-variant leading-relaxed">Colors are used as spatial tools to define hierarchy without the need for harsh borders.</p>
+</div>
+<div class="group">
+<div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center mb-8 group-hover:bg-primary transition-colors duration-500">
+<span class="material-symbols-outlined text-primary group-hover:text-on-primary transition-colors duration-500" data-icon="auto_awesome">auto_awesome</span>
+</div>
+<h3 class="font-headline text-2xl font-semibold mb-4">Refined Interaction</h3>
+<p class="text-on-surface-variant leading-relaxed">Subtle transitions create a sense of flowing through a misty, ethereal environment.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Testimonials Section -->
+<section class="py-40 px-8">
+<div class="max-w-[1440px] mx-auto text-center">
+<div class="max-w-3xl mx-auto">
+<span class="material-symbols-outlined text-5xl text-primary/20 mb-8" data-icon="format_quote">format_quote</span>
+<blockquote class="font-headline text-3xl md:text-4xl italic font-light leading-snug text-on-surface mb-12">
+                        "The Serene Monolith system completely transformed our brand perception. It's not just a website; it's a statement of authority and quiet confidence."
+                    </blockquote>
+<div class="flex flex-col items-center">
+<div class="w-16 h-16 rounded-full overflow-hidden mb-4 border border-primary/20">
+<img alt="Arthur Vance" class="w-full h-full object-cover grayscale" data-alt="Close-up portrait of a professional man in a dark grey suit with soft studio lighting and neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_auld19LT_AkKma1WfjtlBr2kOpoLRdCAWp7PzLUA37Hb9js67-n7JV1DSe2G_lzmRwHbVSPYc9xDTrBn0t4JhE55OfaYiW_tyPMXTNIYsYFYzqKgeytn9wdHZtmFZO567lsW8-qqleHm0TV5ZsJrFojTih58fa3YYTSjscPE0wS-crVaywRZ9jtu29lFlwQdO41scQ4JirG_WyU1jN9RE_791NuCuNeg1GjNCrP2dGWghOm8_C3sILNGyPQAoRjJdjpL1Y-5qb4"/>
+</div>
+<p class="font-bold text-on-surface">Arthur Vance</p>
+<p class="text-sm text-on-surface-variant">Creative Director, Obsidian Labs</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Latest Updates (Bento Grid) -->
+<section class="py-32 px-8 bg-surface-container-low">
+<div class="max-w-[1440px] mx-auto">
+<div class="flex justify-between items-end mb-16">
+<div>
+<span class="text-primary font-label tracking-widest uppercase text-xs">Insights</span>
+<h2 class="font-headline text-4xl font-bold mt-2">Latest Updates</h2>
+</div>
+<a class="text-primary hover:underline font-medium flex items-center gap-2" href="#">
+                        View Journal <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-6 h-auto md:h-[600px]">
+<div class="md:col-span-2 md:row-span-2 bg-surface-container rounded-xl overflow-hidden group cursor-pointer relative">
+<img alt="Design Study" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-40" data-alt="Abstract dark background with ripples of light, clean composition, artistic and moody atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBucO5obmm3iFxQ5H2_F91eHKmCKc-JgRbpJL86OEKbRUZ9LGJ8vSol_oeKTn1wg84dpNRRmcfZzcsGVQnZ49ZETB6DpAiu03gXRT7YVgWimDGIIG_csdG8R8sMuLZ2Nisl7m10bMxWiXijkOouCNaClCM7raZ9pzMCDXd58W3caAOCshyEuqVczaPH1CMBsWO8NZVOMHElYpLF7uellP-p39lskaf4jXdoRAVQD_rdmqVRPEWBTs003VQPdCy0WQoVk6Lpj6Gs9XY"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/20 to-transparent p-8 flex flex-col justify-end">
+<span class="text-xs font-bold text-primary mb-2 uppercase tracking-widest">Case Study</span>
+<h3 class="text-2xl font-headline font-bold mb-4">The Power of the Void: Minimalism in 2024</h3>
+<p class="text-on-surface-variant text-sm max-w-md">Exploring how massive whitespace can force focus onto singular, high-impact brand elements.</p>
+</div>
+</div>
+<div class="md:col-span-2 md:row-span-1 bg-surface-container rounded-xl overflow-hidden group cursor-pointer relative">
+<div class="p-8 h-full flex flex-col justify-center">
+<span class="text-xs font-bold text-primary mb-2 uppercase tracking-widest">Technique</span>
+<h3 class="text-xl font-headline font-bold mb-2">Tonal Layering vs. Borders</h3>
+<p class="text-on-surface-variant text-sm">Why 1px borders are a sign of lazy design and how to evolve past them.</p>
+</div>
+</div>
+<div class="md:col-span-1 md:row-span-1 bg-surface-container-high rounded-xl p-8 flex flex-col justify-between group cursor-pointer">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="auto_awesome_motion">auto_awesome_motion</span>
+<h3 class="font-headline font-bold text-lg">Atmospheric UI Trends</h3>
+</div>
+<div class="md:col-span-1 md:row-span-1 bg-primary text-on-primary rounded-xl p-8 flex flex-col justify-between group cursor-pointer">
+<span class="material-symbols-outlined text-on-primary text-3xl" data-icon="history_edu">history_edu</span>
+<h3 class="font-headline font-bold text-lg">Archive 01 Released</h3>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="py-40 px-8">
+<div class="max-w-[1440px] mx-auto">
+<div class="bg-surface-container p-12 md:p-24 rounded-2xl relative overflow-hidden text-center">
+<div class="absolute top-0 right-0 w-96 h-96 bg-primary/10 blur-[100px] rounded-full -mr-48 -mt-48"></div>
+<div class="relative z-10">
+<h2 class="font-headline text-4xl md:text-6xl font-bold mb-8">Ready to Elevate <br/>Your Digital Presence?</h2>
+<p class="text-on-surface-variant text-lg mb-12 max-w-2xl mx-auto">Join a selected group of brands that value the silent authority of minimalist design.</p>
+<button class="bg-primary text-on-primary px-12 py-5 rounded-md font-bold text-lg transition-all duration-300 hover:scale-105 shadow-xl shadow-primary/10">
+                            Apply for a Partnership
+                        </button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full border-t border-[#C1C8C5]/10 mt-24 bg-[#101415]">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-12 px-8 py-16 max-w-[1440px] mx-auto text-left">
+<div class="space-y-6">
+<div class="text-lg font-bold text-[#E0E3E4] font-headline">SERENE</div>
+<p class="text-[#C1C8C5]/60 font-inter text-sm leading-relaxed max-w-xs">
+                    Redefining digital elegance through architectural precision and atmospheric design principles.
+                </p>
+</div>
+<div class="grid grid-cols-2 gap-8">
+<div class="space-y-4">
+<h4 class="text-[#E0E3E4] font-bold text-sm uppercase tracking-widest">Explore</h4>
+<ul class="space-y-2">
+<li><a class="text-[#C1C8C5]/60 hover:text-[#B5CBC4] transition-opacity duration-300 text-sm" href="#">Services</a></li>
+<li><a class="text-[#C1C8C5]/60 hover:text-[#B5CBC4] transition-opacity duration-300 text-sm" href="#">Work</a></li>
+<li><a class="text-[#C1C8C5]/60 hover:text-[#B5CBC4] transition-opacity duration-300 text-sm" href="#">About</a></li>
+</ul>
+</div>
+<div class="space-y-4">
+<h4 class="text-[#E0E3E4] font-bold text-sm uppercase tracking-widest">Connect</h4>
+<ul class="space-y-2">
+<li><a class="text-[#C1C8C5]/60 hover:text-[#B5CBC4] transition-opacity duration-300 text-sm" href="#">LinkedIn</a></li>
+<li><a class="text-[#C1C8C5]/60 hover:text-[#B5CBC4] transition-opacity duration-300 text-sm" href="#">Instagram</a></li>
+<li><a class="text-[#C1C8C5]/60 hover:text-[#B5CBC4] transition-opacity duration-300 text-sm" href="#">Twitter</a></li>
+</ul>
+</div>
+</div>
+<div class="flex flex-col justify-between">
+<div class="space-y-4">
+<h4 class="text-[#E0E3E4] font-bold text-sm uppercase tracking-widest">Newsletter</h4>
+<div class="flex gap-2">
+<input class="bg-surface-container border-none text-on-surface focus:ring-1 focus:ring-primary w-full text-sm rounded-md" placeholder="Email address" type="email"/>
+<button class="bg-primary-container text-on-primary-container px-4 py-2 rounded-md transition-all hover:bg-primary">
+<span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="mt-12 md:mt-0 pt-8 border-t border-outline-variant/10">
+<p class="text-[#C1C8C5]/60 text-xs font-inter">© 2024 Serene Monolith. All rights reserved.</p>
+<div class="flex gap-4 mt-2">
+<a class="text-[#C1C8C5]/60 hover:text-[#B5CBC4] text-[10px] uppercase tracking-tighter" href="#">Privacy Policy</a>
+<a class="text-[#C1C8C5]/60 hover:text-[#B5CBC4] text-[10px] uppercase tracking-tighter" href="#">Terms of Service</a>
+</div>
+</div>
+</div>
+</div>
+</footer>
+</body></html>
