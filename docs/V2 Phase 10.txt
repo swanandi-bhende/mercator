@@ -1,0 +1,34 @@
+﻿V2 Phase 10
+1. Integrate the x402 SDK to enable instant micropayments directly from the AI agent.
+Add the x402 payment tool to the LangChain agent so that when the reasoning step decides “buy”, the agent automatically constructs and sends a USDC micropayment to the seller’s wallet using the exact amount from the on-chain listing; include user approval gate (“type ‘approve’ to pay”) and full transaction simulation before broadcasting so payments remain secure yet truly instant on Algorand.
+
+
+
+
+
+
+
+
+
+
+To-Do:
+1. Confirm the x402 SDK is already installed in the environment.
+In your activated venv run pip show x402-sdk — if not found, install it with pip install x402-sdk (it was already listed in Point 1 dependencies) so the SDK is ready for the agent.
+2. Create a dedicated x402 payment tool file.
+Inside the backend/tools/ create a new file x402_payment.py — this will hold the clean, reusable payment tool that the LangChain agent will call after the reasoning step.
+3. Add all required imports in x402_payment.py.
+At the top import: from langchain_core.tools import tool, from x402 import X402Client, from algosdk.v2client import algod, from dotenv import load_dotenv, import os, the InsightListingClient (to fetch exact price and seller wallet), and asyncio.
+4. Load environment variables and initialize x402 client.
+Add load_dotenv() and create x402_client = X402Client(algod_client=algod.AlgodClient(...), usdc_asset_id=your_testnet_usdc_asa_id) using the TestNet URLs and USDC asset ID from your .env file.
+5. Build the @tool decorated x402 payment function.
+Add @tool above async def trigger_x402_payment(listing_id: int, amount_usdc: float) -> str: — inside it, use the InsightListingClient to fetch the exact seller wallet and price from the on-chain ASA, then construct the micropayment payload with the x402 SDK.
+6. Implement full transaction simulation before broadcasting.
+Before sending, call x402_client.simulate_payment(sender=agent_wallet, receiver=seller_wallet, amount=amount_usdc, asset_id=USDC_ID) and raise a clear error if simulation fails, ensuring payments are safe and never fail on-chain.
+7. Add the user approval gate inside the tool.
+At the start of the function, check if not user_approval_input or user_approval_input.lower() != "approve": return "Payment requires explicit user approval. Type 'approve' to continue." — this creates the exact “type ‘approve’ to pay” gate mentioned in the roadmap.
+8. Execute the instant micropayment with x402 SDK.
+After approval and simulation pass, call tx_id = await x402_client.send_micropayment(sender=agent_wallet, receiver=seller_wallet, amount=amount_usdc, memo="Mercator insight purchase") so the USDC micropayment settles instantly on Algorand TestNet.
+9. Integrate the new payment tool into the main agent.
+Open backend/agent.py, import from tools.x402_payment import trigger_x402_payment, add it to the tools list passed to create_tool_calling_agent, and update the CoT prompt (from Point 9) to say: “Only call trigger_x402_payment if Decision is BUY and user has typed 'approve'”.
+10. Test the complete payment flow end-to-end.
+At the bottom of agent.py create a test block that runs the full agent with a sample query, forces a “BUY” decision, types “approve” when prompted, and confirms the x402 micropayment appears on the TestNet explorer with correct amount and seller address — run python -m backend.agent to verify the agent now automatically triggers secure, instant USDC payments only after reasoning and approval.

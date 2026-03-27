@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;family=Work+Sans:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-fixed-dim": "#ffb0c9",
+              "on-surface": "#22191a",
+              "tertiary-container": "#876f69",
+              "error": "#ba1a1a",
+              "surface-container-lowest": "#ffffff",
+              "secondary-fixed": "#ffd9e3",
+              "on-tertiary": "#ffffff",
+              "inverse-primary": "#fbb4b6",
+              "primary-fixed": "#ffdada",
+              "surface-tint": "#864f51",
+              "outline": "#847373",
+              "on-tertiary-container": "#fffbff",
+              "outline-variant": "#d6c2c1",
+              "primary": "#864f51",
+              "inverse-on-surface": "#feeded",
+              "surface-container": "#fbeaea",
+              "inverse-surface": "#382e2e",
+              "on-surface-variant": "#524343",
+              "on-primary-fixed-variant": "#6a383b",
+              "primary-container": "#a26769",
+              "tertiary-fixed-dim": "#ddc0b9",
+              "on-primary-fixed": "#350e12",
+              "surface": "#fff8f7",
+              "on-tertiary-fixed-variant": "#56423d",
+              "on-secondary": "#ffffff",
+              "primary-fixed-dim": "#fbb4b6",
+              "on-secondary-fixed-variant": "#713149",
+              "surface-container-high": "#f5e4e4",
+              "on-secondary-container": "#7b3952",
+              "surface-bright": "#fff8f7",
+              "secondary-container": "#fea8c4",
+              "on-primary": "#ffffff",
+              "background": "#fff8f7",
+              "on-background": "#22191a",
+              "on-error-container": "#93000a",
+              "tertiary-fixed": "#fadcd5",
+              "secondary": "#8d4861",
+              "tertiary": "#6d5751",
+              "on-tertiary-fixed": "#271814",
+              "error-container": "#ffdad6",
+              "on-secondary-fixed": "#3b051e",
+              "surface-variant": "#f0dfde",
+              "surface-container-highest": "#f0dfde",
+              "surface-dim": "#e7d6d6",
+              "on-primary-container": "#140002",
+              "surface-container-low": "#fff0f0",
+              "on-error": "#ffffff"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Work Sans"],
+              "label": ["Work Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .editorial-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 2rem;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body antialiased">
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 w-full z-50 bg-[#fff8f7]/70 dark:bg-[#22191a]/70 backdrop-blur-xl shadow-[0_4px_40px_rgba(34,25,26,0.04)]">
+<div class="flex justify-between items-center px-8 py-6 max-w-7xl mx-auto">
+<div class="text-2xl font-bold tracking-tighter text-[#22191a] dark:text-[#fff8f7] font-['Manrope']">
+                Gallery Editorial
+            </div>
+<div class="hidden md:flex space-x-8 items-center">
+<a class="font-['Manrope'] font-medium text-sm tracking-wide text-[#22191a] dark:text-[#fff8f7] opacity-80 hover:opacity-100 transition-opacity hover:text-[#8d4861]" href="#">Home</a>
+<a class="font-['Manrope'] font-medium text-sm tracking-wide text-[#22191a] dark:text-[#fff8f7] opacity-80 hover:opacity-100 transition-opacity hover:text-[#8d4861]" href="#">About</a>
+<a class="font-['Manrope'] font-medium text-sm tracking-wide text-[#22191a] dark:text-[#fff8f7] opacity-80 hover:opacity-100 transition-opacity hover:text-[#8d4861]" href="#">Services</a>
+<a class="font-['Manrope'] font-medium text-sm tracking-wide text-[#864f51] dark:text-[#a26769] font-bold border-b-2 border-[#864f51] pb-1 hover:text-[#8d4861]" href="#">Portfolio</a>
+<a class="font-['Manrope'] font-medium text-sm tracking-wide text-[#22191a] dark:text-[#fff8f7] opacity-80 hover:opacity-100 transition-opacity hover:text-[#8d4861]" href="#">Contact</a>
+<button class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-6 py-2 rounded-lg font-label text-sm uppercase tracking-widest scale-95 active:scale-90 transition-transform">
+                    Get in Touch
+                </button>
+</div>
+<div class="md:hidden">
+<span class="material-symbols-outlined text-primary text-3xl">menu</span>
+</div>
+</div>
+</nav>
+<main class="pt-32 pb-24 px-6 md:px-12 max-w-7xl mx-auto">
+<!-- Header Section -->
+<header class="mb-20">
+<nav class="mb-4">
+<span class="font-headline font-bold text-3xl md:text-5xl text-on-surface tracking-tight">Portfolio</span>
+<div class="h-1 w-12 bg-primary mt-4"></div>
+</nav>
+<p class="max-w-2xl text-lg text-on-surface-variant leading-relaxed">
+                A selection of highly curated works where architectural precision meets editorial storytelling. Exploring the intersection of digital and physical realms.
+            </p>
+</header>
+<!-- Filter / Categories -->
+<section class="flex flex-wrap gap-8 mb-16 items-baseline border-b border-outline-variant/15 pb-6">
+<button class="font-label text-xs uppercase tracking-[0.2em] text-primary font-bold border-b border-primary transition-all">All</button>
+<button class="font-label text-xs uppercase tracking-[0.2em] text-on-surface-variant hover:text-primary transition-colors">Branding</button>
+<button class="font-label text-xs uppercase tracking-[0.2em] text-on-surface-variant hover:text-primary transition-colors">Digital</button>
+<button class="font-label text-xs uppercase tracking-[0.2em] text-on-surface-variant hover:text-primary transition-colors">Strategy</button>
+</section>
+<!-- Bento Style Grid Layout -->
+<div class="editorial-grid">
+<!-- Project 1: Large Featured -->
+<div class="col-span-12 md:col-span-8 group">
+<div class="relative overflow-hidden rounded-xl bg-surface-container-low transition-all duration-500 hover:bg-surface-container-highest hover:-translate-y-2">
+<img class="w-full aspect-[16/10] object-cover opacity-90 group-hover:opacity-100 transition-opacity grayscale hover:grayscale-0 duration-700" data-alt="high-end minimalist branding package on premium textured paper with copper foil details and soft dramatic shadows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFJ-YIKekCpYpW1zb8UIRPhChByIoRxzH9SD2ij_TGcYG4C70kciEUVdynLGzF-yxsX7M9sxeH2v6Q0FKpw4jgdg6NzABXr7f7DotQB6evOBk6o-gYPObR5BQ8UaHSGM1Rscsxn_afsTyI8cd7aIXdqWd3gHtqfxctnslecccFJZEOmtULpcDVMoOFg3HexNNMNZxR2OrSm1Wusa8pFkj55abu_dws59hzFZnePmRnqziT7V0a9US8k2sUc2KwnnmWRUaW354cb3Y"/>
+<div class="p-8">
+<span class="font-label text-[10px] uppercase tracking-widest text-secondary mb-2 block">Branding &amp; Identity</span>
+<h3 class="font-headline text-2xl font-bold text-on-surface mb-3 tracking-tight">Ethereal Studio</h3>
+<p class="font-body text-on-surface-variant max-w-md">Developing a visual language for a sustainable fashion house rooted in Nordic minimalism and ethical craftsmanship.</p>
+</div>
+</div>
+</div>
+<!-- Project 2 -->
+<div class="col-span-12 md:col-span-4 group">
+<div class="relative overflow-hidden rounded-xl bg-surface-container-low transition-all duration-500 hover:bg-surface-container-highest hover:-translate-y-2 h-full">
+<img class="w-full aspect-square object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-700" data-alt="sophisticated mobile app interface design showing abstract fluid shapes and clean typography on a ceramic display" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYkfAUSvahF_0Q-WEZoT92YjcBeV6n2gQYdnzTAxpl7eNQU0aOnMUTnc2tSquM_wtr3j_5a1x0lA_re8paU7-zbasdthZM2IJ5_AFaYRYk-8zmqVA7BwPptu17gARZ_gsZ7OniHYoMM2CFRxMwfi5-EdEufkgkN07Z8zDWhGMLc0tKFGgbL3yj9hffgBVXMxQOZvQpdVdmKsC_LC-d-uhv5P3ke4JqXOPY9IOP6GMTT2W3qvrmxwnUfexqsvkoKuyhFMAhK3KpPdM"/>
+<div class="p-8">
+<span class="font-label text-[10px] uppercase tracking-widest text-secondary mb-2 block">Digital Strategy</span>
+<h3 class="font-headline text-xl font-bold text-on-surface mb-3 tracking-tight">Nexus Flow</h3>
+<p class="font-body text-sm text-on-surface-variant">Reimagining the workflow of tomorrow through a fluid, motion-first interface experience.</p>
+</div>
+</div>
+</div>
+<!-- Project 3 -->
+<div class="col-span-12 md:col-span-4 group">
+<div class="relative overflow-hidden rounded-xl bg-surface-container-low transition-all duration-500 hover:bg-surface-container-highest hover:-translate-y-2">
+<img class="w-full aspect-square object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-700" data-alt="architectural interior photography of a minimalist gallery space with sharp light shadows and neutral warm tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8rFKv3dh-g_9pDlZ0eoV8B3JusX9l_oWOTwiPTkPnIdDDUE2-Za0G0PqVC-pax6eDg7GepHR-H8R9i4RJ9h_PYovGLOC8hj4HwkUIiE61J9e_-hTohnQyXjpF7J4BG7FGw2uXMfeBxAp0iogbNLEDrr9dpcM2WQtphjXsnSoJvlIwyKYb8q5Po2KipArE8yC1GW4tTozirCtendcILQj4-X-OPY7bvllYNXmCtbNXF5GJamvN7iXFwruJOmJUWENE0eBkdKTiUco"/>
+<div class="p-8">
+<span class="font-label text-[10px] uppercase tracking-widest text-secondary mb-2 block">Spatial Design</span>
+<h3 class="font-headline text-xl font-bold text-on-surface mb-3 tracking-tight">The Monolith</h3>
+<p class="font-body text-sm text-on-surface-variant">An immersive physical environment designed to challenge the perception of space and volume.</p>
+</div>
+</div>
+</div>
+<!-- Project 4: Wide -->
+<div class="col-span-12 md:col-span-8 group">
+<div class="relative overflow-hidden rounded-xl bg-surface-container-low transition-all duration-500 hover:bg-surface-container-highest hover:-translate-y-2">
+<img class="w-full aspect-[21/9] object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-700" data-alt="abstract digital artwork with flowing marsala and cream colors resembling liquid marble and silk textures" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkXASZ9ALDzGJRblPpcRwFFhWbt0N_6lJWscDiyapN3l8SuqFIQoubdFcNhLkjJhZA8wANZm2j2qmWT0J2EayYbyGqJzQfPeTaPcEsVDfqI8uYhqLc2OwANPRfaH8QctXlXmwXoVBYNER5JCtvgdB1OKiSRnN2yQTpPT3QsUbmQGf5ZVtuqS74yD437pEWjFpIjfOjf8I-MJQwyCFG1mc_JB4-rbxejVxucnpDi-BMzmaehUOn2voTSZnhiYt91ZS_HJE0ZdLTmyg"/>
+<div class="p-8">
+<div class="flex justify-between items-start">
+<div>
+<span class="font-label text-[10px] uppercase tracking-widest text-secondary mb-2 block">Campaign</span>
+<h3 class="font-headline text-2xl font-bold text-on-surface mb-3 tracking-tight">Aura Narrative</h3>
+</div>
+<span class="material-symbols-outlined text-primary">arrow_outward</span>
+</div>
+<p class="font-body text-on-surface-variant max-w-xl">A cross-platform brand story centered around human connection in a fragmented digital landscape.</p>
+</div>
+</div>
+</div>
+<!-- Project 5 -->
+<div class="col-span-12 md:col-span-6 group">
+<div class="relative overflow-hidden rounded-xl bg-surface-container-low transition-all duration-500 hover:bg-surface-container-highest hover:-translate-y-2">
+<img class="w-full aspect-[4/3] object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-700" data-alt="minimalist watch photography with soft focus background and sharp focus on industrial titanium textures" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSqZbOaFxXPOsEF575crqS0uoOsYHVUJKccCu9t6TeKGZKnOzsCRlPIRxJHQCBTh28-H1HNgV_pApk6RSBPppsXJqWF2ru8Z08EHfnJA0IO6sqhR4Xw10qMka312UklZi9ZSObdP2CpVnlRtnakoC-CQSBpftHnn0rZFqeiRaKBkjXh-cptNQ9FqB-oKCEePdFgc1kK0zIlRPiGDIp0wV_TrwGgckAzP1fh6_fkI-k7BFudnLRFCFqNmt1N82ffn76y1M7gwhrni8"/>
+<div class="p-8">
+<span class="font-label text-[10px] uppercase tracking-widest text-secondary mb-2 block">Product Design</span>
+<h3 class="font-headline text-xl font-bold text-on-surface mb-3 tracking-tight">Chronos Series</h3>
+<p class="font-body text-on-surface-variant">A study in mechanical elegance and the tactile nature of time measurement.</p>
+</div>
+</div>
+</div>
+<!-- Project 6 -->
+<div class="col-span-12 md:col-span-6 group">
+<div class="relative overflow-hidden rounded-xl bg-surface-container-low transition-all duration-500 hover:bg-surface-container-highest hover:-translate-y-2">
+<img class="w-full aspect-[4/3] object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-700" data-alt="modern luxury magazine layout with bold typography and large high-fashion photography on matte paper" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmNrbSB155uCt6zZ1byISfHoAOnpE4IW6af7chv6lsqdV2C6tHcUPzWJrrb1rm-6LuNjNJDqkJcCdd-snWvg3gVGLmAU6immVqlu7jeCTye_S-RQ6DZBhaN4O7JmgEDDa1U5hY_IyXWjIg17uoNrcCrMfTOTnqN5ForqNKqXhigSF0L7EdsRPxconAoPHHOa5iZsPIUO_2UKltKubQOXy6ZlncSHRMAeFQD3hu-lGmA8H8YqWVJA8Z4uiOkUSeryhwNkXZhgMfhag"/>
+<div class="p-8">
+<span class="font-label text-[10px] uppercase tracking-widest text-secondary mb-2 block">Editorial</span>
+<h3 class="font-headline text-xl font-bold text-on-surface mb-3 tracking-tight">Vellum Quarterly</h3>
+<p class="font-body text-on-surface-variant">Curating voices from the fringe of design culture in a premium print publication.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- CTA Section -->
+<section class="mt-32 p-16 rounded-xl bg-surface-container-high text-center overflow-hidden relative">
+<div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
+<div class="relative z-10">
+<h2 class="font-headline text-3xl md:text-4xl font-extrabold text-on-surface mb-6 tracking-tight">Interested in working together?</h2>
+<p class="font-body text-on-surface-variant max-w-lg mx-auto mb-10 text-lg">
+                    We are always looking for visionary partners to create meaningful experiences. Let's start a conversation about your next project.
+                </p>
+<button class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-10 py-4 rounded-lg font-label text-sm uppercase tracking-[0.2em] transition-all hover:shadow-xl hover:scale-105 active:scale-95">
+                    Start a Project
+                </button>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-[#22191a] dark:bg-[#1a1415] w-full rounded-none flex flex-col md:flex-row justify-between items-center px-12 py-16 w-full mt-auto">
+<div class="mb-8 md:mb-0">
+<div class="text-xl font-bold text-[#fff8f7] font-['Manrope'] mb-4">Gallery Editorial</div>
+<p class="font-['Work_Sans'] text-sm leading-relaxed text-[#fff8f7]/60 max-w-xs">
+                Designing the future through an editorial lens. Curated experiences for the sophisticated mind.
+            </p>
+</div>
+<div class="flex flex-col md:flex-row gap-8 md:gap-16 items-center">
+<div class="flex gap-6">
+<a class="text-[#fff8f7]/60 hover:text-[#a26769] transition-colors font-['Work_Sans'] text-sm" href="#">Privacy Policy</a>
+<a class="text-[#fff8f7]/60 hover:text-[#a26769] transition-colors font-['Work_Sans'] text-sm" href="#">Terms of Service</a>
+</div>
+<div class="flex gap-6">
+<a class="text-[#fff8f7]/60 hover:text-[#a26769] transition-colors font-['Work_Sans'] text-sm" href="#">LinkedIn</a>
+<a class="text-[#fff8f7]/60 hover:text-[#a26769] transition-colors font-['Work_Sans'] text-sm" href="#">Instagram</a>
+</div>
+</div>
+<div class="mt-12 md:mt-0 text-[#fff8f7]/40 font-['Work_Sans'] text-xs tracking-wider">
+            © 2024 Gallery Editorial. All rights reserved.
+        </div>
+</footer>
+</body></html>

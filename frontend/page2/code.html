@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;family=Work+Sans:wght@300;400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-fixed-dim": "#ffb0c9",
+              "on-surface": "#22191a",
+              "tertiary-container": "#876f69",
+              "error": "#ba1a1a",
+              "surface-container-lowest": "#ffffff",
+              "secondary-fixed": "#ffd9e3",
+              "on-tertiary": "#ffffff",
+              "inverse-primary": "#fbb4b6",
+              "primary-fixed": "#ffdada",
+              "surface-tint": "#864f51",
+              "outline": "#847373",
+              "on-tertiary-container": "#fffbff",
+              "outline-variant": "#d6c2c1",
+              "primary": "#864f51",
+              "inverse-on-surface": "#feeded",
+              "surface-container": "#fbeaea",
+              "inverse-surface": "#382e2e",
+              "on-surface-variant": "#524343",
+              "on-primary-fixed-variant": "#6a383b",
+              "primary-container": "#a26769",
+              "tertiary-fixed-dim": "#ddc0b9",
+              "on-primary-fixed": "#350e12",
+              "surface": "#fff8f7",
+              "on-tertiary-fixed-variant": "#56423d",
+              "on-secondary": "#ffffff",
+              "primary-fixed-dim": "#fbb4b6",
+              "on-secondary-fixed-variant": "#713149",
+              "surface-container-high": "#f5e4e4",
+              "on-secondary-container": "#7b3952",
+              "surface-bright": "#fff8f7",
+              "secondary-container": "#fea8c4",
+              "on-primary": "#ffffff",
+              "background": "#fff8f7",
+              "on-background": "#22191a",
+              "on-error-container": "#93000a",
+              "tertiary-fixed": "#fadcd5",
+              "secondary": "#8d4861",
+              "tertiary": "#6d5751",
+              "on-tertiary-fixed": "#271814",
+              "error-container": "#ffdad6",
+              "on-secondary-fixed": "#3b051e",
+              "surface-variant": "#f0dfde",
+              "surface-container-highest": "#f0dfde",
+              "surface-dim": "#e7d6d6",
+              "on-primary-container": "#140002",
+              "surface-container-low": "#fff0f0",
+              "on-error": "#ffffff"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Work Sans"],
+              "label": ["Work Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .editorial-gradient {
+            background: linear-gradient(135deg, #864f51 0%, #a26769 100%);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body selection:bg-secondary-container">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-[#fff8f7]/70 backdrop-blur-xl shadow-[0_4px_40px_rgba(34,25,26,0.04)]">
+<div class="flex justify-between items-center px-8 py-6 max-w-7xl mx-auto">
+<span class="text-2xl font-bold tracking-tighter text-[#22191a] font-['Manrope']">Gallery Editorial</span>
+<div class="hidden md:flex gap-10 items-center">
+<a class="font-['Manrope'] font-medium text-sm tracking-wide text-[#22191a] opacity-80 hover:opacity-100 transition-opacity" href="#">Home</a>
+<a class="font-['Manrope'] font-medium text-sm tracking-wide text-[#864f51] font-bold border-b-2 border-[#864f51] pb-1" href="#">About</a>
+<a class="font-['Manrope'] font-medium text-sm tracking-wide text-[#22191a] opacity-80 hover:opacity-100 transition-opacity" href="#">Services</a>
+<a class="font-['Manrope'] font-medium text-sm tracking-wide text-[#22191a] opacity-80 hover:opacity-100 transition-opacity" href="#">Portfolio</a>
+<a class="font-['Manrope'] font-medium text-sm tracking-wide text-[#22191a] opacity-80 hover:opacity-100 transition-opacity" href="#">Contact</a>
+</div>
+<button class="editorial-gradient text-on-primary px-6 py-2.5 rounded-lg font-['Work_Sans'] text-sm font-medium tracking-wide scale-95 active:scale-90 transition-transform">
+                Get in Touch
+            </button>
+</div>
+</nav>
+<main class="pt-24">
+<!-- Section 1: Introduction (Editorial Hero) -->
+<section class="relative px-8 md:px-24 py-20 overflow-hidden">
+<div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+<div class="lg:col-span-7 space-y-8 z-10">
+<span class="label-md uppercase tracking-[0.2em] text-primary font-medium">Established 1994</span>
+<h1 class="text-5xl md:text-7xl font-headline font-extrabold text-on-surface leading-[1.1] tracking-tight">
+                        Crafting visual <br/> <span class="text-secondary">narratives</span> that <br/> endure.
+                    </h1>
+<p class="text-lg md:text-xl text-on-surface-variant max-w-xl leading-relaxed">
+                        Gallery Editorial began as a boutique studio with a singular vision: to treat every commercial project with the reverence of a gallery installation. For three decades, we've bridged the gap between raw creativity and strategic sophistication.
+                    </p>
+<div class="flex items-center gap-6 pt-4">
+<div class="w-12 h-[1px] bg-outline-variant"></div>
+<span class="font-headline font-bold text-on-surface">Our Heritage</span>
+</div>
+</div>
+<div class="lg:col-span-5 relative">
+<div class="aspect-[4/5] bg-surface-container-low overflow-hidden rounded-xl shadow-2xl rotate-2 hover:rotate-0 transition-transform duration-700">
+<img alt="Professional Studio Space" class="w-full h-full object-cover" data-alt="Minimalist high-end office interior with natural light, concrete textures, and large scale art photography on the walls." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPzEylLaYjxt5T344fVh3UlkjGY2_aectjgsXS9byxvMktDNnvl31VOUfjPzEqGI8-hDc_8yMuPM0UFKpke_HgYSN6JNQ1-wLrA9PKd-37dJU4CfjX1omtN5nbptPl9gJiBjMAZCN9CPFLqzMxtmpBAXOAXQA2t7WQ-CKGzALTAb5sA0eYKriALhvwudunkrDscbXKX8sQdfyzPZXPR_x7momLo01HyLzXRUPmuStlVnR98vFhwx7loy0eLtHWpdxz_BHSagiCsVk"/>
+</div>
+<div class="absolute -bottom-10 -left-10 w-64 h-80 bg-surface-container-high rounded-xl -rotate-6 -z-10 shadow-lg border border-outline-variant/10"></div>
+</div>
+</div>
+</section>
+<!-- Section 2: Our Mission & Values (Bento Grid) -->
+<section class="bg-surface-container-low py-32 px-8">
+<div class="max-w-7xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+<div class="max-w-2xl">
+<h2 class="text-4xl font-headline font-extrabold text-on-surface mb-6">Our Mission &amp; Core Values</h2>
+<p class="text-on-surface-variant leading-relaxed">We don't just produce content; we curate experiences. Our framework is built on three pillars that define every shutter click and every design choice.</p>
+</div>
+<div class="text-right hidden md:block">
+<span class="text-8xl font-headline font-black text-primary/5 opacity-20">VALUES</span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Value 1 -->
+<div class="bg-surface p-10 rounded-xl space-y-6 group hover:bg-surface-container-highest transition-colors duration-500">
+<div class="w-14 h-14 editorial-gradient rounded-lg flex items-center justify-center text-white shadow-lg">
+<span class="material-symbols-outlined text-3xl">auto_awesome</span>
+</div>
+<h3 class="text-2xl font-headline font-bold text-secondary">Intentionality</h3>
+<p class="text-on-surface-variant leading-relaxed">
+                            Every pixel serves a purpose. We reject the "standard" in favor of bespoke solutions that reflect the unique DNA of each client.
+                        </p>
+</div>
+<!-- Value 2 -->
+<div class="bg-surface p-10 rounded-xl space-y-6 group hover:bg-surface-container-highest transition-colors duration-500 md:mt-12">
+<div class="w-14 h-14 editorial-gradient rounded-lg flex items-center justify-center text-white shadow-lg">
+<span class="material-symbols-outlined text-3xl">history_edu</span>
+</div>
+<h3 class="text-2xl font-headline font-bold text-secondary">Craftsmanship</h3>
+<p class="text-on-surface-variant leading-relaxed">
+                            True quality is felt, not just seen. We apply artisanal precision to digital workflows, ensuring a premium tactile feel in every deliverable.
+                        </p>
+</div>
+<!-- Value 3 -->
+<div class="bg-surface p-10 rounded-xl space-y-6 group hover:bg-surface-container-highest transition-colors duration-500">
+<div class="w-14 h-14 editorial-gradient rounded-lg flex items-center justify-center text-white shadow-lg">
+<span class="material-symbols-outlined text-3xl">visibility</span>
+</div>
+<h3 class="text-2xl font-headline font-bold text-secondary">Transparency</h3>
+<p class="text-on-surface-variant leading-relaxed">
+                            The creative process is a partnership. We maintain open communication and rigorous standards to ensure alignment at every phase.
+                        </p>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 3: Meet the Experts -->
+<section class="py-32 px-8">
+<div class="max-w-7xl mx-auto">
+<div class="mb-20 text-center">
+<h2 class="text-4xl font-headline font-extrabold text-on-surface mb-4">Meet the Curators</h2>
+<p class="text-on-surface-variant max-w-xl mx-auto">A collective of specialists dedicated to elevating brands through editorial excellence.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+<!-- Expert 1 -->
+<div class="group">
+<div class="aspect-[3/4] overflow-hidden rounded-lg bg-surface-container-high mb-6 relative">
+<img alt="Elena Vance" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700 scale-100 group-hover:scale-110" data-alt="Professional studio portrait of a woman with short dark hair in a charcoal blazer, warm neutral background, sophisticated lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIEnVAVPJdIMu2SyPpeP3_hjs0Kv07NpBwT-3BxYM2c3iW0F2BvIjf3anBIcuBet7mRQV21v2diVVWqHAE_W6gvnV4SStUtTIT0N4VEL5AWxPe36AL4-cVvTER42hfF9l_ZOTPwWZbbwNgcEflzFq7mdLERw6wYU3j-ko-gaJwEzu9OAFTbu-xj4zUi-N1naqzjCIb-tMcwi8VDjjibH_x66Tc_hF8fP0QstRvlPhMTFFqfubcRIzRlq1G72KGEzRpY4_mR0ImS6Y"/>
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+</div>
+<div class="space-y-2">
+<h4 class="text-xl font-headline font-bold text-on-surface">Elena Vance</h4>
+<p class="text-primary font-medium text-sm tracking-widest uppercase">Creative Director</p>
+<p class="text-on-surface-variant text-sm leading-relaxed pt-2">
+                                With a background in fine arts and global branding, Elena leads the creative vision for all editorial collections.
+                            </p>
+</div>
+</div>
+<!-- Expert 2 -->
+<div class="group">
+<div class="aspect-[3/4] overflow-hidden rounded-lg bg-surface-container-high mb-6 relative">
+<img alt="Marcus Thorne" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700 scale-100 group-hover:scale-110" data-alt="Middle-aged man with beard and spectacles wearing a linen shirt, outdoor soft natural light, professional headshot." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvqYsQVymIWNzL6235aPTf1x030FLClObKZISlngk9Sd5WjpC6VP-V7TdUpq3OUdz5TdHugwBxC868tFbN4d8z8PHERPNdd3OKHefkp0qA3mDVFABZYQzquWsYuOSH_4-xu7_hhuz4G2qTrGBJSQWjLQA271WXImoe5LE3b5jdomP9HicaNUnKxUdZBNHWT--F9drcdJbTcK8wI8KS1phj4hG4bw9jbZKbEaFOiV-zkKdhf8IM14_bCSw0heq_4LdgnZdCqePfYiM"/>
+<div class="absolute inset-0 bg-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+</div>
+<div class="space-y-2">
+<h4 class="text-xl font-headline font-bold text-on-surface">Marcus Thorne</h4>
+<p class="text-primary font-medium text-sm tracking-widest uppercase">Principal Strategist</p>
+<p class="text-on-surface-variant text-sm leading-relaxed pt-2">
+                                Marcus ensures that every aesthetic choice is backed by market intelligence and brand psychology.
+                            </p>
+</div>
+</div>
+<!-- Expert 3 -->
+<div class="group">
+<div class="aspect-[3/4] overflow-hidden rounded-lg bg-surface-container-high mb-6 relative">
+<img alt="Sarah Jenkins" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700 scale-100 group-hover:scale-110" data-alt="Young woman with curly hair smiling in a modern bright studio environment, soft high-key lighting, professional role." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBClO8cPNZFPx6jmij13RLajvi8Ljohix15sakIkSL1YLL3tHydCyUw0LuyT_oJdeD_5qZ4Ef2-W6xOmSQ6vjxISkdQhJejNCLybdcFUxPUdPE1tz1x6cN9140dM_luGZ_yScOCg-2iaE3lv9ii-hiOGnHyAw6VFnb6RaNYQrxrgaydNncgHkryZK6EA0eOWzhbGS6Xs4EfI4HLrpxwO2l9R1HPTDd41oWdSS6sRE5dpxoPn0K73gSflO4vcO40-xPEpy4XE7TD0Eo"/>
+<div class="absolute inset-0 bg-primary-container/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+</div>
+<div class="space-y-2">
+<h4 class="text-xl font-headline font-bold text-on-surface">Sarah Jenkins</h4>
+<p class="text-primary font-medium text-sm tracking-widest uppercase">Lead Designer</p>
+<p class="text-on-surface-variant text-sm leading-relaxed pt-2">
+                                Specializing in typographic systems, Sarah crafts the architectural bones of our visual identities.
+                            </p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Mega-Breadcrumb (Design System Special) -->
+<div class="px-8 pb-12 max-w-7xl mx-auto">
+<div class="pt-12 border-t border-outline-variant/20 flex gap-4 items-center">
+<span class="text-on-surface-variant/40 font-headline font-bold">Home</span>
+<span class="material-symbols-outlined text-outline-variant text-sm">chevron_right</span>
+<h3 class="text-2xl font-headline font-extrabold text-secondary tracking-tight">About Us</h3>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-[#22191a] w-full mt-auto">
+<div class="flex flex-col md:flex-row justify-between items-center px-12 py-16 w-full max-w-7xl mx-auto">
+<div class="mb-8 md:mb-0 space-y-4">
+<span class="text-xl font-bold text-[#fff8f7] font-['Manrope'] block">Gallery Editorial</span>
+<p class="font-['Work_Sans'] text-sm leading-relaxed text-[#fff8f7]/60 max-w-xs">
+                    Redefining the standard of editorial visual storytelling since 1994.
+                </p>
+</div>
+<div class="flex flex-col md:flex-row gap-12 text-center md:text-left">
+<div class="flex flex-col gap-3">
+<span class="text-[#a26769] font-bold text-xs uppercase tracking-widest">Navigation</span>
+<a class="text-[#fff8f7]/60 hover:text-[#a26769] transition-colors text-sm" href="#">Privacy Policy</a>
+<a class="text-[#fff8f7]/60 hover:text-[#a26769] transition-colors text-sm" href="#">Terms of Service</a>
+</div>
+<div class="flex flex-col gap-3">
+<span class="text-[#a26769] font-bold text-xs uppercase tracking-widest">Connect</span>
+<a class="text-[#fff8f7]/60 hover:text-[#a26769] transition-colors text-sm" href="#">LinkedIn</a>
+<a class="text-[#fff8f7]/60 hover:text-[#a26769] transition-colors text-sm" href="#">Instagram</a>
+</div>
+</div>
+</div>
+<div class="w-full text-center pb-8 opacity-40">
+<span class="font-['Work_Sans'] text-xs text-[#fff8f7]">© 2024 Gallery Editorial. All rights reserved.</span>
+</div>
+</footer>
+</body></html>

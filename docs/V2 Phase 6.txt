@@ -1,0 +1,30 @@
+﻿V2 Phase 6
+1. Develop the FastAPI backend endpoints that handle listing creation and on-chain interaction.
+Create a robust /list endpoint that receives form data from the React UI, validates it, uploads to IPFS, then calls the AlgoKit smart contract to mint the ASA and store the hash and price; include transaction signing with the seller’s wallet and immediate confirmation polling so the entire seller flow from UI click to on-chain confirmation is fully automated and logged for debugging.
+
+
+
+
+
+
+To-Do:
+1. Open the main FastAPI file in the backend.
+Go to backend/main.py (or backend/app.py if your AlgoKit template uses that name) and ensure the FastAPI app is already created with app = FastAPI() and CORS middleware enabled for the React frontend (localhost:5173).
+2. Import all required modules at the top of the file.
+Add: from fastapi import FastAPI, HTTPException, Request, from pydantic import BaseModel, from utils.ipfs import upload_insight_to_ipfs, store_cid_in_listing, the generated contract client (from contracts.insight_listing import InsightListingClient), from algosdk import mnemonic, transaction, import logging, and from dotenv import load_dotenv.
+3. Define the Pydantic request model for the /list endpoint.
+Create a class class ListingRequest(BaseModel): insight_text: str; price: float; seller_wallet: str right above the endpoint so the backend can validate incoming JSON from the React UI automatically.
+4. Create the POST /list endpoint.
+Add @app.post("/list") async def create_listing(request: ListingRequest): and inside it, start by loading environment variables with load_dotenv() and logging the incoming request for debugging.
+5. Validate the incoming form data from the React UI.
+Add checks: if not request.insight_text.strip() or request.price <= 0 or not request.seller_wallet.startswith("7") or len(request.seller_wallet) != 58, raise HTTPException(400, "Invalid insight text, price, or wallet address") so bad data never reaches IPFS or the chain.
+6. Upload the insight to IPFS using the helper from Point 4.
+Call cid = await upload_insight_to_ipfs(request.insight_text) (make the function async if needed), log the returned CID, and handle any IPFSUploadError by raising a 500 HTTPException with a clear message.
+7. Prepare and sign the transaction using the seller’s wallet.
+Load the seller’s mnemonic from .env (or pass it securely in the request for testing), create the InsightListingClient using the deployed App ID from .env, build the create_listing ABI call with price (converted to micro-USDC), seller_wallet, and the IPFS CID, then sign it with the seller’s private key using algosdk.
+8. Submit the transaction to TestNet and start confirmation polling.
+Use the py-algorand-sdk to send the signed transaction group to the TestNet algod client, then poll the indexer every 2 seconds (max 30 seconds) until the transaction is confirmed and the ASA is minted with the stored hash and price.
+9. Add comprehensive logging for the entire flow.
+Use Python’s logging module to record every step (validation passed, IPFS CID received, transaction ID, confirmation status, final state update) to the console and optionally to a logs/listing.log file so you can debug the full seller flow easily.
+10. Return the success response to the React UI.
+After confirmation, return a JSON dict with {"success": True, "transaction_id": tx_id, "explorer_url": f"https://testnet.explorer.algorand.org/tx/{tx_id}", "message": "Insight listed on-chain and pinned on IPFS"} so the React frontend can immediately show the loading spinner end, success toast, and clickable transaction link.

@@ -1,0 +1,32 @@
+﻿V2 Phase 7
+1. Set up the LangChain + Google Gemini AI buyer agent core structure.
+Create an agent.py file that initializes a LangChain agent powered by Google Gemini 1.5 Flash with custom tools for on-chain querying, semantic search, and payment triggering; load API keys securely from .env and configure the agent with a clear system prompt defining its role as an autonomous trading-insight buyer so it can reason, search, and decide without human intervention except for final payment approval.
+
+
+
+
+
+
+
+
+To-Do:
+1. Create the agent file in the backend folder.
+Inside backend/ create a new file named agent.py — this will be the central file for the entire AI buyer agent logic.
+2. Add all necessary imports at the top of agent.py.
+Import: from dotenv import load_dotenv, import os, from langchain_google_genai import ChatGoogleGenerativeAI, from langchain_core.prompts import ChatPromptTemplate, from langchain.agents import create_tool_calling_agent, AgentExecutor, from langchain_core.tools import tool, from langchain_core.messages import SystemMessage, and the contract clients you will use later.
+3. Load environment variables securely at the start of the file.
+Add load_dotenv() and then GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") and ALGOD_URL = os.getenv("ALGOD_URL") so all keys and URLs are pulled from .env and never hard-coded.
+4. Initialize the Google Gemini 1.5 Flash model.
+Create llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", google_api_key=GEMINI_API_KEY, temperature=0.3) so the agent uses the fast, cost-effective model optimized for reasoning and tool calling.
+5. Define the custom tool placeholders.
+Create three stub @tool decorated functions: on_chain_query(listing_id: int), semantic_search(query: str), and trigger_x402_payment(amount: float, seller_wallet: str) — each should return a clear string message for now (you will implement real logic in later points).
+6. Write the system prompt that defines the agent’s role.
+Create a SYSTEM_PROMPT = """You are Mercator, an autonomous AI trading-insight buyer on Algorand. Your job is to: 1) Search for real human trading insights using semantic search, 2) Evaluate them using on-chain reputation and price, 3) Reason step-by-step whether to buy, 4) Only trigger x402 payment after explicit user approval. Never generate fake data. Always use real human insights.""" and wrap it in ChatPromptTemplate.from_messages([SystemMessage(content=SYSTEM_PROMPT), ...]).
+7. Build the LangChain agent with tools and prompt.
+Combine the tools into a list, then use agent = create_tool_calling_agent(llm, tools, prompt) followed by agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True, handle_parsing_errors=True) so the agent can reason, call tools, and handle errors gracefully.
+8. Add a simple run function for easy testing.
+Create an async def async def run_agent(user_query: str, user_approval: bool = False): that invokes agent_executor.invoke({"input": user_query}) and returns the result — this will be the main entry point used by the rest of the application.
+9. Add basic error handling and logging for API keys.
+At the top of the file, after loading the key, add if not GEMINI_API_KEY: raise ValueError("GEMINI_API_KEY not found in .env") and import logging with logging.basicConfig(level=logging.INFO) so you immediately know if any key is missing.
+10. Test the agent initialization locally.
+At the bottom of agent.py add a small if __name__ == "__main__": block that runs asyncio.run(run_agent("Find me the latest NIFTY call option insight")) and prints the output; run the file with python -m backend.agent to confirm the agent starts, loads Gemini, and responds with reasoning and placeholder tool calls without any crashes.
