@@ -32,3 +32,10 @@ htmlcov/
 # IDE and OS files
 .DS_Store
 .vscode/
+
+# Local scaffold and workspace artifacts
+.algokit/
+.algokit.toml
+*.code-workspace
+copy_files.sh
+inject_content/
