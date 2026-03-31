@@ -1,0 +1,154 @@
+﻿AlgoBharat Hack Series 3.0
+
+
+AlgoBharat Hack Series 3.0 is a product-driven blockchain builder program designed to help developers and startup teams build real, scalable Web3 solutions. Selected teams will receive structured mentorship, product refinement support, and go-to-market guidance, culminating in a Developer Retreat focused on mainnet readiness and startup launch preparation.
+Selection Criteria:
+1. Relevance of the problem: Is your problem addressing the focus areas defined above.  
+2. Feasibility of the project: Is this project technically possible?
+3. Clarity in the explanation: Refrain from using AI generated output directly
+4. Scalability of the project: Is your solution generic and can be applied across multiple domains?
+Core Vision
+This hackathon challenges developers to build foundational open-source modules for India’s next generation of enterprise blockchain solutions. The focus is on creating interoperable, well-documented components that solve specific business problems within three strategic areas that are aligned with Algorand’s roadmap and India’s digital transformation.
+
+
+​The Hack Series is built as a launchpad for serious builders — identifying strong teams, helping them shape their ideas into full-fledged Web3 products, and supporting their journey toward becoming impactful startups in the ecosystem. We are moving away from isolated proof-of-concepts and towards a library of trusted components that can power:
+
+
+1)  Future of Finance (DeFi, Payments, RWAs)
+2) Agentic Commerce (AI + Blockchain)
+3) Regulatory Technology (Digital Personal Data Protection Compliance, Identity)
+
+
+We are excited to support builders in this competition who are building scalable, usable solutions with clear market relevance and real-world impact.
+Selected teams will be guided through:
+​Mentorship
+​Product refinement
+​Go-to-market preparation
+
+
+​The program culminates in June with a developer retreat designed to accelerate projects toward mainnet deployment and startup readiness.
+
+
+​The AlgoBharat Hack Series 3.0 prize pool totals USD 30,000 + acceleration support.
+Why Participate?
+Gain hands-on experience developing on the Algorand blockchain.
+Showcase your skills and creativity to a global audience. Exceptional modules may be included in a curated registry, providing visibility to Algorand’s global enterprise network.
+Contribute to the growth of India’s digital infrastructure.
+Earn recognition, networking opportunities, and cash prizes + acceleration support.
+Tracks
+Future of Finance
+Objective: Build components that bridge traditional finance with blockchain infrastructure, addressing India-specific challenges and opportunities. Solution examples include:
+Beginner
+1. Stablecoin Payments
+Implement P2P, B2B, or Merchant acceptance flows for stablecoins. Includes QR code generation, transaction monitoring, and settlement confirmation.
+Indian Market Context: Simplifies cross-border remittances and reduces transaction costs for SMEs.
+Intermediate
+2. Stablecoin & Crypto Payroll
+Automated payroll distribution system allowing batch payments in stablecoins with tax calculation integration.
+Indian Market Context: Efficient for remote tech workers and gig economy payouts.
+3. Yield-Bearing Stablecoins
+Stablecoins that automatically distribute protocol-generated yield (e.g., from T-Bills) to holders via rebasing or reward tokens.
+Indian Market Context: Provides inflation protection for digital cash holdings.
+4. Frontendless DEX
+A DEX fully operable via APIs and CLI, focused on programmatic trading and integrations.
+Indian Market Context: Ideal backend infrastructure for fintech apps adding swap features.
+5. Commodity & Stock Tokenization
+Protocol to issue and trade tokenized representations of stocks or commodities.
+Indian Market Context: Democratizes access to global assets (regulatory sandbox applicable).
+Advanced
+6. Cross-Border Microlending
+Platform connecting global lenders with local borrowers for small-ticket loans using stablecoins.
+Indian Market Context: Addresses credit gaps for unbanked populations and small merchants.
+7. Modular Lending Markets
+Isolated lending pools for specific asset classes with customizable risk parameters and interest rate models.
+Indian Market Context: Enables lending against diverse assets like gold or invoices.
+8. RWA Lending
+Protocol allowing real-world assets (invoices, property, commodities) to be tokenized and used as collateral for loans.
+Indian Market Context: Unlocks liquidity for SME assets traditionally hard to leverage.
+9. On-Chain Interest Markets
+Marketplace for trading interest rate swaps or fixed-yield products derived from DeFi lending protocols.
+Indian Market Context: Helps businesses hedge against interest rate volatility.
+10. Yield Tokenization
+Separate principal and yield components of an asset, allowing users to trade future yield upfront.
+Indian Market Context: Creates new financial products for sophisticated investors.
+11. Funding Rate Tokenization
+Convert perpetual futures funding rates into tradable tokens to hedge costs.
+Indian Market Context: Advanced tool for crypto-native trading firms.
+12. Concentrated Liquidity AMMs
+DEX architecture allowing LPs to provide liquidity within specific price ranges for capital efficiency.
+Indian Market Context: Improves trade execution for INR-pegged stablecoin pairs.
+13. Dynamic Liquidity AMMs
+AMMs that adjust fees or liquidity distribution based on market volatility.
+Indian Market Context: Reduces impermanent loss during volatile market conditions.
+14. Fusion AMMs
+Hybrid model combining order book logic with AMM pools for better price discovery.
+Indian Market Context: Bridges gap between traditional trading UI and DeFi backend.
+15. Time-Weighted AMMs
+Execute large orders over time (TWAP) to minimize price impact.
+Indian Market Context: Essential for institutional entry into DeFi markets.
+16. On-Chain Orderbook
+Fully decentralized limit order book maintained on-chain for transparency.
+Indian Market Context: Provides familiar trading experience for traditional equity traders.
+17. BitcoinFi Integration
+Secure bridging or wrapping of BTC to use as collateral in Algorand DeFi.
+Indian Market Context: Leverages India's significant BTC holder base for local DeFi yield.
+Agentic Commerce
+Objective: Create infrastructure for autonomous AI agents to transact, negotiate, and verify commerce on-chain. Solution examples include:
+Beginner
+1. Micropayment Systems (Tap-to-Stream)
+Pay-per-use infrastructure for digital content, enabling streaming payments of tiny amounts.
+Indian Market Context: Viable monetization for vernacular content creators and education platforms.
+2. Instant Checkout Links
+Generate one-click payment URLs that handle complex on-chain settlement logic in the background.
+Indian Market Context: simplifies crypto acceptance for social commerce sellers (WhatsApp/Instagram).
+Intermediate
+3. A2A Autonomous Payments
+Wallets controlled by AI agents with predefined spending limits and rule-based approval logic.
+Indian Market Context: Useful for recurring B2B payments or IoT service subscriptions.
+4. A2A Data Marketplace
+Platform where AI agents buy and sell proprietary datasets for model training or analysis.
+Indian Market Context: Monetization avenue for diverse Indian datasets (agriculture, traffic, language).
+5. Micro-Bounty dApp
+Task marketplace where small jobs are posted and verified, with instant crypto payouts.
+Indian Market Context: Supports gig economy and student developers seeking small tasks.
+6. Machine-to-Machine Transactions
+Trustless settlement layer for automated interactions between smart devices (e.g., EV charging).
+Indian Market Context: Critical infrastructure for smart cities and automated logistics.
+Advanced
+7. A2A Agentic Commerce Framework
+Standardized protocol for AI agents to discover services, negotiate prices, and execute payments autonomously.
+Indian Market Context: Enables automated procurement for SMEs and logistics optimization.
+8. A2A Lending Desk
+Automated agents that scan lending markets for best rates and manage loan positions.
+Indian Market Context: Helps corporate treasuries optimize yield on idle cash.
+9. DePin Infrastructure
+Decentralized Physical Infrastructure Networks managing IoT devices, sensors, or connectivity nodes.
+Indian Market Context: Incentivizes rollout of localized wifi or pollution monitoring networks.
+10. Agentic Payments Stack
+Full-stack API allowing non-crypto applications to embed AI-driven payment capabilities.
+Indian Market Context: Integration layer for existing ERPs and accounting software.
+DPDP & RegTech
+Objective: Develop privacy-preserving compliance tools that help Indian enterprises and SMEs meet regulatory requirements efficiently. Solution examples include:
+Intermediate
+1. Proof of Personhood Apps
+Sybil-resistance mechanisms to verify unique human identity for fair airdrops or voting.
+Indian Market Context: Prevents fraud in government benefit distribution or DAO governance.
+2. DPDP Act Consent Management
+Immutable log of user consents for data usage, with granular revocation capabilities.
+Indian Market Context: Mandatory requirement for Data Fiduciaries under new Indian law.
+3. Automated Compliance Checking
+Smart contracts that automatically verify transaction parameters against regulatory rules (sanctions, limits).
+Indian Market Context: Reduces compliance costs for fintech startups.
+4. Cross-Border Data Flow Documentation
+Audit trail system for monitoring and logging cross-border data transfers.
+Indian Market Context: Helps MNCs prove compliance with data localization norms.
+Advanced
+5. AlgoPlonk ZK-KYC
+Zero-knowledge proof implementation for KYC, allowing verification without storing sensitive user data.
+Indian Market Context: Directly addresses DPDP Act data minimization principles.
+6. Private Data Oracles using zkTLS
+Fetch web2 data (bank statements, Aadhaar status) privately to on-chain smart contracts.
+Indian Market Context: Enables credit scoring without revealing bank history details.
+7. Stablecoin-Based Social Credit Platform
+Reputation system building credit scores based on on-chain payment history and behaviors.
+Indian Market Context: Alternative credit assessment for those lacking formal CIBIL history.

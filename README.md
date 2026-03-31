@@ -33,3 +33,14 @@ Demo setup and run instructions will be added in upcoming phases.
 - AlgoKit fullstack 2.x generates a monorepo layout that differs from the older Phase 1 file expectations.
 - Non-essential temporary init artifacts were removed to keep this repository clean.
 - No API keys are needed yet for Steps 5 and 6. Keys are required starting from `.env` setup and service integrations in later phases.
+
+## Phase 2 Contract Progress
+
+- [x] Step 4 complete: `InsightListing` ARC4 contract added with BoxMap-backed listing storage and `create_listing(price, seller, ipfs_hash)`.
+- [x] Step 5 complete: `Escrow` ARC4 contract now includes `release_after_payment(buyer, listing_id)` with atomic group payment checks and unlock state updates.
+- [x] Step 6 complete: `Reputation` ARC4 contract now includes `update_score(seller, new_score)` and `get_score(seller)` using BoxMap-backed seller scores.
+
+### Inputs Needed From You
+
+- No API keys or secrets are needed for Steps 5 and 6.
+- Keys will be required when we wire external services: Algorand Testnet deployer mnemonic, Pinata JWT, Google Gemini API key, and any x402 provider credentials.

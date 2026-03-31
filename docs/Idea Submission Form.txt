@@ -1,0 +1,11 @@
+﻿Idea Submission Form
+1. Define the problem that you are solving. (e.g., agent to agent communication, reg-tech in finance, privacy in e-commerce, yield management).
+Autonomous AI agents cannot easily discover, evaluate, and buy fresh trading insights (stock predictions, candlestick patterns, sentiment reports) from real human experts because platforms are siloed, payments are slow or expensive, and there is no simple way for agents to pay and get data instantly.
+2. Describe your project in less than 200 words.
+Mercator is a simple decentralized marketplace on Algorand where human traders upload real trading insights and AI agents can find, reason about, and buy them instantly.
+Experienced traders (sellers) upload text insights with price and wallet address. AI buyer agents use natural language to search, evaluate matches, and pay automatically. Payments happen through x402 micropayments in USDC that settle on Algorand. All insights come only from real human sellers – no AI-generated data.
+The platform uses on-chain listings for trust, IPFS for storing content, and reputation scores so agents avoid low-quality sellers. It is built as an open-source module for the Agentic Commerce track.
+Buyers (AI trading agents) get better alpha for NSE or other markets. Sellers earn small payments passively. This solves discovery and payment problems so AI agents can trade smarter with real expert data.
+3. Describe your implementation approach.
+I am using the x402 SDK to let AI agents built with LangChain and Google Gemini make instant micropayments for insights, with Algorand as the settlement layer using USDC.
+I am building simple PyTeal smart contracts on Algorand for listing insights as ASAs, basic escrow, and reputation scores. Insights files are stored on IPFS with hashes on-chain. The buyer agent uses semantic search to find matches, does step-by-step reasoning, and triggers x402 payment when the user approves. After payment, the agent gets the content link.
