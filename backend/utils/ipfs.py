@@ -172,7 +172,9 @@ def _load_insight_listing_client_class() -> type:
     return module.InsightListingClient
 
 
-def store_cid_in_listing(cid: str, listing_app_id: int, seller_address: str) -> int:
+def store_cid_in_listing(
+    cid: str, listing_app_id: int, seller_address: str
+) -> tuple[int, int]:
     """Call InsightListing.create_listing and link IPFS CID to on-chain listing.
 
     Uses the generated InsightListing contract client and configured deployer signer.
@@ -209,7 +211,14 @@ def store_cid_in_listing(cid: str, listing_app_id: int, seller_address: str) -> 
         result = app_client.send.create_listing((price, seller_address, cid))
         if result.abi_return is None:
             raise ListingStoreError("Listing call returned no ABI value")
-        return int(result.abi_return)
+        listing_id = int(result.abi_return)
+
+        listing = app_client.state.box.listings.get_value(listing_id)
+        if listing is None:
+            raise ListingStoreError("Listing was created but could not be read from state")
+
+        asa_id = int(listing.asa_id)
+        return listing_id, asa_id
     except ListingStoreError:
         raise
     except Exception as err:

@@ -112,12 +112,13 @@ async def main() -> None:
 
     _ensure_listing_app_funded(listing_app_id)
 
-    listing_id = store_cid_in_listing(
+    listing_id, asa_id = store_cid_in_listing(
         cid=cid,
         listing_app_id=listing_app_id,
         seller_address=seller_address,
     )
     print(f"LISTING_ID={listing_id}")
+    print(f"ASA_ID={asa_id}")
 
     tx_id = _find_cid_tx_id(listing_app_id, seller_address, cid)
     if tx_id:
@@ -128,6 +129,7 @@ async def main() -> None:
         print("EXPLORER_TX=NOT_FOUND")
 
     print(f"IPFS_GATEWAY=https://gateway.pinata.cloud/ipfs/{cid}")
+    print(f"EXPLORER_ASSET=https://testnet.algoexplorer.io/asset/{asa_id}")
 
 
 if __name__ == "__main__":

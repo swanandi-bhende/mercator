@@ -28,7 +28,7 @@ def deploy() -> None:
     )
     _, result = factory.deploy(
         on_schema_break=OnSchemaBreak.AppendApp,
-        on_update=OnUpdate.UpdateApp,
+        on_update=OnUpdate.AppendApp,
     )
     print(f"INSIGHT_LISTING_APP_ID={result.app.app_id}")
     print(f"INSIGHT_LISTING_APP_ADDRESS={result.app.app_address}")

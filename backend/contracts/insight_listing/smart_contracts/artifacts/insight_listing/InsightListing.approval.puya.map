@@ -3,7 +3,7 @@
   "sources": [
     "../../insight_listing/contract.py"
   ],
-  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;AAWQ;AAAuB;AAAvB;AAFR;;AAAA;;;AAAA;;;;;;AAAA;;;AAAA;;;;AAAA;AAKK;;AAAA;AAAA;;AAAA;AAAA;AAAA;;;;;;;;;;;AAAA;;;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;;;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;;;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;;AAAA;AAAA;AAAA;AAOgB;AAAA;AAAA;AAAA;AAC4B;;AAAA;;AAAA;AAAA;;;;AAAA;AAAA;;AAAA;AAA3B;;AAAA;AAAd;;;;;;;;;AAAA;;AAAA;AAAA;AAAA;;AAAA;;AAAA;AAKuB;AAAa;AAAb;AAAvB;AAAA;AAAA;AAbH;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA",
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;AAYQ;AAAuB;AAAvB;AAFR;;AAAA;;;AAAA;;;;;;AAAA;;;AAAA;;;;AAAA;AAKK;;AAAA;AAAA;;AAAA;AAAA;AAAA;;;;;;;;;;;AAAA;;;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;;;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;;;AAAA;AAAA;AAAA;AAAA;;AAAA;AAAA;;AAAA;AAAA;AAAA;AAOgB;AAAA;AAAA;AAAA;AAGE;AAMP;;AAAA;;;;;;;;;;;;;;;;;;;;;AADO;;;;;;;;;;;;;;;;;;;;AADD;;;;;;;;;;;AADK;;;AADN;;;AADH;;;AADK;;;;AAWP;;;;;AAXO;;;AAmBJ;AAJ8B;;AAAA;;AAAA;AAAA;;;;AAAA;AAAA;AAAA;AAAA;;AAAA;AAA3B;;AAAA;AAAd;;;;;;;;;AAAA;;AAAA;AAAA;AAAA;;AAAA;;AAAA;AAMuB;AAAa;AAAb;AAAvB;AAAA;AAAA;AA/BH;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA",
   "op_pc_offset": 0,
   "pc_events": {
     "1": {
@@ -535,73 +535,431 @@
       ]
     },
     "104": {
-      "op": "uncover 3",
+      "op": "itxn_begin"
+    },
+    "105": {
+      "op": "dig 1",
       "stack_out": [
+        "price#0",
         "seller#0",
         "ipfs_hash#0",
         "listing_id#0",
-        "price#0"
+        "ipfs_hash#0 (copy)"
       ]
     },
-    "106": {
-      "op": "uncover 3",
-      "stack_out": [
+    "107": {
+      "op": "extract 2 0",
+      "defined_out": [
+        "inner_txn_params%0%%param_ConfigAssetURL_idx_0#0",
         "ipfs_hash#0",
         "listing_id#0",
         "price#0",
         "seller#0"
-      ]
-    },
-    "108": {
-      "op": "concat",
-      "defined_out": [
-        "aggregate%head%1#0",
-        "ipfs_hash#0",
-        "listing_id#0"
       ],
       "stack_out": [
+        "price#0",
+        "seller#0",
         "ipfs_hash#0",
         "listing_id#0",
-        "aggregate%head%1#0"
+        "inner_txn_params%0%%param_ConfigAssetURL_idx_0#0"
       ]
     },
-    "109": {
-      "op": "pushbytes 0x002a",
-      "defined_out": [
-        "0x002a",
-        "aggregate%head%1#0",
-        "ipfs_hash#0",
-        "listing_id#0"
-      ],
+    "110": {
+      "op": "dig 3",
       "stack_out": [
+        "price#0",
+        "seller#0",
         "ipfs_hash#0",
         "listing_id#0",
-        "aggregate%head%1#0",
-        "0x002a"
+        "inner_txn_params%0%%param_ConfigAssetURL_idx_0#0",
+        "seller#0 (copy)"
       ]
     },
-    "113": {
-      "op": "concat",
-      "defined_out": [
-        "aggregate%head%2#0",
-        "ipfs_hash#0",
-        "listing_id#0"
-      ],
+    "112": {
+      "op": "itxn_field ConfigAssetClawback",
       "stack_out": [
+        "price#0",
+        "seller#0",
         "ipfs_hash#0",
         "listing_id#0",
-        "aggregate%head%2#0"
+        "inner_txn_params%0%%param_ConfigAssetURL_idx_0#0"
       ]
     },
     "114": {
-      "op": "uncover 2",
+      "op": "dig 3",
       "stack_out": [
+        "price#0",
+        "seller#0",
+        "ipfs_hash#0",
         "listing_id#0",
-        "aggregate%head%2#0",
-        "ipfs_hash#0"
+        "inner_txn_params%0%%param_ConfigAssetURL_idx_0#0",
+        "seller#0 (copy)"
       ]
     },
     "116": {
+      "op": "itxn_field ConfigAssetFreeze",
+      "stack_out": [
+        "price#0",
+        "seller#0",
+        "ipfs_hash#0",
+        "listing_id#0",
+        "inner_txn_params%0%%param_ConfigAssetURL_idx_0#0"
+      ]
+    },
+    "118": {
+      "op": "dig 3",
+      "stack_out": [
+        "price#0",
+        "seller#0",
+        "ipfs_hash#0",
+        "listing_id#0",
+        "inner_txn_params%0%%param_ConfigAssetURL_idx_0#0",
+        "seller#0 (copy)"
+      ]
+    },
+    "120": {
+      "op": "itxn_field ConfigAssetReserve",
+      "stack_out": [
+        "price#0",
+        "seller#0",
+        "ipfs_hash#0",
+        "listing_id#0",
+        "inner_txn_params%0%%param_ConfigAssetURL_idx_0#0"
+      ]
+    },
+    "122": {
+      "op": "dig 3",
+      "stack_out": [
+        "price#0",
+        "seller#0",
+        "ipfs_hash#0",
+        "listing_id#0",
+        "inner_txn_params%0%%param_ConfigAssetURL_idx_0#0",
+        "seller#0 (copy)"
+      ]
+    },
+    "124": {
+      "op": "itxn_field ConfigAssetManager",
+      "stack_out": [
+        "price#0",
+        "seller#0",
+        "ipfs_hash#0",
+        "listing_id#0",
+        "inner_txn_params%0%%param_ConfigAssetURL_idx_0#0"
+      ]
+    },
+    "126": {
+      "op": "itxn_field ConfigAssetURL",
+      "stack_out": [
+        "price#0",
+        "seller#0",
+        "ipfs_hash#0",
+        "listing_id#0"
+      ]
+    },
+    "128": {
+      "op": "pushbytes \"Mercator Insight\"",
+      "defined_out": [
+        "\"Mercator Insight\"",
+        "ipfs_hash#0",
+        "listing_id#0",
+        "price#0",
+        "seller#0"
+      ],
+      "stack_out": [
+        "price#0",
+        "seller#0",
+        "ipfs_hash#0",
+        "listing_id#0",
+        "\"Mercator Insight\""
+      ]
+    },
+    "146": {
+      "op": "itxn_field ConfigAssetName",
+      "stack_out": [
+        "price#0",
+        "seller#0",
+        "ipfs_hash#0",
+        "listing_id#0"
+      ]
+    },
+    "148": {
+      "op": "pushbytes \"INSIGHT\"",
+      "defined_out": [
+        "\"INSIGHT\"",
+        "ipfs_hash#0",
+        "listing_id#0",
+        "price#0",
+        "seller#0"
+      ],
+      "stack_out": [
+        "price#0",
+        "seller#0",
+        "ipfs_hash#0",
+        "listing_id#0",
+        "\"INSIGHT\""
+      ]
+    },
+    "157": {
+      "op": "itxn_field ConfigAssetUnitName",
+      "stack_out": [
+        "price#0",
+        "seller#0",
+        "ipfs_hash#0",
+        "listing_id#0"
+      ]
+    },
+    "159": {
+      "op": "intc_0 // 0",
+      "stack_out": [
+        "price#0",
+        "seller#0",
+        "ipfs_hash#0",
+        "listing_id#0",
+        "0"
+      ]
+    },
+    "160": {
+      "op": "itxn_field ConfigAssetDefaultFrozen",
+      "stack_out": [
+        "price#0",
+        "seller#0",
+        "ipfs_hash#0",
+        "listing_id#0"
+      ]
+    },
+    "162": {
+      "op": "intc_0 // 0",
+      "stack_out": [
+        "price#0",
+        "seller#0",
+        "ipfs_hash#0",
+        "listing_id#0",
+        "0"
+      ]
+    },
+    "163": {
+      "op": "itxn_field ConfigAssetDecimals",
+      "stack_out": [
+        "price#0",
+        "seller#0",
+        "ipfs_hash#0",
+        "listing_id#0"
+      ]
+    },
+    "165": {
+      "op": "intc_1 // 1",
+      "defined_out": [
+        "1",
+        "ipfs_hash#0",
+        "listing_id#0",
+        "price#0",
+        "seller#0"
+      ],
+      "stack_out": [
+        "price#0",
+        "seller#0",
+        "ipfs_hash#0",
+        "listing_id#0",
+        "1"
+      ]
+    },
+    "166": {
+      "op": "itxn_field ConfigAssetTotal",
+      "stack_out": [
+        "price#0",
+        "seller#0",
+        "ipfs_hash#0",
+        "listing_id#0"
+      ]
+    },
+    "168": {
+      "op": "pushint 3 // acfg",
+      "defined_out": [
+        "acfg",
+        "ipfs_hash#0",
+        "listing_id#0",
+        "price#0",
+        "seller#0"
+      ],
+      "stack_out": [
+        "price#0",
+        "seller#0",
+        "ipfs_hash#0",
+        "listing_id#0",
+        "acfg"
+      ]
+    },
+    "170": {
+      "op": "itxn_field TypeEnum",
+      "stack_out": [
+        "price#0",
+        "seller#0",
+        "ipfs_hash#0",
+        "listing_id#0"
+      ]
+    },
+    "172": {
+      "op": "pushint 1000",
+      "defined_out": [
+        "1000",
+        "ipfs_hash#0",
+        "listing_id#0",
+        "price#0",
+        "seller#0"
+      ],
+      "stack_out": [
+        "price#0",
+        "seller#0",
+        "ipfs_hash#0",
+        "listing_id#0",
+        "1000"
+      ]
+    },
+    "175": {
+      "op": "itxn_field Fee",
+      "stack_out": [
+        "price#0",
+        "seller#0",
+        "ipfs_hash#0",
+        "listing_id#0"
+      ]
+    },
+    "177": {
+      "op": "itxn_submit"
+    },
+    "178": {
+      "op": "itxn CreatedAssetID",
+      "defined_out": [
+        "asset_result.CreatedAssetID#0",
+        "ipfs_hash#0",
+        "listing_id#0",
+        "price#0",
+        "seller#0"
+      ],
+      "stack_out": [
+        "price#0",
+        "seller#0",
+        "ipfs_hash#0",
+        "listing_id#0",
+        "asset_result.CreatedAssetID#0"
+      ]
+    },
+    "180": {
+      "op": "itob",
+      "defined_out": [
+        "aggregate%val_as_bytes%0#0",
+        "ipfs_hash#0",
+        "listing_id#0",
+        "price#0",
+        "seller#0"
+      ],
+      "stack_out": [
+        "price#0",
+        "seller#0",
+        "ipfs_hash#0",
+        "listing_id#0",
+        "aggregate%val_as_bytes%0#0"
+      ]
+    },
+    "181": {
+      "op": "uncover 4",
+      "stack_out": [
+        "seller#0",
+        "ipfs_hash#0",
+        "listing_id#0",
+        "aggregate%val_as_bytes%0#0",
+        "price#0"
+      ]
+    },
+    "183": {
+      "op": "uncover 4",
+      "stack_out": [
+        "ipfs_hash#0",
+        "listing_id#0",
+        "aggregate%val_as_bytes%0#0",
+        "price#0",
+        "seller#0"
+      ]
+    },
+    "185": {
+      "op": "concat",
+      "defined_out": [
+        "aggregate%head%1#0",
+        "aggregate%val_as_bytes%0#0",
+        "ipfs_hash#0",
+        "listing_id#0"
+      ],
+      "stack_out": [
+        "ipfs_hash#0",
+        "listing_id#0",
+        "aggregate%val_as_bytes%0#0",
+        "aggregate%head%1#0"
+      ]
+    },
+    "186": {
+      "op": "pushbytes 0x0032",
+      "defined_out": [
+        "0x0032",
+        "aggregate%head%1#0",
+        "aggregate%val_as_bytes%0#0",
+        "ipfs_hash#0",
+        "listing_id#0"
+      ],
+      "stack_out": [
+        "ipfs_hash#0",
+        "listing_id#0",
+        "aggregate%val_as_bytes%0#0",
+        "aggregate%head%1#0",
+        "0x0032"
+      ]
+    },
+    "190": {
+      "op": "concat",
+      "defined_out": [
+        "aggregate%head%2#0",
+        "aggregate%val_as_bytes%0#0",
+        "ipfs_hash#0",
+        "listing_id#0"
+      ],
+      "stack_out": [
+        "ipfs_hash#0",
+        "listing_id#0",
+        "aggregate%val_as_bytes%0#0",
+        "aggregate%head%2#0"
+      ]
+    },
+    "191": {
+      "op": "swap",
+      "stack_out": [
+        "ipfs_hash#0",
+        "listing_id#0",
+        "aggregate%head%2#0",
+        "aggregate%val_as_bytes%0#0"
+      ]
+    },
+    "192": {
+      "op": "concat",
+      "defined_out": [
+        "aggregate%head%3#0",
+        "ipfs_hash#0",
+        "listing_id#0"
+      ],
+      "stack_out": [
+        "ipfs_hash#0",
+        "listing_id#0",
+        "aggregate%head%3#0"
+      ]
+    },
+    "193": {
+      "op": "uncover 2",
+      "stack_out": [
+        "listing_id#0",
+        "aggregate%head%3#0",
+        "ipfs_hash#0"
+      ]
+    },
+    "195": {
       "op": "concat",
       "defined_out": [
         "aggregate%concat%0#0",
@@ -612,7 +970,7 @@
         "aggregate%concat%0#0"
       ]
     },
-    "117": {
+    "196": {
       "op": "dig 1",
       "defined_out": [
         "aggregate%concat%0#0",
@@ -625,71 +983,71 @@
         "listing_id#0 (copy)"
       ]
     },
-    "119": {
+    "198": {
       "op": "itob",
       "defined_out": [
         "aggregate%concat%0#0",
-        "aggregate%val_as_bytes%0#0",
+        "aggregate%val_as_bytes%1#0",
         "listing_id#0"
       ],
       "stack_out": [
         "listing_id#0",
         "aggregate%concat%0#0",
-        "aggregate%val_as_bytes%0#0"
+        "aggregate%val_as_bytes%1#0"
       ]
     },
-    "120": {
+    "199": {
       "op": "pushbytes 0x6c697374696e67",
       "defined_out": [
         "0x6c697374696e67",
         "aggregate%concat%0#0",
-        "aggregate%val_as_bytes%0#0",
+        "aggregate%val_as_bytes%1#0",
         "listing_id#0"
       ],
       "stack_out": [
         "listing_id#0",
         "aggregate%concat%0#0",
-        "aggregate%val_as_bytes%0#0",
+        "aggregate%val_as_bytes%1#0",
         "0x6c697374696e67"
       ]
     },
-    "129": {
+    "208": {
       "op": "dig 1",
       "defined_out": [
         "0x6c697374696e67",
         "aggregate%concat%0#0",
-        "aggregate%val_as_bytes%0#0",
-        "aggregate%val_as_bytes%0#0 (copy)",
+        "aggregate%val_as_bytes%1#0",
+        "aggregate%val_as_bytes%1#0 (copy)",
         "listing_id#0"
       ],
       "stack_out": [
         "listing_id#0",
         "aggregate%concat%0#0",
-        "aggregate%val_as_bytes%0#0",
+        "aggregate%val_as_bytes%1#0",
         "0x6c697374696e67",
-        "aggregate%val_as_bytes%0#0 (copy)"
+        "aggregate%val_as_bytes%1#0 (copy)"
       ]
     },
-    "131": {
+    "210": {
       "op": "concat",
       "defined_out": [
         "aggregate%concat%0#0",
-        "aggregate%val_as_bytes%0#0",
+        "aggregate%val_as_bytes%1#0",
         "box_prefixed_key%0#0",
         "listing_id#0"
       ],
       "stack_out": [
         "listing_id#0",
         "aggregate%concat%0#0",
-        "aggregate%val_as_bytes%0#0",
+        "aggregate%val_as_bytes%1#0",
         "box_prefixed_key%0#0"
       ]
     },
-    "132": {
+    "211": {
       "op": "dup",
       "defined_out": [
         "aggregate%concat%0#0",
-        "aggregate%val_as_bytes%0#0",
+        "aggregate%val_as_bytes%1#0",
         "box_prefixed_key%0#0",
         "box_prefixed_key%0#0 (copy)",
         "listing_id#0"
@@ -697,16 +1055,16 @@
       "stack_out": [
         "listing_id#0",
         "aggregate%concat%0#0",
-        "aggregate%val_as_bytes%0#0",
+        "aggregate%val_as_bytes%1#0",
         "box_prefixed_key%0#0",
         "box_prefixed_key%0#0 (copy)"
       ]
     },
-    "133": {
+    "212": {
       "op": "box_del",
       "defined_out": [
         "aggregate%concat%0#0",
-        "aggregate%val_as_bytes%0#0",
+        "aggregate%val_as_bytes%1#0",
         "box_prefixed_key%0#0",
         "listing_id#0",
         "{box_del}"
@@ -714,108 +1072,103 @@
       "stack_out": [
         "listing_id#0",
         "aggregate%concat%0#0",
-        "aggregate%val_as_bytes%0#0",
+        "aggregate%val_as_bytes%1#0",
         "box_prefixed_key%0#0",
         "{box_del}"
       ]
     },
-    "134": {
+    "213": {
       "op": "pop",
       "stack_out": [
         "listing_id#0",
         "aggregate%concat%0#0",
-        "aggregate%val_as_bytes%0#0",
+        "aggregate%val_as_bytes%1#0",
         "box_prefixed_key%0#0"
       ]
     },
-    "135": {
+    "214": {
       "op": "uncover 2",
       "stack_out": [
         "listing_id#0",
-        "aggregate%val_as_bytes%0#0",
+        "aggregate%val_as_bytes%1#0",
         "box_prefixed_key%0#0",
         "aggregate%concat%0#0"
       ]
     },
-    "137": {
+    "216": {
       "op": "box_put",
       "stack_out": [
         "listing_id#0",
-        "aggregate%val_as_bytes%0#0"
+        "aggregate%val_as_bytes%1#0"
       ]
     },
-    "138": {
+    "217": {
       "op": "swap",
       "stack_out": [
-        "aggregate%val_as_bytes%0#0",
+        "aggregate%val_as_bytes%1#0",
         "listing_id#0"
       ]
     },
-    "139": {
+    "218": {
       "op": "intc_1 // 1",
-      "defined_out": [
-        "1",
-        "aggregate%val_as_bytes%0#0",
-        "listing_id#0"
-      ],
       "stack_out": [
-        "aggregate%val_as_bytes%0#0",
+        "aggregate%val_as_bytes%1#0",
         "listing_id#0",
         "1"
       ]
     },
-    "140": {
+    "219": {
       "op": "+",
       "defined_out": [
-        "aggregate%val_as_bytes%0#0",
-        "tmp%1#1"
+        "aggregate%val_as_bytes%1#0",
+        "tmp%2#1"
       ],
       "stack_out": [
-        "aggregate%val_as_bytes%0#0",
-        "tmp%1#1"
+        "aggregate%val_as_bytes%1#0",
+        "tmp%2#1"
       ]
     },
-    "141": {
+    "220": {
       "op": "bytec_0 // \"next_listing_id\"",
       "stack_out": [
-        "aggregate%val_as_bytes%0#0",
-        "tmp%1#1",
+        "aggregate%val_as_bytes%1#0",
+        "tmp%2#1",
         "\"next_listing_id\""
       ]
     },
-    "142": {
+    "221": {
       "op": "swap",
       "stack_out": [
-        "aggregate%val_as_bytes%0#0",
+        "aggregate%val_as_bytes%1#0",
         "\"next_listing_id\"",
-        "tmp%1#1"
+        "tmp%2#1"
       ]
     },
-    "143": {
+    "222": {
       "op": "app_global_put",
       "stack_out": [
-        "aggregate%val_as_bytes%0#0"
+        "aggregate%val_as_bytes%1#0"
       ]
     },
-    "144": {
+    "223": {
       "op": "pushbytes 0x151f7c75",
       "defined_out": [
         "0x151f7c75",
-        "aggregate%val_as_bytes%0#0"
+        "aggregate%val_as_bytes%1#0"
       ],
       "stack_out": [
-        "aggregate%val_as_bytes%0#0",
+        "aggregate%val_as_bytes%1#0",
         "0x151f7c75"
       ]
     },
-    "150": {
+    "229": {
       "op": "swap",
       "stack_out": [
         "0x151f7c75",
-        "aggregate%val_as_bytes%0#0"
+        "aggregate%val_as_bytes%1#0"
       ]
     },
-    "151": {
+    "230": {
       "op": "concat",
       "defined_out": [
         "tmp%4#0"
@@ -824,17 +1177,17 @@
         "tmp%4#0"
       ]
     },
-    "152": {
+    "231": {
       "op": "log",
       "stack_out": []
     },
-    "153": {
+    "232": {
       "op": "intc_1 // 1",
       "stack_out": [
         "1"
       ]
     },
-    "154": {
+    "233": {
       "op": "return",
       "stack_out": []
     }
