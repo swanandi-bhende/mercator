@@ -8,8 +8,9 @@ class Listing(arc4.Struct):
 
 
 class InsightListing(ARC4Contract):
-    next_listing_id = UInt64(0)
-    listings = BoxMap(arc4.UInt64, Listing, key_prefix=b"listing")
+    def __init__(self) -> None:
+        self.next_listing_id = UInt64(0)
+        self.listings = BoxMap(arc4.UInt64, Listing, key_prefix=b"listing")
 
     @arc4.abimethod()
     def create_listing(

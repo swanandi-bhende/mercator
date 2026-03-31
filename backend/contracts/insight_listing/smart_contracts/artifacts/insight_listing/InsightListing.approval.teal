@@ -1,0 +1,123 @@
+#pragma version 11
+#pragma typetrack false
+
+// algopy.arc4.ARC4Contract.approval_program() -> uint64:
+main:
+    intcblock 0 1
+    bytecblock "next_listing_id"
+    txn ApplicationID
+    bnz main_after_if_else@2
+    // smart_contracts/insight_listing/contract.py:12
+    // self.next_listing_id = UInt64(0)
+    bytec_0 // "next_listing_id"
+    intc_0 // 0
+    app_global_put
+
+main_after_if_else@2:
+    // smart_contracts/insight_listing/contract.py:10
+    // class InsightListing(ARC4Contract):
+    txn NumAppArgs
+    bz main___algopy_default_create@7
+    pushbytes 0x35b836d6 // method "create_listing(uint64,address,string)uint64"
+    txna ApplicationArgs 0
+    match main_create_listing_route@5
+    err
+
+main_create_listing_route@5:
+    // smart_contracts/insight_listing/contract.py:15
+    // @arc4.abimethod()
+    txn OnCompletion
+    !
+    txn ApplicationID
+    &&
+    assert
+    b create_listing
+
+main___algopy_default_create@7:
+    txn OnCompletion
+    !
+    txn ApplicationID
+    !
+    &&
+    return
+
+
+// smart_contracts.insight_listing.contract.InsightListing.create_listing[routing]() -> void:
+create_listing:
+    // smart_contracts/insight_listing/contract.py:15
+    // @arc4.abimethod()
+    txna ApplicationArgs 1
+    dup
+    len
+    pushint 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    txna ApplicationArgs 2
+    dup
+    len
+    pushint 32
+    ==
+    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
+    txna ApplicationArgs 3
+    dup
+    intc_0 // 0
+    extract_uint16 // on error: invalid array length header
+    pushint 2
+    +
+    dig 1
+    len
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>
+    // smart_contracts/insight_listing/contract.py:22
+    // listing_id = self.next_listing_id
+    intc_0 // 0
+    bytec_0 // "next_listing_id"
+    app_global_get_ex
+    assert // check self.next_listing_id exists
+    // smart_contracts/insight_listing/contract.py:23-27
+    // self.listings[arc4.UInt64(listing_id)] = Listing(
+    //     price=price,
+    //     seller=seller,
+    //     ipfs_hash=ipfs_hash,
+    // )
+    uncover 3
+    uncover 3
+    concat
+    pushbytes 0x002a
+    concat
+    uncover 2
+    concat
+    // smart_contracts/insight_listing/contract.py:23
+    // self.listings[arc4.UInt64(listing_id)] = Listing(
+    dig 1
+    itob
+    pushbytes 0x6c697374696e67
+    dig 1
+    concat
+    // smart_contracts/insight_listing/contract.py:23-27
+    // self.listings[arc4.UInt64(listing_id)] = Listing(
+    //     price=price,
+    //     seller=seller,
+    //     ipfs_hash=ipfs_hash,
+    // )
+    dup
+    box_del
+    pop
+    uncover 2
+    box_put
+    // smart_contracts/insight_listing/contract.py:28
+    // self.next_listing_id = listing_id + UInt64(1)
+    swap
+    intc_1 // 1
+    +
+    bytec_0 // "next_listing_id"
+    swap
+    app_global_put
+    // smart_contracts/insight_listing/contract.py:15
+    // @arc4.abimethod()
+    pushbytes 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return

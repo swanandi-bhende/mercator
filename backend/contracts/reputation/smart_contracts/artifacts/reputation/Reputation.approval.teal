@@ -1,0 +1,86 @@
+#pragma version 11
+#pragma typetrack false
+
+// algopy.arc4.ARC4Contract.approval_program() -> uint64:
+main:
+    intcblock 32 1
+    bytecblock 0x726570
+    // smart_contracts/reputation/contract.py:4
+    // class Reputation(ARC4Contract):
+    txn NumAppArgs
+    bz main___algopy_default_create@11
+    txn OnCompletion
+    !
+    assert
+    txn ApplicationID
+    assert
+    pushbytess 0xda3cdf5c 0x205b720c // method "update_score(address,uint64)void", method "get_score(address)uint64"
+    txna ApplicationArgs 0
+    match update_score get_score
+    err
+
+main___algopy_default_create@11:
+    txn OnCompletion
+    !
+    txn ApplicationID
+    !
+    &&
+    return
+
+
+// smart_contracts.reputation.contract.Reputation.update_score[routing]() -> void:
+update_score:
+    // smart_contracts/reputation/contract.py:8
+    // @arc4.abimethod()
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_0 // 32
+    ==
+    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
+    txna ApplicationArgs 2
+    dup
+    len
+    pushint 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    // smart_contracts/reputation/contract.py:10
+    // self.seller_scores[seller] = new_score
+    bytec_0 // 0x726570
+    uncover 2
+    concat
+    swap
+    box_put
+    // smart_contracts/reputation/contract.py:8
+    // @arc4.abimethod()
+    intc_1 // 1
+    return
+
+
+// smart_contracts.reputation.contract.Reputation.get_score[routing]() -> void:
+get_score:
+    // smart_contracts/reputation/contract.py:12
+    // @arc4.abimethod(readonly=True)
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_0 // 32
+    ==
+    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
+    // smart_contracts/reputation/contract.py:14
+    // return self.seller_scores.get(seller, default=arc4.UInt64(0))
+    bytec_0 // 0x726570
+    swap
+    concat
+    box_get
+    pushbytes 0x0000000000000000
+    cover 2
+    select
+    // smart_contracts/reputation/contract.py:12
+    // @arc4.abimethod(readonly=True)
+    pushbytes 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return

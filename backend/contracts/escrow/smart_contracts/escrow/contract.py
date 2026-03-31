@@ -7,7 +7,8 @@ class UnlockRecord(arc4.Struct):
 
 
 class Escrow(ARC4Contract):
-    unlocked_listings = BoxMap(arc4.UInt64, UnlockRecord, key_prefix=b"unlock")
+    def __init__(self) -> None:
+        self.unlocked_listings = BoxMap(arc4.UInt64, UnlockRecord, key_prefix=b"unlock")
 
     @arc4.abimethod()
     def release_after_payment(

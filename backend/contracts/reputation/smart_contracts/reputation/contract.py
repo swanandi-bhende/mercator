@@ -2,7 +2,8 @@ from algopy import ARC4Contract, BoxMap, arc4
 
 
 class Reputation(ARC4Contract):
-    seller_scores = BoxMap(arc4.Address, arc4.UInt64, key_prefix=b"rep")
+    def __init__(self) -> None:
+        self.seller_scores = BoxMap(arc4.Address, arc4.UInt64, key_prefix=b"rep")
 
     @arc4.abimethod()
     def update_score(self, seller: arc4.Address, new_score: arc4.UInt64) -> None:

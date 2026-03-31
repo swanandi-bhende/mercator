@@ -39,8 +39,25 @@ Demo setup and run instructions will be added in upcoming phases.
 - [x] Step 4 complete: `InsightListing` ARC4 contract added with BoxMap-backed listing storage and `create_listing(price, seller, ipfs_hash)`.
 - [x] Step 5 complete: `Escrow` ARC4 contract now includes `release_after_payment(buyer, listing_id)` with atomic group payment checks and unlock state updates.
 - [x] Step 6 complete: `Reputation` ARC4 contract now includes `update_score(seller, new_score)` and `get_score(seller)` using BoxMap-backed seller scores.
+- [x] Step 8 complete: all three contracts compiled successfully and generated `approval.teal`, `clear.teal`, and `.arc56.json` specs.
+- [~] Step 9 partial: test commands were executed, but there is currently no test task and no contract tests in the repository yet (`algokit project run test` missing, `pytest backend/contracts` found 0 tests).
+- [x] Step 10 complete (spec/client generation): ARC app specifications and typed clients were generated for InsightListing, Escrow, and Reputation.
+
+### Build Artifacts Generated
+
+- `backend/contracts/insight_listing/smart_contracts/artifacts/insight_listing/InsightListing.approval.teal`
+- `backend/contracts/insight_listing/smart_contracts/artifacts/insight_listing/InsightListing.clear.teal`
+- `backend/contracts/insight_listing/smart_contracts/artifacts/insight_listing/InsightListing.arc56.json`
+- `backend/contracts/escrow/smart_contracts/artifacts/escrow/Escrow.approval.teal`
+- `backend/contracts/escrow/smart_contracts/artifacts/escrow/Escrow.clear.teal`
+- `backend/contracts/escrow/smart_contracts/artifacts/escrow/Escrow.arc56.json`
+- `backend/contracts/reputation/smart_contracts/artifacts/reputation/Reputation.approval.teal`
+- `backend/contracts/reputation/smart_contracts/artifacts/reputation/Reputation.clear.teal`
+- `backend/contracts/reputation/smart_contracts/artifacts/reputation/Reputation.arc56.json`
 
 ### Inputs Needed From You
 
 - No API keys or secrets are needed for Steps 5 and 6.
 - Keys will be required when we wire external services: Algorand Testnet deployer mnemonic, Pinata JWT, Google Gemini API key, and any x402 provider credentials.
+- For Testnet deployment and real App IDs: `DEPLOYER_MNEMONIC` is required.
+- For full Step 9 flow simulation on LocalNet: Docker must be available and we need to add integration tests for listing -> payment -> escrow unlock -> reputation update.
