@@ -43,6 +43,22 @@ Demo setup and run instructions will be added in upcoming phases.
 - [~] Step 9 partial: test commands were executed, but there is currently no test task and no contract tests in the repository yet (`algokit project run test` missing, `pytest backend/contracts` found 0 tests).
 - [x] Step 10 complete (spec/client generation): ARC app specifications and typed clients were generated for InsightListing, Escrow, and Reputation.
 
+### Latest Run Status (31 Mar 2026)
+
+- Re-ran Step 10 successfully: all three contracts rebuilt and regenerated TEAL, ARC specs, and typed clients.
+- Step 9 remains blocked for end-to-end local simulation: Docker/Podman is not installed, so `algokit localnet` cannot start; `pytest backend/contracts` currently reports no tests.
+- Created a dedicated TestNet environment file by copying `.env` to `.env.testnet` at the project root.
+- Added official AlgoNode TestNet endpoints to `.env.testnet` (`ALGOD_SERVER`, `INDEXER_SERVER`, `ALGOD_PORT`, `ALGOD_TOKEN`).
+- Added deployer account wiring in `.env.testnet` (`DEPLOYER_MNEMONIC`, `DEPLOYER_ADDRESS`) for signed TestNet deployment commands.
+- Implemented real deploy hooks in all three `deploy_config.py` files and deployed contracts to TestNet.
+- Captured and stored real TestNet App IDs in `.env.testnet`.
+
+### TestNet Deployment Output
+
+- `INSIGHT_LISTING_APP_ID=758022443`
+- `ESCROW_APP_ID=758022447`
+- `REPUTATION_APP_ID=758022459`
+
 ### Build Artifacts Generated
 
 - `backend/contracts/insight_listing/smart_contracts/artifacts/insight_listing/InsightListing.approval.teal`
@@ -61,3 +77,8 @@ Demo setup and run instructions will be added in upcoming phases.
 - Keys will be required when we wire external services: Algorand Testnet deployer mnemonic, Pinata JWT, Google Gemini API key, and any x402 provider credentials.
 - For Testnet deployment and real App IDs: `DEPLOYER_MNEMONIC` is required.
 - For full Step 9 flow simulation on LocalNet: Docker must be available and we need to add integration tests for listing -> payment -> escrow unlock -> reputation update.
+
+### Docker Requirement (MVP)
+
+- Docker is compulsory only for LocalNet-based testing and local end-to-end blockchain simulation.
+- Docker is not compulsory to compile contracts, generate app specs/clients, or deploy directly to Testnet.
