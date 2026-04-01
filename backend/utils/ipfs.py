@@ -148,6 +148,44 @@ async def upload_insight_to_ipfs(text: str, filename: str = "insight.txt") -> st
     ) from last_error
 
 
+async def fetch_insight_from_ipfs(cid: str) -> str:
+    """Fetch plain text insight content from IPFS gateways.
+
+    Tries Pinata gateway first, then falls back to ipfs.io.
+    """
+    cid = cid.strip()
+    if not cid:
+        raise IPFSUploadError("CID is required")
+
+    headers: dict[str, str] = {"Accept": "text/plain"}
+    jwt = os.getenv("PINATA_JWT", "").strip()
+    if jwt:
+        headers["Authorization"] = f"Bearer {jwt}"
+
+    gateways = [
+        f"https://gateway.pinata.cloud/ipfs/{cid}",
+        f"https://ipfs.io/ipfs/{cid}",
+    ]
+
+    last_error: Exception | None = None
+    for url in gateways:
+        try:
+            response = await asyncio.to_thread(
+                requests.get,
+                url,
+                headers=headers,
+                timeout=30,
+            )
+            response.raise_for_status()
+            return response.text
+        except Exception as err:
+            last_error = err
+
+    raise IPFSUploadError(
+        "Could not fetch insight from IPFS"
+    ) from last_error
+
+
 def _load_insight_listing_client_class() -> type:
     """Load the generated InsightListingClient class from artifact path."""
     project_root = Path(__file__).resolve().parents[2]
