@@ -1,0 +1,63 @@
+2026-04-01 08:55:32,403 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.234567, insight_len=75
+2026-04-01 08:56:19,766 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.234567, insight_len=75
+2026-04-01 08:57:02,230 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.234567, insight_len=75
+2026-04-01 08:57:02,231 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-01 08:57:11,689 INFO mercator.backend: IPFS upload complete, cid=QmXtUEivFzRMpTJNEhkNeHQRHrjMk15eH2nbnsSXF5WmJ8
+2026-04-01 08:57:19,055 INFO mercator.backend: On-chain listing submitted: listing_id=2 asa_id=758047896
+2026-04-01 08:57:19,606 INFO mercator.backend: Transaction confirmed: tx_id=XMGYFJFZLK5MQHHPRW7RLU4NJG3DC4GVMSNMIUXGW6SUEKKZK4TA
+2026-04-01 08:57:30,208 INFO mercator.backend: Incoming /list request: seller_wallet=BAD, price=0.0, insight_len=1
+2026-04-01 08:59:44,626 INFO mercator.backend: Incoming /list request: seller_wallet=7FB2E5L4OWJGLYG5BT4PRY73HJ7SMITRUQOGY3N6OLYNI5M6WDLB2CHQ64, price=0.123456, insight_len=74
+2026-04-01 09:00:07,437 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.234567, insight_len=81
+2026-04-01 09:00:07,439 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-01 09:00:37,764 ERROR mercator.backend: Unexpected /list failure
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 237, in create_listing
+    status_code=400,
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 104, in _ensure_listing_app_funded
+    app_info = client.account_info(app_address)
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 154, in account_info
+    return self.algod_request("GET", req, query, **kwargs)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 106, in algod_request
+    resp = urlopen(req, timeout=timeout)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 187, in urlopen
+    return opener.open(url, data, timeout)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 487, in open
+    response = self._open(req, data)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 504, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+                              '_open', req)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 464, in _call_chain
+    result = func(*args)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 1369, in https_open
+    return self.do_open(http.client.HTTPSConnection, req,
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        context=self._context)
+                        ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 1325, in do_open
+    r = h.getresponse()
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 1450, in getresponse
+    response.begin()
+    ~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 336, in begin
+    version, status, reason = self._read_status()
+                              ~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 297, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/socket.py", line 725, in readinto
+    return self._sock.recv_into(b)
+           ~~~~~~~~~~~~~~~~~~~~^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/ssl.py", line 1304, in recv_into
+    return self.read(nbytes, buffer)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/ssl.py", line 1138, in read
+    return self._sslobj.read(len, buffer)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+TimeoutError: The read operation timed out
+2026-04-01 09:00:53,540 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.345678, insight_len=69
+2026-04-01 09:00:53,540 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-01 09:01:02,904 INFO mercator.backend: IPFS upload complete, cid=QmXyyTaosxnNVnCHSgcNNQRj4jJAy7CFxnQEqKFv6YNfgE
+2026-04-01 09:01:11,912 INFO mercator.backend: On-chain listing submitted: listing_id=3 asa_id=758048084
+2026-04-01 09:01:12,576 INFO mercator.backend: Transaction confirmed: tx_id=WOZDMPMPHAVBAZ4RMCY4Y3MVC5V2HNTIROPMLUOVKRP5GEETAPKA

@@ -2,21 +2,37 @@
 
 from __future__ import annotations
 
-import os
 import base64
+import asyncio
+import logging
+import os
+from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
-from algosdk import mnemonic
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from algosdk import mnemonic, transaction
+from algosdk import encoding
+from algosdk import account
 from algosdk.logic import get_application_address
-from algosdk.transaction import PaymentTxn, wait_for_confirmation
 from algosdk.v2client import algod, indexer
 
 try:
-    from utils.ipfs import ListingStoreError, upload_insight_to_ipfs, store_cid_in_listing
+    from contracts.insight_listing import InsightListingClient  # noqa: F401
+except Exception:  # pragma: no cover
+    InsightListingClient = None  # type: ignore[assignment]
+
+try:
+    from utils.ipfs import (
+        IPFSUploadError,
+        ListingStoreError,
+        upload_insight_to_ipfs,
+        store_cid_in_listing,
+    )
 except ModuleNotFoundError:
     from backend.utils.ipfs import (
+        IPFSUploadError,
         ListingStoreError,
         upload_insight_to_ipfs,
         store_cid_in_listing,
@@ -27,12 +43,43 @@ load_dotenv()
 load_dotenv(".env.testnet", override=True)
 
 app = FastAPI(title="Mercator Backend")
+logger = logging.getLogger("mercator.backend")
 
 
-class ListInsightRequest(BaseModel):
-    insight_text: str = Field(min_length=1)
-    price: str
-    seller_wallet: str = Field(min_length=1)
+def _configure_logging() -> None:
+    logs_dir = Path(__file__).resolve().parents[1] / "logs"
+    logs_dir.mkdir(parents=True, exist_ok=True)
+
+    if logger.handlers:
+        return
+
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
+
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter)
+    logger.addHandler(stream_handler)
+
+    file_handler = logging.FileHandler(logs_dir / "listing.log")
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+
+_configure_logging()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+class ListingRequest(BaseModel):
+    insight_text: str
+    price: float
+    seller_wallet: str
 
 
 def _get_algod_client() -> algod.AlgodClient:
@@ -71,9 +118,14 @@ def _ensure_listing_app_funded(app_id: int) -> None:
 
     top_up = target_balance - balance
     params = client.suggested_params()
-    pay_txn = PaymentTxn(sender=sender, sp=params, receiver=app_address, amt=top_up)
+    pay_txn = transaction.PaymentTxn(
+        sender=sender,
+        sp=params,
+        receiver=app_address,
+        amt=top_up,
+    )
     tx_id = client.send_transaction(pay_txn.sign(private_key))
-    wait_for_confirmation(client, tx_id, 4)
+    transaction.wait_for_confirmation(client, tx_id, 4)
 
 
 def _find_cid_tx_id(app_id: int, sender: str, cid: str) -> str | None:
@@ -98,13 +150,70 @@ def _find_cid_tx_id(app_id: int, sender: str, cid: str) -> str | None:
     return None
 
 
+async def _poll_for_listing_confirmation(
+    *, app_id: int, sender: str, cid: str, max_seconds: int = 30
+) -> str:
+    waited = 0
+    while waited <= max_seconds:
+        tx_id = _find_cid_tx_id(app_id, sender, cid)
+        if tx_id:
+            return tx_id
+        await asyncio.sleep(2)
+        waited += 2
+    raise HTTPException(
+        status_code=504,
+        detail="Transaction submitted but confirmation timed out",
+    )
+
+
+def _get_signing_mnemonic() -> str:
+    seller_mnemonic = os.getenv("SELLER_MNEMONIC", "").strip()
+    deployer_mnemonic = os.getenv("DEPLOYER_MNEMONIC", "").strip()
+    selected = seller_mnemonic or deployer_mnemonic
+    if not selected:
+        raise HTTPException(
+            status_code=500,
+            detail="SELLER_MNEMONIC or DEPLOYER_MNEMONIC must be configured",
+        )
+    return selected
+
+
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
 @app.post("/list")
-async def list_insight(payload: ListInsightRequest) -> dict[str, int | str]:
+async def create_listing(request: ListingRequest) -> dict[str, int | str]:
+    load_dotenv()
+    load_dotenv(".env.testnet", override=True)
+    logger.info(
+        "Incoming /list request: seller_wallet=%s, price=%s, insight_len=%s",
+        request.seller_wallet,
+        request.price,
+        len(request.insight_text),
+    )
+
+    configured_signer_address = os.getenv("SELLER_ADDRESS", "").strip() or os.getenv(
+        "DEPLOYER_ADDRESS", ""
+    ).strip()
+
+    wallet_prefix_or_signer_match = request.seller_wallet.startswith("7") or (
+        configured_signer_address and request.seller_wallet == configured_signer_address
+    )
+
+    if (
+        not request.insight_text.strip()
+        or request.price <= 0
+        or not wallet_prefix_or_signer_match
+        or len(request.seller_wallet) != 58
+        or not encoding.is_valid_address(request.seller_wallet)
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid insight text, price, or wallet address",
+        )
+
     listing_app_id_raw = os.getenv("INSIGHT_LISTING_APP_ID", "").strip()
     if not listing_app_id_raw:
         raise HTTPException(
@@ -120,31 +229,68 @@ async def list_insight(payload: ListInsightRequest) -> dict[str, int | str]:
             detail="INSIGHT_LISTING_APP_ID is invalid",
         ) from err
 
+    signing_mnemonic = _get_signing_mnemonic()
+    signer_private_key = mnemonic.to_private_key(signing_mnemonic)
+    signer_address = account.address_from_private_key(signer_private_key)
+    if signer_address != request.seller_wallet:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "seller_wallet does not match configured signing mnemonic address"
+            ),
+        )
+
+    logger.info("Validation passed for seller %s", request.seller_wallet)
+
     try:
         _ensure_listing_app_funded(listing_app_id)
-        cid = await upload_insight_to_ipfs(payload.insight_text)
+
+        cid = await upload_insight_to_ipfs(request.insight_text)
+        logger.info("IPFS upload complete, cid=%s", cid)
+
+        micro_price = int(request.price * 1_000_000)
         listing_id, asa_id = store_cid_in_listing(
             cid=cid,
             listing_app_id=listing_app_id,
-            seller_address=payload.seller_wallet,
+            seller_address=request.seller_wallet,
+            price=micro_price,
+            signer_mnemonic=signing_mnemonic,
         )
-        tx_id = _find_cid_tx_id(listing_app_id, payload.seller_wallet, cid)
+
+        logger.info(
+            "On-chain listing submitted: listing_id=%s asa_id=%s",
+            listing_id,
+            asa_id,
+        )
+
+        tx_id = await _poll_for_listing_confirmation(
+            app_id=listing_app_id,
+            sender=request.seller_wallet,
+            cid=cid,
+        )
+        logger.info("Transaction confirmed: tx_id=%s", tx_id)
+    except IPFSUploadError as err:
+        logger.exception("IPFS upload failed")
+        raise HTTPException(
+            status_code=500,
+            detail="Could not store insight on IPFS — please try again",
+        ) from err
     except ListingStoreError as err:
+        logger.exception("On-chain listing store failed")
         raise HTTPException(status_code=500, detail=str(err)) from err
     except Exception as err:
+        logger.exception("Unexpected /list failure")
         raise HTTPException(status_code=500, detail=str(err)) from err
 
     return {
-        "ok": "true",
-        "txId": tx_id or "",
+        "success": True,
+        "transaction_id": tx_id,
+        "txId": tx_id,
+        "explorer_url": f"https://testnet.explorer.algorand.org/tx/{tx_id}",
+        "message": "Insight listed on-chain and pinned on IPFS",
         "cid": cid,
         "listing_id": listing_id,
         "asa_id": asa_id,
-        "explorer": (
-            f"https://testnet.explorer.algorand.org/tx/{tx_id}"
-            if tx_id
-            else f"https://testnet.explorer.algorand.org/application/{listing_app_id}"
-        ),
     }
 
 

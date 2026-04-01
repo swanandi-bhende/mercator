@@ -173,7 +173,12 @@ def _load_insight_listing_client_class() -> type:
 
 
 def store_cid_in_listing(
-    cid: str, listing_app_id: int, seller_address: str
+    cid: str,
+    listing_app_id: int,
+    seller_address: str,
+    *,
+    price: int | None = None,
+    signer_mnemonic: str | None = None,
 ) -> tuple[int, int]:
     """Call InsightListing.create_listing and link IPFS CID to on-chain listing.
 
@@ -187,28 +192,36 @@ def store_cid_in_listing(
     if not algosdk.encoding.is_valid_address(seller_address):
         raise ListingStoreError("seller_address is not a valid Algorand address")
 
-    deployer_mnemonic = os.getenv("DEPLOYER_MNEMONIC", "").strip()
-    deployer_address = os.getenv("DEPLOYER_ADDRESS", "").strip() or None
-    if not deployer_mnemonic:
-        raise ListingStoreError("DEPLOYER_MNEMONIC is not set")
+    mnemonic_for_signing = signer_mnemonic or os.getenv("SELLER_MNEMONIC", "").strip()
+    if not mnemonic_for_signing:
+        mnemonic_for_signing = os.getenv("DEPLOYER_MNEMONIC", "").strip()
+    if not mnemonic_for_signing:
+        raise ListingStoreError("No signing mnemonic configured for listing transaction")
 
-    price = int(os.getenv("DEFAULT_LISTING_PRICE", "1000000"))
+    private_key = algosdk.mnemonic.to_private_key(mnemonic_for_signing)
+    derived_address = algosdk.account.address_from_private_key(private_key)
+    if derived_address != seller_address:
+        raise ListingStoreError(
+            "Signer mnemonic does not match seller address"
+        )
+
+    listing_price = price if price is not None else int(os.getenv("DEFAULT_LISTING_PRICE", "1000000"))
 
     try:
         insight_client_cls = _load_insight_listing_client_class()
         algorand = AlgorandClient.from_environment()
-        deployer = algorand.account.from_mnemonic(
-            mnemonic=deployer_mnemonic,
-            sender=deployer_address,
+        signer = algorand.account.from_mnemonic(
+            mnemonic=mnemonic_for_signing,
+            sender=seller_address,
         )
-        algorand.set_default_signer(deployer)
+        algorand.set_default_signer(signer)
 
         app_client = insight_client_cls(
             algorand=algorand,
             app_id=listing_app_id,
-            default_sender=deployer.address,
+            default_sender=signer.address,
         )
-        result = app_client.send.create_listing((price, seller_address, cid))
+        result = app_client.send.create_listing((listing_price, seller_address, cid))
         if result.abi_return is None:
             raise ListingStoreError("Listing call returned no ABI value")
         listing_id = int(result.abi_return)

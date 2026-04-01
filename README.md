@@ -10,6 +10,7 @@ Mercator is an Agentic Commerce marketplace on Algorand TestNet where human sell
 - [x] Contracts compiled and TEAL generated
 - [x] ARC specs and typed clients generated
 - [x] Contracts deployed to TestNet
+- [x] Phase 6 `/list` backend endpoint (validation -> IPFS pin -> on-chain ASA mint -> confirmation polling)
 - [~] Local end-to-end tests (no automated test suite yet)
 
 ## TestNet Identifiers
@@ -31,6 +32,7 @@ Mercator is an Agentic Commerce marketplace on Algorand TestNet where human sell
 - escrow release flow succeeded with grouped payment (`release_after_payment` returned `true`)
 - reputation initialized and updated (`get_score` before `0`, after `update_score` -> `77`)
 - IPFS helper test succeeded (`CID=QmSqR9oHZWbHDj1jgoyeKw7nuzYB6bDiLgySC7SxXjzwWF`) and CID-linked listing call confirmed on explorer
+- Phase 6 live `/list` API call succeeded (`listing_id=3`, `asa_id=758048084`) with explorer tx: https://testnet.explorer.algorand.org/tx/WOZDMPMPHAVBAZ4RMCY4Y3MVC5V2HNTIROPMLUOVKRP5GEETAPKA
 - explorer links:
 	- https://testnet.algoexplorer.io/tx/3TSEMSSU4GHZJ4SQAR6D64BGRPZZOUXCAUHRTOCAZGV5GUX2B7KQ
 	- https://testnet.algoexplorer.io/tx/VZDJCINLUM72I6TTGNMVO7XXOK4ZI3HSS2XH3EICQVUJME6A5EMQ
