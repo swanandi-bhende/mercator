@@ -13,6 +13,7 @@ Mercator is an Agentic Commerce marketplace on Algorand TestNet where human sell
 - [x] Phase 6 `/list` backend endpoint (validation -> IPFS pin -> on-chain ASA mint -> confirmation polling)
 - [x] Phase 7 agent scaffolding (`backend/agent.py` with Gemini init + tool placeholders)
 - [x] Semantic search tools scaffolding (`backend/tools/semantic_search.py` + IPFS fetch helper)
+- [x] Core semantic search tool implemented (live listing fetch + IPFS content retrieval + ranked top-3 results with relevance/reputation weighting + cache/retry)
 - [~] Phase 7 agent uses graceful fallback on Gemini free-tier limits/model availability (returns non-crashing offline response when API is unavailable)
 - [~] Local end-to-end tests (no automated test suite yet)
 
@@ -36,6 +37,7 @@ Mercator is an Agentic Commerce marketplace on Algorand TestNet where human sell
 - reputation initialized and updated (`get_score` before `0`, after `update_score` -> `77`)
 - IPFS helper test succeeded (`CID=QmSqR9oHZWbHDj1jgoyeKw7nuzYB6bDiLgySC7SxXjzwWF`) and CID-linked listing call confirmed on explorer
 - Phase 6 live `/list` API call succeeded (`listing_id=3`, `asa_id=758048084`) with explorer tx: https://testnet.explorer.algorand.org/tx/WOZDMPMPHAVBAZ4RMCY4Y3MVC5V2HNTIROPMLUOVKRP5GEETAPKA
+- Semantic search tool standalone run succeeded against live TestNet listings (`python -m backend.tools.semantic_search`) and returned top-3 ranked matches
 - explorer links:
 	- https://testnet.algoexplorer.io/tx/3TSEMSSU4GHZJ4SQAR6D64BGRPZZOUXCAUHRTOCAZGV5GUX2B7KQ
 	- https://testnet.algoexplorer.io/tx/VZDJCINLUM72I6TTGNMVO7XXOK4ZI3HSS2XH3EICQVUJME6A5EMQ
