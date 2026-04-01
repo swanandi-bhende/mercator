@@ -24,6 +24,7 @@ from contracts.insight_listing import InsightListingClient
 from backend.contracts.escrow.smart_contracts.artifacts.escrow.escrow_client import EscrowClient
 from backend.contracts.reputation.smart_contracts.artifacts.reputation.reputation_client import ReputationClient
 from backend.tools.semantic_search import semantic_search as semantic_search_tool
+from backend.tools.x402_payment import trigger_x402_payment, validate_x402_payment
 
 
 load_dotenv()
@@ -89,16 +90,7 @@ def on_chain_query(listing_id: int) -> str:
     return f"on_chain_query placeholder: listing_id={listing_id}."
 
 
-@tool
-def trigger_x402_payment(amount: float, seller_wallet: str) -> str:
-    """Placeholder tool for triggering x402 payment flow."""
-    return (
-        "trigger_x402_payment placeholder: "
-        f"amount={amount}, seller_wallet={seller_wallet}."
-    )
-
-
-tools = [on_chain_query, semantic_search_tool, trigger_x402_payment]
+tools = [on_chain_query, semantic_search_tool, trigger_x402_payment, validate_x402_payment]
 
 
 class EvaluationDecision(BaseModel):
@@ -175,7 +167,7 @@ else:
     agent_executor = agent
 
 
-async def run_agent(user_query: str, user_approval: bool = False):
+async def run_agent(user_query: str, user_approval: bool = False, buyer_address: str = ""):
     logger.info("Starting agent run with user_approval=%s", user_approval)
     semantic_results = await semantic_search_tool.ainvoke({"query": user_query})
     eval_state = await evaluate_insights(
@@ -188,6 +180,57 @@ async def run_agent(user_query: str, user_approval: bool = False):
             "decision": "SKIP",
             "evaluation": eval_state.get("evaluation"),
             "message": "Skipped based on evaluation rules (reputation/value-for-price).",
+        }
+
+    # If decision is BUY and user has approved, trigger x402 payment
+    if eval_state.get("decision") == "BUY" and user_approval:
+        logger.info("Decision is BUY and user approval confirmed; triggering x402 payment")
+        
+        # Parse listing details from semantic results
+        try:
+            import json
+            search_results = json.loads(semantic_results) if isinstance(semantic_results, str) else semantic_results
+            if isinstance(search_results, list) and len(search_results) > 0:
+                top_listing = search_results[0]
+                listing_id = top_listing.get("listing_id", 1)
+                price = top_listing.get("price", 1.0)
+                
+                if not buyer_address:
+                    buyer_address = os.getenv("BUYER_ADDRESS", "")
+                
+                if buyer_address:
+                    logger.info(f"Triggering x402 payment: listing {listing_id}, price {price}, buyer {buyer_address}")
+                    payment_response = await trigger_x402_payment.ainvoke({
+                        "listing_id": listing_id,
+                        "buyer_address": buyer_address,
+                        "amount_usdc": price
+                    })
+                    
+                    result = {
+                        "success": True,
+                        "decision": "BUY",
+                        "evaluation": eval_state.get("evaluation"),
+                        "payment_status": payment_response,
+                        "message": "x402 payment triggered successfully",
+                    }
+                    logger.info(f"Payment triggered: {result}")
+                    return result
+        except Exception as e:
+            logger.error(f"Error triggering x402 payment: {str(e)}", exc_info=True)
+            return {
+                "success": False,
+                "decision": "BUY",
+                "evaluation": eval_state.get("evaluation"),
+                "error": str(e),
+                "message": "x402 payment failed; please retry",
+            }
+    elif eval_state.get("decision") == "BUY" and not user_approval:
+        logger.info("Decision is BUY but user approval is missing; payment blocked")
+        return {
+            "success": True,
+            "decision": "BUY_PENDING_APPROVAL",
+            "evaluation": eval_state.get("evaluation"),
+            "message": "Insight approved by AI. Awaiting buyer confirmation to trigger payment.",
         }
 
     payload: dict[str, Any]

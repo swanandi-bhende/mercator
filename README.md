@@ -23,6 +23,9 @@ Mercator is an Agentic Commerce marketplace on Algorand TestNet where human sell
 - [x] Phase 9 visibility & auditability (verbose=True, return_intermediate_steps=True, markdown reasoning blocks, regex/Pydantic decision extraction)
 - [~] Phase 7 agent uses graceful fallback on Gemini free-tier limits/model availability (returns non-crashing offline response when API is unavailable)
 - [~] Local end-to-end tests (no automated test suite yet)
+- [x] Phase 10 x402 payment tool created (`backend/tools/x402_payment.py` with `trigger_x402_payment` and `validate_x402_payment` @tools)
+- [x] x402 payment tool integrated into agent (`backend/agent.py` imports + tools list includes x402 functions)
+- [x] Agent payment gating added (`run_agent()` triggers x402 payment on BUY decision when `user_approval=True`)
 
 ## TestNet Identifiers
 
@@ -31,6 +34,48 @@ Mercator is an Agentic Commerce marketplace on Algorand TestNet where human sell
 - `REPUTATION_APP_ID=758022459`
 - `ESCROW_ADDRESS=262TFFBGXEAOOLQECJ4SNEVNQ2QFCCCVZ5K6ZT42ETIWBYDI63JLKSGHDI`
 - `SAMPLE_ASA_ID=758023286`
+
+## Phase 10: x402 Micropayment Tool
+
+**Completed Steps:**
+
+1. ✅ **x402 Payment Tool File Created** (`backend/tools/x402_payment.py`)
+   - Implements `@tool` decorated async functions for atomic payment transactions
+   - `trigger_x402_payment(listing_id, buyer_address, amount_usdc)`: Initiates x402 micropayment flow
+   - `validate_x402_payment(transaction_id)`: Validates confirmed payments on-chain
+   - Fetches listing details from InsightListing contract (seller wallet, price, ASA ID)
+   - Constructs atomic group transaction with payment + escrow unlock + reputation update
+   - Returns structured JSON response with tx_id, explorer_url, payment status
+
+2. ✅ **Imports & Environment Configuration**
+   - LangChain @tool decorator, Algorand SDK (algod, indexer, transaction builders)
+   - Contract clients (InsightListingClient, EscrowClient, ReputationClient)
+   - Environment variables: `ALGOD_URL`, `INDEXER_URL`, `INSIGHT_LISTING_APP_ID`, `ESCROW_APP_ID`, `REPUTATION_APP_ID`
+   - Graceful error handling with JSON response format for logging/frontend display
+
+3. ✅ **Agent Integration** (`backend/agent.py`)
+   - Imports: `from backend.tools.x402_payment import trigger_x402_payment, validate_x402_payment`
+   - Tools list: Added `trigger_x402_payment`, `validate_x402_payment` to agent executor toolkit
+   - Payment gating in `run_agent()`: 
+     - Decision `BUY` + `user_approval=True` → triggers x402 payment immediately
+     - Decision `BUY` + `user_approval=False` → returns `BUY_PENDING_APPROVAL` status
+     - Decision `SKIP` → returns skip reason (reputation/value-for-price threshold)
+
+4. ✅ **Backward Compatibility**
+   - Removed placeholder `trigger_x402_payment` stub from agent code
+   - Replaced with real import from `backend/tools/x402_payment.py`
+   - All agent reasoning chain remains intact (semantic_search → evaluate_insights → payment)
+   - Graceful fallback if x402 call fails (returns error JSON without crashing agent)
+
+**Integration Flow:**
+```
+User Query → semantic_search → evaluate_insights (CoT reasoning)
+  → If BUY + user_approval=True: trigger_x402_payment()
+    → Fetch listing details → Build atomic transaction → Submit to TestNet
+    → Poll indexer for confirmation → Return payment response
+  → If BUY + user_approval=False: Return BUY_PENDING_APPROVAL (wait for buyer confirmation)
+  → If SKIP: Return skip reason (reputation < 50 or value-for-price < 8.0)
+```
 
 ## Phase 9: CoT Reasoning & Evaluation Logic
 
