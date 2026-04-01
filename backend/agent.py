@@ -2,12 +2,15 @@ from dotenv import load_dotenv
 import asyncio
 import os
 import logging
+import re
 from typing import Any
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.tools import tool
 from langchain_core.messages import SystemMessage
+from langchain_core.output_parsers import PydanticOutputParser
+from pydantic import BaseModel, Field
 
 try:
     from langchain.agents import create_tool_calling_agent, AgentExecutor  # type: ignore
@@ -20,9 +23,13 @@ from langchain.agents import create_agent
 from contracts.insight_listing import InsightListingClient
 from backend.contracts.escrow.smart_contracts.artifacts.escrow.escrow_client import EscrowClient
 from backend.contracts.reputation.smart_contracts.artifacts.reputation.reputation_client import ReputationClient
+from backend.tools.semantic_search import semantic_search as semantic_search_tool
 
 
 load_dotenv()
+load_dotenv(".env", override=True)
+if not os.getenv("GEMINI_API_KEY"):
+    load_dotenv(".env.testnet", override=True)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -43,9 +50,34 @@ llm = ChatGoogleGenerativeAI(
 
 SYSTEM_PROMPT = """You are Mercator, an autonomous AI trading-insight buyer on Algorand. Your job is to: 1) Search for real human trading insights using semantic search, 2) Evaluate them using on-chain reputation and price, 3) Reason step-by-step whether to buy, 4) Only trigger x402 payment after explicit user approval. Never generate fake data. Always use real human insights."""
 
+EVALUATION_PROMPT_TEMPLATE = """You must evaluate semantic search results step-by-step before any payment decision.
+
+User Query: {query}
+Semantic Search Results:
+{semantic_results}
+
+Follow this exact sequence:
+1) First, rate relevance 0-100 to the user query and NSE context.
+2) Second, check on-chain reputation. Reputation must be 50 or higher - otherwise SKIP.
+3) Third, calculate value-for-price using: value_for_price = relevance_score / price_in_usdc.
+4) Fourth, only BUY if value_for_price > 8.0. Otherwise SKIP.
+
+You MUST output a visible markdown reasoning block followed by a final decision line:
+```markdown
+Reasoning:
+1. Relevance: ...
+2. Reputation check: ...
+3. Value-for-price: ...
+4. Final rationale: ...
+```
+Decision: BUY or SKIP
+"""
+
 prompt = ChatPromptTemplate.from_messages(
     [
         SystemMessage(content=SYSTEM_PROMPT),
+        ("system", EVALUATION_PROMPT_TEMPLATE),
+        ("system", "Semantic search results:\n{semantic_results}"),
         ("human", "{input}"),
     ]
 )
@@ -58,12 +90,6 @@ def on_chain_query(listing_id: int) -> str:
 
 
 @tool
-def semantic_search(query: str) -> str:
-    """Placeholder tool for semantic retrieval over listings."""
-    return f"semantic_search placeholder: query='{query}'."
-
-
-@tool
 def trigger_x402_payment(amount: float, seller_wallet: str) -> str:
     """Placeholder tool for triggering x402 payment flow."""
     return (
@@ -72,7 +98,60 @@ def trigger_x402_payment(amount: float, seller_wallet: str) -> str:
     )
 
 
-tools = [on_chain_query, semantic_search, trigger_x402_payment]
+tools = [on_chain_query, semantic_search_tool, trigger_x402_payment]
+
+
+class EvaluationDecision(BaseModel):
+    decision: str = Field(description="Final decision, either BUY or SKIP")
+
+
+decision_parser = PydanticOutputParser(pydantic_object=EvaluationDecision)
+
+
+def _parse_decision(eval_text: str) -> str:
+    try:
+        parsed = decision_parser.parse(eval_text)
+        decision = parsed.decision.upper().strip()
+        if decision in {"BUY", "SKIP"}:
+            return decision
+    except Exception:
+        pass
+
+    match = re.search(r"Decision\s*:\s*(BUY|SKIP)", eval_text, re.IGNORECASE)
+    if match:
+        return match.group(1).upper()
+    return "SKIP"
+
+
+async def evaluate_insights(state: dict) -> dict:
+    query = state.get("query", "")
+    semantic_results = state.get("semantic_results", "")
+    eval_prompt = EVALUATION_PROMPT_TEMPLATE.format(
+        query=query,
+        semantic_results=semantic_results,
+    )
+
+    try:
+        eval_response = await asyncio.to_thread(llm.invoke, eval_prompt)
+        eval_text = getattr(eval_response, "content", str(eval_response))
+    except Exception as exc:  # noqa: BLE001
+        error_text = str(exc)
+        is_rate_limit = "429" in error_text or "TooManyRequests" in error_text
+        is_quota_error = "RESOURCE_EXHAUSTED" in error_text
+        if is_rate_limit or is_quota_error:
+            logger.warning("Evaluation step hit Gemini limit; falling back to SKIP")
+            eval_text = (
+                "Reasoning: Gemini limit reached during evaluation; cannot verify safely.\n"
+                "Decision: SKIP"
+            )
+        else:
+            raise
+
+    decision = _parse_decision(eval_text)
+    updated_state = dict(state)
+    updated_state["evaluation"] = eval_text
+    updated_state["decision"] = decision
+    return updated_state
 
 if create_tool_calling_agent and AgentExecutor:
     agent = create_tool_calling_agent(llm, tools, prompt)
@@ -81,6 +160,7 @@ if create_tool_calling_agent and AgentExecutor:
         tools=tools,
         verbose=True,
         handle_parsing_errors=True,
+        return_intermediate_steps=True,
     )
 else:
     logger.info(
@@ -97,9 +177,25 @@ else:
 
 async def run_agent(user_query: str, user_approval: bool = False):
     logger.info("Starting agent run with user_approval=%s", user_approval)
+    semantic_results = await semantic_search_tool.ainvoke({"query": user_query})
+    eval_state = await evaluate_insights(
+        {"query": user_query, "semantic_results": semantic_results}
+    )
+
+    if eval_state.get("decision") == "SKIP":
+        return {
+            "success": True,
+            "decision": "SKIP",
+            "evaluation": eval_state.get("evaluation"),
+            "message": "Skipped based on evaluation rules (reputation/value-for-price).",
+        }
+
     payload: dict[str, Any]
     if create_tool_calling_agent and AgentExecutor:
-        payload = {"input": user_query}
+        payload = {
+            "input": user_query,
+            "semantic_results": semantic_results,
+        }
     else:
         payload = {"messages": [{"role": "user", "content": user_query}]}
 
@@ -107,6 +203,11 @@ async def run_agent(user_query: str, user_approval: bool = False):
     for attempt in range(1, max_attempts + 1):
         try:
             result = await asyncio.to_thread(agent_executor.invoke, payload)
+            if isinstance(result, dict):
+                result["evaluation"] = eval_state.get("evaluation")
+                result["decision"] = eval_state.get("decision")
+            if user_approval is False and eval_state.get("decision") == "BUY":
+                logger.info("Decision is BUY but user approval is missing; payment blocked")
             return result
         except Exception as exc:  # noqa: BLE001
             error_text = str(exc)
@@ -163,5 +264,5 @@ async def run_agent(user_query: str, user_approval: bool = False):
 
 
 if __name__ == "__main__":
-    result = asyncio.run(run_agent("Find me the latest NIFTY call option insight"))
+    result = asyncio.run(run_agent("Show me the best NIFTY 24500 call insight"))
     print(result)
