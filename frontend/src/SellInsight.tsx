@@ -1,5 +1,6 @@
 import { ArrowPathIcon } from '@heroicons/react/24/outline'
 import axios from 'axios'
+import toast from 'react-hot-toast'
 import { useState } from 'react'
 
 export default function SellInsight() {
@@ -35,8 +36,31 @@ export default function SellInsight() {
       }
 
       setSuccessTxId(txId)
-    } catch {
-      setErrorMessage('Could not list this insight right now. Please try again.')
+      toast.success(
+        <span>
+          Insight listed successfully!{' '}
+          <a
+            href={`https://testnet.explorer.algorand.org/tx/${txId}`}
+            target="_blank"
+            rel="noreferrer"
+            className="underline"
+          >
+            View on explorer
+          </a>
+        </span>,
+      )
+    } catch (error) {
+      const backendMessage =
+        axios.isAxiosError(error) && typeof error.response?.data?.detail === 'string'
+          ? error.response.data.detail
+          : axios.isAxiosError(error) && typeof error.response?.data?.message === 'string'
+            ? error.response.data.message
+            : error instanceof Error
+              ? error.message
+              : 'Could not list this insight right now. Please try again.'
+
+      setErrorMessage(backendMessage)
+      toast.error(backendMessage)
     } finally {
       setIsLoading(false)
     }
@@ -91,7 +115,7 @@ export default function SellInsight() {
             {isLoading ? (
               <>
                 <ArrowPathIcon className="h-4 w-4 animate-spin" />
-                Listing...
+                Uploading to IPFS & Algorand...
               </>
             ) : (
               'List Insight on Algorand'
