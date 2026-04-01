@@ -11,6 +11,8 @@ Mercator is an Agentic Commerce marketplace on Algorand TestNet where human sell
 - [x] ARC specs and typed clients generated
 - [x] Contracts deployed to TestNet
 - [x] Phase 6 `/list` backend endpoint (validation -> IPFS pin -> on-chain ASA mint -> confirmation polling)
+- [x] Phase 7 agent scaffolding (`backend/agent.py` with Gemini init + tool placeholders)
+- [~] Phase 7 agent uses graceful fallback on Gemini free-tier limits/model availability (returns non-crashing offline response when API is unavailable)
 - [~] Local end-to-end tests (no automated test suite yet)
 
 ## TestNet Identifiers
