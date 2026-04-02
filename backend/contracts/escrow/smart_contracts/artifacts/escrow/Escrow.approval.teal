@@ -47,63 +47,34 @@ release_after_payment:
     pushint 8
     ==
     assert // invalid number of bytes for arc4.uint64
-    // smart_contracts/escrow/contract.py:19
-    // group_index = op.Txn.group_index
-    txn GroupIndex
-    // smart_contracts/escrow/contract.py:21-22
-    // # Require a preceding payment transaction in the same atomic group.
-    // assert group_index > UInt64(0)
-    dup
-    assert
-    // smart_contracts/escrow/contract.py:23
-    // payment_txn = gtxn.PaymentTransaction(group_index - UInt64(1))
-    pushint 1
-    -
-    dup
-    gtxns TypeEnum
-    pushint 1 // pay
-    ==
-    assert // transaction type is pay
-    // smart_contracts/escrow/contract.py:25-26
-    // # x402-style payment guard: buyer pays this app address with non-zero amount.
-    // assert payment_txn.sender == buyer.native
-    dup
-    gtxns Sender
-    dig 3
+    // smart_contracts/escrow/contract.py:19-20
+    // # Post-payment release path: buyer directly calls escrow after payment confirmation.
+    // assert op.Txn.sender == buyer.native
+    txn Sender
+    dig 2
     ==
     assert
-    // smart_contracts/escrow/contract.py:27
-    // assert payment_txn.receiver == op.Global.current_application_address
-    dup
-    gtxns Receiver
-    global CurrentApplicationAddress
-    ==
-    assert
-    // smart_contracts/escrow/contract.py:28
-    // assert payment_txn.amount > UInt64(0)
-    gtxns Amount
-    assert
-    // smart_contracts/escrow/contract.py:30-33
+    // smart_contracts/escrow/contract.py:22-25
     // self.unlocked_listings[listing_id] = UnlockRecord(
     //     buyer=buyer,
     //     unlocked=arc4.Bool(True),
     // )
     swap
-    // smart_contracts/escrow/contract.py:32
+    // smart_contracts/escrow/contract.py:24
     // unlocked=arc4.Bool(True),
     pushbytes 0x80
-    // smart_contracts/escrow/contract.py:30-33
+    // smart_contracts/escrow/contract.py:22-25
     // self.unlocked_listings[listing_id] = UnlockRecord(
     //     buyer=buyer,
     //     unlocked=arc4.Bool(True),
     // )
     concat
-    // smart_contracts/escrow/contract.py:30
+    // smart_contracts/escrow/contract.py:22
     // self.unlocked_listings[listing_id] = UnlockRecord(
     pushbytes 0x756e6c6f636b
     uncover 2
     concat
-    // smart_contracts/escrow/contract.py:30-33
+    // smart_contracts/escrow/contract.py:22-25
     // self.unlocked_listings[listing_id] = UnlockRecord(
     //     buyer=buyer,
     //     unlocked=arc4.Bool(True),

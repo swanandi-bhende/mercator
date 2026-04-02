@@ -1,4 +1,4 @@
-from algopy import ARC4Contract, BoxMap, UInt64, arc4, gtxn, op
+from algopy import ARC4Contract, BoxMap, arc4, op
 
 
 class UnlockRecord(arc4.Struct):
@@ -16,16 +16,8 @@ class Escrow(ARC4Contract):
         buyer: arc4.Address,
         listing_id: arc4.UInt64,
     ) -> arc4.Bool:
-        group_index = op.Txn.group_index
-
-        # Require a preceding payment transaction in the same atomic group.
-        assert group_index > UInt64(0)
-        payment_txn = gtxn.PaymentTransaction(group_index - UInt64(1))
-
-        # x402-style payment guard: buyer pays this app address with non-zero amount.
-        assert payment_txn.sender == buyer.native
-        assert payment_txn.receiver == op.Global.current_application_address
-        assert payment_txn.amount > UInt64(0)
+        # Post-payment release path: buyer directly calls escrow after payment confirmation.
+        assert op.Txn.sender == buyer.native
 
         self.unlocked_listings[listing_id] = UnlockRecord(
             buyer=buyer,

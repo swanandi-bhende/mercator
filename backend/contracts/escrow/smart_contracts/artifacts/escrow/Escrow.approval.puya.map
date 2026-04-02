@@ -3,7 +3,7 @@
   "sources": [
     "../../escrow/contract.py"
   ],
-  "mappings": ";AAQA;;AAAA;;;AAAA;;;;;;AAAA;;;AAAA;;;;AAAA;AAIK;;AAAA;AAAA;;AAAA;AAAA;AAAA;;;;;;;;;;;AAAA;;;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;;;AAAA;AAAA;AAAA;;AAAA;AAAA;AAMiB;;AAGd;AAAA;AACoD;;AAAd;AAAxB;AAAA;;AAAA;;AAAA;AAAA;AAGP;AAAA;;AAAA;;AAAA;AAAP;AACO;AAAA;;AAAwB;;AAAxB;AAAP;AACO;;AAAP;AAEqC;AAExB;;;AAFwB;AAArC;;;;;;;;AAAA;;AAAA;AAAA;AAAA;AAjBH;;;;;;;AAAA;AAAA;;AAAA",
+  "mappings": ";AAQA;;AAAA;;;AAAA;;;;;;AAAA;;;AAAA;;;;AAAA;AAIK;;AAAA;AAAA;;AAAA;AAAA;AAAA;;;;;;;;;;;AAAA;;;AAAA;AAAA;AAAA;;AAAA;AAAA;AAAA;;;AAAA;AAAA;AAAA;;AAAA;AAAA;AAOU;;AAAA;;AAAA;AAAP;AAEqC;AAExB;;;AAFwB;AAArC;;;;;;;;AAAA;;AAAA;AAAA;AAAA;AATH;;;;;;;AAAA;AAAA;;AAAA",
   "op_pc_offset": 0,
   "pc_events": {
     "1": {
@@ -293,289 +293,55 @@
       ]
     },
     "56": {
-      "op": "txn GroupIndex",
+      "op": "txn Sender",
       "defined_out": [
         "buyer#0",
-        "group_index#0",
-        "listing_id#0"
+        "listing_id#0",
+        "tmp%0#1"
       ],
       "stack_out": [
         "buyer#0",
         "listing_id#0",
-        "group_index#0"
+        "tmp%0#1"
       ]
     },
     "58": {
-      "op": "dup",
-      "defined_out": [
-        "buyer#0",
-        "group_index#0",
-        "group_index#0 (copy)",
-        "listing_id#0"
-      ],
+      "op": "dig 2",
       "stack_out": [
         "buyer#0",
         "listing_id#0",
-        "group_index#0",
-        "group_index#0 (copy)"
-      ]
-    },
-    "59": {
-      "op": "assert",
-      "stack_out": [
-        "buyer#0",
-        "listing_id#0",
-        "group_index#0"
-      ]
-    },
-    "60": {
-      "op": "pushint 1",
-      "defined_out": [
-        "1",
-        "buyer#0",
-        "group_index#0",
-        "listing_id#0"
-      ],
-      "stack_out": [
-        "buyer#0",
-        "listing_id#0",
-        "group_index#0",
-        "1"
-      ]
-    },
-    "62": {
-      "op": "-",
-      "defined_out": [
-        "buyer#0",
-        "listing_id#0",
-        "payment_txn#0"
-      ],
-      "stack_out": [
-        "buyer#0",
-        "listing_id#0",
-        "payment_txn#0"
-      ]
-    },
-    "63": {
-      "op": "dup",
-      "defined_out": [
-        "buyer#0",
-        "listing_id#0",
-        "payment_txn#0",
-        "payment_txn#0 (copy)"
-      ],
-      "stack_out": [
-        "buyer#0",
-        "listing_id#0",
-        "payment_txn#0",
-        "payment_txn#0 (copy)"
-      ]
-    },
-    "64": {
-      "op": "gtxns TypeEnum",
-      "defined_out": [
-        "buyer#0",
-        "gtxn_type%0#0",
-        "listing_id#0",
-        "payment_txn#0"
-      ],
-      "stack_out": [
-        "buyer#0",
-        "listing_id#0",
-        "payment_txn#0",
-        "gtxn_type%0#0"
-      ]
-    },
-    "66": {
-      "op": "pushint 1 // pay",
-      "defined_out": [
-        "buyer#0",
-        "gtxn_type%0#0",
-        "listing_id#0",
-        "pay",
-        "payment_txn#0"
-      ],
-      "stack_out": [
-        "buyer#0",
-        "listing_id#0",
-        "payment_txn#0",
-        "gtxn_type%0#0",
-        "pay"
-      ]
-    },
-    "68": {
-      "op": "==",
-      "defined_out": [
-        "buyer#0",
-        "gtxn_type_matches%0#0",
-        "listing_id#0",
-        "payment_txn#0"
-      ],
-      "stack_out": [
-        "buyer#0",
-        "listing_id#0",
-        "payment_txn#0",
-        "gtxn_type_matches%0#0"
-      ]
-    },
-    "69": {
-      "error": "transaction type is pay",
-      "op": "assert // transaction type is pay",
-      "stack_out": [
-        "buyer#0",
-        "listing_id#0",
-        "payment_txn#0"
-      ]
-    },
-    "70": {
-      "op": "dup",
-      "stack_out": [
-        "buyer#0",
-        "listing_id#0",
-        "payment_txn#0",
-        "payment_txn#0 (copy)"
-      ]
-    },
-    "71": {
-      "op": "gtxns Sender",
-      "defined_out": [
-        "buyer#0",
-        "listing_id#0",
-        "payment_txn#0",
-        "tmp%2#1"
-      ],
-      "stack_out": [
-        "buyer#0",
-        "listing_id#0",
-        "payment_txn#0",
-        "tmp%2#1"
-      ]
-    },
-    "73": {
-      "op": "dig 3",
-      "stack_out": [
-        "buyer#0",
-        "listing_id#0",
-        "payment_txn#0",
-        "tmp%2#1",
+        "tmp%0#1",
         "buyer#0 (copy)"
       ]
     },
-    "75": {
+    "60": {
       "op": "==",
       "defined_out": [
         "buyer#0",
         "listing_id#0",
-        "payment_txn#0",
-        "tmp%3#1"
+        "tmp%1#1"
       ],
       "stack_out": [
         "buyer#0",
         "listing_id#0",
-        "payment_txn#0",
-        "tmp%3#1"
+        "tmp%1#1"
       ]
     },
-    "76": {
-      "op": "assert",
-      "stack_out": [
-        "buyer#0",
-        "listing_id#0",
-        "payment_txn#0"
-      ]
-    },
-    "77": {
-      "op": "dup",
-      "stack_out": [
-        "buyer#0",
-        "listing_id#0",
-        "payment_txn#0",
-        "payment_txn#0 (copy)"
-      ]
-    },
-    "78": {
-      "op": "gtxns Receiver",
-      "defined_out": [
-        "buyer#0",
-        "listing_id#0",
-        "payment_txn#0",
-        "tmp%4#0"
-      ],
-      "stack_out": [
-        "buyer#0",
-        "listing_id#0",
-        "payment_txn#0",
-        "tmp%4#0"
-      ]
-    },
-    "80": {
-      "op": "global CurrentApplicationAddress",
-      "defined_out": [
-        "buyer#0",
-        "listing_id#0",
-        "payment_txn#0",
-        "tmp%4#0",
-        "tmp%5#0"
-      ],
-      "stack_out": [
-        "buyer#0",
-        "listing_id#0",
-        "payment_txn#0",
-        "tmp%4#0",
-        "tmp%5#0"
-      ]
-    },
-    "82": {
-      "op": "==",
-      "defined_out": [
-        "buyer#0",
-        "listing_id#0",
-        "payment_txn#0",
-        "tmp%6#0"
-      ],
-      "stack_out": [
-        "buyer#0",
-        "listing_id#0",
-        "payment_txn#0",
-        "tmp%6#0"
-      ]
-    },
-    "83": {
-      "op": "assert",
-      "stack_out": [
-        "buyer#0",
-        "listing_id#0",
-        "payment_txn#0"
-      ]
-    },
-    "84": {
-      "op": "gtxns Amount",
-      "defined_out": [
-        "buyer#0",
-        "listing_id#0",
-        "tmp%7#0"
-      ],
-      "stack_out": [
-        "buyer#0",
-        "listing_id#0",
-        "tmp%7#0"
-      ]
-    },
-    "86": {
+    "61": {
       "op": "assert",
       "stack_out": [
         "buyer#0",
         "listing_id#0"
       ]
     },
-    "87": {
+    "62": {
       "op": "swap",
       "stack_out": [
         "listing_id#0",
         "buyer#0"
       ]
     },
-    "88": {
+    "63": {
       "op": "pushbytes 0x80",
       "defined_out": [
         "0x80",
@@ -588,7 +354,7 @@
         "0x80"
       ]
     },
-    "91": {
+    "66": {
       "op": "concat",
       "defined_out": [
         "aggregate%head%1#0",
@@ -599,7 +365,7 @@
         "aggregate%head%1#0"
       ]
     },
-    "92": {
+    "67": {
       "op": "pushbytes 0x756e6c6f636b",
       "defined_out": [
         "0x756e6c6f636b",
@@ -612,7 +378,7 @@
         "0x756e6c6f636b"
       ]
     },
-    "100": {
+    "75": {
       "op": "uncover 2",
       "stack_out": [
         "aggregate%head%1#0",
@@ -620,7 +386,7 @@
         "listing_id#0"
       ]
     },
-    "102": {
+    "77": {
       "op": "concat",
       "defined_out": [
         "aggregate%head%1#0",
@@ -631,18 +397,18 @@
         "box_prefixed_key%0#0"
       ]
     },
-    "103": {
+    "78": {
       "op": "swap",
       "stack_out": [
         "box_prefixed_key%0#0",
         "aggregate%head%1#0"
       ]
     },
-    "104": {
+    "79": {
       "op": "box_put",
       "stack_out": []
     },
-    "105": {
+    "80": {
       "op": "pushbytes 0x151f7c7580",
       "defined_out": [
         "0x151f7c7580"
@@ -651,17 +417,20 @@
         "0x151f7c7580"
       ]
     },
-    "112": {
+    "87": {
       "op": "log",
       "stack_out": []
     },
-    "113": {
+    "88": {
       "op": "pushint 1",
+      "defined_out": [
+        "1"
+      ],
       "stack_out": [
         "1"
       ]
     },
-    "115": {
+    "90": {
       "op": "return",
       "stack_out": []
     }
