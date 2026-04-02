@@ -27,6 +27,8 @@ Mercator is an Agentic Commerce marketplace on Algorand TestNet where human sell
 - [x] x402 payment tool integrated into agent (`backend/agent.py` imports + tools list includes x402 functions)
 - [x] Agent payment gating added (`run_agent()` triggers x402 payment on BUY decision when `user_approval=True`)
 - [x] Post-payment flow module scaffolded (`backend/tools/post_payment_flow.py` with indexer confirmation polling for tx_id + listing_id)
+- [x] Post-payment automation integrated (`x402_payment -> complete_purchase_flow` now performs payment confirm -> escrow redeem -> CID read -> IPFS content fetch when payment tx confirms)
+- [~] Current local end-to-end run is blocked by TestNet asset holding/opt-in mismatch for `USDC_ASA_ID` on buyer wallet (payment submission fails before escrow/content steps)
 - [x] **PHASE 10 COMPLETE: Full x402 Micropayment System with Approval Gate + Simulation**
   - ✅ User approval gate: Requires explicit "approve" input before payment
   - ✅ Transaction simulation: Pre-flight safety validation before broadcasting

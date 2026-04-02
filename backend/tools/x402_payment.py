@@ -28,6 +28,7 @@ from functools import lru_cache
 from contracts.insight_listing import InsightListingClient
 from backend.contracts.escrow.smart_contracts.artifacts.escrow.escrow_client import EscrowClient
 from backend.contracts.reputation.smart_contracts.artifacts.reputation.reputation_client import ReputationClient
+from backend.tools.post_payment_flow import complete_purchase_flow
 
 logger = logging.getLogger(__name__)
 load_dotenv()
@@ -133,6 +134,69 @@ class X402Client:
         self.algod = algorand.client.algod
         # Get sender from environment or deployer
         self.sender = os.getenv("DEPLOYER_ADDRESS", "").strip()
+
+    def _resolve_private_key_for_sender(self, sender: str) -> str:
+        """Resolve a private key that matches the provided sender address."""
+        sender = sender.strip()
+        if not sender:
+            raise ValueError("Sender address is required")
+
+        key_candidates = [
+            (os.getenv("BUYER_MNEMONIC", "").strip(), os.getenv("BUYER_WALLET", "").strip()),
+            (os.getenv("BUYER_MNEMONIC", "").strip(), os.getenv("BUYER_ADDRESS", "").strip()),
+            (os.getenv("DEPLOYER_MNEMONIC", "").strip(), os.getenv("DEPLOYER_ADDRESS", "").strip()),
+        ]
+
+        for mnemonic, expected_address in key_candidates:
+            if not mnemonic or not expected_address:
+                continue
+            if expected_address != sender:
+                continue
+            private_key = algo_mnemonic.to_private_key(mnemonic)
+            derived_address = algo_account.address_from_private_key(private_key)
+            if derived_address != sender:
+                raise ValueError(
+                    f"Mnemonic/address mismatch for sender {sender}: derived {derived_address}"
+                )
+            return private_key
+
+        raise ValueError(
+            f"No mnemonic configured for sender {sender}. "
+            "Set BUYER_MNEMONIC+BUYER_WALLET (or BUYER_ADDRESS) for buyer payments."
+        )
+
+    def ensure_asset_opt_in(self, receiver: str, asset_id: int) -> Optional[str]:
+        """Opt a configured receiver wallet into an asset when needed."""
+        if asset_id <= 0:
+            return None
+
+        try:
+            account_info = self.algod.account_info(receiver)
+            assets = account_info.get("assets", [])
+            if any(int(asset.get("asset-id", -1)) == asset_id for asset in assets):
+                return None
+        except Exception:
+            pass
+
+        deployer_address = os.getenv("DEPLOYER_ADDRESS", "").strip()
+        deployer_mnemonic = os.getenv("DEPLOYER_MNEMONIC", "").strip()
+        if receiver != deployer_address or not deployer_mnemonic:
+            return None
+
+        private_key = algo_mnemonic.to_private_key(deployer_mnemonic)
+        params = self.algod.suggested_params()
+        opt_in_txn = transaction.AssetTransferTxn(
+            sender=receiver,
+            sp=params,
+            receiver=receiver,
+            amt=0,
+            index=asset_id,
+        )
+        signed_txn = opt_in_txn.sign(private_key)
+        txid = self.algod.send_transaction(signed_txn)
+        transaction.wait_for_confirmation(self.algod, txid, 4)
+        logger.info("Receiver opt-in confirmed for asset %s: txid=%s", asset_id, txid)
+        return txid
     
     async def simulate_payment(
         self,
@@ -259,14 +323,7 @@ class X402Client:
             
             # Sign using algokit_utils signer from environment
             try:
-                deployer_mnemonic = os.getenv("DEPLOYER_MNEMONIC", "")
-                deployer_address = os.getenv("DEPLOYER_ADDRESS", "")
-                
-                if not deployer_mnemonic or not deployer_address:
-                    raise Exception("DEPLOYER_MNEMONIC or DEPLOYER_ADDRESS not configured")
-                
-                # Use algokit utils to create signer and submit
-                private_key = algo_mnemonic.to_private_key(deployer_mnemonic)
+                private_key = self._resolve_private_key_for_sender(sender)
                 
                 # Manual signing
                 signed_txn = txn.sign(private_key)
@@ -281,10 +338,7 @@ class X402Client:
                 return txid
             except Exception as signing_error:
                 logger.error(f"Signing error: {str(signing_error)}")
-                # Return placeholder success to allow flow to continue
-                # In production, this would be a real transaction
-                logger.warning("Using placeholder transaction ID for demo purposes")
-                return "PLACEHOLDER_" + algo_mnemonic.to_private_key(os.getenv("DEPLOYER_MNEMONIC", ""))[:8]
+                raise Exception(f"Micropayment submit/sign failed: {str(signing_error)}") from signing_error
         
         except Exception as e:
             error_msg = f"x402 payment send failed: {str(e)}"
@@ -362,19 +416,33 @@ async def trigger_x402_payment(
         listing_client = get_insight_listing_client()
         algorand = get_algorand_client()
         
-        # Get seller wallet and other listing details
-        seller_wallet = os.getenv("DEPLOYER_ADDRESS", "").strip()
-        if not seller_wallet:
-            deployer_mnemonic = os.getenv("DEPLOYER_MNEMONIC", "").strip()
-            if deployer_mnemonic:
-                seller_wallet = algo_account.address_from_private_key(
-                    algo_mnemonic.to_private_key(deployer_mnemonic)
-                )
+        listing = listing_client.state.box.listings.get_value(listing_id)
+        if listing is None:
+            return json.dumps({
+                "success": False,
+                "error": "LISTING_NOT_FOUND",
+                "message": f"Listing {listing_id} not found on-chain"
+            })
+
+        seller_wallet = str(listing.seller)
+        listed_price_micro = int(listing.price)
+        listed_price = listed_price_micro / 1_000_000
+        settlement_asset_id = USDC_ASA_ID
+
+        if settlement_asset_id <= 0:
+            return json.dumps({
+                "success": False,
+                "error": "USDC_ASA_ID_NOT_CONFIGURED",
+                "message": "Payment failed: USDC_ASA_ID is not configured"
+            })
         
-        listed_price = float(amount_usdc)
-        asa_id = int(os.getenv("SAMPLE_ASA_ID", 758048084))
-        
-        logger.info(f"Listing {listing_id}: Price={listed_price}, ASA={asa_id}, Seller={seller_wallet}")
+        logger.info(
+            "Listing %s: Price=%s, Settlement asset=%s, Seller=%s",
+            listing_id,
+            listed_price,
+            settlement_asset_id,
+            seller_wallet,
+        )
         
         # Step 3: Validate payment amount
         if amount_usdc <= 0:
@@ -385,6 +453,14 @@ async def trigger_x402_payment(
                 "error": "INVALID_AMOUNT",
                 "message": "Payment failed: invalid amount"
             })
+
+        if abs(amount_usdc - listed_price) > 0.000001:
+            logger.warning(
+                "Requested amount differs from listing; using on-chain listing price | requested=%s listed=%s",
+                amount_usdc,
+                listed_price,
+            )
+        amount_usdc = listed_price
         
         # =========================================================================
         # STEP 3: SIMULATE PAYMENT BEFORE BROADCASTING
@@ -397,8 +473,8 @@ async def trigger_x402_payment(
             simulation_result = await x402_client.simulate_payment(
                 sender=buyer_address,
                 receiver=seller_wallet,
-                amount=int(amount_usdc * 1_000_000),  # Convert USDC to microAlgos equivalent
-                asset_id=asa_id
+                amount=listed_price_micro,
+                asset_id=settlement_asset_id
             )
             
             if not simulation_result.get("is_safe"):
@@ -429,15 +505,22 @@ async def trigger_x402_payment(
         logger.info("Executing x402 micropayment transaction group...")
         
         try:
+            x402_client.ensure_asset_opt_in(seller_wallet, settlement_asset_id)
             txid = await x402_client.send_micropayment(
                 sender=buyer_address,
                 receiver=seller_wallet,
-                amount=int(amount_usdc * 1_000_000),
+                amount=listed_price_micro,
                 memo=f"Mercator insight purchase: listing {listing_id}",
-                asset_id=asa_id
+                asset_id=settlement_asset_id
             )
             
             logger.info(f"✓ x402 micropayment executed: txid={txid}")
+
+            post_payment_output = await complete_purchase_flow(
+                tx_id=txid,
+                listing_id=listing_id,
+                buyer_wallet=buyer_address,
+            )
             
             # =====================================================================
             # STEP 5: RETURN CONFIRMATION WITH EXPLORER LINK
@@ -454,7 +537,7 @@ async def trigger_x402_payment(
                     "buyer_address": buyer_address,
                     "seller_address": seller_wallet,
                     "amount_usdc": amount_usdc,
-                    "asa_id": asa_id,
+                    "settlement_asset_id": settlement_asset_id,
                     "consensus_round": "SETTLED",
                 },
                 "x402_flow": {
@@ -466,7 +549,8 @@ async def trigger_x402_payment(
                 },
                 "status": "CONFIRMED",
                 "explorer_url": explorer_url,
-                "next_step": "Buyer can now view the IPFS insight content"
+                "next_step": "Buyer can now view the IPFS insight content",
+                "post_payment_output": post_payment_output,
             }
             
             logger.info(f"x402 payment flow completed successfully: {response}")

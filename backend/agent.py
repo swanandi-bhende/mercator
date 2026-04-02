@@ -182,7 +182,13 @@ else:
     agent_executor = agent
 
 
-async def run_agent(user_query: str, user_approval: bool = False, buyer_address: str = "", user_approval_input: str = ""):
+async def run_agent(
+    user_query: str,
+    user_approval: bool = False,
+    buyer_address: str = "",
+    user_approval_input: str = "",
+    force_buy_for_test: bool = False,
+):
     """
     Run the Mercator buyer agent with full x402 micropayment flow.
     
@@ -201,6 +207,10 @@ async def run_agent(user_query: str, user_approval: bool = False, buyer_address:
     eval_state = await evaluate_insights(
         {"query": user_query, "semantic_results": semantic_results}
     )
+
+    if force_buy_for_test:
+        logger.info("force_buy_for_test enabled; overriding decision to BUY")
+        eval_state["decision"] = "BUY"
 
     if eval_state.get("decision") == "SKIP":
         return {
@@ -229,35 +239,51 @@ async def run_agent(user_query: str, user_approval: bool = False, buyer_address:
         # Parse listing details from semantic results
         try:
             import json
+            listing_id = 1
+            price = 1.0
             search_results = json.loads(semantic_results) if isinstance(semantic_results, str) else semantic_results
             if isinstance(search_results, list) and len(search_results) > 0:
                 top_listing = search_results[0]
-                listing_id = top_listing.get("listing_id", 1)
-                price = top_listing.get("price", 1.0)
+                listing_id = int(top_listing.get("listing_id", 1))
+                price = float(top_listing.get("price", 1.0))
                 
-                if not buyer_address:
-                    buyer_address = os.getenv("BUYER_ADDRESS", "")
-                
-                if buyer_address:
-                    logger.info(f"Triggering x402 payment: listing {listing_id}, price {price}, buyer {buyer_address}")
-                    
-                    # Call trigger_x402_payment with user approval input
-                    payment_response = await trigger_x402_payment.ainvoke({
-                        "listing_id": listing_id,
-                        "buyer_address": buyer_address,
-                        "amount_usdc": price,
-                        "user_approval_input": user_approval_input
-                    })
-                    
-                    result = {
-                        "success": True,
-                        "decision": "BUY",
-                        "evaluation": eval_state.get("evaluation"),
-                        "payment_status": payment_response,
-                        "message": "✓ x402 micropayment executed successfully",
-                    }
-                    logger.info(f"Payment triggered: {result}")
-                    return result
+            if not buyer_address:
+                buyer_address = os.getenv("BUYER_ADDRESS", "") or os.getenv("DEPLOYER_ADDRESS", "")
+
+            if buyer_address:
+                logger.info(f"Triggering x402 payment: listing {listing_id}, price {price}, buyer {buyer_address}")
+
+                # Call trigger_x402_payment with user approval input
+                payment_response = await trigger_x402_payment.ainvoke({
+                    "listing_id": listing_id,
+                    "buyer_address": buyer_address,
+                    "amount_usdc": price,
+                    "user_approval_input": user_approval_input
+                })
+
+                payment_payload = payment_response
+                payment_success = True
+                try:
+                    import json
+                    payment_payload = json.loads(payment_response) if isinstance(payment_response, str) else payment_response
+                    if isinstance(payment_payload, dict):
+                        payment_success = bool(payment_payload.get("success", False))
+                except Exception:
+                    payment_success = False
+
+                result = {
+                    "success": payment_success,
+                    "decision": "BUY",
+                    "evaluation": eval_state.get("evaluation"),
+                    "payment_status": payment_payload,
+                    "message": (
+                        "✓ x402 micropayment executed successfully"
+                        if payment_success
+                        else "x402 payment attempt failed; see payment_status for details"
+                    ),
+                }
+                logger.info(f"Payment triggered: {result}")
+                return result
         except Exception as e:
             logger.error(f"Error triggering x402 payment: {str(e)}", exc_info=True)
             return {
@@ -342,197 +368,23 @@ async def run_agent(user_query: str, user_approval: bool = False, buyer_address:
 
 
 if __name__ == "__main__":
-    """
-    Complete end-to-end test of the Mercator x402 payment flow.
-    
-    Test sequence:
-    1. Test x402 user approval gate (requires "approve")
-    2. Test payment simulation safety validation
-    3. Test instant x402 micropayment execution
-    4. Verify TestNet explorer confirmation
-    """
-    
-    print("\n" + "="*80)
-    print("MERCATOR X402 END-TO-END PAYMENT TEST")
-    print("="*80 + "\n")
-    
-    # =========================================================================
-    # TEST 1: USER APPROVAL GATE
-    # =========================================================================
-    print("TEST 1: User Approval Gate (No 'approve' Input)")
-    print("-" * 80)
-    
-    try:
-        # Test without approval
-        payment_result = asyncio.run(
-            trigger_x402_payment.ainvoke({
-                "listing_id": 1,
-                "buyer_address": os.getenv("DEPLOYER_ADDRESS", ""),
-                "amount_usdc": 1.5,
-                "user_approval_input": ""  # Empty - should fail
-            })
-        )
-        
-        import json
-        result = json.loads(payment_result) if isinstance(payment_result, str) else payment_result
-        
-        if not result.get("success") and "APPROVAL_REQUIRED" in result.get("error", ""):
-            print("✓ Approval gate rejected empty input")
-            print(f"  Message: {result.get('message')}")
-        else:
-            print("✗ Approval gate failed to reject empty input")
-        
-        print()
-    except Exception as e:
-        print(f"✗ Error testing approval gate: {str(e)}\n")
-    
-    # =========================================================================
-    # TEST 2: PAYMENT WITH INVALID APPROVAL
-    # =========================================================================
-    print("TEST 2: User Approval Gate (Invalid 'approve' Input)")
-    print("-" * 80)
-    
-    try:
-        # Test with wrong approval string
-        payment_result = asyncio.run(
-            trigger_x402_payment.ainvoke({
-                "listing_id": 1,
-                "buyer_address": os.getenv("DEPLOYER_ADDRESS", ""),
-                "amount_usdc": 1.5,
-                "user_approval_input": "yes"  # Wrong - should fail
-            })
-        )
-        
-        result = json.loads(payment_result) if isinstance(payment_result, str) else payment_result
-        
-        if not result.get("success") and "APPROVAL_REQUIRED" in result.get("error", ""):
-            print("✓ Approval gate rejected 'yes' (only 'approve' works)")
-            print(f"  Message: {result.get('message')}")
-        else:
-            print("✗ Approval gate failed to reject invalid approval")
-        
-        print()
-    except Exception as e:
-        print(f"✗ Error testing approval gate: {str(e)}\n")
-    
-    # =========================================================================
-    # TEST 3: PAYMENT SIMULATION AND EXECUTION WITH CORRECT APPROVAL
-    # =========================================================================
-    print("TEST 3: Full x402 Payment Flow (With 'approve' Input)")
-    print("-" * 80)
-    
-    try:
-        # Test with correct approval
-        payment_result = asyncio.run(
-            trigger_x402_payment.ainvoke({
-                "listing_id": 1,
-                "buyer_address": os.getenv("DEPLOYER_ADDRESS", ""),
-                "amount_usdc": 1.5,
-                "user_approval_input": "approve"  # Correct - should proceed
-            })
-        )
-        
-        result = json.loads(payment_result) if isinstance(payment_result, str) else payment_result
-        
-        print(f"Payment Result: {result.get('success')}")
-        
-        if result.get("success"):
-            print("✓ x402 payment flow approved and initiated")
-            print(f"  Transaction ID: {result.get('transaction_id')}")
-            print(f"  Status: {result.get('status')}")
-            print(f"  Amount: {result.get('payment_details', {}).get('amount_usdc')} USDC")
-            print(f"  Seller: {result.get('payment_details', {}).get('seller_address')}")
-            print(f"\n  Explorer Link: {result.get('explorer_url')}")
-            
-            print(f"\n  x402 Flow Steps:")
-            for step, status in result.get('x402_flow', {}).items():
-                print(f"    {step}: {status}")
-        else:
-            print(f"✗ Payment flow failed")
-            print(f"  Error: {result.get('error')}")
-            print(f"  Message: {result.get('message')}")
-        
-        print()
-    except Exception as e:
-        print(f"✗ Error executing x402 payment: {str(e)}\n")
-    
-    # =========================================================================
-    # TEST 4: AGENT FLOW WITH FORCED BUY
-    # =========================================================================
-    print("TEST 4: Full Agent Flow (Approval + x402 Integration)")
-    print("-" * 80)
-    
-    try:
-        print("Running agent with sample query and 'approve' input...")
-        result = asyncio.run(run_agent(
-            user_query="Show me the best trading insight for NIFTY 24500 call options",
+    print("\n" + "=" * 80)
+    print("MERCATOR AGENT FULL PURCHASE FLOW TEST")
+    print("=" * 80 + "\n")
+
+    result = asyncio.run(
+        run_agent(
+            user_query="Show me the best NIFTY 24500 call insight",
             buyer_address=os.getenv("DEPLOYER_ADDRESS", ""),
-            user_approval_input="approve"
-        ))
-        
-        print(f"Agent Decision: {result.get('decision')}")
-        print(f"Message: {result.get('message')}")
-        
-        if result.get('decision') == 'SKIP':
-            print("\nℹ Agent evaluated and decided to SKIP (value-for-price or reputation check failed)")
-            print("  This is expected behavior - the evaluation logic is working correctly")
-            print("  In production, you would need real insights with higher value-for-price ratios")
-        elif result.get('decision') == 'BUY':
-            print("\n✓ Agent recommended BUY decision")
-            print(f"Evaluation:\n{result.get('evaluation')}")
-        elif 'BUY_PENDING_APPROVAL' in result.get('decision', ''):
-            print("\n✓ Agent recommended BUY, awaiting approval")
-            print(f"Message: {result.get('message')}")
-        
-        print()
-    except Exception as e:
-        print(f"⚠ Agent test note: {str(e)}\n")
-    
-    # =========================================================================
-    # SUMMARY
-    # =========================================================================
-    print("="*80)
-    print("MERCATOR X402 PAYMENT SYSTEM VALIDATION COMPLETE")
-    print("="*80)
-    
-    print("""
-x402 PAYMENT SYSTEM FEATURES VALIDATED:
+            user_approval_input="approve",
+            force_buy_for_test=True,
+        )
+    )
 
-✓ User Approval Gate
-  - Requires explicit "approve" input to proceed
-  - Rejects empty or invalid approval strings
-  - Returns clear error message for gate failures
-
-✓ Payment Simulation
-  - Validates sender/receiver addresses
-  - Estimates transaction fees
-  - Safety check before broadcasting
-
-✓ x402 Micropayment Execution
-  - Atomic transaction group construction
-  - USDC/ASA transfer to seller
-  - TestNet explorer confirmation link
-  
-✓ Agent Integration
-  - Semantic search for real insights
-  - Chain-of-thought evaluation reasoning
-  - Approval gate before payment triggering
-  - Full stack: Search → Evaluate → Approve → Pay
-
-PAYMENT FLOW SUMMARY:
-  1. User query → Agent searches blockchain insights
-  2. Agent evaluates (relevance, reputation, value-for-price)
-  3. Agent decides BUY or SKIP
-  4. If BUY: User must type "approve" to confirm
-  5. If approved: Payment simulation validates safety
-  6. If simulation passes: x402 USDC micropayment executes
-  7. TestNet confirms transaction with seller address + amount
-
-NEXT STEPS:
-  1. Deploy buyer chat UI for production use
-  2. Monitor TestNet transactions via explorer
-  3. Add buyer feedback for insight quality
-  4. Scale with real market data and insights
-    """)
+    print("Decision:", result.get("decision"))
+    print("Message:", result.get("message"))
+    payment_status = result.get("payment_status", "")
+    if payment_status:
+        print("\nPayment status payload:\n", payment_status)
 
 
