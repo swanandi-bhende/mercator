@@ -33,3 +33,11 @@ python demo.py
 ## Environment
 
 Required keys include `ALGOD_URL` or `ALGOD_SERVER`, `INDEXER_URL` or `INDEXER_SERVER`, `GEMINI_API_KEY`, `PINATA_JWT`, `INSIGHT_LISTING_APP_ID`, `ESCROW_APP_ID`, `REPUTATION_APP_ID`, `DEPLOYER_MNEMONIC`, `DEPLOYER_ADDRESS`, `BUYER_WALLET`, `BUYER_MNEMONIC`, and `USDC_ASA_ID`.
+
+## Testing
+
+The mocked end-to-end suite lives in [backend/tests/test_micropayment_cycle.py](backend/tests/test_micropayment_cycle.py).
+
+```bash
+pytest backend/tests/test_micropayment_cycle.py
+```

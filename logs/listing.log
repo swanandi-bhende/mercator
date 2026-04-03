@@ -89,3 +89,251 @@ backend.utils.ipfs.IPFSUploadError: Could not store insight on IPFS — please t
 2026-04-03 15:35:35,041 INFO mercator.backend: IPFS upload complete, cid=QmRGRbfgwtaofvyMwwirBPzBcNEsCsp8n2AdFPqW5oLy7c
 2026-04-03 15:35:39,452 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
 2026-04-03 15:35:39,729 INFO mercator.backend: Transaction confirmed: tx_id=WI3DBJAEXOMVP6XKHLF3SVMUVOFHSVI25ZBCSWEB7BD4Z6JSSA3Q
+2026-04-03 21:28:10,195 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:28:10,196 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:28:10,196 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:28:10,196 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:28:10,197 INFO mercator.backend: Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-03 21:28:10,307 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=2.5, insight_len=58
+2026-04-03 21:28:10,308 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:28:10,308 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:28:10,308 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:28:10,308 INFO mercator.backend: Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-03 21:28:10,323 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=-1.0, insight_len=59
+2026-04-03 21:28:10,330 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=3
+2026-04-03 21:28:10,337 INFO mercator.backend: Incoming /list request: seller_wallet=BAD_WALLET, price=1.0, insight_len=59
+2026-04-03 21:28:10,344 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:28:10,345 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:28:10,345 ERROR mercator.backend: IPFS upload failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 282, in create_listing
+    cid = await upload_insight_to_ipfs(request.insight_text)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.IPFSUploadError: IPFS failed
+2026-04-03 21:28:10,363 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:28:10,363 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:28:10,364 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:28:10,364 ERROR mercator.backend: On-chain listing store failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 286, in create_listing
+    listing_id, asa_id = store_cid_in_listing(
+                         ~~~~~~~~~~~~~~~~~~~~^
+        cid=cid,
+        ^^^^^^^^
+    ...<3 lines>...
+        signer_mnemonic=signing_mnemonic,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1175, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1179, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1234, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: store failed
+2026-04-03 21:28:10,380 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:28:10,381 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:28:10,381 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:28:10,381 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:28:10,381 ERROR mercator.backend: Unexpected /list failure
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 302, in create_listing
+    tx_id = await _poll_for_listing_confirmation(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out
+2026-04-03 21:41:04,243 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:41:04,243 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:41:04,244 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:41:04,244 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:41:04,244 INFO mercator.backend: Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-03 21:41:04,333 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=2.5, insight_len=58
+2026-04-03 21:41:04,334 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:41:04,334 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:41:04,334 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:41:04,334 INFO mercator.backend: Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-03 21:41:04,349 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=-1.0, insight_len=59
+2026-04-03 21:41:04,356 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=3
+2026-04-03 21:41:04,363 INFO mercator.backend: Incoming /list request: seller_wallet=BAD_WALLET, price=1.0, insight_len=59
+2026-04-03 21:41:04,369 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:41:04,370 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:41:04,370 ERROR mercator.backend: IPFS upload failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 282, in create_listing
+    cid = await upload_insight_to_ipfs(request.insight_text)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.IPFSUploadError: IPFS failed
+2026-04-03 21:41:04,378 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:41:04,379 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:41:04,379 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:41:04,379 ERROR mercator.backend: On-chain listing store failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 286, in create_listing
+    listing_id, asa_id = store_cid_in_listing(
+                         ~~~~~~~~~~~~~~~~~~~~^
+        cid=cid,
+        ^^^^^^^^
+    ...<3 lines>...
+        signer_mnemonic=signing_mnemonic,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1175, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1179, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1234, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: store failed
+2026-04-03 21:41:04,387 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:41:04,388 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:41:04,388 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:41:04,388 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:41:04,388 ERROR mercator.backend: Unexpected /list failure
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 302, in create_listing
+    tx_id = await _poll_for_listing_confirmation(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out
+2026-04-03 21:42:15,632 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:42:15,632 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:42:15,633 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:42:15,633 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:42:15,633 INFO mercator.backend: Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-03 21:42:15,722 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=2.5, insight_len=58
+2026-04-03 21:42:15,723 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:42:15,723 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:42:15,723 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:42:15,723 INFO mercator.backend: Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-03 21:42:15,738 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=-1.0, insight_len=59
+2026-04-03 21:42:15,745 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=3
+2026-04-03 21:42:15,752 INFO mercator.backend: Incoming /list request: seller_wallet=BAD_WALLET, price=1.0, insight_len=59
+2026-04-03 21:42:15,758 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:42:15,759 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:42:15,759 ERROR mercator.backend: IPFS upload failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 282, in create_listing
+    cid = await upload_insight_to_ipfs(request.insight_text)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.IPFSUploadError: IPFS failed
+2026-04-03 21:42:15,767 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:42:15,768 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:42:15,768 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:42:15,768 ERROR mercator.backend: On-chain listing store failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 286, in create_listing
+    listing_id, asa_id = store_cid_in_listing(
+                         ~~~~~~~~~~~~~~~~~~~~^
+        cid=cid,
+        ^^^^^^^^
+    ...<3 lines>...
+        signer_mnemonic=signing_mnemonic,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1175, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1179, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1234, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: store failed
+2026-04-03 21:42:15,775 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:42:15,775 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:42:15,775 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:42:15,775 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:42:15,776 ERROR mercator.backend: Unexpected /list failure
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 302, in create_listing
+    tx_id = await _poll_for_listing_confirmation(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out
+2026-04-03 21:43:58,123 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:43:58,123 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:43:58,124 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:43:58,124 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:43:58,124 INFO mercator.backend: Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-03 21:43:58,131 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=2.5, insight_len=58
+2026-04-03 21:43:58,132 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:43:58,132 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:43:58,132 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:43:58,132 INFO mercator.backend: Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-03 21:43:58,139 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=-1.0, insight_len=59
+2026-04-03 21:43:58,145 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=3
+2026-04-03 21:43:58,151 INFO mercator.backend: Incoming /list request: seller_wallet=BAD_WALLET, price=1.0, insight_len=59
+2026-04-03 21:43:58,158 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:43:58,159 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:43:58,159 ERROR mercator.backend: IPFS upload failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 282, in create_listing
+    cid = await upload_insight_to_ipfs(request.insight_text)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.IPFSUploadError: IPFS failed
+2026-04-03 21:43:58,166 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:43:58,167 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:43:58,167 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:43:58,167 ERROR mercator.backend: On-chain listing store failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 286, in create_listing
+    listing_id, asa_id = store_cid_in_listing(
+                         ~~~~~~~~~~~~~~~~~~~~^
+        cid=cid,
+        ^^^^^^^^
+    ...<3 lines>...
+        signer_mnemonic=signing_mnemonic,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1175, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1179, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1234, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: store failed
+2026-04-03 21:43:58,174 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:43:58,175 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:43:58,175 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:43:58,175 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:43:58,175 ERROR mercator.backend: Unexpected /list failure
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 302, in create_listing
+    tx_id = await _poll_for_listing_confirmation(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out

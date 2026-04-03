@@ -78,3 +78,341 @@ backend.utils.ipfs.IPFSUploadError: Could not store insight on IPFS — please t
 2026-04-03 15:36:31,333 INFO demo.flow: Payment approved
 2026-04-03 15:36:31,333 INFO backend.agent: Payment triggered: {'success': True, 'decision': 'BUY', 'evaluation': 'Reasoning: Gemini limit reached during evaluation; cannot verify safely.\nDecision: SKIP', 'payment_status': {'success': True, 'approved': True, 'transaction_id': 'FFFJ2PN57NGT765W2OI6TK4RSL4H6SVCTDFIMTT6L3PIPGJVUL5A', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 1, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 1.0, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Buyer receives instant access to insight'}, 'status': 'CONFIRMED', 'explorer_url': 'https://testnet.explorer.algorand.org/tx/FFFJ2PN57NGT765W2OI6TK4RSL4H6SVCTDFIMTT6L3PIPGJVUL5A', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nSample trading insight: Buy NIFTY above 24500 with SL 24380\n\nTransaction IDs: payment=FFFJ2PN57NGT765W2OI6TK4RSL4H6SVCTDFIMTT6L3PIPGJVUL5A | escrow=BHGEHFI4ZMGZV5625ME33CSQJEWSBNQKRKRGCU5V6WHFHATLBRWA'}, 'message': '✓ x402 micropayment executed successfully'}
 2026-04-03 15:36:31,338 INFO mercator.demo: Buyer flow result: {'success': True, 'final_insight_text': 'Sample trading insight: Buy NIFTY above 24500 with SL 24380', 'result': {'success': True, 'decision': 'BUY', 'evaluation': 'Reasoning: Gemini limit reached during evaluation; cannot verify safely.\nDecision: SKIP', 'payment_status': {'success': True, 'approved': True, 'transaction_id': 'FFFJ2PN57NGT765W2OI6TK4RSL4H6SVCTDFIMTT6L3PIPGJVUL5A', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 1, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 1.0, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Buyer receives instant access to insight'}, 'status': 'CONFIRMED', 'explorer_url': 'https://testnet.explorer.algorand.org/tx/FFFJ2PN57NGT765W2OI6TK4RSL4H6SVCTDFIMTT6L3PIPGJVUL5A', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nSample trading insight: Buy NIFTY above 24500 with SL 24380\n\nTransaction IDs: payment=FFFJ2PN57NGT765W2OI6TK4RSL4H6SVCTDFIMTT6L3PIPGJVUL5A | escrow=BHGEHFI4ZMGZV5625ME33CSQJEWSBNQKRKRGCU5V6WHFHATLBRWA'}, 'message': '✓ x402 micropayment executed successfully'}}
+2026-04-03 21:28:10,168 INFO backend.agent: LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-03 21:28:10,195 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:28:10,196 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:28:10,196 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:28:10,196 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:28:10,197 INFO demo.flow: Seller upload complete
+2026-04-03 21:28:10,197 INFO demo.flow: On-chain ASA created
+2026-04-03 21:28:10,197 INFO mercator.backend: Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-03 21:28:10,198 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-04-03 21:28:10,307 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=2.5, insight_len=58
+2026-04-03 21:28:10,308 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:28:10,308 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:28:10,308 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:28:10,308 INFO demo.flow: Seller upload complete
+2026-04-03 21:28:10,308 INFO demo.flow: On-chain ASA created
+2026-04-03 21:28:10,308 INFO mercator.backend: Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-03 21:28:10,309 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-04-03 21:28:10,323 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=-1.0, insight_len=59
+2026-04-03 21:28:10,324 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-03 21:28:10,330 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=3
+2026-04-03 21:28:10,331 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-03 21:28:10,337 INFO mercator.backend: Incoming /list request: seller_wallet=BAD_WALLET, price=1.0, insight_len=59
+2026-04-03 21:28:10,338 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-03 21:28:10,344 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:28:10,345 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:28:10,345 ERROR mercator.backend: IPFS upload failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 282, in create_listing
+    cid = await upload_insight_to_ipfs(request.insight_text)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.IPFSUploadError: IPFS failed
+2026-04-03 21:28:10,347 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-03 21:28:10,363 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:28:10,363 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:28:10,364 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:28:10,364 ERROR mercator.backend: On-chain listing store failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 286, in create_listing
+    listing_id, asa_id = store_cid_in_listing(
+                         ~~~~~~~~~~~~~~~~~~~~^
+        cid=cid,
+        ^^^^^^^^
+    ...<3 lines>...
+        signer_mnemonic=signing_mnemonic,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1175, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1179, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1234, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: store failed
+2026-04-03 21:28:10,365 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-03 21:28:10,380 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:28:10,381 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:28:10,381 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:28:10,381 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:28:10,381 INFO demo.flow: Seller upload complete
+2026-04-03 21:28:10,381 INFO demo.flow: On-chain ASA created
+2026-04-03 21:28:10,381 ERROR mercator.backend: Unexpected /list failure
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 302, in create_listing
+    tx_id = await _poll_for_listing_confirmation(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out
+2026-04-03 21:28:10,382 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-03 21:41:04,215 INFO backend.agent: LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-03 21:41:04,243 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:41:04,243 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:41:04,244 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:41:04,244 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:41:04,244 INFO demo.flow: Seller upload complete
+2026-04-03 21:41:04,244 INFO demo.flow: On-chain ASA created
+2026-04-03 21:41:04,244 INFO mercator.backend: Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-03 21:41:04,245 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-04-03 21:41:04,333 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=2.5, insight_len=58
+2026-04-03 21:41:04,334 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:41:04,334 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:41:04,334 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:41:04,334 INFO demo.flow: Seller upload complete
+2026-04-03 21:41:04,334 INFO demo.flow: On-chain ASA created
+2026-04-03 21:41:04,334 INFO mercator.backend: Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-03 21:41:04,335 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-04-03 21:41:04,349 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=-1.0, insight_len=59
+2026-04-03 21:41:04,350 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-03 21:41:04,356 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=3
+2026-04-03 21:41:04,357 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-03 21:41:04,363 INFO mercator.backend: Incoming /list request: seller_wallet=BAD_WALLET, price=1.0, insight_len=59
+2026-04-03 21:41:04,363 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-03 21:41:04,369 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:41:04,370 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:41:04,370 ERROR mercator.backend: IPFS upload failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 282, in create_listing
+    cid = await upload_insight_to_ipfs(request.insight_text)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.IPFSUploadError: IPFS failed
+2026-04-03 21:41:04,372 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-03 21:41:04,378 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:41:04,379 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:41:04,379 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:41:04,379 ERROR mercator.backend: On-chain listing store failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 286, in create_listing
+    listing_id, asa_id = store_cid_in_listing(
+                         ~~~~~~~~~~~~~~~~~~~~^
+        cid=cid,
+        ^^^^^^^^
+    ...<3 lines>...
+        signer_mnemonic=signing_mnemonic,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1175, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1179, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1234, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: store failed
+2026-04-03 21:41:04,380 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-03 21:41:04,387 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:41:04,388 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:41:04,388 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:41:04,388 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:41:04,388 INFO demo.flow: Seller upload complete
+2026-04-03 21:41:04,388 INFO demo.flow: On-chain ASA created
+2026-04-03 21:41:04,388 ERROR mercator.backend: Unexpected /list failure
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 302, in create_listing
+    tx_id = await _poll_for_listing_confirmation(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out
+2026-04-03 21:41:04,389 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-03 21:41:04,396 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:41:04,402 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:41:04,407 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:41:04,411 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:41:04,417 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:41:04,421 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:41:04,426 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:41:04,432 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:41:04,436 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:41:04,441 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:42:15,586 INFO backend.agent: LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-03 21:42:15,632 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:42:15,632 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:42:15,633 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:42:15,633 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:42:15,633 INFO demo.flow: Seller upload complete
+2026-04-03 21:42:15,633 INFO demo.flow: On-chain ASA created
+2026-04-03 21:42:15,633 INFO mercator.backend: Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-03 21:42:15,634 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-04-03 21:42:15,722 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=2.5, insight_len=58
+2026-04-03 21:42:15,723 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:42:15,723 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:42:15,723 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:42:15,723 INFO demo.flow: Seller upload complete
+2026-04-03 21:42:15,723 INFO demo.flow: On-chain ASA created
+2026-04-03 21:42:15,723 INFO mercator.backend: Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-03 21:42:15,724 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-04-03 21:42:15,738 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=-1.0, insight_len=59
+2026-04-03 21:42:15,739 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-03 21:42:15,745 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=3
+2026-04-03 21:42:15,746 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-03 21:42:15,752 INFO mercator.backend: Incoming /list request: seller_wallet=BAD_WALLET, price=1.0, insight_len=59
+2026-04-03 21:42:15,752 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-03 21:42:15,758 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:42:15,759 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:42:15,759 ERROR mercator.backend: IPFS upload failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 282, in create_listing
+    cid = await upload_insight_to_ipfs(request.insight_text)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.IPFSUploadError: IPFS failed
+2026-04-03 21:42:15,761 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-03 21:42:15,767 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:42:15,768 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:42:15,768 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:42:15,768 ERROR mercator.backend: On-chain listing store failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 286, in create_listing
+    listing_id, asa_id = store_cid_in_listing(
+                         ~~~~~~~~~~~~~~~~~~~~^
+        cid=cid,
+        ^^^^^^^^
+    ...<3 lines>...
+        signer_mnemonic=signing_mnemonic,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1175, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1179, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1234, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: store failed
+2026-04-03 21:42:15,769 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-03 21:42:15,775 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:42:15,775 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:42:15,775 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:42:15,775 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:42:15,776 INFO demo.flow: Seller upload complete
+2026-04-03 21:42:15,776 INFO demo.flow: On-chain ASA created
+2026-04-03 21:42:15,776 ERROR mercator.backend: Unexpected /list failure
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 302, in create_listing
+    tx_id = await _poll_for_listing_confirmation(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out
+2026-04-03 21:42:15,777 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-03 21:42:15,783 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:42:15,788 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:42:15,793 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:42:15,798 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:42:15,803 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:42:15,808 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:42:15,813 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:42:15,817 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:42:15,822 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:42:15,827 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:43:58,080 INFO backend.agent: LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-03 21:43:58,123 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:43:58,123 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:43:58,124 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:43:58,124 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:43:58,124 INFO demo.flow: Seller upload complete
+2026-04-03 21:43:58,124 INFO demo.flow: On-chain ASA created
+2026-04-03 21:43:58,124 INFO mercator.backend: Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-03 21:43:58,125 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-04-03 21:43:58,131 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=2.5, insight_len=58
+2026-04-03 21:43:58,132 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:43:58,132 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:43:58,132 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:43:58,132 INFO demo.flow: Seller upload complete
+2026-04-03 21:43:58,132 INFO demo.flow: On-chain ASA created
+2026-04-03 21:43:58,132 INFO mercator.backend: Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-03 21:43:58,133 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-04-03 21:43:58,139 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=-1.0, insight_len=59
+2026-04-03 21:43:58,139 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-03 21:43:58,145 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=3
+2026-04-03 21:43:58,145 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-03 21:43:58,151 INFO mercator.backend: Incoming /list request: seller_wallet=BAD_WALLET, price=1.0, insight_len=59
+2026-04-03 21:43:58,152 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-03 21:43:58,158 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:43:58,159 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:43:58,159 ERROR mercator.backend: IPFS upload failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 282, in create_listing
+    cid = await upload_insight_to_ipfs(request.insight_text)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.IPFSUploadError: IPFS failed
+2026-04-03 21:43:58,161 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-03 21:43:58,166 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:43:58,167 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:43:58,167 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:43:58,167 ERROR mercator.backend: On-chain listing store failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 286, in create_listing
+    listing_id, asa_id = store_cid_in_listing(
+                         ~~~~~~~~~~~~~~~~~~~~^
+        cid=cid,
+        ^^^^^^^^
+    ...<3 lines>...
+        signer_mnemonic=signing_mnemonic,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1175, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1179, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1234, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: store failed
+2026-04-03 21:43:58,169 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-03 21:43:58,174 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 21:43:58,175 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 21:43:58,175 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-03 21:43:58,175 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 21:43:58,175 INFO demo.flow: Seller upload complete
+2026-04-03 21:43:58,175 INFO demo.flow: On-chain ASA created
+2026-04-03 21:43:58,175 ERROR mercator.backend: Unexpected /list failure
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 302, in create_listing
+    tx_id = await _poll_for_listing_confirmation(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out
+2026-04-03 21:43:58,176 INFO httpx: HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-03 21:43:58,182 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:43:58,188 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:43:58,193 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:43:58,199 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:43:58,205 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:43:58,210 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:43:58,214 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:43:58,220 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:43:58,225 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-03 21:43:58,230 INFO demo.flow: Agent semantic search returned 3 results
