@@ -25,10 +25,10 @@ from backend.contracts.escrow.smart_contracts.artifacts.escrow.escrow_client imp
 from backend.contracts.reputation.smart_contracts.artifacts.reputation.reputation_client import ReputationClient
 from backend.tools.semantic_search import semantic_search as semantic_search_tool
 from backend.tools.x402_payment import trigger_x402_payment, validate_x402_payment
+from backend.utils.runtime_env import normalize_network_env
 
 
-load_dotenv()
-load_dotenv(".env", override=True)
+normalize_network_env()
 if not os.getenv("GEMINI_API_KEY"):
     load_dotenv(".env.testnet", override=True)
 
@@ -248,7 +248,11 @@ async def run_agent(
                 price = float(top_listing.get("price", 1.0))
                 
             if not buyer_address:
-                buyer_address = os.getenv("BUYER_ADDRESS", "") or os.getenv("DEPLOYER_ADDRESS", "")
+                buyer_address = (
+                    os.getenv("BUYER_WALLET", "").strip()
+                    or os.getenv("BUYER_ADDRESS", "").strip()
+                    or os.getenv("DEPLOYER_ADDRESS", "").strip()
+                )
 
             if buyer_address:
                 logger.info(f"Triggering x402 payment: listing {listing_id}, price {price}, buyer {buyer_address}")

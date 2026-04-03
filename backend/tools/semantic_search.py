@@ -26,10 +26,10 @@ try:
     from utils.ipfs import fetch_insight_from_ipfs, upload_insight_to_ipfs
 except ImportError:  # pragma: no cover - supports running from repo root
     from backend.utils.ipfs import fetch_insight_from_ipfs, upload_insight_to_ipfs
+from backend.utils.runtime_env import normalize_network_env
 
 
-load_dotenv()
-load_dotenv(".env.testnet", override=True)
+normalize_network_env()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -46,6 +46,7 @@ _query_cache: dict[str, tuple[float, str]] = {}
 @lru_cache(maxsize=1)
 def get_algorand_client() -> AlgorandClient:
     """Return a cached Algorand client configured from environment."""
+    normalize_network_env()
     algod = AlgorandClient.from_environment()
     deployer_mnemonic = os.getenv("DEPLOYER_MNEMONIC", "").strip()
     deployer_address = os.getenv("DEPLOYER_ADDRESS", "").strip()
@@ -61,6 +62,7 @@ def get_algorand_client() -> AlgorandClient:
 @lru_cache(maxsize=1)
 def get_insight_listing_client() -> InsightListingClient:
     """Return the deployed InsightListing app client."""
+    normalize_network_env()
     app_id = int(os.getenv("INSIGHT_LISTING_APP_ID", "0"))
     if app_id <= 0:
         raise ValueError("INSIGHT_LISTING_APP_ID not configured")
@@ -84,6 +86,7 @@ def get_insight_listing_client() -> InsightListingClient:
 @lru_cache(maxsize=1)
 def get_reputation_client() -> ReputationClient | None:
     """Return the deployed Reputation app client when configured."""
+    normalize_network_env()
     app_id = int(os.getenv("REPUTATION_APP_ID", "0"))
     if app_id <= 0:
         return None
@@ -107,6 +110,7 @@ def get_reputation_client() -> ReputationClient | None:
 @lru_cache(maxsize=1)
 def get_indexer_client() -> indexer.IndexerClient:
     """Return a cached indexer client instance for read operations."""
+    normalize_network_env()
     token = os.getenv("ALGOD_TOKEN", "")
     idx_url = (
         os.getenv("INDEXER_URL")

@@ -13,6 +13,7 @@ import time
 import logging
 from functools import lru_cache
 from algokit_utils import AlgorandClient
+from backend.utils.runtime_env import normalize_network_env
 
 try:
     from utils.ipfs import fetch_insight_from_ipfs
@@ -20,7 +21,7 @@ except ImportError:  # pragma: no cover - supports project-root execution
     from backend.utils.ipfs import fetch_insight_from_ipfs
 
 
-load_dotenv()
+normalize_network_env()
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +45,7 @@ indexer_client = indexer.IndexerClient(INDEXER_TOKEN, INDEXER_URL)
 @lru_cache(maxsize=1)
 def get_escrow_client() -> EscrowClient:
     """Return a cached Escrow client configured from environment."""
+    normalize_network_env()
     algorand = AlgorandClient.from_environment()
     signer_mnemonic = BUYER_MNEMONIC.strip() or os.getenv("DEPLOYER_MNEMONIC", "").strip()
     signer_address = BUYER_WALLET.strip() or os.getenv("DEPLOYER_ADDRESS", "").strip()
@@ -64,6 +66,7 @@ def get_escrow_client() -> EscrowClient:
 @lru_cache(maxsize=1)
 def get_listing_client() -> InsightListingClient:
     """Return a cached InsightListing client configured from environment."""
+    normalize_network_env()
     algorand = AlgorandClient.from_environment()
     signer_mnemonic = BUYER_MNEMONIC.strip() or os.getenv("DEPLOYER_MNEMONIC", "").strip()
     signer_address = BUYER_WALLET.strip() or os.getenv("DEPLOYER_ADDRESS", "").strip()

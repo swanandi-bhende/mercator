@@ -29,14 +29,16 @@ from contracts.insight_listing import InsightListingClient
 from backend.contracts.escrow.smart_contracts.artifacts.escrow.escrow_client import EscrowClient
 from backend.contracts.reputation.smart_contracts.artifacts.reputation.reputation_client import ReputationClient
 from backend.tools.post_payment_flow import complete_purchase_flow
+from backend.utils.runtime_env import normalize_network_env
 
 logger = logging.getLogger(__name__)
-load_dotenv()
+normalize_network_env()
 
 # Initialize Algorand clients
 @lru_cache(maxsize=1)
 def get_algorand_client() -> AlgorandClient:
     """Return a cached Algorand client configured from environment."""
+    normalize_network_env()
     algod_client = AlgorandClient.from_environment()
     deployer_mnemonic = os.getenv("DEPLOYER_MNEMONIC", "").strip()
     deployer_address = os.getenv("DEPLOYER_ADDRESS", "").strip()
@@ -52,6 +54,7 @@ def get_algorand_client() -> AlgorandClient:
 @lru_cache(maxsize=1)
 def get_insight_listing_client() -> InsightListingClient:
     """Return the deployed InsightListing app client."""
+    normalize_network_env()
     app_id = int(os.getenv("INSIGHT_LISTING_APP_ID", "0"))
     if app_id <= 0:
         raise ValueError("INSIGHT_LISTING_APP_ID not configured")
@@ -75,6 +78,7 @@ def get_insight_listing_client() -> InsightListingClient:
 @lru_cache(maxsize=1)
 def get_escrow_client() -> EscrowClient:
     """Return the deployed Escrow app client."""
+    normalize_network_env()
     app_id = int(os.getenv("ESCROW_APP_ID", "0"))
     if app_id <= 0:
         raise ValueError("ESCROW_APP_ID not configured")
@@ -98,6 +102,7 @@ def get_escrow_client() -> EscrowClient:
 @lru_cache(maxsize=1)
 def get_reputation_client() -> ReputationClient:
     """Return the deployed Reputation app client."""
+    normalize_network_env()
     app_id = int(os.getenv("REPUTATION_APP_ID", "0"))
     if app_id <= 0:
         raise ValueError("REPUTATION_APP_ID not configured")
@@ -376,6 +381,7 @@ async def trigger_x402_payment(
         Exception: If transaction submission fails
     """
     try:
+        normalize_network_env()
         # =========================================================================
         # STEP 1: USER APPROVAL GATE
         # =========================================================================

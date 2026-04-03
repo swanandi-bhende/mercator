@@ -9,11 +9,13 @@ export default function SellInsight() {
   const [wallet, setWallet] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [successTxId, setSuccessTxId] = useState('')
+  const [demoResult, setDemoResult] = useState<string>('')
   const [errorMessage, setErrorMessage] = useState('')
 
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
     setSuccessTxId('')
+    setDemoResult('')
     setErrorMessage('')
 
     if (!insight.trim() || !wallet.trim() || !price.trim()) {
@@ -36,6 +38,18 @@ export default function SellInsight() {
       }
 
       setSuccessTxId(txId)
+
+      const demoResponse = await axios.post('http://localhost:8000/demo_purchase', {
+        user_query: 'latest NIFTY insight',
+        user_approval_input: 'approve',
+        force_buy_for_test: true,
+      })
+
+      const finalInsightText = demoResponse?.data?.final_insight_text ?? ''
+      if (typeof finalInsightText === 'string' && finalInsightText.trim()) {
+        setDemoResult(finalInsightText.trim())
+      }
+
       toast.success(
         <span>
           Insight listed successfully!{' '}
@@ -122,6 +136,13 @@ export default function SellInsight() {
             )}
           </button>
         </form>
+
+        {demoResult && (
+          <div className="mt-5 rounded-lg border border-line bg-surface px-4 py-3 text-sm text-ink">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-secondary">Demo purchase result</p>
+            <p className="whitespace-pre-wrap">{demoResult}</p>
+          </div>
+        )}
 
         {successTxId && (
           <div className="mt-5 rounded-lg border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-800">

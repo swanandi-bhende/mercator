@@ -18,6 +18,9 @@ from algosdk import account
 from algosdk.logic import get_application_address
 from algosdk.v2client import algod, indexer
 
+from backend.agent import run_agent
+from backend.utils.runtime_env import normalize_network_env, warn_missing_required_env
+
 try:
     from contracts.insight_listing import InsightListingClient  # noqa: F401
 except Exception:  # pragma: no cover
@@ -39,8 +42,7 @@ except ModuleNotFoundError:
     )
 
 
-load_dotenv()
-load_dotenv(".env.testnet", override=True)
+normalize_network_env()
 
 app = FastAPI(title="Mercator Backend")
 logger = logging.getLogger("mercator.backend")
@@ -69,7 +71,12 @@ _configure_logging()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -82,7 +89,15 @@ class ListingRequest(BaseModel):
     seller_wallet: str
 
 
+class DemoPurchaseRequest(BaseModel):
+    user_query: str
+    buyer_address: str | None = None
+    user_approval_input: str = "approve"
+    force_buy_for_test: bool = True
+
+
 def _get_algod_client() -> algod.AlgodClient:
+    normalize_network_env()
     algod_url = os.getenv("ALGOD_URL", "").strip() or os.getenv("ALGOD_SERVER", "").strip()
     if not algod_url:
         raise HTTPException(status_code=500, detail="ALGOD_URL/ALGOD_SERVER is not configured")
@@ -91,6 +106,7 @@ def _get_algod_client() -> algod.AlgodClient:
 
 
 def _get_indexer_client() -> indexer.IndexerClient:
+    normalize_network_env()
     indexer_url = os.getenv("INDEXER_URL", "").strip() or os.getenv("INDEXER_SERVER", "").strip()
     if not indexer_url:
         raise HTTPException(status_code=500, detail="INDEXER_URL/INDEXER_SERVER is not configured")
@@ -126,6 +142,24 @@ def _ensure_listing_app_funded(app_id: int) -> None:
     )
     tx_id = client.send_transaction(pay_txn.sign(private_key))
     transaction.wait_for_confirmation(client, tx_id, 4)
+
+
+@app.on_event("startup")
+def startup_checks() -> None:
+    normalize_network_env()
+    warn_missing_required_env(logger)
+
+
+def _extract_final_insight_text(result: dict[str, object]) -> str:
+    payment_status = result.get("payment_status")
+    if isinstance(payment_status, dict):
+        post_payment_output = payment_status.get("post_payment_output")
+        if isinstance(post_payment_output, str):
+            marker = "Here is your human trading insight:\n\n"
+            if marker in post_payment_output:
+                return post_payment_output.split(marker, 1)[-1].split("\n\nTransaction IDs:", 1)[0].strip()
+            return post_payment_output.strip()
+    return ""
 
 
 def _find_cid_tx_id(app_id: int, sender: str, cid: str) -> str | None:
@@ -185,8 +219,7 @@ def health() -> dict[str, str]:
 
 @app.post("/list")
 async def create_listing(request: ListingRequest) -> dict[str, int | str]:
-    load_dotenv()
-    load_dotenv(".env.testnet", override=True)
+    normalize_network_env()
     logger.info(
         "Incoming /list request: seller_wallet=%s, price=%s, insight_len=%s",
         request.seller_wallet,
@@ -291,6 +324,25 @@ async def create_listing(request: ListingRequest) -> dict[str, int | str]:
         "cid": cid,
         "listing_id": listing_id,
         "asa_id": asa_id,
+    }
+
+
+@app.post("/demo_purchase")
+async def demo_purchase(request: DemoPurchaseRequest) -> dict[str, object]:
+    normalize_network_env()
+    buyer_address = (request.buyer_address or os.getenv("BUYER_WALLET", "").strip() or os.getenv("BUYER_ADDRESS", "").strip() or os.getenv("DEPLOYER_ADDRESS", "").strip())
+    result = await run_agent(
+        user_query=request.user_query,
+        buyer_address=buyer_address,
+        user_approval_input=request.user_approval_input,
+        force_buy_for_test=request.force_buy_for_test,
+    )
+
+    final_insight_text = _extract_final_insight_text(result if isinstance(result, dict) else {})
+    return {
+        "success": bool(result.get("success", False)) if isinstance(result, dict) else False,
+        "final_insight_text": final_insight_text,
+        "result": result,
     }
 
 
