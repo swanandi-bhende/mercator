@@ -2,6 +2,15 @@
 
 Mercator is an Algorand TestNet demo for seller-listed trading insights and an AI buyer that can search, buy, and unlock the insight in one flow.
 
+## Latest Verified Run
+
+- Command: `python demo.py`
+- Listing tx: `WI3DBJAEXOMVP6XKHLF3SVMUVOFHSVI25ZBCSWEB7BD4Z6JSSA3Q`
+- Payment tx: `FFFJ2PN57NGT765W2OI6TK4RSL4H6SVCTDFIMTT6L3PIPGJVUL5A`
+- Escrow tx: `BHGEHFI4ZMGZV5625ME33CSQJEWSBNQKRKRGCU5V6WHFHATLBRWA`
+- Final delivered insight text: `Sample trading insight: Buy NIFTY above 24500 with SL 24380`
+- Full trace: [demo_flow.log](demo_flow.log)
+
 ## Core Files
 
 - [backend/main.py](backend/main.py): FastAPI API with `/list` and `/demo_purchase`

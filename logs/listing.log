@@ -61,3 +61,31 @@ TimeoutError: The read operation timed out
 2026-04-01 09:01:02,904 INFO mercator.backend: IPFS upload complete, cid=QmXyyTaosxnNVnCHSgcNNQRj4jJAy7CFxnQEqKFv6YNfgE
 2026-04-01 09:01:11,912 INFO mercator.backend: On-chain listing submitted: listing_id=3 asa_id=758048084
 2026-04-01 09:01:12,576 INFO mercator.backend: Transaction confirmed: tx_id=WOZDMPMPHAVBAZ4RMCY4Y3MVC5V2HNTIROPMLUOVKRP5GEETAPKA
+2026-04-03 15:33:42,067 WARNING mercator.backend: Missing required environment keys: PINATA_JWT
+2026-04-03 15:33:44,264 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 15:33:44,265 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 15:33:50,079 ERROR mercator.backend: IPFS upload failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/utils/ipfs.py", line 107, in upload_insight_to_ipfs
+    headers=_get_pinata_headers(),
+            ~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/utils/ipfs.py", line 42, in _get_pinata_headers
+    raise PinataConfigError("PINATA_JWT is not set")
+backend.utils.ipfs.PinataConfigError: PINATA_JWT is not set
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 282, in create_listing
+    cid = await upload_insight_to_ipfs(request.insight_text)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/utils/ipfs.py", line 146, in upload_insight_to_ipfs
+    raise IPFSUploadError(
+        "Could not store insight on IPFS — please try again"
+    ) from last_error
+backend.utils.ipfs.IPFSUploadError: Could not store insight on IPFS — please try again
+2026-04-03 15:35:32,478 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-03 15:35:32,479 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-03 15:35:35,041 INFO mercator.backend: IPFS upload complete, cid=QmRGRbfgwtaofvyMwwirBPzBcNEsCsp8n2AdFPqW5oLy7c
+2026-04-03 15:35:39,452 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-03 15:35:39,729 INFO mercator.backend: Transaction confirmed: tx_id=WI3DBJAEXOMVP6XKHLF3SVMUVOFHSVI25ZBCSWEB7BD4Z6JSSA3Q

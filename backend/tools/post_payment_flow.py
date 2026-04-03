@@ -13,7 +13,7 @@ import time
 import logging
 from functools import lru_cache
 from algokit_utils import AlgorandClient
-from backend.utils.runtime_env import normalize_network_env
+from backend.utils.runtime_env import configure_demo_logging, normalize_network_env
 
 try:
     from utils.ipfs import fetch_insight_from_ipfs
@@ -22,6 +22,7 @@ except ImportError:  # pragma: no cover - supports project-root execution
 
 
 normalize_network_env()
+demo_logger = configure_demo_logging()
 
 logger = logging.getLogger(__name__)
 
@@ -150,6 +151,7 @@ async def complete_purchase_flow(tx_id: str, listing_id: int, buyer_wallet: str)
         escrow_tx_id = _extract_tx_id(redeem_result)
         escrow_round = await _wait_for_confirmation(tx_id=escrow_tx_id, timeout_seconds=30)
         logger.info("Escrow redeem confirmed | tx_id=%s round=%s", escrow_tx_id, escrow_round)
+        demo_logger.info("Escrow released")
     except Exception as exc:  # noqa: BLE001
         logger.warning("Escrow redeem unavailable; continuing with paid content delivery | error=%s", exc)
 
@@ -160,6 +162,7 @@ async def complete_purchase_flow(tx_id: str, listing_id: int, buyer_wallet: str)
     cid = str(listing.ipfs_hash)
     try:
         insight_text = await fetch_insight_from_ipfs(cid)
+        demo_logger.info("IPFS content delivered")
     except Exception as exc:  # noqa: BLE001
         logger.warning("IPFS fetch failed after escrow release | cid=%s error=%s", cid, exc)
         insight_text = "Insight content could not be retrieved right now. Please retry shortly."

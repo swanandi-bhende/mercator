@@ -25,10 +25,11 @@ from backend.contracts.escrow.smart_contracts.artifacts.escrow.escrow_client imp
 from backend.contracts.reputation.smart_contracts.artifacts.reputation.reputation_client import ReputationClient
 from backend.tools.semantic_search import semantic_search as semantic_search_tool
 from backend.tools.x402_payment import trigger_x402_payment, validate_x402_payment
-from backend.utils.runtime_env import normalize_network_env
+from backend.utils.runtime_env import configure_demo_logging, normalize_network_env
 
 
 normalize_network_env()
+demo_logger = configure_demo_logging()
 if not os.getenv("GEMINI_API_KEY"):
     load_dotenv(".env.testnet", override=True)
 
@@ -286,6 +287,7 @@ async def run_agent(
                         else "x402 payment attempt failed; see payment_status for details"
                     ),
                 }
+                demo_logger.info("Payment approved")
                 logger.info(f"Payment triggered: {result}")
                 return result
         except Exception as e:

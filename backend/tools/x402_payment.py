@@ -29,10 +29,11 @@ from contracts.insight_listing import InsightListingClient
 from backend.contracts.escrow.smart_contracts.artifacts.escrow.escrow_client import EscrowClient
 from backend.contracts.reputation.smart_contracts.artifacts.reputation.reputation_client import ReputationClient
 from backend.tools.post_payment_flow import complete_purchase_flow
-from backend.utils.runtime_env import normalize_network_env
+from backend.utils.runtime_env import configure_demo_logging, normalize_network_env
 
 logger = logging.getLogger(__name__)
 normalize_network_env()
+demo_logger = configure_demo_logging()
 
 # Initialize Algorand clients
 @lru_cache(maxsize=1)
@@ -399,6 +400,7 @@ async def trigger_x402_payment(
             })
         
         logger.info("✓ User approval confirmed: 'approve'")
+        demo_logger.info("Payment approved")
         
         # =========================================================================
         # STEP 2: FETCH LISTING AND VALIDATE BUYER
@@ -527,6 +529,8 @@ async def trigger_x402_payment(
                 listing_id=listing_id,
                 buyer_wallet=buyer_address,
             )
+            if post_payment_output:
+                demo_logger.info("IPFS content delivered")
             
             # =====================================================================
             # STEP 5: RETURN CONFIRMATION WITH EXPLORER LINK

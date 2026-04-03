@@ -19,7 +19,7 @@ from algosdk.logic import get_application_address
 from algosdk.v2client import algod, indexer
 
 from backend.agent import run_agent
-from backend.utils.runtime_env import normalize_network_env, warn_missing_required_env
+from backend.utils.runtime_env import configure_demo_logging, normalize_network_env, warn_missing_required_env
 
 try:
     from contracts.insight_listing import InsightListingClient  # noqa: F401
@@ -43,6 +43,7 @@ except ModuleNotFoundError:
 
 
 normalize_network_env()
+demo_logger = configure_demo_logging()
 
 app = FastAPI(title="Mercator Backend")
 logger = logging.getLogger("mercator.backend")
@@ -295,6 +296,8 @@ async def create_listing(request: ListingRequest) -> dict[str, int | str]:
             listing_id,
             asa_id,
         )
+        demo_logger.info("Seller upload complete")
+        demo_logger.info("On-chain ASA created")
 
         tx_id = await _poll_for_listing_confirmation(
             app_id=listing_app_id,

@@ -4,7 +4,7 @@ import logging
 import os
 from pathlib import Path
 
-from dotenv import load_dotenv
+from dotenv import dotenv_values, load_dotenv
 
 
 def repo_root() -> Path:
@@ -14,7 +14,13 @@ def repo_root() -> Path:
 def load_repo_env_files() -> None:
     root = repo_root()
     load_dotenv(root / ".env", override=False)
-    load_dotenv(root / ".env.testnet", override=False)
+    testnet_values = dotenv_values(root / ".env.testnet")
+    for key, value in testnet_values.items():
+        if value is None:
+            continue
+        if not str(value).strip():
+            continue
+        os.environ[key] = str(value)
 
 
 def normalize_network_env() -> None:
@@ -68,3 +74,25 @@ def warn_missing_required_env(logger: logging.Logger | None = None) -> None:
         print(f"WARNING: {message}")
     else:
         logger.warning(message)
+
+
+def configure_demo_logging() -> logging.Logger:
+    """Configure a shared file logger for the integrated demo flow."""
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+
+    log_path = repo_root() / "demo_flow.log"
+    has_file_handler = any(
+        isinstance(handler, logging.FileHandler)
+        and Path(getattr(handler, "baseFilename", "")) == log_path
+        for handler in root_logger.handlers
+    )
+    if not has_file_handler:
+        file_handler = logging.FileHandler(log_path)
+        file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(
+            logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
+        )
+        root_logger.addHandler(file_handler)
+
+    return logging.getLogger("demo.flow")

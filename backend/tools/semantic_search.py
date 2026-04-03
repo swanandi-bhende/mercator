@@ -26,10 +26,11 @@ try:
     from utils.ipfs import fetch_insight_from_ipfs, upload_insight_to_ipfs
 except ImportError:  # pragma: no cover - supports running from repo root
     from backend.utils.ipfs import fetch_insight_from_ipfs, upload_insight_to_ipfs
-from backend.utils.runtime_env import normalize_network_env
+from backend.utils.runtime_env import configure_demo_logging, normalize_network_env
 
 
 normalize_network_env()
+demo_logger = configure_demo_logging()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -267,6 +268,7 @@ async def semantic_search(query: str) -> str:
         },
         indent=2,
     )
+    demo_logger.info("Agent semantic search returned %s results", len(matches))
     _query_cache[cleaned_query] = (time.time(), result)
     return result
 
