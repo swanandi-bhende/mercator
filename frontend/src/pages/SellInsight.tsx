@@ -1,19 +1,20 @@
 import { ArrowPathIcon } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { api, ApiError } from '../utils/api'
+import { useAppContext } from '../context/AppContext'
 
 export default function SellInsightPage() {
+  const navigate = useNavigate()
+  const { setLastListingTxId, setListingInsight } = useAppContext()
+
   const [insight, setInsight] = useState('')
   const [price, setPrice] = useState('1.00')
   const [wallet, setWallet] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [successTxId, setSuccessTxId] = useState('')
-  const [demoResult, setDemoResult] = useState<string>('')
   const [errorMessage, setErrorMessage] = useState('')
   const [formLockedByError, setFormLockedByError] = useState(false)
-
-  const explorerTxUrl = (txId: string) => `https://explorer.perawallet.app/tx/${txId}/`
 
   const unlockOnEdit = () => {
     if (formLockedByError) {
@@ -24,8 +25,6 @@ export default function SellInsightPage() {
 
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
-    setSuccessTxId('')
-    setDemoResult('')
     setErrorMessage('')
 
     if (!insight.trim() || !wallet.trim() || !price.trim()) {
@@ -43,33 +42,22 @@ export default function SellInsightPage() {
         throw new Error(response.error || 'No transaction ID returned from server.')
       }
 
-      setSuccessTxId(response.txId)
-
-      // Demo purchase flow
-      const demoResponse = await api.demoPurchase({
-        user_query: 'latest NIFTY insight',
-        buyer_address: wallet,
-        user_approval_input: 'approve',
-        force_buy_for_test: true,
+      // Store in context for transaction page
+      setLastListingTxId(response.txId)
+      setListingInsight({
+        insight_text: insight,
+        price: parseFloat(price as any),
+        seller_wallet: wallet,
+        tx_id: response.txId,
+        cid: response.cid,
+        listing_id: response.listing_id,
+        asa_id: response.asa_id,
       })
 
-      if (demoResponse.success && demoResponse.final_insight_text) {
-        setDemoResult(demoResponse.final_insight_text.trim())
-      }
-
-      toast.success(
-        <span>
-          Insight listed successfully!{' '}
-          <a
-            href={explorerTxUrl(response.txId)}
-            target="_blank"
-            rel="noreferrer"
-            className="underline"
-          >
-            View on explorer
-          </a>
-        </span>,
-      )
+      toast.success('Insight listed successfully!')
+      
+      // Navigate to transaction page
+      navigate('/transaction')
     } catch (error) {
       const message =
         error instanceof ApiError
@@ -158,31 +146,6 @@ export default function SellInsightPage() {
             )}
           </button>
         </form>
-
-        {demoResult && (
-          <div className="mt-6 rounded-lg border border-green-200 bg-green-50 px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-gray-600">
-              Demo Purchase Result
-            </p>
-            <p className="mt-2 whitespace-pre-wrap text-sm text-gray-900">{demoResult}</p>
-          </div>
-        )}
-
-        {successTxId && (
-          <div className="mt-6 rounded-lg border border-green-200 bg-green-50 px-4 py-3">
-            <p className="text-sm text-green-900">
-              Listed successfully. Transaction:{' '}
-              <a
-                href={explorerTxUrl(successTxId)}
-                target="_blank"
-                rel="noreferrer"
-                className="font-semibold underline"
-              >
-                {successTxId}
-              </a>
-            </p>
-          </div>
-        )}
 
         {errorMessage && (
           <div className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
