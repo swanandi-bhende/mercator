@@ -34,7 +34,7 @@ const MOCK_TRANSACTIONS = [
 ]
 
 export default function ActivityLedgerPage() {
-  const { lastTransactionId, currentJourney } = useAppContext()
+  const { lastTransactionId } = useAppContext()
 
   return (
     <div className="min-h-screen bg-white px-4 py-12">

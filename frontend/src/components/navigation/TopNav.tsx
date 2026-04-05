@@ -9,8 +9,6 @@ export default function TopNav() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   const isActive = (path: string) => location.pathname === path
-  const isActiveSection = (paths: string[]) =>
-    paths.includes(location.pathname)
 
   // Update journey based on current route
   useEffect(() => {

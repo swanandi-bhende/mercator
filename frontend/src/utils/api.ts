@@ -93,7 +93,8 @@ export class ApiError extends Error {
 
       // Map common error codes
       for (const [code, message] of Object.entries(errorMessageMap)) {
-        if (this.message.includes(code) || data?.error?.includes(code)) {
+        const backendError = typeof data?.error === 'string' ? data.error : ''
+        if (this.message.includes(code) || backendError.includes(code)) {
           return message
         }
       }

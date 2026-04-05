@@ -97,7 +97,7 @@ export default function TransactionPage() {
                   <p className="mt-1 text-sm font-semibold text-gray-900">
                     {isSellerFlow
                       ? listingInsight?.insight_text?.substring(0, 40) + '...'
-                      : paymentState?.['amount'] || selectedInsight?.price + ' USDC'}{' '}
+                      : `${selectedInsight?.price ?? '--'} USDC`}
                   </p>
                 </div>
                 <div>
