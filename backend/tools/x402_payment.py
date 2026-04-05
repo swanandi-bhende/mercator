@@ -14,6 +14,7 @@ Includes:
 from langchain_core.tools import tool
 from algosdk.v2client import algod, indexer
 from algosdk import encoding, transaction, account as algo_account, mnemonic as algo_mnemonic
+from algosdk.error import AlgodHTTPError
 from algosdk.transaction import ApplicationCallTxn, PaymentTxn
 from algokit_utils import AlgorandClient
 from dotenv import load_dotenv
@@ -342,6 +343,9 @@ class X402Client:
                 logger.info(f"x402 payment confirmed in round {confirmed_txn.get('confirmed-round')}")
                 
                 return txid
+            except AlgodHTTPError as signing_error:
+                logger.error(f"Algod signing/submission error: {str(signing_error)}")
+                raise Exception(f"Micropayment submit/sign failed: {str(signing_error)}") from signing_error
             except Exception as signing_error:
                 logger.error(f"Signing error: {str(signing_error)}")
                 raise Exception(f"Micropayment submit/sign failed: {str(signing_error)}") from signing_error
@@ -382,6 +386,16 @@ async def trigger_x402_payment(
         Exception: If transaction submission fails
     """
     try:
+        def _friendly_payment_error(raw: str) -> str:
+            low = raw.lower()
+            if "underflow" in low or "insufficient" in low or "overspend" in low:
+                return "Payment was rejected by x402 - please check your wallet balance"
+            if "rejected" in low:
+                return "Payment was rejected by x402 - please check your wallet balance"
+            if "timeout" in low or "network" in low or "connection" in low:
+                return "Payment was rejected by x402 - please check your wallet balance"
+            return "Payment was rejected by x402 - please check your wallet balance"
+
         normalize_network_env()
         # =========================================================================
         # STEP 1: USER APPROVAL GATE
@@ -421,10 +435,25 @@ async def trigger_x402_payment(
         # Fetch listing details from InsightListing contract
         logger.info("Fetching listing details from InsightListing app...")
         
-        listing_client = get_insight_listing_client()
-        algorand = get_algorand_client()
-        
-        listing = listing_client.state.box.listings.get_value(listing_id)
+        try:
+            listing_client = get_insight_listing_client()
+            algorand = get_algorand_client()
+            listing = listing_client.state.box.listings.get_value(listing_id)
+        except AlgodHTTPError as exc:
+            logger.error("Contract error while fetching listing | listing_id=%s error=%s", listing_id, exc, exc_info=True)
+            return json.dumps({
+                "success": False,
+                "error": "CONTRACT_ERROR",
+                "message": "Contract error: listing not found or already redeemed"
+            })
+        except Exception as exc:
+            logger.error("Unexpected contract fetch error | listing_id=%s error=%s", listing_id, exc, exc_info=True)
+            return json.dumps({
+                "success": False,
+                "error": "CONTRACT_ERROR",
+                "message": "Contract error: listing not found or already redeemed"
+            })
+
         if listing is None:
             return json.dumps({
                 "success": False,
@@ -497,13 +526,22 @@ async def trigger_x402_payment(
             
             logger.info(f"✓ Payment simulation passed: {simulation_result}")
         
-        except ValueError as e:
+        except (ValueError, AlgodHTTPError, TimeoutError, ConnectionError) as e:
             error_msg = f"Payment simulation error: {str(e)}"
             logger.error(error_msg)
             return json.dumps({
                 "success": False,
                 "error": "SIMULATION_ERROR",
-                "message": error_msg,
+                "message": _friendly_payment_error(str(e)),
+                "next_step": "Check buyer balance, receiver address, and asset availability"
+            })
+        except Exception as e:
+            error_msg = f"Payment simulation unexpected error: {str(e)}"
+            logger.error(error_msg, exc_info=True)
+            return json.dumps({
+                "success": False,
+                "error": "SIMULATION_ERROR",
+                "message": _friendly_payment_error(str(e)),
                 "next_step": "Check buyer balance, receiver address, and asset availability"
             })
         
@@ -566,6 +604,28 @@ async def trigger_x402_payment(
             logger.info(f"x402 payment flow completed successfully: {response}")
             return json.dumps(response)
         
+        except AlgodHTTPError as e:
+            error_msg = f"x402 micropayment execution failed: {str(e)}"
+            logger.error(error_msg, exc_info=True)
+            return json.dumps({
+                "success": False,
+                "approved": True,
+                "simulation_passed": True,
+                "error": "PAYMENT_EXECUTION_FAILED",
+                "message": _friendly_payment_error(str(e)),
+                "next_step": "Verify buyer USDC balance and network connectivity"
+            })
+        except (TimeoutError, ConnectionError) as e:
+            error_msg = f"x402 micropayment network failure: {str(e)}"
+            logger.error(error_msg, exc_info=True)
+            return json.dumps({
+                "success": False,
+                "approved": True,
+                "simulation_passed": True,
+                "error": "PAYMENT_EXECUTION_FAILED",
+                "message": _friendly_payment_error(str(e)),
+                "next_step": "Verify buyer USDC balance and network connectivity"
+            })
         except Exception as e:
             error_msg = f"x402 micropayment execution failed: {str(e)}"
             logger.error(error_msg, exc_info=True)
@@ -574,7 +634,7 @@ async def trigger_x402_payment(
                 "approved": True,
                 "simulation_passed": True,
                 "error": "PAYMENT_EXECUTION_FAILED",
-                "message": error_msg,
+                "message": _friendly_payment_error(str(e)),
                 "next_step": "Verify buyer USDC balance and network connectivity"
             })
     

@@ -11,6 +11,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from algosdk import mnemonic, transaction
 from algosdk import encoding
@@ -48,27 +49,18 @@ demo_logger = configure_demo_logging()
 app = FastAPI(title="Mercator Backend")
 logger = logging.getLogger("mercator.backend")
 
-
-def _configure_logging() -> None:
-    logs_dir = Path(__file__).resolve().parents[1] / "logs"
-    logs_dir.mkdir(parents=True, exist_ok=True)
-
-    if logger.handlers:
-        return
-
-    logger.setLevel(logging.INFO)
-    formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
-
-    stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(formatter)
-    logger.addHandler(stream_handler)
-
-    file_handler = logging.FileHandler(logs_dir / "listing.log")
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler("mercator.log", mode="a"),
+    ],
+)
 
 
-_configure_logging()
+def _error_response(status_code: int, message: str) -> JSONResponse:
+    return JSONResponse(status_code=status_code, content={"error": message})
 
 app.add_middleware(
     CORSMiddleware,
@@ -243,35 +235,25 @@ async def create_listing(request: ListingRequest) -> dict[str, int | str]:
         or len(request.seller_wallet) != 58
         or not encoding.is_valid_address(request.seller_wallet)
     ):
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid insight text, price, or wallet address",
-        )
+        return _error_response(400, "Invalid insight text, price, or wallet address")
 
     listing_app_id_raw = os.getenv("INSIGHT_LISTING_APP_ID", "").strip()
     if not listing_app_id_raw:
-        raise HTTPException(
-            status_code=500,
-            detail="INSIGHT_LISTING_APP_ID is not configured",
-        )
+        return _error_response(500, "INSIGHT_LISTING_APP_ID is not configured")
 
     try:
         listing_app_id = int(listing_app_id_raw)
     except ValueError as err:
-        raise HTTPException(
-            status_code=500,
-            detail="INSIGHT_LISTING_APP_ID is invalid",
-        ) from err
+        logger.error("Invalid listing app id in environment | value=%s", listing_app_id_raw)
+        return _error_response(500, "INSIGHT_LISTING_APP_ID is invalid")
 
     signing_mnemonic = _get_signing_mnemonic()
     signer_private_key = mnemonic.to_private_key(signing_mnemonic)
     signer_address = account.address_from_private_key(signer_private_key)
     if signer_address != request.seller_wallet:
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                "seller_wallet does not match configured signing mnemonic address"
-            ),
+        return _error_response(
+            400,
+            "seller_wallet does not match configured signing mnemonic address",
         )
 
     logger.info("Validation passed for seller %s", request.seller_wallet)
@@ -279,10 +261,17 @@ async def create_listing(request: ListingRequest) -> dict[str, int | str]:
     try:
         _ensure_listing_app_funded(listing_app_id)
 
+        logger.info("IPFS upload started | seller=%s", request.seller_wallet)
         cid = await upload_insight_to_ipfs(request.insight_text)
         logger.info("IPFS upload complete, cid=%s", cid)
 
         micro_price = int(request.price * 1_000_000)
+        logger.info(
+            "ASA creation attempted | seller=%s price_micro=%s app_id=%s",
+            request.seller_wallet,
+            micro_price,
+            listing_app_id,
+        )
         listing_id, asa_id = store_cid_in_listing(
             cid=cid,
             listing_app_id=listing_app_id,
@@ -306,17 +295,17 @@ async def create_listing(request: ListingRequest) -> dict[str, int | str]:
         )
         logger.info("Transaction confirmed: tx_id=%s", tx_id)
     except IPFSUploadError as err:
-        logger.exception("IPFS upload failed")
-        raise HTTPException(
-            status_code=500,
-            detail="Could not store insight on IPFS — please try again",
-        ) from err
+        logger.error("IPFS upload failed | error=%s", err, exc_info=True)
+        return _error_response(500, "IPFS upload failed - please try again")
     except ListingStoreError as err:
-        logger.exception("On-chain listing store failed")
-        raise HTTPException(status_code=500, detail=str(err)) from err
+        logger.error("ASA creation failed | error=%s", err, exc_info=True)
+        return _error_response(500, "ASA creation failed - please try again")
+    except HTTPException as err:
+        logger.error("Transaction confirmation failed | detail=%s", err.detail, exc_info=True)
+        return _error_response(err.status_code, str(err.detail))
     except Exception as err:
-        logger.exception("Unexpected /list failure")
-        raise HTTPException(status_code=500, detail=str(err)) from err
+        logger.error("Unexpected /list failure | error=%s", err, exc_info=True)
+        return _error_response(500, "Transaction failed - please try again")
 
     return {
         "success": True,

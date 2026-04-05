@@ -7,8 +7,10 @@ Mercator is an Algorand TestNet demo for seller-listed trading insights and an A
 - Full Round 2 run ledger: [testnet-demo-runs.md](testnet-demo-runs.md)
 - Raw API capture: [testnet-demo-runs.raw.json](testnet-demo-runs.raw.json)
 - Runtime trace: [demo_flow.log](demo_flow.log)
-- Latest seller upload tx: https://testnet.explorer.algorand.org/tx/ZRD7Q7WXUAWTDEP77ERRRJ2GGE2NC35MATL3TTNH4HHLDDVRRGHA
-- Latest payment tx: https://testnet.explorer.algorand.org/tx/QUOO4WN6LPAUZVKYWVE362YDCAQ67MK7QS3T77MNO5IC33VXIIGA
+- Latest seller upload tx id: ZRD7Q7WXUAWTDEP77ERRRJ2GGE2NC35MATL3TTNH4HHLDDVRRGHA
+- Latest payment tx id: QUOO4WN6LPAUZVKYWVE362YDCAQ67MK7QS3T77MNO5IC33VXIIGA
+- Explorer (if reachable): https://explorer.perawallet.app/tx/ZRD7Q7WXUAWTDEP77ERRRJ2GGE2NC35MATL3TTNH4HHLDDVRRGHA/ and https://explorer.perawallet.app/tx/QUOO4WN6LPAUZVKYWVE362YDCAQ67MK7QS3T77MNO5IC33VXIIGA/
+- Verification note: these tx ids were validated directly via TestNet indexer (confirmed rounds 62118380 and 62118398)
 
 Observed during these live runs:
 - Seller uploads and x402 USDC payment transactions are confirmed on TestNet.

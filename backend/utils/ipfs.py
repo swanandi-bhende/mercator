@@ -8,6 +8,7 @@ from __future__ import annotations
 import asyncio
 import importlib.util
 import json
+import logging
 import os
 from pathlib import Path
 from typing import Any
@@ -22,6 +23,7 @@ PIN_FILE_ENDPOINT = f"{PINATA_BASE_URL}/pinning/pinFileToIPFS"
 PIN_JSON_ENDPOINT = f"{PINATA_BASE_URL}/pinning/pinJSONToIPFS"
 UNPIN_ENDPOINT = f"{PINATA_BASE_URL}/pinning/unpin"
 _CID_TEXT_CACHE: dict[str, str] = {}
+logger = logging.getLogger(__name__)
 
 
 class PinataConfigError(RuntimeError):
@@ -99,55 +101,74 @@ async def upload_insight_to_ipfs(text: str, filename: str = "insight.txt") -> st
         "pinataOptions": json.dumps({"cidVersion": 0}),
     }
 
-    last_error: Exception | None = None
-    for attempt in range(3):
-        try:
-            response = await asyncio.to_thread(
-                requests.post,
-                PIN_FILE_ENDPOINT,
-                headers=_get_pinata_headers(),
-                files=files,
-                data=data,
-                timeout=30,
-            )
+    try:
+        last_error: Exception | None = None
+        for attempt in range(3):
+            try:
+                response = await asyncio.to_thread(
+                    requests.post,
+                    PIN_FILE_ENDPOINT,
+                    headers=_get_pinata_headers(),
+                    files=files,
+                    data=data,
+                    timeout=30,
+                )
 
-            if response.status_code == 429:
+                if response.status_code == 429:
+                    if attempt < 2:
+                        await asyncio.sleep(3)
+                        continue
+                    raise IPFSUploadError("Temporary IPFS issue - insight could not be stored")
+
+                response.raise_for_status()
+
+                payload = response.json()
+                cid = str(payload.get("IpfsHash", "")).strip()
+                if not cid:
+                    raise RuntimeError("Pinata response missing IpfsHash")
+                if not cid.startswith("Qm"):
+                    raise RuntimeError(f"Expected CID starting with 'Qm', got: {cid}")
+                _CID_TEXT_CACHE[cid] = text
+                return cid
+            except requests.exceptions.Timeout as err:
+                logger.error("IPFS upload timeout | attempt=%s error=%s", attempt + 1, err)
+                last_error = err
                 if attempt < 2:
                     await asyncio.sleep(3)
                     continue
-                raise IPFSUploadError(
-                    "Could not store insight on IPFS — please try again"
-                )
+            except requests.exceptions.HTTPError as err:
+                logger.error("IPFS upload HTTP error | attempt=%s error=%s", attempt + 1, err)
+                last_error = err
+                status_code = err.response.status_code if err.response is not None else None
+                if status_code == 429 and attempt < 2:
+                    await asyncio.sleep(3)
+                    continue
+                break
+            except requests.exceptions.RequestException as err:
+                logger.error("IPFS upload request error | attempt=%s error=%s", attempt + 1, err)
+                last_error = err
+                break
+            except TimeoutError as err:
+                logger.error("IPFS upload TimeoutError | attempt=%s error=%s", attempt + 1, err)
+                last_error = err
+                break
+            except IPFSUploadError:
+                raise
+            except Exception as err:
+                logger.error("IPFS upload unexpected error | attempt=%s error=%s", attempt + 1, err)
+                last_error = err
+                break
 
-            response.raise_for_status()
-
-            payload = response.json()
-            cid = str(payload.get("IpfsHash", "")).strip()
-            if not cid:
-                raise RuntimeError("Pinata response missing IpfsHash")
-            if not cid.startswith("Qm"):
-                raise RuntimeError(f"Expected CID starting with 'Qm', got: {cid}")
-            _CID_TEXT_CACHE[cid] = text
-            return cid
-        except requests.exceptions.Timeout as err:
-            last_error = err
-            if attempt < 2:
-                await asyncio.sleep(3)
-                continue
-        except requests.exceptions.HTTPError as err:
-            last_error = err
-            status_code = err.response.status_code if err.response is not None else None
-            if status_code == 429 and attempt < 2:
-                await asyncio.sleep(3)
-                continue
-            break
-        except Exception as err:
-            last_error = err
-            break
-
-    raise IPFSUploadError(
-        "Could not store insight on IPFS — please try again"
-    ) from last_error
+        raise IPFSUploadError("Temporary IPFS issue - insight could not be stored") from last_error
+    except requests.exceptions.RequestException as err:
+        logger.error("IPFS upload request exception | error=%s", err)
+        raise IPFSUploadError("Temporary IPFS issue - insight could not be stored") from err
+    except TimeoutError as err:
+        logger.error("IPFS upload timeout exception | error=%s", err)
+        raise IPFSUploadError("Temporary IPFS issue - insight could not be stored") from err
+    except IPFSUploadError as err:
+        logger.error("IPFS upload failed | error=%s", err)
+        raise
 
 
 async def fetch_insight_from_ipfs(cid: str) -> str:
@@ -173,25 +194,40 @@ async def fetch_insight_from_ipfs(cid: str) -> str:
         f"https://ipfs.io/ipfs/{cid}",
     ]
 
-    last_error: Exception | None = None
-    for url in gateways:
-        try:
-            response = await asyncio.to_thread(
-                requests.get,
-                url,
-                headers=headers,
-                timeout=30,
-            )
-            response.raise_for_status()
-            text = response.text
-            _CID_TEXT_CACHE[cid] = text
-            return text
-        except Exception as err:
-            last_error = err
+    try:
+        last_error: Exception | None = None
+        for url in gateways:
+            try:
+                response = await asyncio.to_thread(
+                    requests.get,
+                    url,
+                    headers=headers,
+                    timeout=30,
+                )
+                response.raise_for_status()
+                text = response.text
+                _CID_TEXT_CACHE[cid] = text
+                return text
+            except requests.exceptions.RequestException as err:
+                logger.error("IPFS fetch request error | url=%s error=%s", url, err)
+                last_error = err
+            except TimeoutError as err:
+                logger.error("IPFS fetch TimeoutError | url=%s error=%s", url, err)
+                last_error = err
+            except Exception as err:
+                logger.error("IPFS fetch unexpected error | url=%s error=%s", url, err)
+                last_error = err
 
-    raise IPFSUploadError(
-        "Could not fetch insight from IPFS"
-    ) from last_error
+        raise IPFSUploadError("Temporary IPFS issue - insight could not be stored") from last_error
+    except requests.exceptions.RequestException as err:
+        logger.error("IPFS fetch request exception | cid=%s error=%s", cid, err)
+        raise IPFSUploadError("Temporary IPFS issue - insight could not be stored") from err
+    except TimeoutError as err:
+        logger.error("IPFS fetch timeout exception | cid=%s error=%s", cid, err)
+        raise IPFSUploadError("Temporary IPFS issue - insight could not be stored") from err
+    except IPFSUploadError as err:
+        logger.error("IPFS fetch failed | cid=%s error=%s", cid, err)
+        raise
 
 
 def _load_insight_listing_client_class() -> type:

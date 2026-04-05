@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from langchain_core.tools import tool
 from algosdk.v2client import indexer
+from algosdk.error import AlgodHTTPError
 from contracts.escrow import EscrowClient
 from contracts.insight_listing import InsightListingClient
 from dotenv import load_dotenv
@@ -135,7 +136,15 @@ async def complete_purchase_flow(tx_id: str, listing_id: int, buyer_wallet: str)
     logger.info("Payment confirmed | tx_id=%s round=%s", tx_id, payment_round)
 
     listing_client = get_listing_client()
-    listing = listing_client.state.box.listings.get_value(listing_id)
+    try:
+        listing = listing_client.state.box.listings.get_value(listing_id)
+    except AlgodHTTPError as exc:
+        logger.error("Contract error while reading listing | listing_id=%s error=%s", listing_id, exc)
+        raise RuntimeError("Contract error: listing not found or already redeemed") from exc
+    except Exception as exc:  # noqa: BLE001
+        logger.error("Unexpected contract read error | listing_id=%s error=%s", listing_id, exc)
+        raise RuntimeError("Contract error: listing not found or already redeemed") from exc
+
     if listing is None:
         raise RuntimeError(f"Listing {listing_id} not found in InsightListing state")
 
@@ -151,6 +160,15 @@ async def complete_purchase_flow(tx_id: str, listing_id: int, buyer_wallet: str)
                 tx = _extract_tx_id(redeem_result)
                 round_no = await _wait_for_confirmation(tx_id=tx, timeout_seconds=20)
                 return tx, round_no
+            except AlgodHTTPError as exc:
+                last_error = exc
+                logger.error(
+                    "Contract error during escrow release | attempt=%s listing_id=%s error=%s",
+                    attempt,
+                    listing_id,
+                    exc,
+                )
+                await asyncio.sleep(0.4)
             except Exception as exc:  # noqa: BLE001
                 last_error = exc
                 logger.warning(

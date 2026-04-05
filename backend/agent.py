@@ -33,7 +33,14 @@ demo_logger = configure_demo_logging()
 if not os.getenv("GEMINI_API_KEY"):
     load_dotenv(".env.testnet", override=True)
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler("mercator.log", mode="a"),
+    ],
+)
 logger = logging.getLogger(__name__)
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
