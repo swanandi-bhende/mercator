@@ -1181,3 +1181,363 @@ Traceback (most recent call last):
   File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
     raise effect
 RuntimeError: timed out
+2026-04-04 14:38:10,236 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.5, insight_len=45
+2026-04-04 14:38:10,238 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-04 14:38:17,643 INFO mercator.backend: IPFS upload complete, cid=QmQT7z2u3B1juGzdd25mFqkfS3rGmevBmNAVWUDw76BdKB
+2026-04-04 14:38:22,534 INFO mercator.backend: On-chain listing submitted: listing_id=6 asa_id=758260080
+2026-04-04 14:38:22,767 INFO mercator.backend: Transaction confirmed: tx_id=BS7IUNAVPWBN7Z4QMBAZCK4E3NYOBD4V4GCE7XYQSWXDQ5CABFPQ
+2026-04-04 14:38:39,099 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.5, insight_len=45
+2026-04-04 14:38:39,100 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-04 14:38:48,494 INFO mercator.backend: IPFS upload complete, cid=QmQT7z2u3B1juGzdd25mFqkfS3rGmevBmNAVWUDw76BdKB
+2026-04-04 14:38:54,793 INFO mercator.backend: On-chain listing submitted: listing_id=7 asa_id=758260109
+2026-04-04 14:38:55,233 INFO mercator.backend: Transaction confirmed: tx_id=TJRTMCEUFYK56HNIZKCTEHU2JGUPS5YGY4EIQ5UOLFOCHH7XKMYQ
+2026-04-04 14:46:34,007 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.5, insight_len=45
+2026-04-04 14:46:34,010 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-04 14:46:41,622 INFO mercator.backend: IPFS upload complete, cid=QmQT7z2u3B1juGzdd25mFqkfS3rGmevBmNAVWUDw76BdKB
+2026-04-04 14:46:47,876 INFO mercator.backend: On-chain listing submitted: listing_id=8 asa_id=758260409
+2026-04-04 14:46:48,076 INFO mercator.backend: Transaction confirmed: tx_id=C3GLOVMVOFEZTNCMN3AQZIUXBTRADOTJADO5T6VK3VPLWIIA2VGQ
+2026-04-04 14:48:10,238 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.5, insight_len=45
+2026-04-04 14:48:10,239 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-04 14:48:16,225 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.75, insight_len=56
+2026-04-04 14:48:16,226 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-04 14:48:18,467 INFO mercator.backend: IPFS upload complete, cid=QmQT7z2u3B1juGzdd25mFqkfS3rGmevBmNAVWUDw76BdKB
+2026-04-04 14:48:24,923 INFO mercator.backend: On-chain listing submitted: listing_id=9 asa_id=758260477
+2026-04-04 14:48:25,153 INFO mercator.backend: Transaction confirmed: tx_id=47C3GEQEROL5WMIRPZZH4RV33SOU6RVDRJFCCW6DZRYBCMHHWXTA
+2026-04-04 14:48:25,154 INFO mercator.backend: IPFS upload complete, cid=QmUHiz31bRjEEsigebmQUn3ZaM87pieaJuYJNcrsAsGGJr
+2026-04-04 14:48:30,252 INFO mercator.backend: On-chain listing submitted: listing_id=10 asa_id=758260480
+2026-04-04 14:48:30,493 INFO mercator.backend: Transaction confirmed: tx_id=UFBFWJFBYGXTHN5VLWJD45D3C3NJFE4QRACNC4M3ZILX4PKZMHOA
+2026-04-04 14:49:57,173 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.25, insight_len=74
+2026-04-04 14:49:57,173 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-04 14:50:03,999 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.75, insight_len=56
+2026-04-04 14:50:03,999 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-04 14:50:04,475 INFO mercator.backend: IPFS upload complete, cid=QmZN2AUc8iDeLbyR4QkheoTcZ9fNuvJUUAFLatN1KkmLEN
+2026-04-04 14:50:10,473 INFO mercator.backend: On-chain listing submitted: listing_id=11 asa_id=758260571
+2026-04-04 14:50:10,680 INFO mercator.backend: Transaction confirmed: tx_id=CP7OQA6CPMWTT6G7LAFJXNBDGANCPSGPT5EY5EAKVX7HLWEPBMGQ
+2026-04-04 14:50:10,682 INFO mercator.backend: IPFS upload complete, cid=QmUHiz31bRjEEsigebmQUn3ZaM87pieaJuYJNcrsAsGGJr
+2026-04-04 14:50:15,916 INFO mercator.backend: On-chain listing submitted: listing_id=12 asa_id=758260574
+2026-04-04 14:50:16,072 INFO mercator.backend: Transaction confirmed: tx_id=EYX6UROQQCGTHR3XSLO7LVCA2HXLK4MCXVZEZRZ3GT22D73BAIZQ
+2026-04-04 14:50:31,515 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.25, insight_len=74
+2026-04-04 14:50:31,516 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-04 14:50:39,349 INFO mercator.backend: IPFS upload complete, cid=QmZN2AUc8iDeLbyR4QkheoTcZ9fNuvJUUAFLatN1KkmLEN
+2026-04-04 14:50:45,779 INFO mercator.backend: On-chain listing submitted: listing_id=13 asa_id=758260596
+2026-04-04 14:50:45,945 INFO mercator.backend: Transaction confirmed: tx_id=YACMYXAFGB5AOUG7ED7I3VDBPB6VHAMH362RHPVUZQPBC2NYATTA
+2026-04-04 14:51:51,154 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=61
+2026-04-04 14:51:51,155 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-04 14:51:58,140 INFO mercator.backend: IPFS upload complete, cid=QmNmr7rpfK2X6qKRqXorNQzm8TEu2BXh3XNmagacRfjfhx
+2026-04-04 14:52:03,977 INFO mercator.backend: On-chain listing submitted: listing_id=14 asa_id=758260659
+2026-04-04 14:52:04,142 INFO mercator.backend: Transaction confirmed: tx_id=YG2466HU2SZ5JVOOAVA5UPZF324CTGWM4TU6DEWKJIO77QVAUUNQ
+2026-04-04 14:52:25,239 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=61
+2026-04-04 14:52:25,240 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-04 14:52:32,434 INFO mercator.backend: IPFS upload complete, cid=QmNmr7rpfK2X6qKRqXorNQzm8TEu2BXh3XNmagacRfjfhx
+2026-04-04 14:52:36,375 INFO mercator.backend: On-chain listing submitted: listing_id=15 asa_id=758260694
+2026-04-04 14:52:36,579 INFO mercator.backend: Transaction confirmed: tx_id=MFQMN7JPEJDZHUVVGNOWEAHYVELJOFCWKLWLMTB6A5R5YSWV4SIQ
+2026-04-04 14:53:45,054 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.4, insight_len=69
+2026-04-04 14:53:45,055 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-04 14:53:51,722 INFO mercator.backend: IPFS upload complete, cid=QmQjZkzEN5sRenH6NSJDjzdA427i5g9fGhS1kNVCeXMNzV
+2026-04-04 14:53:57,308 INFO mercator.backend: On-chain listing submitted: listing_id=16 asa_id=758260759
+2026-04-04 14:53:57,520 INFO mercator.backend: Transaction confirmed: tx_id=R32WOP4UW27HOXLIVOLCDQRZRS5B3VKFR2R3I3JCH64NEYPIEDJQ
+2026-04-04 14:54:26,273 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.4, insight_len=69
+2026-04-04 14:54:26,273 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-04 14:54:34,191 INFO mercator.backend: IPFS upload complete, cid=QmQjZkzEN5sRenH6NSJDjzdA427i5g9fGhS1kNVCeXMNzV
+2026-04-04 14:54:40,528 INFO mercator.backend: On-chain listing submitted: listing_id=17 asa_id=758260796
+2026-04-04 14:54:40,673 INFO mercator.backend: Transaction confirmed: tx_id=72T5T4RGOW6B7CQSFNBTYTBQ6DMFKRZ2P3IDHOYLLFHXACKJW6UQ
+2026-04-05 14:08:27,833 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-05 14:08:27,834 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:08:27,835 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-05 14:08:27,835 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-05 14:08:27,835 INFO mercator.backend: Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-05 14:08:27,850 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=2.5, insight_len=58
+2026-04-05 14:08:27,851 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:08:27,851 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-05 14:08:27,851 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-05 14:08:27,852 INFO mercator.backend: Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-05 14:08:27,867 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=-1.0, insight_len=59
+2026-04-05 14:08:27,881 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=3
+2026-04-05 14:08:27,895 INFO mercator.backend: Incoming /list request: seller_wallet=BAD_WALLET, price=1.0, insight_len=59
+2026-04-05 14:08:27,908 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-05 14:08:27,910 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:08:27,910 ERROR mercator.backend: IPFS upload failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 282, in create_listing
+    cid = await upload_insight_to_ipfs(request.insight_text)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.IPFSUploadError: IPFS failed
+2026-04-05 14:08:27,925 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-05 14:08:27,926 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:08:27,926 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-05 14:08:27,927 ERROR mercator.backend: On-chain listing store failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 286, in create_listing
+    listing_id, asa_id = store_cid_in_listing(
+                         ~~~~~~~~~~~~~~~~~~~~^
+        cid=cid,
+        ^^^^^^^^
+    ...<3 lines>...
+        signer_mnemonic=signing_mnemonic,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1175, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1179, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1234, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: store failed
+2026-04-05 14:08:27,942 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-05 14:08:27,943 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:08:27,944 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-05 14:08:27,944 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-05 14:08:27,944 ERROR mercator.backend: Unexpected /list failure
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 302, in create_listing
+    tx_id = await _poll_for_listing_confirmation(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out
+2026-04-05 14:08:30,669 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=5
+2026-04-05 14:08:30,673 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=5
+2026-04-05 14:08:30,676 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=5
+2026-04-05 14:10:00,248 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.5, insight_len=62
+2026-04-05 14:10:00,249 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:10:06,499 INFO mercator.backend: IPFS upload complete, cid=QmUk4xjGErLaYNDzHeNnPxpoPaKyVvDdzdMnpcXxR8sZpb
+2026-04-05 14:10:13,316 INFO mercator.backend: On-chain listing submitted: listing_id=18 asa_id=758322422
+2026-04-05 14:10:13,565 INFO mercator.backend: Transaction confirmed: tx_id=4YR6PAOPP2SWECTIAXUYON2DEEOR5BEYHUGKBDNCEZTXVX6RDXGQ
+2026-04-05 14:12:27,703 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.75, insight_len=72
+2026-04-05 14:12:27,704 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:12:35,476 INFO mercator.backend: IPFS upload complete, cid=QmcWuoabMJkwEyfyFf6xbWspTGzqyAsS22YZYyxTJqViRc
+2026-04-05 14:12:41,931 INFO mercator.backend: On-chain listing submitted: listing_id=19 asa_id=758322539
+2026-04-05 14:12:42,114 INFO mercator.backend: Transaction confirmed: tx_id=HCI34IPKX72FA4MZ67WXE55ACHCHHU4RVIZHVG2AXZGWANJIRVHQ
+2026-04-05 14:14:57,817 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.25, insight_len=91
+2026-04-05 14:14:57,818 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:15:06,637 INFO mercator.backend: IPFS upload complete, cid=QmcdtrWrPqg5gZsgeDKm2KLSp2Pzg3rHW7wzZeeReFZ85S
+2026-04-05 14:15:12,809 INFO mercator.backend: On-chain listing submitted: listing_id=20 asa_id=758322708
+2026-04-05 14:15:12,990 INFO mercator.backend: Transaction confirmed: tx_id=AAKG5DDBLCYLKQ5T3YHMD2EET4JBQ3CTHTJPS5QCJRZQ6SRAGA5Q
+2026-04-05 14:17:35,072 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=78
+2026-04-05 14:17:35,073 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:17:42,856 INFO mercator.backend: IPFS upload complete, cid=QmYH8MmF1oWfjrexU4pruSKfbv3PD8XB7Y6tEDkQU4YGx6
+2026-04-05 14:17:49,687 INFO mercator.backend: On-chain listing submitted: listing_id=21 asa_id=758322847
+2026-04-05 14:17:49,948 INFO mercator.backend: Transaction confirmed: tx_id=QDGHOYOMM2IHOCY3CX6NZQUQ7GNLTK42ZJY5KJX5Q6LEOSMS6TVQ
+2026-04-05 14:20:08,765 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.4, insight_len=88
+2026-04-05 14:20:08,766 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:20:16,876 INFO mercator.backend: IPFS upload complete, cid=QmSKKqLmcGor8AExmb3ABVQV5hu2eJKyF4Xpe2fopn4jC1
+2026-04-05 14:20:23,618 INFO mercator.backend: On-chain listing submitted: listing_id=22 asa_id=758322962
+2026-04-05 14:20:23,839 INFO mercator.backend: Transaction confirmed: tx_id=EEF6M4KDWAJTWLEXHQX2UNBNN7YEMNSHFFBBJ4FM456BQSIXHRFA
+2026-04-05 14:23:54,446 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-05 14:23:54,448 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:23:54,448 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-05 14:23:54,448 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-05 14:23:54,449 INFO mercator.backend: Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-05 14:23:54,462 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=2.5, insight_len=58
+2026-04-05 14:23:54,463 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:23:54,463 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-05 14:23:54,463 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-05 14:23:54,463 INFO mercator.backend: Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-05 14:23:54,477 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=-1.0, insight_len=59
+2026-04-05 14:23:54,490 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=3
+2026-04-05 14:23:54,504 INFO mercator.backend: Incoming /list request: seller_wallet=BAD_WALLET, price=1.0, insight_len=59
+2026-04-05 14:23:54,516 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-05 14:23:54,517 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:23:54,518 ERROR mercator.backend: IPFS upload failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 282, in create_listing
+    cid = await upload_insight_to_ipfs(request.insight_text)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.IPFSUploadError: IPFS failed
+2026-04-05 14:23:54,533 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-05 14:23:54,535 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:23:54,535 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-05 14:23:54,536 ERROR mercator.backend: On-chain listing store failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 286, in create_listing
+    listing_id, asa_id = store_cid_in_listing(
+                         ~~~~~~~~~~~~~~~~~~~~^
+        cid=cid,
+        ^^^^^^^^
+    ...<3 lines>...
+        signer_mnemonic=signing_mnemonic,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1175, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1179, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1234, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: store failed
+2026-04-05 14:23:54,552 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-05 14:23:54,553 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:23:54,554 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-05 14:23:54,554 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-05 14:23:54,554 ERROR mercator.backend: Unexpected /list failure
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 302, in create_listing
+    tx_id = await _poll_for_listing_confirmation(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out
+2026-04-05 14:23:57,887 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=5
+2026-04-05 14:23:57,892 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=5
+2026-04-05 14:23:57,897 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=5
+2026-04-05 14:24:36,118 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-05 14:24:36,119 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:24:36,119 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-05 14:24:36,120 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-05 14:24:36,120 INFO mercator.backend: Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-05 14:24:36,132 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=2.5, insight_len=58
+2026-04-05 14:24:36,133 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:24:36,133 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-05 14:24:36,134 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-05 14:24:36,134 INFO mercator.backend: Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-05 14:24:36,146 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=-1.0, insight_len=59
+2026-04-05 14:24:36,158 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=3
+2026-04-05 14:24:36,169 INFO mercator.backend: Incoming /list request: seller_wallet=BAD_WALLET, price=1.0, insight_len=59
+2026-04-05 14:24:36,179 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-05 14:24:36,180 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:24:36,180 ERROR mercator.backend: IPFS upload failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 282, in create_listing
+    cid = await upload_insight_to_ipfs(request.insight_text)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.IPFSUploadError: IPFS failed
+2026-04-05 14:24:36,193 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-05 14:24:36,194 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:24:36,194 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-05 14:24:36,194 ERROR mercator.backend: On-chain listing store failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 286, in create_listing
+    listing_id, asa_id = store_cid_in_listing(
+                         ~~~~~~~~~~~~~~~~~~~~^
+        cid=cid,
+        ^^^^^^^^
+    ...<3 lines>...
+        signer_mnemonic=signing_mnemonic,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1175, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1179, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1234, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: store failed
+2026-04-05 14:24:36,206 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-05 14:24:36,206 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:24:36,206 INFO mercator.backend: IPFS upload complete, cid=QmMockCID
+2026-04-05 14:24:36,207 INFO mercator.backend: On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-05 14:24:36,207 ERROR mercator.backend: Unexpected /list failure
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 302, in create_listing
+    tx_id = await _poll_for_listing_confirmation(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out
+2026-04-05 14:24:38,619 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=5
+2026-04-05 14:24:38,621 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=5
+2026-04-05 14:24:38,624 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=5
+2026-04-05 14:24:49,143 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.5, insight_len=67
+2026-04-05 14:24:49,144 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:24:56,243 INFO mercator.backend: IPFS upload complete, cid=QmRrJ5gygRkc33C6S9SE17gQkqMwFTxatngYTiyjLQMSmD
+2026-04-05 14:25:01,857 INFO mercator.backend: On-chain listing submitted: listing_id=23 asa_id=758323176
+2026-04-05 14:25:02,104 INFO mercator.backend: Transaction confirmed: tx_id=ECT7HEIUZZWHQ4CTG6IOJHDQ46NPUUUVUSJVHXOUJQ77FF5WBJ6Q
+2026-04-05 14:27:39,888 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.75, insight_len=67
+2026-04-05 14:27:39,889 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:27:45,707 INFO mercator.backend: IPFS upload complete, cid=QmVDykG2weHeoaS1p1UniKmCKnrLxoJeoJ6sx6TfrNvzos
+2026-04-05 14:27:52,164 INFO mercator.backend: On-chain listing submitted: listing_id=24 asa_id=758323278
+2026-04-05 14:27:52,402 INFO mercator.backend: Transaction confirmed: tx_id=SXBX3MG27EK23VAH4KXG3TUP3GJQADDQQEG3I6EITWNDEKRAYBGQ
+2026-04-05 14:30:26,672 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.25, insight_len=80
+2026-04-05 14:30:26,673 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:30:35,285 INFO mercator.backend: IPFS upload complete, cid=QmTGfTjbCxq3jDs4cpAhcx4w7TbGmWRmnN2ZkNqMTb7u55
+2026-04-05 14:30:41,350 INFO mercator.backend: On-chain listing submitted: listing_id=25 asa_id=758323488
+2026-04-05 14:30:41,597 INFO mercator.backend: Transaction confirmed: tx_id=CLAAXDNGG2IUGSD3BWRLZPOSG4XVWJEKKGXQNUUXR5QQJR7IFYZA
+2026-04-05 14:33:35,405 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=77
+2026-04-05 14:33:35,405 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:33:43,148 INFO mercator.backend: IPFS upload complete, cid=QmPpUzrm4fi5cAP6Sp6K6eXfJgoqnrgPwWS9FkzSZCeXh2
+2026-04-05 14:33:49,757 INFO mercator.backend: On-chain listing submitted: listing_id=26 asa_id=758323637
+2026-04-05 14:33:49,975 INFO mercator.backend: Transaction confirmed: tx_id=53NLOUJULQ7VZB7H2UR6MD7SSKKI5QNPN5USXSKVYNJ2ETH2UP4Q
+2026-04-05 14:39:05,910 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.5, insight_len=81
+2026-04-05 14:39:05,913 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:39:13,413 INFO mercator.backend: IPFS upload complete, cid=QmacMuhXuQmoZuXKUchWn8Gkb5tkjGs4Mbiy6VFhjpWred
+2026-04-05 14:39:20,025 INFO mercator.backend: On-chain listing submitted: listing_id=27 asa_id=758323873
+2026-04-05 14:39:20,282 INFO mercator.backend: Transaction confirmed: tx_id=3FGIQ67GC2GYGADPTSQ6SML4NV6CI6HPAWZFQGLBOSZGPBFQATPA
+2026-04-05 14:42:16,745 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.75, insight_len=82
+2026-04-05 14:42:16,748 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:42:22,892 INFO mercator.backend: IPFS upload complete, cid=QmdPwzS3xXq4uMBQbWcKHNF8LUiZ5ZkwZAhXCdUdSwNGmy
+2026-04-05 14:42:29,563 INFO mercator.backend: On-chain listing submitted: listing_id=28 asa_id=758324068
+2026-04-05 14:42:29,852 INFO mercator.backend: Transaction confirmed: tx_id=NXEMQEBZLE46A2R3MH7GRJQ5TEGYNKTN5JLULPNSWJTXIVKCOKXA
+2026-04-05 14:46:45,616 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.5, insight_len=81
+2026-04-05 14:46:45,618 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:46:53,171 INFO mercator.backend: IPFS upload complete, cid=QmcyF8o4gn3MqjiYwcTsEwm6yahMeCcju3HMyEbT7S2Bbi
+2026-04-05 14:46:59,582 INFO mercator.backend: On-chain listing submitted: listing_id=29 asa_id=758324329
+2026-04-05 14:46:59,808 INFO mercator.backend: Transaction confirmed: tx_id=7BFSBGRS75WCN7UTCC2VGEU5VHZMGP4YCJSJNAUNGUT2ZI7Z7T7A
+2026-04-05 14:49:25,103 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.75, insight_len=82
+2026-04-05 14:49:25,104 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:49:31,731 INFO mercator.backend: IPFS upload complete, cid=QmRQmNKiu4bfnLcn61K6YrSuFkWHz1F9vZxN8uAYQLJwNS
+2026-04-05 14:49:35,778 INFO mercator.backend: On-chain listing submitted: listing_id=30 asa_id=758324429
+2026-04-05 14:49:36,048 INFO mercator.backend: Transaction confirmed: tx_id=SJSQFMJX7TRXHUJDBNLXWM22GZOW2CD6XJ5DUR4NMK4YJD6CMEYQ
+2026-04-05 14:49:57,346 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.25, insight_len=94
+2026-04-05 14:49:57,347 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:50:03,861 INFO mercator.backend: IPFS upload complete, cid=QmUdJxtcCa16zGUQHw6dGrMbQ6JaCC4zodJCSp7QuKsAMA
+2026-04-05 14:50:08,023 INFO mercator.backend: On-chain listing submitted: listing_id=31 asa_id=758324452
+2026-04-05 14:50:08,256 INFO mercator.backend: Transaction confirmed: tx_id=M75UAPQZGUOI6NBKTQLM7CCDOEQSB2UKA7AKMWJDDC6LW4YKR3QA
+2026-04-05 14:50:29,767 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=91
+2026-04-05 14:50:29,768 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:50:36,507 INFO mercator.backend: IPFS upload complete, cid=QmWc3NHbfkFnfsUihFQtppwQoxp5jssWaVJWFbY6o4QtFA
+2026-04-05 14:50:40,610 INFO mercator.backend: On-chain listing submitted: listing_id=32 asa_id=758324477
+2026-04-05 14:50:40,821 INFO mercator.backend: Transaction confirmed: tx_id=RK6SSWYPURYGWKRRBLNLM27OV4AQF5CSDC6H3EOAA4AWVNP4SY2Q
+2026-04-05 14:51:02,257 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.4, insight_len=85
+2026-04-05 14:51:02,257 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:51:08,673 INFO mercator.backend: IPFS upload complete, cid=QmaffXg4kEatmhaBEQQyAEVNb6zCjvaDcXttFNuBbcxmeF
+2026-04-05 14:51:12,928 INFO mercator.backend: On-chain listing submitted: listing_id=33 asa_id=758324495
+2026-04-05 14:51:13,140 INFO mercator.backend: Transaction confirmed: tx_id=G5QIOQ73AVXMB3Q2FPUGHTYDDALDEIVC7TQWZMEC3G4RJNG24UCQ
+2026-04-05 14:53:09,148 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.5, insight_len=81
+2026-04-05 14:53:09,149 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:53:16,179 INFO mercator.backend: IPFS upload complete, cid=QmdCP32hCq7gUAB162agWkCLumtgo8N2HaPVqbindJy9fA
+2026-04-05 14:53:22,690 INFO mercator.backend: On-chain listing submitted: listing_id=34 asa_id=758324575
+2026-04-05 14:53:22,962 INFO mercator.backend: Transaction confirmed: tx_id=RLME3CGP3TGNNLE4534IMN5RY6DOYNCWAR7SZTBLFUA2Y6CF4TGA
+2026-04-05 14:53:47,047 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.75, insight_len=82
+2026-04-05 14:53:47,048 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:53:53,381 INFO mercator.backend: IPFS upload complete, cid=QmU224n62BxyQu3zcqK46KFzJzKNx44pAu3TVKDXKeajza
+2026-04-05 14:53:57,791 INFO mercator.backend: On-chain listing submitted: listing_id=35 asa_id=758324602
+2026-04-05 14:53:57,992 INFO mercator.backend: Transaction confirmed: tx_id=7VROZ3JSWFYXJB24ND4JS6TUB4OTJ3ADJTMV3DUQCYXMFK6KFLYQ
+2026-04-05 14:54:22,058 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.25, insight_len=94
+2026-04-05 14:54:22,059 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:54:29,071 INFO mercator.backend: IPFS upload complete, cid=QmajXo2XcSjsyAiBtq9kFV6y7rGDZ7cY3FiJtQ74h5YxDj
+2026-04-05 14:54:35,562 INFO mercator.backend: On-chain listing submitted: listing_id=36 asa_id=758324623
+2026-04-05 14:54:35,812 INFO mercator.backend: Transaction confirmed: tx_id=NHAMZJ4BYSYT4CUSJ55QTCJYJSS6CQQZ3NTX242HTF3YRKE4D5JA
+2026-04-05 14:54:59,850 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=91
+2026-04-05 14:54:59,850 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:55:06,433 INFO mercator.backend: IPFS upload complete, cid=QmRWzorr7d2eFRWTer8wFRZNtEae1Zi4NZAz8oQco9n5aU
+2026-04-05 14:55:10,598 INFO mercator.backend: On-chain listing submitted: listing_id=37 asa_id=758324652
+2026-04-05 14:55:10,785 INFO mercator.backend: Transaction confirmed: tx_id=LBTSJTXOHTMIDZE2EZ4KN7H4FA6AUGWSY5NO5VAFTUCV67LVISYA
+2026-04-05 14:55:34,975 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.4, insight_len=85
+2026-04-05 14:55:34,976 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 14:55:41,455 INFO mercator.backend: IPFS upload complete, cid=QmRGPVFXLWQ3eznCG5WgsuiiqbkG3ZmsoQEe6pkk9CPoWc
+2026-04-05 14:55:45,718 INFO mercator.backend: On-chain listing submitted: listing_id=38 asa_id=758324679
+2026-04-05 14:55:45,957 INFO mercator.backend: Transaction confirmed: tx_id=ZRD7Q7WXUAWTDEP77ERRRJ2GGE2NC35MATL3TTNH4HHLDDVRRGHA

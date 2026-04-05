@@ -243,10 +243,22 @@ async def run_agent(
             listing_id = 1
             price = 1.0
             search_results = json.loads(semantic_results) if isinstance(semantic_results, str) else semantic_results
+            top_listing: dict[str, Any] | None = None
             if isinstance(search_results, list) and len(search_results) > 0:
                 top_listing = search_results[0]
+            elif isinstance(search_results, dict):
+                matches = search_results.get("matches", [])
+                if isinstance(matches, list) and matches:
+                    top_listing = matches[0]
+
+            if isinstance(top_listing, dict):
                 listing_id = int(top_listing.get("listing_id", 1))
-                price = float(top_listing.get("price", 1.0))
+                if "price_usdc" in top_listing:
+                    price = float(top_listing.get("price_usdc", 1.0))
+                elif "price" in top_listing:
+                    price = float(top_listing.get("price", 1.0))
+                elif "price_micro_usdc" in top_listing:
+                    price = float(top_listing.get("price_micro_usdc", 1_000_000)) / 1_000_000
                 
             if not buyer_address:
                 buyer_address = (

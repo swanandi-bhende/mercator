@@ -43,7 +43,6 @@ if INSIGHT_LISTING_APP_ID <= 0:
 indexer_client = indexer.IndexerClient(INDEXER_TOKEN, INDEXER_URL)
 
 
-@lru_cache(maxsize=1)
 def get_escrow_client() -> EscrowClient:
     """Return a cached Escrow client configured from environment."""
     normalize_network_env()
@@ -64,7 +63,6 @@ def get_escrow_client() -> EscrowClient:
     return EscrowClient(algorand=algorand, app_id=ESCROW_APP_ID)
 
 
-@lru_cache(maxsize=1)
 def get_listing_client() -> InsightListingClient:
     """Return a cached InsightListing client configured from environment."""
     normalize_network_env()
@@ -84,11 +82,6 @@ def get_listing_client() -> InsightListingClient:
         )
     return InsightListingClient(algorand=algorand, app_id=INSIGHT_LISTING_APP_ID)
 
-
-escrow_client = get_escrow_client()
-listing_client = get_listing_client()
-
-
 async def _wait_for_confirmation(tx_id: str, timeout_seconds: int = 30) -> int:
     """Poll indexer for transaction confirmation and return confirmed round."""
     start = time.time()
@@ -100,7 +93,7 @@ async def _wait_for_confirmation(tx_id: str, timeout_seconds: int = 30) -> int:
                 return int(confirmed_round)
         except Exception as exc:  # noqa: BLE001
             logger.warning("Indexer lookup retry | tx_id=%s error=%s", tx_id, exc)
-        await asyncio.sleep(2)
+        await asyncio.sleep(0.5)
     raise RuntimeError(
         f"Transaction {tx_id} was not confirmed within {timeout_seconds} seconds"
     )
@@ -141,31 +134,52 @@ async def complete_purchase_flow(tx_id: str, listing_id: int, buyer_wallet: str)
     payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
     logger.info("Payment confirmed | tx_id=%s round=%s", tx_id, payment_round)
 
-    # Trigger escrow redeem after payment confirmation when the deployed contract
-    # supports the standalone call path. If the on-chain guard requires an atomic
-    # group, continue with payment-confirmed content delivery instead of failing.
-    escrow_tx_id = ""
-    escrow_round = None
-    try:
-        redeem_result = escrow_client.send.release_after_payment((buyer_wallet, listing_id))
-        escrow_tx_id = _extract_tx_id(redeem_result)
-        escrow_round = await _wait_for_confirmation(tx_id=escrow_tx_id, timeout_seconds=30)
-        logger.info("Escrow redeem confirmed | tx_id=%s round=%s", escrow_tx_id, escrow_round)
-        demo_logger.info("Escrow released")
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("Escrow redeem unavailable; continuing with paid content delivery | error=%s", exc)
-
+    listing_client = get_listing_client()
     listing = listing_client.state.box.listings.get_value(listing_id)
     if listing is None:
         raise RuntimeError(f"Listing {listing_id} not found in InsightListing state")
 
     cid = str(listing.ipfs_hash)
+
+    async def _release_escrow_with_retry() -> tuple[str, int | None]:
+        """Try escrow release a few times to avoid stale round failures."""
+        last_error: Exception | None = None
+        for attempt in range(1, 4):
+            try:
+                fresh_escrow_client = get_escrow_client()
+                redeem_result = fresh_escrow_client.send.release_after_payment((buyer_wallet, listing_id))
+                tx = _extract_tx_id(redeem_result)
+                round_no = await _wait_for_confirmation(tx_id=tx, timeout_seconds=20)
+                return tx, round_no
+            except Exception as exc:  # noqa: BLE001
+                last_error = exc
+                logger.warning(
+                    "Escrow redeem attempt failed | attempt=%s listing_id=%s error=%s",
+                    attempt,
+                    listing_id,
+                    exc,
+                )
+                await asyncio.sleep(0.4)
+        raise RuntimeError(f"Escrow redeem failed after retries: {last_error}")
+
+    escrow_task = asyncio.create_task(_release_escrow_with_retry())
+    ipfs_task = asyncio.create_task(fetch_insight_from_ipfs(cid))
+
     try:
-        insight_text = await fetch_insight_from_ipfs(cid)
+        insight_text = await ipfs_task
         demo_logger.info("IPFS content delivered")
     except Exception as exc:  # noqa: BLE001
-        logger.warning("IPFS fetch failed after escrow release | cid=%s error=%s", cid, exc)
+        logger.warning("IPFS fetch failed after payment confirmation | cid=%s error=%s", cid, exc)
         insight_text = "Insight content could not be retrieved right now. Please retry shortly."
+
+    escrow_tx_id = ""
+    escrow_round = None
+    try:
+        escrow_tx_id, escrow_round = await escrow_task
+        logger.info("Escrow redeem confirmed | tx_id=%s round=%s", escrow_tx_id, escrow_round)
+        demo_logger.info("Escrow released")
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Escrow redeem unavailable; continuing with paid content delivery | error=%s", exc)
 
     escrow_line = f"Transaction IDs: payment={tx_id}"
     if escrow_tx_id:

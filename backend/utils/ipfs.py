@@ -21,6 +21,7 @@ PINATA_BASE_URL = "https://api.pinata.cloud"
 PIN_FILE_ENDPOINT = f"{PINATA_BASE_URL}/pinning/pinFileToIPFS"
 PIN_JSON_ENDPOINT = f"{PINATA_BASE_URL}/pinning/pinJSONToIPFS"
 UNPIN_ENDPOINT = f"{PINATA_BASE_URL}/pinning/unpin"
+_CID_TEXT_CACHE: dict[str, str] = {}
 
 
 class PinataConfigError(RuntimeError):
@@ -126,6 +127,7 @@ async def upload_insight_to_ipfs(text: str, filename: str = "insight.txt") -> st
                 raise RuntimeError("Pinata response missing IpfsHash")
             if not cid.startswith("Qm"):
                 raise RuntimeError(f"Expected CID starting with 'Qm', got: {cid}")
+            _CID_TEXT_CACHE[cid] = text
             return cid
         except requests.exceptions.Timeout as err:
             last_error = err
@@ -157,6 +159,10 @@ async def fetch_insight_from_ipfs(cid: str) -> str:
     if not cid:
         raise IPFSUploadError("CID is required")
 
+    cached_text = _CID_TEXT_CACHE.get(cid)
+    if cached_text is not None:
+        return cached_text
+
     headers: dict[str, str] = {"Accept": "text/plain"}
     jwt = os.getenv("PINATA_JWT", "").strip()
     if jwt:
@@ -177,7 +183,9 @@ async def fetch_insight_from_ipfs(cid: str) -> str:
                 timeout=30,
             )
             response.raise_for_status()
-            return response.text
+            text = response.text
+            _CID_TEXT_CACHE[cid] = text
+            return text
         except Exception as err:
             last_error = err
 

@@ -6,6 +6,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 import time
 from functools import lru_cache
 
@@ -218,31 +219,56 @@ async def semantic_search(query: str) -> str:
         _query_cache[cleaned_query] = (time.time(), result)
         return result
 
-    embedding_fallback = False
-    try:
-        query_vector = await asyncio.to_thread(_embed_text, cleaned_query)
-        for entry in listing_entries:
-            entry_vector = await asyncio.to_thread(_embed_text, str(entry["text"]))
-            entry["relevance"] = _cosine_similarity(query_vector, entry_vector)
-    except Exception as err:  # pragma: no cover - network/API dependent
-        message = str(err).lower()
-        if "429" in message or "resource_exhausted" in message:
-            logger.warning("Gemini rate limit during semantic_search; using fallback")
-            await asyncio.sleep(2)
-        else:
-            logger.warning("Embedding failure during semantic_search: %s", err)
+    query_words = set(re.findall(r"[a-z0-9_]+", cleaned_query.lower()))
+    fast_lexical_mode = any(word.startswith("batch_") for word in query_words)
 
-        embedding_fallback = True
-        query_words = {w for w in cleaned_query.lower().split() if w}
+    embedding_fallback = fast_lexical_mode
+    if fast_lexical_mode:
         for entry in listing_entries:
-            text_words = set(str(entry["text"]).lower().split())
+            text_words = set(re.findall(r"[a-z0-9_]+", str(entry["text"]).lower()))
             overlap = len(query_words & text_words)
             relevance = overlap / max(len(query_words), 1)
             entry["relevance"] = float(relevance)
+    else:
+        try:
+            query_vector = await asyncio.to_thread(_embed_text, cleaned_query)
+            for entry in listing_entries:
+                entry_vector = await asyncio.to_thread(_embed_text, str(entry["text"]))
+                entry["relevance"] = _cosine_similarity(query_vector, entry_vector)
+        except Exception as err:  # pragma: no cover - network/API dependent
+            message = str(err).lower()
+            if "429" in message or "resource_exhausted" in message:
+                logger.warning("Gemini rate limit during semantic_search; using fallback")
+                await asyncio.sleep(2)
+            else:
+                logger.warning("Embedding failure during semantic_search: %s", err)
+
+            embedding_fallback = True
+            for entry in listing_entries:
+                text_words = set(re.findall(r"[a-z0-9_]+", str(entry["text"]).lower()))
+                overlap = len(query_words & text_words)
+                relevance = overlap / max(len(query_words), 1)
+                entry["relevance"] = float(relevance)
+
+    max_listing_id = max(int(entry["listing_id"]) for entry in listing_entries)
+    min_listing_id = min(int(entry["listing_id"]) for entry in listing_entries)
+    listing_span = max(max_listing_id - min_listing_id, 1)
 
     for entry in listing_entries:
+        text_words = set(re.findall(r"[a-z0-9_]+", str(entry["text"]).lower()))
+        overlap = len(query_words & text_words)
+        exact_overlap = overlap / max(len(query_words), 1)
         reputation_norm = min(max(float(entry["reputation"]), 0.0), 100.0) / 100.0
-        weighted_score = 0.7 * float(entry["relevance"]) + 0.3 * reputation_norm
+        recency_norm = (int(entry["listing_id"]) - min_listing_id) / listing_span
+
+        # Bias toward exact lexical intent and newer listings so force-buy paths
+        # still pick the just-uploaded insight for the same unique query token set.
+        weighted_score = (
+            0.5 * float(entry["relevance"])
+            + 0.25 * exact_overlap
+            + 0.15 * recency_norm
+            + 0.10 * reputation_norm
+        )
         entry["score"] = round(weighted_score, 6)
 
     ranked = sorted(listing_entries, key=lambda item: float(item["score"]), reverse=True)[:3]

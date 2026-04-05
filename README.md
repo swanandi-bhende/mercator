@@ -2,14 +2,20 @@
 
 Mercator is an Algorand TestNet demo for seller-listed trading insights and an AI buyer that can search, buy, and unlock the insight in one flow.
 
-## Latest Verified Run
+## Latest Verified TestNet Runs
 
-- Command: `python demo.py`
-- Listing tx: `WI3DBJAEXOMVP6XKHLF3SVMUVOFHSVI25ZBCSWEB7BD4Z6JSSA3Q`
-- Payment tx: `FFFJ2PN57NGT765W2OI6TK4RSL4H6SVCTDFIMTT6L3PIPGJVUL5A`
-- Escrow tx: `BHGEHFI4ZMGZV5625ME33CSQJEWSBNQKRKRGCU5V6WHFHATLBRWA`
-- Final delivered insight text: `Sample trading insight: Buy NIFTY above 24500 with SL 24380`
-- Full trace: [demo_flow.log](demo_flow.log)
+- Full Round 2 run ledger: [testnet-demo-runs.md](testnet-demo-runs.md)
+- Raw API capture: [testnet-demo-runs.raw.json](testnet-demo-runs.raw.json)
+- Runtime trace: [demo_flow.log](demo_flow.log)
+- Latest seller upload tx: https://testnet.explorer.algorand.org/tx/ZRD7Q7WXUAWTDEP77ERRRJ2GGE2NC35MATL3TTNH4HHLDDVRRGHA
+- Latest payment tx: https://testnet.explorer.algorand.org/tx/QUOO4WN6LPAUZVKYWVE362YDCAQ67MK7QS3T77MNO5IC33VXIIGA
+
+Observed during these live runs:
+- Seller uploads and x402 USDC payment transactions are confirmed on TestNet.
+- Gemini quota limits can force fallback reasoning text (`Decision: SKIP`) while force-buy mode proceeds with payment.
+- Escrow release tx emission passed in all latest 5 runs.
+- Delivered insight text exactly matched uploaded seller text in all latest 5 runs.
+- Instant access after payment confirm (<=8s) passed in all latest 5 runs.
 
 ## Core Files
 
@@ -23,6 +29,12 @@ Mercator is an Algorand TestNet demo for seller-listed trading insights and an A
 
 ```bash
 python demo.py
+```
+
+For batched live TestNet runs used in Round 2 verification:
+
+```bash
+python scripts/run_testnet_demo_batch.py
 ```
 
 ## API
