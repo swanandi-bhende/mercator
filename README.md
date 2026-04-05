@@ -19,6 +19,14 @@ Observed during these live runs:
 - Delivered insight text exactly matched uploaded seller text in all latest 5 runs.
 - Instant access after payment confirm (<=8s) passed in all latest 5 runs.
 
+If explorer DNS is unavailable in your environment:
+- Use the tx id directly and verify via TestNet indexer.
+- Example:
+
+```bash
+python -c "import os; from dotenv import load_dotenv; from algosdk.v2client import indexer; load_dotenv('.env'); idx=indexer.IndexerClient(os.getenv('INDEXER_TOKEN') or os.getenv('ALGOD_TOKEN',''), os.getenv('INDEXER_URL') or os.getenv('INDEXER_SERVER')); tx='QUOO4WN6LPAUZVKYWVE362YDCAQ67MK7QS3T77MNO5IC33VXIIGA'; print(idx.transaction(tx).get('transaction',{}).get('confirmed-round'))"
+```
+
 ## Core Files
 
 - [backend/main.py](backend/main.py): FastAPI API with `/list` and `/demo_purchase`

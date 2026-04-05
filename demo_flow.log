@@ -6693,3 +6693,308 @@ Exception: x402 payment send failed: Micropayment submit/sign failed: Transactio
 2026-04-05 14:56:39,256 INFO backend.tools.x402_payment: x402 payment flow completed successfully: {'success': True, 'approved': True, 'transaction_id': 'QUOO4WN6LPAUZVKYWVE362YDCAQ67MK7QS3T77MNO5IC33VXIIGA', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 38, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 0.4, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Buyer receives instant access to insight'}, 'status': 'CONFIRMED', 'explorer_url': 'https://testnet.explorer.algorand.org/tx/QUOO4WN6LPAUZVKYWVE362YDCAQ67MK7QS3T77MNO5IC33VXIIGA', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nBATCH_20260405092309_RUN_5: Metals ironpulse shortcover glide into close on firm cues\n\nTransaction IDs: payment=QUOO4WN6LPAUZVKYWVE362YDCAQ67MK7QS3T77MNO5IC33VXIIGA | escrow=HBRAEQGYBN7EZI5JKTJLP557I5JJRMHVQPNCLVG6Z45GFJ4NY2CQ'}
 2026-04-05 14:56:39,256 INFO demo.flow: Payment approved
 2026-04-05 14:56:39,256 INFO backend.agent: Payment triggered: {'success': True, 'decision': 'BUY', 'evaluation': 'Reasoning: Gemini limit reached during evaluation; cannot verify safely.\nDecision: SKIP', 'payment_status': {'success': True, 'approved': True, 'transaction_id': 'QUOO4WN6LPAUZVKYWVE362YDCAQ67MK7QS3T77MNO5IC33VXIIGA', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 38, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 0.4, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Buyer receives instant access to insight'}, 'status': 'CONFIRMED', 'explorer_url': 'https://testnet.explorer.algorand.org/tx/QUOO4WN6LPAUZVKYWVE362YDCAQ67MK7QS3T77MNO5IC33VXIIGA', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nBATCH_20260405092309_RUN_5: Metals ironpulse shortcover glide into close on firm cues\n\nTransaction IDs: payment=QUOO4WN6LPAUZVKYWVE362YDCAQ67MK7QS3T77MNO5IC33VXIIGA | escrow=HBRAEQGYBN7EZI5JKTJLP557I5JJRMHVQPNCLVG6Z45GFJ4NY2CQ'}, 'message': '✓ x402 micropayment executed successfully'}
+2026-04-05 15:12:02,839 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=99.0, insight_len=44
+2026-04-05 15:12:02,841 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 15:12:10,724 INFO mercator.backend: IPFS upload complete, cid=QmQtiLxukW2CbuzFVzWe9AbdW7C4p68LUDZaFpmL4xmDcC
+2026-04-05 15:12:17,185 INFO mercator.backend: On-chain listing submitted: listing_id=39 asa_id=758325258
+2026-04-05 15:12:17,186 INFO demo.flow: Seller upload complete
+2026-04-05 15:12:17,186 INFO demo.flow: On-chain ASA created
+2026-04-05 15:12:17,484 INFO mercator.backend: Transaction confirmed: tx_id=GG2I7COC7DAFKFKUSUUCWW6PCPQ6R4WTS4EPMCVHSD7ES5SOYRAA
+2026-04-05 15:12:26,142 INFO backend.agent: Starting agent run with user_approval=False, user_approval_input=approve
+2026-04-05 15:13:10,914 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-05 15:13:13,032 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-05 15:13:15,183 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-05 15:13:15,185 WARNING backend.tools.semantic_search: Embedding failure during semantic_search: RetryError[<Future at 0x11c9f40d0 state=finished raised GoogleGenerativeAIError>]
+2026-04-05 15:13:15,186 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-05 15:13:15,188 INFO google_genai.models: AFC is enabled with max remote calls: 10.
+2026-04-05 15:13:15,361 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 429 Too Many Requests"
+2026-04-05 15:13:15,364 WARNING backend.agent: Evaluation step hit Gemini limit; falling back to SKIP
+2026-04-05 15:13:15,366 INFO backend.agent: force_buy_for_test enabled; overriding decision to BUY
+2026-04-05 15:13:15,366 INFO backend.agent: Decision is BUY and user approval confirmed ('approve'); triggering x402 payment
+2026-04-05 15:13:15,366 INFO backend.agent: Triggering x402 payment: listing 39, price 99.0, buyer MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-05 15:13:15,373 INFO backend.tools.x402_payment: Checking user approval...
+2026-04-05 15:13:15,373 INFO backend.tools.x402_payment: ✓ User approval confirmed: 'approve'
+2026-04-05 15:13:15,373 INFO demo.flow: Payment approved
+2026-04-05 15:13:15,373 INFO backend.tools.x402_payment: Initiating x402 payment for listing 39
+2026-04-05 15:13:15,373 INFO backend.tools.x402_payment: Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 99.0 USDC
+2026-04-05 15:13:15,373 INFO backend.tools.x402_payment: Fetching listing details from InsightListing app...
+2026-04-05 15:13:15,539 INFO backend.tools.x402_payment: Listing 39: Price=99.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 15:13:15,540 INFO backend.tools.x402_payment: Simulating x402 payment transaction...
+2026-04-05 15:13:15,540 INFO backend.tools.x402_payment: Simulating payment: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ -> M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, amount=99000000, asset_id=10458941
+2026-04-05 15:13:15,727 INFO backend.tools.x402_payment: Simulation successful: fee=False, asset_id=10458941
+2026-04-05 15:13:15,727 INFO backend.tools.x402_payment: ✓ Payment simulation passed: {'success': True, 'sender': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'receiver': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount': 99000000, 'asset_id': 10458941, 'estimated_fee': False, 'is_safe': True, 'message': 'Payment simulation passed - safe to broadcast'}
+2026-04-05 15:13:15,727 INFO backend.tools.x402_payment: Executing x402 micropayment transaction group...
+2026-04-05 15:13:15,919 INFO backend.tools.x402_payment: Sending x402 micropayment: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ -> M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, amount=99000000
+2026-04-05 15:13:16,308 ERROR backend.tools.x402_payment: Signing error: TransactionPool.Remember: transaction BRFJWLQC7P47VQTSUHIFTEKA5BLD2FIU5IBMDSNDP4MQE5W6BRKA: underflow on subtracting 99000000 from sender amount 6215433
+2026-04-05 15:13:16,308 ERROR backend.tools.x402_payment: x402 payment send failed: Micropayment submit/sign failed: TransactionPool.Remember: transaction BRFJWLQC7P47VQTSUHIFTEKA5BLD2FIU5IBMDSNDP4MQE5W6BRKA: underflow on subtracting 99000000 from sender amount 6215433
+2026-04-05 15:13:16,308 ERROR backend.tools.x402_payment: x402 micropayment execution failed: x402 payment send failed: Micropayment submit/sign failed: TransactionPool.Remember: transaction BRFJWLQC7P47VQTSUHIFTEKA5BLD2FIU5IBMDSNDP4MQE5W6BRKA: underflow on subtracting 99000000 from sender amount 6215433
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 106, in algod_request
+    resp = urlopen(req, timeout=timeout)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 187, in urlopen
+    return opener.open(url, data, timeout)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 493, in open
+    response = meth(req, response)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 464, in _call_chain
+    result = func(*args)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 337, in send_micropayment
+    # Manual signing
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 344, in send_transaction
+    return self.send_raw_transaction(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        encoding.msgpack_encode(txn), **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 371, in send_raw_transaction
+    resp = self.algod_request("POST", req, data=txn_bytes, **kwargs)
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 116, in algod_request
+    raise error.AlgodHTTPError(m, code, j.get("data"))
+algosdk.error.AlgodHTTPError: TransactionPool.Remember: transaction BRFJWLQC7P47VQTSUHIFTEKA5BLD2FIU5IBMDSNDP4MQE5W6BRKA: underflow on subtracting 99000000 from sender amount 6215433
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 347, in send_micropayment
+    return txid
+Exception: Micropayment submit/sign failed: TransactionPool.Remember: transaction BRFJWLQC7P47VQTSUHIFTEKA5BLD2FIU5IBMDSNDP4MQE5W6BRKA: underflow on subtracting 99000000 from sender amount 6215433
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 517, in trigger_x402_payment
+    )
+    
+    ...<5 lines>...
+            "success": False,
+    
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 352, in send_micropayment
+    logger.error(f"Signing error: {str(signing_error)}")
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Exception: x402 payment send failed: Micropayment submit/sign failed: TransactionPool.Remember: transaction BRFJWLQC7P47VQTSUHIFTEKA5BLD2FIU5IBMDSNDP4MQE5W6BRKA: underflow on subtracting 99000000 from sender amount 6215433
+2026-04-05 15:13:16,314 INFO demo.flow: Payment approved
+2026-04-05 15:13:16,314 INFO backend.agent: Payment triggered: {'success': False, 'decision': 'BUY', 'evaluation': 'Reasoning: Gemini limit reached during evaluation; cannot verify safely.\nDecision: SKIP', 'payment_status': {'success': False, 'approved': True, 'simulation_passed': True, 'error': 'PAYMENT_EXECUTION_FAILED', 'message': 'x402 micropayment execution failed: x402 payment send failed: Micropayment submit/sign failed: TransactionPool.Remember: transaction BRFJWLQC7P47VQTSUHIFTEKA5BLD2FIU5IBMDSNDP4MQE5W6BRKA: underflow on subtracting 99000000 from sender amount 6215433', 'next_step': 'Verify buyer USDC balance and network connectivity'}, 'message': 'x402 payment attempt failed; see payment_status for details'}
+2026-04-05 15:13:29,414 INFO backend.agent: LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-05 15:13:57,163 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=99.0, insight_len=46
+2026-04-05 15:13:57,164 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 15:14:02,019 INFO mercator.backend: IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 15:14:04,021 INFO mercator.backend: IPFS upload complete, cid=QmZJ8SHk8HuMzV31RTBq37mNX6BQ1MwCVte3E8aEozNKpP
+2026-04-05 15:14:04,021 INFO mercator.backend: ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=99000000 app_id=758025190
+2026-04-05 15:14:10,760 INFO mercator.backend: On-chain listing submitted: listing_id=40 asa_id=758325330
+2026-04-05 15:14:10,761 INFO demo.flow: Seller upload complete
+2026-04-05 15:14:10,761 INFO demo.flow: On-chain ASA created
+2026-04-05 15:14:11,142 INFO mercator.backend: Transaction confirmed: tx_id=F7H53JCATXOVHDDLWYRA3YR4A52AQX2P2D6K3IHSWKNGGAGQCMCQ
+2026-04-05 15:14:17,348 INFO backend.agent: Starting agent run with user_approval=False, user_approval_input=approve
+2026-04-05 15:17:42,324 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-05 15:17:44,453 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-05 15:17:46,599 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-05 15:17:46,606 WARNING backend.tools.semantic_search: Embedding failure during semantic_search: RetryError[<Future at 0x10da25d90 state=finished raised GoogleGenerativeAIError>]
+2026-04-05 15:17:46,608 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-05 15:17:46,620 INFO google_genai.models: AFC is enabled with max remote calls: 10.
+2026-04-05 15:17:46,787 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 429 Too Many Requests"
+2026-04-05 15:17:46,790 WARNING backend.agent: Evaluation step hit Gemini limit; falling back to SKIP
+2026-04-05 15:17:46,793 INFO backend.agent: force_buy_for_test enabled; overriding decision to BUY
+2026-04-05 15:17:46,793 INFO backend.agent: Decision is BUY and user approval confirmed ('approve'); triggering x402 payment
+2026-04-05 15:17:46,793 INFO backend.agent: Triggering x402 payment: listing 40, price 99.0, buyer MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-05 15:17:46,800 INFO backend.tools.x402_payment: Checking user approval...
+2026-04-05 15:17:46,800 INFO backend.tools.x402_payment: ✓ User approval confirmed: 'approve'
+2026-04-05 15:17:46,800 INFO demo.flow: Payment approved
+2026-04-05 15:17:46,800 INFO backend.tools.x402_payment: Initiating x402 payment for listing 40
+2026-04-05 15:17:46,800 INFO backend.tools.x402_payment: Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 99.0 USDC
+2026-04-05 15:17:46,800 INFO backend.tools.x402_payment: Fetching listing details from InsightListing app...
+2026-04-05 15:17:46,976 INFO backend.tools.x402_payment: Listing 40: Price=99.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 15:17:46,977 INFO backend.tools.x402_payment: Simulating x402 payment transaction...
+2026-04-05 15:17:46,977 INFO backend.tools.x402_payment: Simulating payment: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ -> M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, amount=99000000, asset_id=10458941
+2026-04-05 15:17:47,140 INFO backend.tools.x402_payment: Simulation successful: fee=False, asset_id=10458941
+2026-04-05 15:17:47,141 INFO backend.tools.x402_payment: ✓ Payment simulation passed: {'success': True, 'sender': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'receiver': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount': 99000000, 'asset_id': 10458941, 'estimated_fee': False, 'is_safe': True, 'message': 'Payment simulation passed - safe to broadcast'}
+2026-04-05 15:17:47,141 INFO backend.tools.x402_payment: Executing x402 micropayment transaction group...
+2026-04-05 15:17:47,332 INFO backend.tools.x402_payment: Sending x402 micropayment: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ -> M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, amount=99000000
+2026-04-05 15:17:47,746 ERROR backend.tools.x402_payment: Algod signing/submission error: TransactionPool.Remember: transaction TWCOXS7IWDWQUCS5PYRREPYG53H76HS4PKHOHL4BL2BJG7ZACN5A: underflow on subtracting 99000000 from sender amount 6215433
+2026-04-05 15:17:47,746 ERROR backend.tools.x402_payment: x402 payment send failed: Micropayment submit/sign failed: TransactionPool.Remember: transaction TWCOXS7IWDWQUCS5PYRREPYG53H76HS4PKHOHL4BL2BJG7ZACN5A: underflow on subtracting 99000000 from sender amount 6215433
+2026-04-05 15:17:47,746 ERROR backend.tools.x402_payment: x402 micropayment execution failed: x402 payment send failed: Micropayment submit/sign failed: TransactionPool.Remember: transaction TWCOXS7IWDWQUCS5PYRREPYG53H76HS4PKHOHL4BL2BJG7ZACN5A: underflow on subtracting 99000000 from sender amount 6215433
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 106, in algod_request
+    resp = urlopen(req, timeout=timeout)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 187, in urlopen
+    return opener.open(url, data, timeout)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 493, in open
+    response = meth(req, response)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 464, in _call_chain
+    result = func(*args)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 340, in send_micropayment
+    txid = self.algod.send_transaction(signed_txn)
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 344, in send_transaction
+    return self.send_raw_transaction(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        encoding.msgpack_encode(txn), **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 371, in send_raw_transaction
+    resp = self.algod_request("POST", req, data=txn_bytes, **kwargs)
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 116, in algod_request
+    raise error.AlgodHTTPError(m, code, j.get("data"))
+algosdk.error.AlgodHTTPError: TransactionPool.Remember: transaction TWCOXS7IWDWQUCS5PYRREPYG53H76HS4PKHOHL4BL2BJG7ZACN5A: underflow on subtracting 99000000 from sender amount 6215433
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 350, in send_micropayment
+    raise Exception(f"Micropayment submit/sign failed: {str(signing_error)}") from signing_error
+Exception: Micropayment submit/sign failed: TransactionPool.Remember: transaction TWCOXS7IWDWQUCS5PYRREPYG53H76HS4PKHOHL4BL2BJG7ZACN5A: underflow on subtracting 99000000 from sender amount 6215433
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 557, in trigger_x402_payment
+    txid = await x402_client.send_micropayment(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+    )
+    ^
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 358, in send_micropayment
+    raise Exception(error_msg) from e
+Exception: x402 payment send failed: Micropayment submit/sign failed: TransactionPool.Remember: transaction TWCOXS7IWDWQUCS5PYRREPYG53H76HS4PKHOHL4BL2BJG7ZACN5A: underflow on subtracting 99000000 from sender amount 6215433
+2026-04-05 15:17:47,757 ERROR backend.tools.x402_payment: insufficient_balance | details=x402 payment send failed: Micropayment submit/sign failed: TransactionPool.Remember: transaction TWCOXS7IWDWQUCS5PYRREPYG53H76HS4PKHOHL4BL2BJG7ZACN5A: underflow on subtracting 99000000 from sender amount 6215433
+2026-04-05 15:17:47,757 ERROR backend.agent: payment_rejected | details={'success': False, 'approved': True, 'simulation_passed': True, 'error': 'PAYMENT_EXECUTION_FAILED', 'message': 'Payment was rejected by x402 - please check your wallet balance', 'next_step': 'Verify buyer USDC balance and network connectivity'}
+2026-04-05 15:17:47,757 INFO demo.flow: Payment approved
+2026-04-05 15:17:47,757 INFO backend.agent: Payment triggered: {'success': False, 'decision': 'BUY', 'evaluation': 'Reasoning: Gemini limit reached during evaluation; cannot verify safely.\nDecision: SKIP', 'payment_status': {'success': False, 'approved': True, 'simulation_passed': True, 'error': 'PAYMENT_EXECUTION_FAILED', 'message': 'Payment was rejected by x402 - please check your wallet balance', 'next_step': 'Verify buyer USDC balance and network connectivity'}, 'message': 'Sorry, I encountered an issue: Payment was rejected by x402 - please check your wallet balance. Would you like to try a different insight or check your wallet balance?'}
+2026-04-05 15:17:49,410 INFO backend.agent: LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-05 15:18:08,576 INFO backend.agent: LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-05 15:18:24,048 INFO backend.agent: Starting agent run with user_approval=False, user_approval_input=
+2026-04-05 15:21:53,446 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-05 15:21:55,563 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-05 15:21:57,692 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-05 15:21:57,693 WARNING backend.tools.semantic_search: Embedding failure during semantic_search: RetryError[<Future at 0x116944950 state=finished raised GoogleGenerativeAIError>]
+2026-04-05 15:21:57,693 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-05 15:21:57,697 INFO google_genai.models: AFC is enabled with max remote calls: 10.
+2026-04-05 15:21:57,855 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 429 Too Many Requests"
+2026-04-05 15:21:57,856 WARNING backend.agent: Evaluation step hit Gemini limit; falling back to SKIP
+2026-04-05 15:22:24,734 INFO backend.agent: LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-05 15:23:36,591 INFO backend.agent: LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-05 15:23:43,950 INFO backend.agent: Starting agent run with user_approval=False, user_approval_input=
+2026-04-05 15:26:55,430 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-05 15:26:57,557 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-05 15:26:59,681 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-05 15:26:59,681 WARNING backend.tools.semantic_search: Embedding failure during semantic_search: RetryError[<Future at 0x110d44710 state=finished raised GoogleGenerativeAIError>]
+2026-04-05 15:26:59,682 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-05 15:26:59,686 INFO google_genai.models: AFC is enabled with max remote calls: 10.
+2026-04-05 15:26:59,829 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 429 Too Many Requests"
+2026-04-05 15:26:59,830 WARNING backend.agent: Evaluation step hit Gemini limit; falling back to SKIP
+2026-04-05 15:27:12,802 INFO backend.agent: LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-05 15:27:18,880 INFO backend.agent: LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-05 15:27:18,948 INFO backend.agent: Starting agent run with user_approval=False, user_approval_input=
+2026-04-05 15:28:22,414 ERROR backend.utils.ipfs: IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmRGRbfgwtaofvyMwwirBPzBcNEsCsp8n2AdFPqW5oLy7c error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmRGRbfgwtaofvyMwwirBPzBcNEsCsp8n2AdFPqW5oLy7c
+2026-04-05 15:28:23,159 ERROR backend.utils.ipfs: IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmZN2AUc8iDeLbyR4QkheoTcZ9fNuvJUUAFLatN1KkmLEN error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmZN2AUc8iDeLbyR4QkheoTcZ9fNuvJUUAFLatN1KkmLEN
+2026-04-05 15:28:24,378 ERROR backend.utils.ipfs: IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmRrJ5gygRkc33C6S9SE17gQkqMwFTxatngYTiyjLQMSmD error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmRrJ5gygRkc33C6S9SE17gQkqMwFTxatngYTiyjLQMSmD
+2026-04-05 15:28:26,430 ERROR backend.utils.ipfs: IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmacMuhXuQmoZuXKUchWn8Gkb5tkjGs4Mbiy6VFhjpWred error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmacMuhXuQmoZuXKUchWn8Gkb5tkjGs4Mbiy6VFhjpWred
+2026-04-05 15:28:27,787 ERROR backend.utils.ipfs: IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmUdJxtcCa16zGUQHw6dGrMbQ6JaCC4zodJCSp7QuKsAMA error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmUdJxtcCa16zGUQHw6dGrMbQ6JaCC4zodJCSp7QuKsAMA
+2026-04-05 15:28:29,005 ERROR backend.utils.ipfs: IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmaffXg4kEatmhaBEQQyAEVNb6zCjvaDcXttFNuBbcxmeF error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmaffXg4kEatmhaBEQQyAEVNb6zCjvaDcXttFNuBbcxmeF
+2026-04-05 15:28:30,834 ERROR backend.utils.ipfs: IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmUk4xjGErLaYNDzHeNnPxpoPaKyVvDdzdMnpcXxR8sZpb error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmUk4xjGErLaYNDzHeNnPxpoPaKyVvDdzdMnpcXxR8sZpb
+2026-04-05 15:28:32,879 ERROR backend.utils.ipfs: IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmajXo2XcSjsyAiBtq9kFV6y7rGDZ7cY3FiJtQ74h5YxDj error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmajXo2XcSjsyAiBtq9kFV6y7rGDZ7cY3FiJtQ74h5YxDj
+2026-04-05 15:28:34,489 ERROR backend.utils.ipfs: IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmRWzorr7d2eFRWTer8wFRZNtEae1Zi4NZAz8oQco9n5aU error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmRWzorr7d2eFRWTer8wFRZNtEae1Zi4NZAz8oQco9n5aU
+2026-04-05 15:28:35,842 ERROR backend.utils.ipfs: IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmQtiLxukW2CbuzFVzWe9AbdW7C4p68LUDZaFpmL4xmDcC error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmQtiLxukW2CbuzFVzWe9AbdW7C4p68LUDZaFpmL4xmDcC
+2026-04-05 15:28:37,742 ERROR backend.utils.ipfs: IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmZJ8SHk8HuMzV31RTBq37mNX6BQ1MwCVte3E8aEozNKpP error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmZJ8SHk8HuMzV31RTBq37mNX6BQ1MwCVte3E8aEozNKpP
+2026-04-05 15:28:39,068 ERROR backend.utils.ipfs: IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmWfVY9y3xjsixTgbd9AorQxH7VtMpzfx2HaWtsoUYecaX error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmWfVY9y3xjsixTgbd9AorQxH7VtMpzfx2HaWtsoUYecaX
+2026-04-05 15:28:39,900 ERROR backend.utils.ipfs: IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmQjZkzEN5sRenH6NSJDjzdA427i5g9fGhS1kNVCeXMNzV error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmQjZkzEN5sRenH6NSJDjzdA427i5g9fGhS1kNVCeXMNzV
+2026-04-05 15:28:40,346 ERROR backend.utils.ipfs: IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmVDykG2weHeoaS1p1UniKmCKnrLxoJeoJ6sx6TfrNvzos error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmVDykG2weHeoaS1p1UniKmCKnrLxoJeoJ6sx6TfrNvzos
+2026-04-05 15:28:42,132 ERROR backend.utils.ipfs: IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmRGPVFXLWQ3eznCG5WgsuiiqbkG3ZmsoQEe6pkk9CPoWc error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmRGPVFXLWQ3eznCG5WgsuiiqbkG3ZmsoQEe6pkk9CPoWc
+2026-04-05 15:28:43,410 ERROR backend.utils.ipfs: IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmSKKqLmcGor8AExmb3ABVQV5hu2eJKyF4Xpe2fopn4jC1 error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmSKKqLmcGor8AExmb3ABVQV5hu2eJKyF4Xpe2fopn4jC1
+2026-04-05 15:28:46,967 ERROR backend.utils.ipfs: IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmdPwzS3xXq4uMBQbWcKHNF8LUiZ5ZkwZAhXCdUdSwNGmy error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmdPwzS3xXq4uMBQbWcKHNF8LUiZ5ZkwZAhXCdUdSwNGmy
+2026-04-05 15:28:48,661 ERROR backend.utils.ipfs: IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmWc3NHbfkFnfsUihFQtppwQoxp5jssWaVJWFbY6o4QtFA error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmWc3NHbfkFnfsUihFQtppwQoxp5jssWaVJWFbY6o4QtFA
+2026-04-05 15:28:50,204 ERROR backend.utils.ipfs: IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmXtUEivFzRMpTJNEhkNeHQRHrjMk15eH2nbnsSXF5WmJ8 error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmXtUEivFzRMpTJNEhkNeHQRHrjMk15eH2nbnsSXF5WmJ8
+2026-04-05 15:28:51,845 ERROR backend.utils.ipfs: IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmPpUzrm4fi5cAP6Sp6K6eXfJgoqnrgPwWS9FkzSZCeXh2 error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmPpUzrm4fi5cAP6Sp6K6eXfJgoqnrgPwWS9FkzSZCeXh2
+2026-04-05 15:28:53,097 ERROR backend.utils.ipfs: IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmdCP32hCq7gUAB162agWkCLumtgo8N2HaPVqbindJy9fA error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmdCP32hCq7gUAB162agWkCLumtgo8N2HaPVqbindJy9fA
+2026-04-05 15:28:54,432 ERROR backend.utils.ipfs: IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmU224n62BxyQu3zcqK46KFzJzKNx44pAu3TVKDXKeajza error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmU224n62BxyQu3zcqK46KFzJzKNx44pAu3TVKDXKeajza
+2026-04-05 15:28:56,218 ERROR backend.utils.ipfs: IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmXyyTaosxnNVnCHSgcNNQRj4jJAy7CFxnQEqKFv6YNfgE error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmXyyTaosxnNVnCHSgcNNQRj4jJAy7CFxnQEqKFv6YNfgE
+2026-04-05 15:28:57,128 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-05 15:28:59,246 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-05 15:29:01,359 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-05 15:29:01,360 WARNING backend.tools.semantic_search: Embedding failure during semantic_search: RetryError[<Future at 0x12983c950 state=finished raised GoogleGenerativeAIError>]
+2026-04-05 15:29:01,361 INFO demo.flow: Agent semantic search returned 3 results
+2026-04-05 15:29:01,363 INFO google_genai.models: AFC is enabled with max remote calls: 10.
+2026-04-05 15:29:01,532 INFO httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 429 Too Many Requests"
+2026-04-05 15:29:01,532 WARNING backend.agent: Evaluation step hit Gemini limit; falling back to SKIP
+2026-04-05 15:29:03,321 INFO backend.tools.post_payment_flow: Starting post-payment confirmation polling | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK listing_id=1 buyer=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-05 15:29:03,613 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:04,369 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:05,117 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:05,854 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:06,549 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:07,220 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:07,902 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:08,736 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:09,499 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:10,170 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:10,834 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:11,518 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:12,188 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:12,858 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:13,528 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:14,272 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:14,943 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:15,614 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:16,282 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:16,976 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:17,669 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:18,353 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:19,021 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:19,683 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:20,373 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:21,052 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:21,759 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:22,538 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:23,222 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:23,888 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:24,583 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:25,272 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:25,956 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:26,632 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:27,327 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:27,995 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:28,688 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:29,365 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:30,244 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:30,949 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:31,613 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:32,282 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:32,949 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=invalid input: unable to parse base32 digest data 'txid': illegal base32 data at input byte 5
+2026-04-05 15:29:33,450 ERROR backend.tools.post_payment_flow: Payment confirmation failed | tx_id=BOGUS_TX_FOR_TIMEOUT_CHECK error=Transaction BOGUS_TX_FOR_TIMEOUT_CHECK was not confirmed within 30 seconds
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 137, in complete_purchase_flow
+    payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 99, in _wait_for_confirmation
+    raise RuntimeError(
+        f"Transaction {tx_id} was not confirmed within {timeout_seconds} seconds"
+    )
+RuntimeError: Transaction BOGUS_TX_FOR_TIMEOUT_CHECK was not confirmed within 30 seconds
+2026-04-05 15:29:48,220 INFO backend.agent: LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode

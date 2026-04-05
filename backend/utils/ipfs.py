@@ -16,6 +16,7 @@ from typing import Any
 import algosdk
 import requests
 from algokit_utils import AlgorandClient
+from backend.utils.error_handler import ipfs_down
 
 
 PINATA_BASE_URL = "https://api.pinata.cloud"
@@ -118,7 +119,7 @@ async def upload_insight_to_ipfs(text: str, filename: str = "insight.txt") -> st
                     if attempt < 2:
                         await asyncio.sleep(3)
                         continue
-                    raise IPFSUploadError("Temporary IPFS issue - insight could not be stored")
+                    raise IPFSUploadError(ipfs_down(logger, "Pinata rate limit after retries"))
 
                 response.raise_for_status()
 
@@ -159,13 +160,13 @@ async def upload_insight_to_ipfs(text: str, filename: str = "insight.txt") -> st
                 last_error = err
                 break
 
-        raise IPFSUploadError("Temporary IPFS issue - insight could not be stored") from last_error
+        raise IPFSUploadError(ipfs_down(logger, str(last_error) if last_error else None)) from last_error
     except requests.exceptions.RequestException as err:
         logger.error("IPFS upload request exception | error=%s", err)
-        raise IPFSUploadError("Temporary IPFS issue - insight could not be stored") from err
+        raise IPFSUploadError(ipfs_down(logger, str(err))) from err
     except TimeoutError as err:
         logger.error("IPFS upload timeout exception | error=%s", err)
-        raise IPFSUploadError("Temporary IPFS issue - insight could not be stored") from err
+        raise IPFSUploadError(ipfs_down(logger, str(err))) from err
     except IPFSUploadError as err:
         logger.error("IPFS upload failed | error=%s", err)
         raise
@@ -218,13 +219,13 @@ async def fetch_insight_from_ipfs(cid: str) -> str:
                 logger.error("IPFS fetch unexpected error | url=%s error=%s", url, err)
                 last_error = err
 
-        raise IPFSUploadError("Temporary IPFS issue - insight could not be stored") from last_error
+        raise IPFSUploadError(ipfs_down(logger, str(last_error) if last_error else None)) from last_error
     except requests.exceptions.RequestException as err:
         logger.error("IPFS fetch request exception | cid=%s error=%s", cid, err)
-        raise IPFSUploadError("Temporary IPFS issue - insight could not be stored") from err
+        raise IPFSUploadError(ipfs_down(logger, str(err))) from err
     except TimeoutError as err:
         logger.error("IPFS fetch timeout exception | cid=%s error=%s", cid, err)
-        raise IPFSUploadError("Temporary IPFS issue - insight could not be stored") from err
+        raise IPFSUploadError(ipfs_down(logger, str(err))) from err
     except IPFSUploadError as err:
         logger.error("IPFS fetch failed | cid=%s error=%s", cid, err)
         raise

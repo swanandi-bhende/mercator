@@ -1541,3 +1541,8 @@ RuntimeError: timed out
 2026-04-05 14:55:41,455 INFO mercator.backend: IPFS upload complete, cid=QmRGPVFXLWQ3eznCG5WgsuiiqbkG3ZmsoQEe6pkk9CPoWc
 2026-04-05 14:55:45,718 INFO mercator.backend: On-chain listing submitted: listing_id=38 asa_id=758324679
 2026-04-05 14:55:45,957 INFO mercator.backend: Transaction confirmed: tx_id=ZRD7Q7WXUAWTDEP77ERRRJ2GGE2NC35MATL3TTNH4HHLDDVRRGHA
+2026-04-05 15:12:02,839 INFO mercator.backend: Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=99.0, insight_len=44
+2026-04-05 15:12:02,841 INFO mercator.backend: Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-05 15:12:10,724 INFO mercator.backend: IPFS upload complete, cid=QmQtiLxukW2CbuzFVzWe9AbdW7C4p68LUDZaFpmL4xmDcC
+2026-04-05 15:12:17,185 INFO mercator.backend: On-chain listing submitted: listing_id=39 asa_id=758325258
+2026-04-05 15:12:17,484 INFO mercator.backend: Transaction confirmed: tx_id=GG2I7COC7DAFKFKUSUUCWW6PCPQ6R4WTS4EPMCVHSD7ES5SOYRAA

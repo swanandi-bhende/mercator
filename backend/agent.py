@@ -25,6 +25,7 @@ from backend.contracts.escrow.smart_contracts.artifacts.escrow.escrow_client imp
 from backend.contracts.reputation.smart_contracts.artifacts.reputation.reputation_client import ReputationClient
 from backend.tools.semantic_search import semantic_search as semantic_search_tool
 from backend.tools.x402_payment import trigger_x402_payment, validate_x402_payment
+from backend.utils.error_handler import low_reputation, payment_rejected
 from backend.utils.runtime_env import configure_demo_logging, normalize_network_env
 
 
@@ -40,6 +41,7 @@ logging.basicConfig(
         logging.StreamHandler(),
         logging.FileHandler("mercator.log", mode="a"),
     ],
+    force=True,
 )
 logger = logging.getLogger(__name__)
 
@@ -69,6 +71,9 @@ x402 MICROPAYMENT PROTOCOL:
 - Never trigger payments without explicit user approval
 - Payment requires: 1) BUY decision, 2) User types "approve", 3) Payment simulation passes
 - After payment confirms on TestNet, buyer gets instant IPFS content access
+
+If any tool call or backend step fails, respond naturally and helpfully with:
+"Sorry, I encountered an issue: [clear message]. Would you like to try a different insight or check your wallet balance?"
 """
 
 EVALUATION_PROMPT_TEMPLATE = """You must evaluate semantic search results step-by-step before any payment decision.
@@ -85,6 +90,8 @@ Follow this exact sequence:
 
 IMPORTANT: If Decision is BUY, the user will be prompted to type "approve" to trigger x402 micropayment.
 The actual payment will only execute after explicit user approval and simulation validation.
+If any tool call fails, respond naturally with:
+"Sorry, I encountered an issue: [clear message]. Would you like to try a different insight or check your wallet balance?"
 
 You MUST output a visible markdown reasoning block followed by a final decision line:
 ```markdown
@@ -210,22 +217,73 @@ async def run_agent(
         dict: Agent response with decision, evaluation, and optional payment confirmation
     """
     logger.info("Starting agent run with user_approval=%s, user_approval_input=%s", user_approval, user_approval_input)
-    
-    semantic_results = await semantic_search_tool.ainvoke({"query": user_query})
-    eval_state = await evaluate_insights(
-        {"query": user_query, "semantic_results": semantic_results}
-    )
+
+    def _agent_error_result(clear_message: str, evaluation: str | None = None) -> dict[str, Any]:
+        natural = (
+            f"Sorry, I encountered an issue: {clear_message}. "
+            "Would you like to try a different insight or check your wallet balance?"
+        )
+        return {
+            "success": False,
+            "decision": "ERROR",
+            "evaluation": evaluation or "",
+            "message": natural,
+            "error": clear_message,
+        }
+
+    def _extract_top_reputation(results: Any) -> float | None:
+        try:
+            parsed = results
+            if isinstance(parsed, str):
+                import json
+                parsed = json.loads(parsed)
+            if isinstance(parsed, list) and parsed:
+                first = parsed[0]
+                if isinstance(first, dict) and "reputation" in first:
+                    return float(first.get("reputation", 0.0))
+            if isinstance(parsed, dict):
+                matches = parsed.get("matches", [])
+                if isinstance(matches, list) and matches:
+                    top = matches[0]
+                    if isinstance(top, dict) and "reputation" in top:
+                        return float(top.get("reputation", 0.0))
+        except Exception:
+            return None
+        return None
+
+    try:
+        semantic_results = await semantic_search_tool.ainvoke({"query": user_query})
+        eval_state = await evaluate_insights(
+            {"query": user_query, "semantic_results": semantic_results}
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.error("Agent pre-evaluation failed | error=%s", exc, exc_info=True)
+        return _agent_error_result(str(exc))
+
+    top_reputation = _extract_top_reputation(semantic_results)
+    if top_reputation is not None and top_reputation < 50 and not force_buy_for_test:
+        rep_message = low_reputation(logger, f"top_reputation={top_reputation}")
+        return {
+            "success": True,
+            "decision": "SKIP",
+            "evaluation": eval_state.get("evaluation", ""),
+            "message": rep_message,
+        }
 
     if force_buy_for_test:
         logger.info("force_buy_for_test enabled; overriding decision to BUY")
         eval_state["decision"] = "BUY"
 
     if eval_state.get("decision") == "SKIP":
+        evaluation_text = str(eval_state.get("evaluation", ""))
+        skip_message = "Skipped based on evaluation rules (reputation/value-for-price)."
+        if "reputation" in evaluation_text.lower():
+            skip_message = low_reputation(logger, evaluation_text)
         return {
             "success": True,
             "decision": "SKIP",
             "evaluation": eval_state.get("evaluation"),
-            "message": "Skipped based on evaluation rules (reputation/value-for-price).",
+            "message": skip_message,
         }
 
     # If decision is BUY, check for user approval
@@ -303,7 +361,10 @@ async def run_agent(
                     "message": (
                         "✓ x402 micropayment executed successfully"
                         if payment_success
-                        else "x402 payment attempt failed; see payment_status for details"
+                        else _agent_error_result(
+                            payment_rejected(logger, str(payment_payload)),
+                            str(eval_state.get("evaluation", "")),
+                        )["message"]
                     ),
                 }
                 demo_logger.info("Payment approved")
@@ -311,13 +372,7 @@ async def run_agent(
                 return result
         except Exception as e:
             logger.error(f"Error triggering x402 payment: {str(e)}", exc_info=True)
-            return {
-                "success": False,
-                "decision": "BUY",
-                "evaluation": eval_state.get("evaluation"),
-                "error": str(e),
-                "message": "x402 payment failed; please retry",
-            }
+            return _agent_error_result(str(e), str(eval_state.get("evaluation", "")))
 
     payload: dict[str, Any]
     if create_tool_calling_agent and AgentExecutor:
@@ -366,28 +421,22 @@ async def run_agent(
                 logger.warning(
                     "Gemini quota exhausted on free tier; returning fallback response"
                 )
-                return {
-                    "success": False,
-                    "fallback": True,
-                    "message": "Gemini free-tier quota reached. Skipping live AI reasoning for now.",
-                    "next_step": "Retry later or upgrade Gemini quota/billing.",
-                    "input": user_query,
-                }
+                return _agent_error_result(
+                    "Gemini free-tier quota reached. Skipping live AI reasoning for now",
+                    str(eval_state.get("evaluation", "")),
+                )
 
             if is_model_error:
                 logger.warning(
                     "Configured Gemini model is unavailable for this key; returning fallback response"
                 )
-                return {
-                    "success": False,
-                    "fallback": True,
-                    "message": (
+                return _agent_error_result(
+                    (
                         f"Configured model '{GEMINI_MODEL}' is unavailable for this API key. "
-                        "Set GEMINI_MODEL in .env to an available model and retry."
+                        "Set GEMINI_MODEL in .env to an available model and retry"
                     ),
-                    "next_step": "Run Gemini ListModels or switch to a supported model for your project.",
-                    "input": user_query,
-                }
+                    str(eval_state.get("evaluation", "")),
+                )
 
             raise
 

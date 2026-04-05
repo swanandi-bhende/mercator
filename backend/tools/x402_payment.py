@@ -31,6 +31,7 @@ from backend.contracts.escrow.smart_contracts.artifacts.escrow.escrow_client imp
 from backend.contracts.reputation.smart_contracts.artifacts.reputation.reputation_client import ReputationClient
 from backend.tools.post_payment_flow import complete_purchase_flow
 from backend.utils.runtime_env import configure_demo_logging, normalize_network_env
+from backend.utils.error_handler import contract_error, insufficient_balance, payment_rejected
 
 logger = logging.getLogger(__name__)
 normalize_network_env()
@@ -131,6 +132,7 @@ INSIGHT_LISTING_APP_ID = int(os.getenv("INSIGHT_LISTING_APP_ID", 758025190))
 ESCROW_APP_ID = int(os.getenv("ESCROW_APP_ID", 758022447))
 REPUTATION_APP_ID = int(os.getenv("REPUTATION_APP_ID", 758022459))
 USDC_ASA_ID = int(os.getenv("USDC_ASA_ID", 0))  # TestNet USDC asset ID if available
+EXPLORER_TX_BASE = os.getenv("EXPLORER_TX_BASE", "https://explorer.perawallet.app/tx").rstrip("/")
 
 
 class X402Client:
@@ -389,12 +391,12 @@ async def trigger_x402_payment(
         def _friendly_payment_error(raw: str) -> str:
             low = raw.lower()
             if "underflow" in low or "insufficient" in low or "overspend" in low:
-                return "Payment was rejected by x402 - please check your wallet balance"
+                return insufficient_balance(logger, raw)
             if "rejected" in low:
-                return "Payment was rejected by x402 - please check your wallet balance"
+                return payment_rejected(logger, raw)
             if "timeout" in low or "network" in low or "connection" in low:
-                return "Payment was rejected by x402 - please check your wallet balance"
-            return "Payment was rejected by x402 - please check your wallet balance"
+                return payment_rejected(logger, raw)
+            return payment_rejected(logger, raw)
 
         normalize_network_env()
         # =========================================================================
@@ -444,21 +446,21 @@ async def trigger_x402_payment(
             return json.dumps({
                 "success": False,
                 "error": "CONTRACT_ERROR",
-                "message": "Contract error: listing not found or already redeemed"
+                "message": contract_error(logger, str(exc))
             })
         except Exception as exc:
             logger.error("Unexpected contract fetch error | listing_id=%s error=%s", listing_id, exc, exc_info=True)
             return json.dumps({
                 "success": False,
                 "error": "CONTRACT_ERROR",
-                "message": "Contract error: listing not found or already redeemed"
+                "message": contract_error(logger, str(exc))
             })
 
         if listing is None:
             return json.dumps({
                 "success": False,
                 "error": "LISTING_NOT_FOUND",
-                "message": f"Listing {listing_id} not found on-chain"
+                "message": contract_error(logger, f"Listing {listing_id} not found")
             })
 
         seller_wallet = str(listing.seller)
@@ -573,7 +575,7 @@ async def trigger_x402_payment(
             # =====================================================================
             # STEP 5: RETURN CONFIRMATION WITH EXPLORER LINK
             # =====================================================================
-            explorer_url = f"https://testnet.explorer.algorand.org/tx/{txid}"
+            explorer_url = f"{EXPLORER_TX_BASE}/{txid}/"
             
             response = {
                 "success": True,
@@ -695,7 +697,7 @@ async def validate_x402_payment(transaction_id: str) -> str:
                 "confirmed_round": confirmed_round,
                 "message": f"x402 payment confirmed on-chain in round {confirmed_round}",
                 "status": "COMPLETE",
-                "explorer_url": f"https://testnet.explorer.algorand.org/tx/{transaction_id}"
+                "explorer_url": f"{EXPLORER_TX_BASE}/{transaction_id}/"
             })
         
         except Exception as inner_e:

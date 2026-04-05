@@ -11,6 +11,16 @@ export default function SellInsight() {
   const [successTxId, setSuccessTxId] = useState('')
   const [demoResult, setDemoResult] = useState<string>('')
   const [errorMessage, setErrorMessage] = useState('')
+  const [formLockedByError, setFormLockedByError] = useState(false)
+
+  const explorerTxUrl = (txId: string) => `https://explorer.perawallet.app/tx/${txId}/`
+
+  const unlockOnEdit = () => {
+    if (formLockedByError) {
+      setFormLockedByError(false)
+      setErrorMessage('')
+    }
+  }
 
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -20,6 +30,7 @@ export default function SellInsight() {
 
     if (!insight.trim() || !wallet.trim() || !price.trim()) {
       setErrorMessage('Please complete all fields before listing.')
+      setFormLockedByError(true)
       return
     }
 
@@ -54,7 +65,7 @@ export default function SellInsight() {
         <span>
           Insight listed successfully!{' '}
           <a
-            href={`https://testnet.explorer.algorand.org/tx/${txId}`}
+            href={explorerTxUrl(txId)}
             target="_blank"
             rel="noreferrer"
             className="underline"
@@ -65,8 +76,10 @@ export default function SellInsight() {
       )
     } catch (error) {
       const backendMessage =
-        axios.isAxiosError(error) && typeof error.response?.data?.detail === 'string'
-          ? error.response.data.detail
+        axios.isAxiosError(error) && typeof error.response?.data?.error === 'string'
+          ? error.response.data.error
+          : axios.isAxiosError(error) && typeof error.response?.data?.detail === 'string'
+            ? error.response.data.detail
           : axios.isAxiosError(error) && typeof error.response?.data?.message === 'string'
             ? error.response.data.message
             : error instanceof Error
@@ -74,11 +87,14 @@ export default function SellInsight() {
               : 'Could not list this insight right now. Please try again.'
 
       setErrorMessage(backendMessage)
+      setFormLockedByError(true)
       toast.error(backendMessage)
     } finally {
       setIsLoading(false)
     }
   }
+
+  const isFormDisabled = isLoading || formLockedByError
 
   return (
     <div className="min-h-screen bg-background px-4 py-10 font-body text-ink md:px-6">
@@ -94,7 +110,11 @@ export default function SellInsight() {
               className="w-full rounded-lg border border-line bg-surface px-4 py-3 text-sm text-ink outline-none ring-primary transition focus:ring-2"
               placeholder="Sample trading insight: Buy NIFTY above 24500..."
               value={insight}
-              onChange={(e) => setInsight(e.target.value)}
+              onChange={(e) => {
+                unlockOnEdit()
+                setInsight(e.target.value)
+              }}
+              disabled={isFormDisabled}
             />
           </label>
 
@@ -105,8 +125,12 @@ export default function SellInsight() {
               step="0.000001"
               className="w-full rounded-lg border border-line bg-surface px-4 py-3 text-sm text-ink outline-none ring-primary transition focus:ring-2"
               value={price}
-              onChange={(e) => setPrice(e.target.value)}
+              onChange={(e) => {
+                unlockOnEdit()
+                setPrice(e.target.value)
+              }}
               placeholder="1.000000"
+              disabled={isFormDisabled}
             />
           </label>
 
@@ -116,14 +140,18 @@ export default function SellInsight() {
               type="text"
               className="w-full rounded-lg border border-line bg-surface px-4 py-3 text-sm text-ink outline-none ring-primary transition focus:ring-2"
               value={wallet}
-              onChange={(e) => setWallet(e.target.value)}
+              onChange={(e) => {
+                unlockOnEdit()
+                setWallet(e.target.value)
+              }}
               placeholder="Enter Algorand wallet address"
+              disabled={isFormDisabled}
             />
           </label>
 
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isFormDisabled}
             className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-80"
           >
             {isLoading ? (
@@ -148,7 +176,7 @@ export default function SellInsight() {
           <div className="mt-5 rounded-lg border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-800">
             Listed successfully. Transaction:{' '}
             <a
-              href={`https://testnet.explorer.algorand.org/tx/${successTxId}`}
+              href={explorerTxUrl(successTxId)}
               target="_blank"
               rel="noreferrer"
               className="font-semibold underline"
@@ -159,7 +187,10 @@ export default function SellInsight() {
         )}
 
         {errorMessage && (
-          <div className="mt-5 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">{errorMessage}</div>
+          <div className="mt-5 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <p>{errorMessage}</p>
+            <p className="mt-1 text-xs text-red-600">Edit any field to unlock and retry.</p>
+          </div>
         )}
       </div>
     </div>

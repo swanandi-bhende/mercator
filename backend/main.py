@@ -21,6 +21,7 @@ from algosdk.v2client import algod, indexer
 
 from backend.agent import run_agent
 from backend.utils.runtime_env import configure_demo_logging, normalize_network_env, warn_missing_required_env
+from backend.utils.error_handler import contract_error, ipfs_down
 
 try:
     from contracts.insight_listing import InsightListingClient  # noqa: F401
@@ -49,6 +50,8 @@ demo_logger = configure_demo_logging()
 app = FastAPI(title="Mercator Backend")
 logger = logging.getLogger("mercator.backend")
 
+EXPLORER_TX_BASE = os.getenv("EXPLORER_TX_BASE", "https://explorer.perawallet.app/tx").rstrip("/")
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
@@ -56,6 +59,7 @@ logging.basicConfig(
         logging.StreamHandler(),
         logging.FileHandler("mercator.log", mode="a"),
     ],
+    force=True,
 )
 
 
@@ -296,10 +300,10 @@ async def create_listing(request: ListingRequest) -> dict[str, int | str]:
         logger.info("Transaction confirmed: tx_id=%s", tx_id)
     except IPFSUploadError as err:
         logger.error("IPFS upload failed | error=%s", err, exc_info=True)
-        return _error_response(500, "IPFS upload failed - please try again")
+        return _error_response(500, ipfs_down(logger, str(err)))
     except ListingStoreError as err:
         logger.error("ASA creation failed | error=%s", err, exc_info=True)
-        return _error_response(500, "ASA creation failed - please try again")
+        return _error_response(500, contract_error(logger, str(err)))
     except HTTPException as err:
         logger.error("Transaction confirmation failed | detail=%s", err.detail, exc_info=True)
         return _error_response(err.status_code, str(err.detail))
@@ -311,7 +315,7 @@ async def create_listing(request: ListingRequest) -> dict[str, int | str]:
         "success": True,
         "transaction_id": tx_id,
         "txId": tx_id,
-        "explorer_url": f"https://testnet.explorer.algorand.org/tx/{tx_id}",
+        "explorer_url": f"{EXPLORER_TX_BASE}/{tx_id}/",
         "message": "Insight listed on-chain and pinned on IPFS",
         "cid": cid,
         "listing_id": listing_id,
