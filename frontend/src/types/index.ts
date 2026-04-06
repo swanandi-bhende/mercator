@@ -7,6 +7,10 @@ export interface Insight {
   price: number
   seller_wallet: string
   seller_reputation?: number
+  relevance_score?: number
+  query_text?: string
+  market_context?: string
+  synopsis?: string
   cid?: string
   created_at?: string
   tx_id?: string
