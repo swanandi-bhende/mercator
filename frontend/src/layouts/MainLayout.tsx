@@ -17,6 +17,9 @@ export default function MainLayout() {
             <Link to="/activity" className="font-semibold text-gray-800 hover:text-gray-900">
               Open Activity Ledger
             </Link>
+            <Link to="/operations" className="font-semibold text-gray-800 hover:text-gray-900">
+              Open Operations Dashboard
+            </Link>
             <Link to="/trust" className="hover:text-gray-900">
               Trust Rules
             </Link>

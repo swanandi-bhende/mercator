@@ -6,6 +6,15 @@ import type {
   HealthResponse,
   DiscoverResponse,
   LedgerResponse,
+  OpsOverviewResponse,
+  OpsAccessCheckResponse,
+  OpsSyntheticHistoryResponse,
+  OpsSyntheticRunResponse,
+  OpsIpfsHealthResponse,
+  OpsIpfsUploadResponse,
+  OpsAlgorandStatusResponse,
+  OpsPingResponse,
+  OpsDiagnosticsResponse,
 } from '../types'
 
 const API_BASE = 'http://localhost:8000'
@@ -14,6 +23,10 @@ const client = axios.create({
   baseURL: API_BASE,
   timeout: 30000,
 })
+
+function opsHeaders(apiKey?: string) {
+  return apiKey?.trim() ? { 'x-api-key': apiKey.trim() } : undefined
+}
 
 // Error message mapping for user-friendly display
 const errorMessageMap: Record<string, string> = {
@@ -99,6 +112,145 @@ export const api = {
       return response.data
     } catch (error) {
       throw new ApiError('Failed to fetch activity ledger', error)
+    }
+  },
+
+  /**
+   * Fetch operations dashboard overview with contracts, metrics, environment, and events
+   */
+  operationsOverview: async (params?: { verifyOnChain?: boolean }) => {
+    try {
+      const response = await client.get<OpsOverviewResponse>('/ops/overview', {
+        params: {
+          verify_on_chain: params?.verifyOnChain ?? true,
+        },
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('Failed to fetch operations overview', error)
+    }
+  },
+
+  operationsAccessCheck: async (apiKey?: string) => {
+    try {
+      const response = await client.get<OpsAccessCheckResponse>('/ops/access-check', {
+        headers: opsHeaders(apiKey),
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('Operator access check failed', error)
+    }
+  },
+
+  operationsOverviewSecure: async (params?: { verifyOnChain?: boolean; apiKey?: string }) => {
+    try {
+      const response = await client.get<OpsOverviewResponse>('/ops/overview', {
+        params: {
+          verify_on_chain: params?.verifyOnChain ?? true,
+        },
+        headers: opsHeaders(params?.apiKey),
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('Failed to fetch operations overview', error)
+    }
+  },
+
+  operationsSyntheticHistory: async (apiKey?: string) => {
+    try {
+      const response = await client.get<OpsSyntheticHistoryResponse>('/ops/synthetic-tests', {
+        headers: opsHeaders(apiKey),
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('Failed to fetch synthetic test history', error)
+    }
+  },
+
+  operationsRunSyntheticTest: async (
+    payload?: { user_query?: string; buyer_address?: string; seller_wallet?: string; price?: number },
+    apiKey?: string,
+  ) => {
+    try {
+      const response = await client.post<OpsSyntheticRunResponse>('/ops/synthetic-test', payload || {}, {
+        headers: opsHeaders(apiKey),
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('Synthetic transaction test failed', error)
+    }
+  },
+
+  operationsIpfsHealth: async (apiKey?: string) => {
+    try {
+      const response = await client.get<OpsIpfsHealthResponse>('/ops/ipfs/health', {
+        headers: opsHeaders(apiKey),
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('Failed to fetch IPFS health', error)
+    }
+  },
+
+  operationsIpfsTestUpload: async (payload?: { content?: string; filename?: string }, apiKey?: string) => {
+    try {
+      const response = await client.post<OpsIpfsUploadResponse>('/ops/ipfs/test-upload', payload || {}, {
+        headers: opsHeaders(apiKey),
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('IPFS test upload failed', error)
+    }
+  },
+
+  operationsAlgorandStatus: async (apiKey?: string) => {
+    try {
+      const response = await client.get<OpsAlgorandStatusResponse>('/ops/algorand/status', {
+        headers: opsHeaders(apiKey),
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('Failed to fetch Algorand status', error)
+    }
+  },
+
+  operationsAlgorandTest: async (apiKey?: string) => {
+    try {
+      const response = await client.post<OpsAlgorandStatusResponse>('/ops/algorand/test', {}, {
+        headers: opsHeaders(apiKey),
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('Algorand connectivity test failed', error)
+    }
+  },
+
+  operationsPingEndpoint: async (endpoint: string, apiKey?: string) => {
+    try {
+      const response = await client.post<OpsPingResponse>(
+        '/ops/ping',
+        { endpoint },
+        {
+          headers: opsHeaders(apiKey),
+        },
+      )
+      return response.data
+    } catch (error) {
+      throw new ApiError('Endpoint ping failed', error)
+    }
+  },
+
+  operationsDiagnosticsBundle: async (params?: { includeContractScan?: boolean; apiKey?: string }) => {
+    try {
+      const response = await client.get<OpsDiagnosticsResponse>('/ops/diagnostics', {
+        params: {
+          include_contract_scan: params?.includeContractScan ?? false,
+        },
+        headers: opsHeaders(params?.apiKey),
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('Diagnostics export failed', error)
     }
   },
 }

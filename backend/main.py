@@ -7,7 +7,13 @@ import asyncio
 import json
 import logging
 import os
+import hashlib
+import time
+from uuid import uuid4
+from typing import Any
+import requests
 from datetime import datetime, timezone
+from collections import deque
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -37,6 +43,8 @@ try:
         ListingStoreError,
         upload_insight_to_ipfs,
         store_cid_in_listing,
+        fetch_insight_from_ipfs,
+        PINATA_BASE_URL,
     )
 except ModuleNotFoundError:
     from backend.utils.ipfs import (
@@ -44,6 +52,8 @@ except ModuleNotFoundError:
         ListingStoreError,
         upload_insight_to_ipfs,
         store_cid_in_listing,
+        fetch_insight_from_ipfs,
+        PINATA_BASE_URL,
     )
 
 
@@ -64,6 +74,125 @@ logging.basicConfig(
     ],
     force=True,
 )
+
+
+METRICS_WINDOW = deque(maxlen=3000)
+SYNTHETIC_RESULTS = deque(maxlen=20)
+IPFS_HEALTH_WINDOW = deque(maxlen=180)
+ALGOD_HEALTH_WINDOW = deque(maxlen=180)
+METRIC_ENDPOINTS = {
+    "/list",
+    "/demo_purchase",
+    "/health",
+    "/discover",
+    "/ledger",
+    "/ops/overview",
+    "/ops/ipfs/health",
+    "/ops/algorand/status",
+}
+
+
+def _truncate_address(value: str, left: int = 6, right: int = 4) -> str:
+    if not value:
+        return ""
+    if len(value) <= left + right + 3:
+        return value
+    return f"{value[:left]}...{value[-right:]}"
+
+
+def _anonymize_client_ip(value: str | None) -> str:
+    if not value:
+        return "unknown"
+    hashed = hashlib.sha256(value.encode("utf-8")).hexdigest()[:10]
+    return f"anon-{hashed}"
+
+
+def _safe_int(value: object, default: int = 0) -> int:
+    try:
+        return int(value)  # type: ignore[arg-type]
+    except Exception:
+        return default
+
+
+def _service_tone(status: str) -> str:
+    lowered = status.lower()
+    if lowered in {"ok", "healthy", "active"}:
+        return "healthy"
+    if lowered in {"warning", "degraded", "unknown"}:
+        return "warning"
+    return "broken"
+
+
+def _operator_access_snapshot(request: Request) -> dict[str, object]:
+    host = request.client.host if request.client else ""
+    localhost_hosts = {"127.0.0.1", "::1", "localhost"}
+    access_via_localhost = host in localhost_hosts
+
+    configured_key = os.getenv("OPERATOR_API_KEY", "").strip()
+    provided_key = request.headers.get("x-api-key", "").strip()
+    access_via_api_key = bool(configured_key and provided_key and provided_key == configured_key)
+
+    authorized = access_via_localhost or access_via_api_key
+    if authorized:
+        reason = "localhost access granted" if access_via_localhost else "API key verified"
+    elif configured_key:
+        reason = "Operator access denied. Use localhost or provide a valid x-api-key."
+    else:
+        reason = "Operator access denied. Set OPERATOR_API_KEY or access from localhost."
+
+    return {
+        "authorized": authorized,
+        "access_via_localhost": access_via_localhost,
+        "access_via_api_key": access_via_api_key,
+        "reason": reason,
+    }
+
+
+def _require_operator(request: Request) -> dict[str, object]:
+    access = _operator_access_snapshot(request)
+    if not bool(access.get("authorized")):
+        raise HTTPException(status_code=403, detail=str(access.get("reason", "Operator access required")))
+    return access
+
+
+@app.middleware("http")
+async def capture_request_metrics(request: Request, call_next):
+    started = time.perf_counter()
+    path = request.url.path
+    method = request.method
+    client_ip = request.client.host if request.client else None
+    anon_client = _anonymize_client_ip(client_ip)
+
+    try:
+        response = await call_next(request)
+        status_code = response.status_code
+    except Exception:
+        status_code = 500
+        latency_ms = (time.perf_counter() - started) * 1000
+        METRICS_WINDOW.append(
+            {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "path": path,
+                "method": method,
+                "status_code": status_code,
+                "latency_ms": round(latency_ms, 2),
+                "anon_client": anon_client,
+            }
+        )
+        raise
+
+    latency_ms = (time.perf_counter() - started) * 1000
+    METRICS_WINDOW.append(
+        {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "path": path,
+            "method": method,
+            "status_code": status_code,
+            "latency_ms": round(latency_ms, 2),
+            "anon_client": anon_client,
+        }
+    )
+    return response
 
 
 def _error_response(status_code: int, message: str) -> JSONResponse:
@@ -98,6 +227,22 @@ class DemoPurchaseRequest(BaseModel):
 
 class DiscoverRequest(BaseModel):
     user_query: str
+
+
+class OpsManualPingRequest(BaseModel):
+    endpoint: str
+
+
+class OpsSyntheticTestRequest(BaseModel):
+    user_query: str = "Synthetic operator reliability test"
+    buyer_address: str | None = None
+    seller_wallet: str | None = None
+    price: float = 0.1
+
+
+class OpsIpfsUploadRequest(BaseModel):
+    content: str | None = None
+    filename: str = "ops-healthcheck.txt"
 
 
 def _safe_iso_from_round_time(round_time: object) -> str:
@@ -425,6 +570,992 @@ def health() -> dict[str, object]:
         "status": overall_status,
         "timestamp": timestamp,
         "services": services,
+    }
+
+
+def _collect_request_metrics(now: datetime) -> list[dict[str, object]]:
+    horizon_seconds = 30 * 60
+    entries: list[dict[str, object]] = []
+
+    for raw in list(METRICS_WINDOW):
+        ts = raw.get("timestamp")
+        if not isinstance(ts, str):
+            continue
+        try:
+            parsed = datetime.fromisoformat(ts)
+        except Exception:
+            continue
+        if (now - parsed).total_seconds() > horizon_seconds:
+            continue
+        entries.append(raw)
+
+    metrics: list[dict[str, object]] = []
+    for endpoint in ["/list", "/demo_purchase", "/health", "/discover", "/ledger", "/ops/overview"]:
+        endpoint_entries = [e for e in entries if e.get("path") == endpoint]
+        total = len(endpoint_entries)
+        success = len([e for e in endpoint_entries if _safe_int(e.get("status_code"), 0) < 400])
+        success_rate = (success / total * 100) if total else 100.0
+        avg_latency = (
+            sum(float(e.get("latency_ms", 0.0)) for e in endpoint_entries) / total
+            if total
+            else 0.0
+        )
+        throughput = total / 30.0
+
+        error_entries = [e for e in endpoint_entries if _safe_int(e.get("status_code"), 0) >= 400]
+        error_groups: dict[str, list[dict[str, object]]] = {}
+        for err in error_entries:
+            status_code = _safe_int(err.get("status_code"), 500)
+            key = f"HTTP_{status_code}"
+            error_groups.setdefault(key, []).append(err)
+
+        recent_errors = []
+        for category, grouped in sorted(error_groups.items(), key=lambda pair: len(pair[1]), reverse=True):
+            recent_errors.append(
+                {
+                    "category": category,
+                    "count": len(grouped),
+                    "logs": [
+                        {
+                            "timestamp": str(item.get("timestamp", "")),
+                            "latency_ms": float(item.get("latency_ms", 0.0)),
+                            "anon_user": str(item.get("anon_client", "unknown")),
+                        }
+                        for item in grouped[:10]
+                    ],
+                }
+            )
+
+        buckets = [0] * 10
+        success_buckets = [0] * 10
+        for row in endpoint_entries:
+            ts = row.get("timestamp")
+            if not isinstance(ts, str):
+                continue
+            try:
+                parsed = datetime.fromisoformat(ts)
+            except Exception:
+                continue
+            age_seconds = max(0.0, (now - parsed).total_seconds())
+            idx = int(min(9, age_seconds // (3 * 60)))
+            bucket_index = 9 - idx
+            buckets[bucket_index] += 1
+            if _safe_int(row.get("status_code"), 0) < 400:
+                success_buckets[bucket_index] += 1
+
+        trend = []
+        for i in range(10):
+            total_bucket = buckets[i]
+            ok_bucket = success_buckets[i]
+            bucket_success = (ok_bucket / total_bucket * 100) if total_bucket else 100.0
+            trend.append(
+                {
+                    "throughput": total_bucket,
+                    "success_rate": round(bucket_success, 2),
+                }
+            )
+
+        metrics.append(
+            {
+                "endpoint": endpoint,
+                "latency_ms": round(avg_latency, 2),
+                "success_rate": round(success_rate, 2),
+                "throughput_rpm": round(throughput, 2),
+                "recent_errors": recent_errors,
+                "trend": trend,
+            }
+        )
+
+    return metrics
+
+
+def _tail_file(path: str, max_lines: int = 250) -> list[str]:
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            lines = handle.readlines()
+        return [line.rstrip("\n") for line in lines[-max_lines:]]
+    except Exception:
+        return []
+
+
+def _probe_gateway(url: str, *, timeout: int = 8, headers: dict[str, str] | None = None) -> dict[str, object]:
+    started = time.perf_counter()
+    try:
+        response = requests.get(url, timeout=timeout, headers=headers or {})
+        latency_ms = round((time.perf_counter() - started) * 1000, 2)
+        ok = response.status_code < 500
+        return {
+            "url": url,
+            "status": "ok" if ok else "degraded",
+            "latency_ms": latency_ms,
+            "http_status": response.status_code,
+            "error": "",
+        }
+    except Exception as err:
+        latency_ms = round((time.perf_counter() - started) * 1000, 2)
+        return {
+            "url": url,
+            "status": "error",
+            "latency_ms": latency_ms,
+            "http_status": 0,
+            "error": str(err),
+        }
+
+
+def _collect_ipfs_health(now: datetime) -> dict[str, object]:
+    fallback_raw = os.getenv("IPFS_FALLBACK_GATEWAYS", "").strip()
+    fallback_gateways = [g.strip().rstrip("/") for g in fallback_raw.split(",") if g.strip()]
+    gateways = [
+        "https://gateway.pinata.cloud/ipfs/QmYwAPJzv5CZsnAzt8auVTL5SLmv7DivfNa",
+        "https://ipfs.io/ipfs/QmYwAPJzv5CZsnAzt8auVTL5SLmv7DivfNa",
+    ] + [f"{gateway}/ipfs/QmYwAPJzv5CZsnAzt8auVTL5SLmv7DivfNa" for gateway in fallback_gateways]
+
+    jwt = os.getenv("PINATA_JWT", "").strip()
+    pinata_headers = {"Authorization": f"Bearer {jwt}"} if jwt else {}
+    pinata_probe = _probe_gateway(f"{PINATA_BASE_URL}/data/testAuthentication", headers=pinata_headers)
+
+    gateway_checks = [_probe_gateway(url) for url in gateways[:6]]
+
+    recent = [entry for entry in list(IPFS_HEALTH_WINDOW) if isinstance(entry.get("timestamp"), str)]
+    recent = sorted(recent, key=lambda e: str(e.get("timestamp", "")), reverse=True)[:40]
+
+    upload_entries = [entry for entry in recent if entry.get("kind") == "upload"]
+    upload_success_count = len([entry for entry in upload_entries if bool(entry.get("success"))])
+    upload_success_rate = (upload_success_count / len(upload_entries) * 100) if upload_entries else 100.0
+    avg_latency = (
+        sum(float(entry.get("latency_ms", 0.0)) for entry in upload_entries) / len(upload_entries)
+        if upload_entries
+        else 0.0
+    )
+
+    trend = [
+        {
+            "timestamp": str(entry.get("timestamp", "")),
+            "latency_ms": float(entry.get("latency_ms", 0.0)),
+            "success": bool(entry.get("success")),
+        }
+        for entry in sorted(upload_entries, key=lambda e: str(e.get("timestamp", "")))[-16:]
+    ]
+
+    status = "healthy"
+    slow_threshold_ms = 2500
+    if pinata_probe["status"] == "error" and all(check.get("status") == "error" for check in gateway_checks):
+        status = "broken"
+    elif avg_latency >= slow_threshold_ms or upload_success_rate < 95:
+        status = "warning"
+
+    return {
+        "status": status,
+        "connection": {
+            "pinata": pinata_probe,
+            "gateways": gateway_checks,
+        },
+        "latency_ms": round(avg_latency, 2),
+        "slow_threshold_ms": slow_threshold_ms,
+        "upload_success_rate": round(upload_success_rate, 2),
+        "last_upload": upload_entries[0] if upload_entries else None,
+        "fallback_gateways": fallback_gateways,
+        "trend": trend,
+        "timestamp": now.isoformat(),
+    }
+
+
+def _collect_algorand_status(now: datetime) -> dict[str, object]:
+    started = time.perf_counter()
+    try:
+        client = _get_algod_client()
+        status = client.status()
+        params = client.suggested_params()
+        latency_ms = round((time.perf_counter() - started) * 1000, 2)
+
+        last_round = _safe_int(status.get("last-round"), 0)
+        catchup_time = _safe_int(status.get("catchup-time"), 0)
+        time_since_round = _safe_int(status.get("time-since-last-round"), 0)
+        synced = catchup_time == 0
+
+        ALGOD_HEALTH_WINDOW.append(
+            {
+                "timestamp": now.isoformat(),
+                "last_round": last_round,
+                "synced": synced,
+                "latency_ms": latency_ms,
+            }
+        )
+
+        trend = [
+            {
+                "timestamp": str(entry.get("timestamp", "")),
+                "round": _safe_int(entry.get("last_round"), 0),
+                "latency_ms": float(entry.get("latency_ms", 0.0)),
+                "synced": bool(entry.get("synced")),
+            }
+            for entry in list(ALGOD_HEALTH_WINDOW)[-16:]
+        ]
+
+        recent_activity = len(
+            [
+                item
+                for item in list(METRICS_WINDOW)
+                if str(item.get("path", "")) in {"/list", "/demo_purchase", "/ledger"}
+                and isinstance(item.get("timestamp"), str)
+                and (now - datetime.fromisoformat(str(item.get("timestamp")))).total_seconds() <= 15 * 60
+            ]
+        )
+
+        status_tone = "healthy"
+        warning = ""
+        if not synced or time_since_round > 20_000:
+            status_tone = "warning"
+            warning = "Node appears behind network tip. Verify sync and indexer connectivity."
+
+        return {
+            "status": status_tone,
+            "latency_ms": latency_ms,
+            "node_health": "ok" if status_tone == "healthy" else "degraded",
+            "current_round": last_round,
+            "sync_status": "synced" if synced else "catching_up",
+            "catchup_time": catchup_time,
+            "time_since_last_round_ms": time_since_round,
+            "recent_activity_count": recent_activity,
+            "fee_suggestion_micro_algo": _safe_int(getattr(params, "min_fee", 0), 0),
+            "warning": warning,
+            "trend": trend,
+            "timestamp": now.isoformat(),
+        }
+    except Exception as err:
+        latency_ms = round((time.perf_counter() - started) * 1000, 2)
+        return {
+            "status": "broken",
+            "latency_ms": latency_ms,
+            "node_health": "error",
+            "current_round": 0,
+            "sync_status": "unknown",
+            "catchup_time": 0,
+            "time_since_last_round_ms": 0,
+            "recent_activity_count": 0,
+            "fee_suggestion_micro_algo": 0,
+            "warning": str(err),
+            "trend": [],
+            "timestamp": now.isoformat(),
+        }
+
+
+def _build_endpoint_heatmap(now: datetime) -> list[dict[str, object]]:
+    endpoints = ["/health", "/discover", "/ledger", "/ops/overview", "/list", "/demo_purchase"]
+    entries = [entry for entry in list(METRICS_WINDOW) if isinstance(entry.get("timestamp"), str)]
+
+    cells: list[dict[str, object]] = []
+    for endpoint in endpoints:
+        rows = []
+        for entry in entries:
+            if str(entry.get("path", "")) != endpoint:
+                continue
+            try:
+                ts = datetime.fromisoformat(str(entry.get("timestamp", "")))
+            except Exception:
+                continue
+            if (now - ts).total_seconds() > 30 * 60:
+                continue
+            rows.append(entry)
+
+        total = len(rows)
+        success = len([row for row in rows if _safe_int(row.get("status_code"), 0) < 400])
+        avg_latency = (
+            sum(float(row.get("latency_ms", 0.0)) for row in rows) / total if total else 0.0
+        )
+        success_rate = (success / total * 100) if total else 100.0
+
+        tone = "good"
+        if success_rate < 95 or avg_latency > 1800:
+            tone = "warn"
+        if success_rate < 85 or avg_latency > 3500:
+            tone = "bad"
+
+        recent_samples = [
+            {
+                "timestamp": str(row.get("timestamp", "")),
+                "method": str(row.get("method", "")),
+                "status_code": _safe_int(row.get("status_code"), 0),
+                "latency_ms": float(row.get("latency_ms", 0.0)),
+                "anon_user": str(row.get("anon_client", "unknown")),
+            }
+            for row in sorted(rows, key=lambda item: str(item.get("timestamp", "")), reverse=True)[:8]
+        ]
+
+        cells.append(
+            {
+                "endpoint": endpoint,
+                "tone": tone,
+                "status": "healthy" if tone == "good" else ("warning" if tone == "warn" else "error"),
+                "latency_ms": round(avg_latency, 2),
+                "success_rate": round(success_rate, 2),
+                "sample_count": total,
+                "summary": f"{endpoint}: {round(success_rate, 2)}% success, {round(avg_latency, 2)}ms avg",
+                "samples": recent_samples,
+            }
+        )
+
+    return cells
+
+
+async def _run_manual_ping(endpoint: str, request: Request) -> dict[str, object]:
+    started = time.perf_counter()
+    endpoint = endpoint.strip()
+    try:
+        if endpoint == "/health":
+            payload: Any = health()
+        elif endpoint == "/ops/overview":
+            payload = await ops_overview(request, verify_on_chain=False)
+        elif endpoint == "/ledger":
+            payload = await ledger_feed(limit=10, max_scan_pages=1)
+        elif endpoint == "/discover":
+            payload = await discover_insights(DiscoverRequest(user_query="ops ping health query"))
+        else:
+            raise HTTPException(status_code=400, detail=f"Unsupported endpoint ping target: {endpoint}")
+
+        latency_ms = round((time.perf_counter() - started) * 1000, 2)
+        return {
+            "success": True,
+            "endpoint": endpoint,
+            "latency_ms": latency_ms,
+            "status": "ok",
+            "summary": "Manual ping completed",
+            "payload_preview": payload,
+        }
+    except Exception as err:
+        latency_ms = round((time.perf_counter() - started) * 1000, 2)
+        return {
+            "success": False,
+            "endpoint": endpoint,
+            "latency_ms": latency_ms,
+            "status": "error",
+            "summary": str(err),
+            "payload_preview": {},
+        }
+
+
+async def _run_synthetic_test(payload: OpsSyntheticTestRequest) -> dict[str, object]:
+    started = time.perf_counter()
+    run_id = f"syn-{uuid4().hex[:12]}"
+    now = datetime.now(timezone.utc)
+    steps: list[dict[str, object]] = []
+
+    def add_step(name: str, status: str, duration_ms: float, message: str, details: dict[str, object] | None = None) -> None:
+        steps.append(
+            {
+                "name": name,
+                "status": status,
+                "duration_ms": round(duration_ms, 2),
+                "message": message,
+                "details": details or {},
+            }
+        )
+
+    seller_started = time.perf_counter()
+    try:
+        signing_mnemonic = _get_signing_mnemonic()
+        signer_private_key = mnemonic.to_private_key(signing_mnemonic)
+        derived_seller = account.address_from_private_key(signer_private_key)
+        seller_wallet = (payload.seller_wallet or derived_seller).strip()
+        if seller_wallet != derived_seller:
+            raise RuntimeError("Synthetic test seller_wallet must match configured signing mnemonic")
+
+        listing_app_id = int(os.getenv("INSIGHT_LISTING_APP_ID", "0") or 0)
+        if listing_app_id <= 0:
+            raise RuntimeError("INSIGHT_LISTING_APP_ID is missing/invalid")
+
+        add_step(
+            "listing_creation",
+            "passed",
+            (time.perf_counter() - seller_started) * 1000,
+            "Listing prerequisites validated",
+            {"seller": _truncate_address(seller_wallet), "listing_app_id": listing_app_id},
+        )
+    except Exception as err:
+        add_step("listing_creation", "failed", (time.perf_counter() - seller_started) * 1000, str(err))
+        result = {
+            "id": run_id,
+            "timestamp": now.isoformat(),
+            "status": "failed",
+            "stopped_on": "listing_creation",
+            "total_duration_ms": round((time.perf_counter() - started) * 1000, 2),
+            "steps": steps,
+            "error": str(err),
+        }
+        SYNTHETIC_RESULTS.appendleft(result)
+        return result
+
+    ipfs_started = time.perf_counter()
+    synthetic_text = f"Mercator synthetic reliability run at {now.isoformat()}"
+    try:
+        cid = await upload_insight_to_ipfs(synthetic_text)
+        IPFS_HEALTH_WINDOW.append(
+            {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "kind": "upload",
+                "success": True,
+                "latency_ms": round((time.perf_counter() - ipfs_started) * 1000, 2),
+                "cid": cid,
+                "error": "",
+            }
+        )
+        add_step(
+            "ipfs_upload",
+            "passed",
+            (time.perf_counter() - ipfs_started) * 1000,
+            "IPFS upload succeeded",
+            {"cid": cid},
+        )
+    except Exception as err:
+        IPFS_HEALTH_WINDOW.append(
+            {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "kind": "upload",
+                "success": False,
+                "latency_ms": round((time.perf_counter() - ipfs_started) * 1000, 2),
+                "cid": "",
+                "error": str(err),
+            }
+        )
+        add_step("ipfs_upload", "failed", (time.perf_counter() - ipfs_started) * 1000, str(err))
+        result = {
+            "id": run_id,
+            "timestamp": now.isoformat(),
+            "status": "failed",
+            "stopped_on": "ipfs_upload",
+            "total_duration_ms": round((time.perf_counter() - started) * 1000, 2),
+            "steps": steps,
+            "error": str(err),
+        }
+        SYNTHETIC_RESULTS.appendleft(result)
+        return result
+
+    chain_started = time.perf_counter()
+    try:
+        micro_price = max(1, int(payload.price * 1_000_000))
+        listing_id, asa_id = store_cid_in_listing(
+            cid=cid,
+            listing_app_id=listing_app_id,
+            seller_address=seller_wallet,
+            price=micro_price,
+            signer_mnemonic=signing_mnemonic,
+        )
+        tx_id = await _poll_for_listing_confirmation(app_id=listing_app_id, sender=seller_wallet, cid=cid)
+        add_step(
+            "on_chain_confirmation",
+            "passed",
+            (time.perf_counter() - chain_started) * 1000,
+            "On-chain listing confirmed",
+            {
+                "listing_id": listing_id,
+                "asa_id": asa_id,
+                "tx_id": tx_id,
+                "explorer_url": f"{EXPLORER_TX_BASE}/{tx_id}/",
+            },
+        )
+    except Exception as err:
+        add_step("on_chain_confirmation", "failed", (time.perf_counter() - chain_started) * 1000, str(err))
+        result = {
+            "id": run_id,
+            "timestamp": now.isoformat(),
+            "status": "failed",
+            "stopped_on": "on_chain_confirmation",
+            "total_duration_ms": round((time.perf_counter() - started) * 1000, 2),
+            "steps": steps,
+            "error": str(err),
+        }
+        SYNTHETIC_RESULTS.appendleft(result)
+        return result
+
+    purchase_started = time.perf_counter()
+    try:
+        buyer_address = (
+            (payload.buyer_address or "").strip()
+            or os.getenv("BUYER_WALLET", "").strip()
+            or os.getenv("BUYER_ADDRESS", "").strip()
+            or os.getenv("DEPLOYER_ADDRESS", "").strip()
+        )
+        if not buyer_address:
+            raise RuntimeError("No buyer address configured for synthetic purchase")
+
+        purchase_result = await run_agent(
+            user_query=payload.user_query,
+            buyer_address=buyer_address,
+            user_approval_input="approve",
+            force_buy_for_test=True,
+        )
+        if not isinstance(purchase_result, dict) or not bool(purchase_result.get("success")):
+            raise RuntimeError(str(purchase_result.get("error", "Synthetic purchase failed")) if isinstance(purchase_result, dict) else "Synthetic purchase failed")
+
+        add_step(
+            "purchase",
+            "passed",
+            (time.perf_counter() - purchase_started) * 1000,
+            "Synthetic purchase flow succeeded",
+            {"buyer": _truncate_address(buyer_address)},
+        )
+    except Exception as err:
+        add_step("purchase", "failed", (time.perf_counter() - purchase_started) * 1000, str(err))
+        result = {
+            "id": run_id,
+            "timestamp": now.isoformat(),
+            "status": "failed",
+            "stopped_on": "purchase",
+            "total_duration_ms": round((time.perf_counter() - started) * 1000, 2),
+            "steps": steps,
+            "error": str(err),
+        }
+        SYNTHETIC_RESULTS.appendleft(result)
+        return result
+
+    delivery_started = time.perf_counter()
+    try:
+        delivered_text = await fetch_insight_from_ipfs(cid)
+        if not delivered_text.strip():
+            raise RuntimeError("Delivered insight text is empty")
+        add_step(
+            "content_delivery",
+            "passed",
+            (time.perf_counter() - delivery_started) * 1000,
+            "Content retrieved from IPFS",
+            {"preview": delivered_text[:140]},
+        )
+    except Exception as err:
+        add_step("content_delivery", "failed", (time.perf_counter() - delivery_started) * 1000, str(err))
+        result = {
+            "id": run_id,
+            "timestamp": now.isoformat(),
+            "status": "failed",
+            "stopped_on": "content_delivery",
+            "total_duration_ms": round((time.perf_counter() - started) * 1000, 2),
+            "steps": steps,
+            "error": str(err),
+        }
+        SYNTHETIC_RESULTS.appendleft(result)
+        return result
+
+    result = {
+        "id": run_id,
+        "timestamp": now.isoformat(),
+        "status": "passed",
+        "stopped_on": None,
+        "total_duration_ms": round((time.perf_counter() - started) * 1000, 2),
+        "steps": steps,
+        "error": "",
+    }
+    SYNTHETIC_RESULTS.appendleft(result)
+    return result
+
+
+def _fetch_app_call_stats(idx: indexer.IndexerClient, app_id: int, max_pages: int = 8) -> tuple[int, str | None]:
+    next_token: str | None = None
+    total_calls = 0
+    latest_iso: str | None = None
+
+    for _ in range(max_pages):
+        params: dict[str, object] = {
+            "application_id": app_id,
+            "txn_type": "appl",
+            "limit": 1000,
+        }
+        if next_token:
+            params["next_page"] = next_token
+
+        response = idx.search_transactions(**params)
+        txns = response.get("transactions", [])
+        if not isinstance(txns, list):
+            break
+
+        total_calls += len(txns)
+        for txn in txns:
+            if not isinstance(txn, dict):
+                continue
+            round_time = txn.get("round-time")
+            iso = _safe_iso_from_round_time(round_time)
+            if latest_iso is None or iso > latest_iso:
+                latest_iso = iso
+
+        raw_next = response.get("next-token")
+        next_token = str(raw_next) if isinstance(raw_next, str) and raw_next else None
+        if not next_token:
+            break
+
+    return total_calls, latest_iso
+
+
+def _build_contract_card(name: str, env_key: str, idx: indexer.IndexerClient) -> dict[str, object]:
+    app_id_raw = os.getenv(env_key, "").strip()
+    if not app_id_raw or not app_id_raw.isdigit():
+        return {
+            "name": name,
+            "app_id": app_id_raw or "missing",
+            "creator": "unknown",
+            "approval_hash": "n/a",
+            "total_calls": 0,
+            "last_call": None,
+            "state": "not_configured",
+            "status": "broken",
+            "explorer_url": "",
+            "errors": [f"{env_key} missing or invalid"],
+        }
+
+    app_id = int(app_id_raw)
+    explorer = f"https://explorer.perawallet.app/application/{app_id}/"
+
+    try:
+        app_payload = idx.applications(app_id)
+        app_obj = app_payload.get("application", {}) if isinstance(app_payload, dict) else {}
+        params = app_obj.get("params", {}) if isinstance(app_obj, dict) else {}
+
+        creator = str(params.get("creator", "unknown"))
+        approval_b64 = str(params.get("approval-program", ""))
+        approval_hash = "n/a"
+        if approval_b64:
+            try:
+                approval_hash = hashlib.sha256(base64.b64decode(approval_b64)).hexdigest()[:16]
+            except Exception:
+                approval_hash = hashlib.sha256(approval_b64.encode("utf-8")).hexdigest()[:16]
+
+        total_calls, last_call = _fetch_app_call_stats(idx, app_id)
+        global_state = params.get("global-state", []) if isinstance(params, dict) else []
+        state = "active" if isinstance(global_state, list) else "unknown"
+
+        status = "healthy"
+        errors: list[str] = []
+        if total_calls == 0:
+            status = "warning"
+            errors.append("No app-call transactions observed in sampled history")
+
+        return {
+            "name": name,
+            "app_id": app_id,
+            "creator": creator,
+            "approval_hash": approval_hash,
+            "total_calls": total_calls,
+            "last_call": last_call,
+            "state": state,
+            "status": status,
+            "explorer_url": explorer,
+            "errors": errors,
+        }
+    except Exception as err:
+        return {
+            "name": name,
+            "app_id": app_id,
+            "creator": "unknown",
+            "approval_hash": "n/a",
+            "total_calls": 0,
+            "last_call": None,
+            "state": "unreachable",
+            "status": "broken",
+            "explorer_url": explorer,
+            "errors": [str(err)],
+        }
+
+
+def _collect_environment_panel() -> dict[str, object]:
+    algod_client: algod.AlgodClient | None = None
+    try:
+        algod_client = _get_algod_client()
+    except Exception:
+        algod_client = None
+
+    wallet_entries = [
+        ("Deployer", os.getenv("DEPLOYER_ADDRESS", "").strip()),
+        ("Seller", os.getenv("SELLER_ADDRESS", "").strip()),
+        ("Buyer", os.getenv("BUYER_WALLET", "").strip() or os.getenv("BUYER_ADDRESS", "").strip()),
+    ]
+
+    wallets: list[dict[str, object]] = []
+    for label, address in wallet_entries:
+        if not address:
+            continue
+
+        algo_balance = None
+        if algod_client:
+            try:
+                account_info = algod_client.account_info(address)
+                algo_balance = round((_safe_int(account_info.get("amount"), 0) / 1_000_000), 6)
+            except Exception:
+                algo_balance = None
+
+        wallets.append(
+            {
+                "label": label,
+                "address": _truncate_address(address),
+                "algo_balance": algo_balance,
+            }
+        )
+
+    return {
+        "network": "Algorand TestNet",
+        "warning": "TestNet only. Do not treat balances or proofs as mainnet settlement.",
+        "contracts": {
+            "insight_listing_app_id": os.getenv("INSIGHT_LISTING_APP_ID", "unset"),
+            "escrow_app_id": os.getenv("ESCROW_APP_ID", "unset"),
+            "reputation_app_id": os.getenv("REPUTATION_APP_ID", "unset"),
+        },
+        "wallets": wallets,
+        "redacted_config": {
+            "ALGOD_URL": os.getenv("ALGOD_URL", "")[:40],
+            "INDEXER_URL": os.getenv("INDEXER_URL", "")[:40],
+            "ALGOD_TOKEN": "***redacted***" if os.getenv("ALGOD_TOKEN") else "unset",
+            "INDEXER_TOKEN": "***redacted***" if os.getenv("INDEXER_TOKEN") else "unset",
+            "DEPLOYER_MNEMONIC": "***redacted***" if os.getenv("DEPLOYER_MNEMONIC") else "unset",
+            "SELLER_MNEMONIC": "***redacted***" if os.getenv("SELLER_MNEMONIC") else "unset",
+        },
+    }
+
+
+def _collect_system_events(now: datetime) -> list[dict[str, object]]:
+    events: list[dict[str, object]] = []
+    previous_error_by_endpoint: dict[str, bool] = {}
+
+    ordered = sorted(
+        [entry for entry in list(METRICS_WINDOW) if isinstance(entry.get("timestamp"), str)],
+        key=lambda item: str(item.get("timestamp", "")),
+        reverse=True,
+    )
+
+    for row in ordered[:300]:
+        path = str(row.get("path", ""))
+        if path not in METRIC_ENDPOINTS:
+            continue
+
+        status_code = _safe_int(row.get("status_code"), 0)
+        severity = "info"
+        event_type = "request"
+        message = f"{path} responded {status_code}"
+
+        if status_code >= 500:
+            severity = "error"
+            event_type = "error"
+            previous_error_by_endpoint[path] = True
+        elif status_code >= 400:
+            severity = "warning"
+            event_type = "warning"
+            previous_error_by_endpoint[path] = True
+        elif previous_error_by_endpoint.get(path):
+            severity = "info"
+            event_type = "recovery"
+            message = f"{path} recovered with status {status_code}"
+            previous_error_by_endpoint[path] = False
+
+        events.append(
+            {
+                "id": f"evt-{hash(str(row))}",
+                "timestamp": row.get("timestamp"),
+                "severity": severity,
+                "type": event_type,
+                "message": message,
+                "details": {
+                    "path": path,
+                    "status_code": status_code,
+                    "latency_ms": row.get("latency_ms"),
+                    "anon_user": row.get("anon_client"),
+                },
+            }
+        )
+
+    return events[:120]
+
+
+@app.get("/ops/access-check")
+async def ops_access_check(request: Request) -> dict[str, object]:
+    access = _operator_access_snapshot(request)
+    if not bool(access.get("authorized")):
+        raise HTTPException(status_code=403, detail=str(access.get("reason", "Operator access required")))
+    return {
+        "success": True,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "access": access,
+    }
+
+
+@app.get("/ops/overview")
+async def ops_overview(request: Request, verify_on_chain: bool = True) -> dict[str, object]:
+    access = _require_operator(request)
+    now = datetime.now(timezone.utc)
+
+    health_payload = health()
+    request_metrics = _collect_request_metrics(now)
+    environment = _collect_environment_panel()
+    events = _collect_system_events(now)
+    ipfs_health = _collect_ipfs_health(now)
+    algorand_status = _collect_algorand_status(now)
+    endpoint_heatmap = _build_endpoint_heatmap(now)
+
+    contracts: list[dict[str, object]] = []
+    if verify_on_chain:
+        try:
+            idx = _get_indexer_client()
+            contracts = [
+                _build_contract_card("InsightListing", "INSIGHT_LISTING_APP_ID", idx),
+                _build_contract_card("Escrow", "ESCROW_APP_ID", idx),
+                _build_contract_card("Reputation", "REPUTATION_APP_ID", idx),
+            ]
+        except Exception as err:
+            contracts = [
+                {
+                    "name": "Indexer verification",
+                    "app_id": "n/a",
+                    "creator": "unknown",
+                    "approval_hash": "n/a",
+                    "total_calls": 0,
+                    "last_call": None,
+                    "state": "unreachable",
+                    "status": "broken",
+                    "explorer_url": "",
+                    "errors": [str(err)],
+                }
+            ]
+
+    return {
+        "success": True,
+        "timestamp": now.isoformat(),
+        "operator_access": access,
+        "operator_mode": {
+            "active": True,
+            "session_ttl_hint_seconds": 1800,
+        },
+        "health": health_payload,
+        "contracts": contracts,
+        "request_metrics": request_metrics,
+        "endpoint_heatmap": endpoint_heatmap,
+        "ipfs": ipfs_health,
+        "algorand": algorand_status,
+        "synthetic_recent": list(SYNTHETIC_RESULTS),
+        "environment": environment,
+        "events": events,
+    }
+
+
+@app.get("/ops/synthetic-tests")
+async def ops_synthetic_tests(request: Request) -> dict[str, object]:
+    _require_operator(request)
+    return {
+        "success": True,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "results": list(SYNTHETIC_RESULTS),
+    }
+
+
+@app.post("/ops/synthetic-test")
+async def ops_synthetic_test(request: Request, payload: OpsSyntheticTestRequest) -> dict[str, object]:
+    _require_operator(request)
+    result = await _run_synthetic_test(payload)
+    return {
+        "success": True,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "result": result,
+        "history": list(SYNTHETIC_RESULTS),
+    }
+
+
+@app.get("/ops/ipfs/health")
+async def ops_ipfs_health(request: Request) -> dict[str, object]:
+    _require_operator(request)
+    now = datetime.now(timezone.utc)
+    return {
+        "success": True,
+        "timestamp": now.isoformat(),
+        "ipfs": _collect_ipfs_health(now),
+    }
+
+
+@app.post("/ops/ipfs/test-upload")
+async def ops_ipfs_test_upload(request: Request, payload: OpsIpfsUploadRequest) -> dict[str, object]:
+    _require_operator(request)
+    now = datetime.now(timezone.utc)
+    started = time.perf_counter()
+    content = payload.content or f"Mercator IPFS health upload at {now.isoformat()}"
+    try:
+        cid = await upload_insight_to_ipfs(content, filename=payload.filename)
+        latency_ms = round((time.perf_counter() - started) * 1000, 2)
+        IPFS_HEALTH_WINDOW.append(
+            {
+                "timestamp": now.isoformat(),
+                "kind": "upload",
+                "success": True,
+                "latency_ms": latency_ms,
+                "cid": cid,
+                "error": "",
+            }
+        )
+        return {
+            "success": True,
+            "timestamp": now.isoformat(),
+            "cid": cid,
+            "latency_ms": latency_ms,
+            "gateway_url": f"https://ipfs.io/ipfs/{cid}",
+        }
+    except Exception as err:
+        latency_ms = round((time.perf_counter() - started) * 1000, 2)
+        IPFS_HEALTH_WINDOW.append(
+            {
+                "timestamp": now.isoformat(),
+                "kind": "upload",
+                "success": False,
+                "latency_ms": latency_ms,
+                "cid": "",
+                "error": str(err),
+            }
+        )
+        raise HTTPException(status_code=500, detail=f"IPFS test upload failed: {err}")
+
+
+@app.get("/ops/algorand/status")
+async def ops_algorand_status(request: Request) -> dict[str, object]:
+    _require_operator(request)
+    now = datetime.now(timezone.utc)
+    return {
+        "success": True,
+        "timestamp": now.isoformat(),
+        "algorand": _collect_algorand_status(now),
+    }
+
+
+@app.post("/ops/algorand/test")
+async def ops_algorand_test(request: Request) -> dict[str, object]:
+    _require_operator(request)
+    now = datetime.now(timezone.utc)
+    status = _collect_algorand_status(now)
+    return {
+        "success": True,
+        "timestamp": now.isoformat(),
+        "algorand": status,
+    }
+
+
+@app.post("/ops/ping")
+async def ops_manual_ping(request: Request, payload: OpsManualPingRequest) -> dict[str, object]:
+    _require_operator(request)
+    result = await _run_manual_ping(payload.endpoint, request)
+    return {
+        "success": True,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "result": result,
+    }
+
+
+@app.get("/ops/diagnostics")
+async def ops_diagnostics(request: Request, include_contract_scan: bool = False) -> dict[str, object]:
+    _require_operator(request)
+    now = datetime.now(timezone.utc)
+    overview = await ops_overview(request, verify_on_chain=include_contract_scan)
+
+    return {
+        "success": True,
+        "timestamp": now.isoformat(),
+        "bundle": {
+            "overview": overview,
+            "synthetic_tests": list(SYNTHETIC_RESULTS),
+            "metrics_window_size": len(METRICS_WINDOW),
+            "ipfs_window_size": len(IPFS_HEALTH_WINDOW),
+            "algorand_window_size": len(ALGOD_HEALTH_WINDOW),
+            "log_tail": _tail_file("mercator.log", max_lines=320),
+            "notes": "Sensitive values remain redacted in environment payload.",
+        },
     }
 
 
