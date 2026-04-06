@@ -760,6 +760,366 @@ h3 {
   gap: 0.64rem;
 }
 
+.discover-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 560px at 5% 0%, rgba(217, 176, 150, 0.2), transparent 50%),
+    radial-gradient(900px 500px at 100% 12%, rgba(111, 57, 70, 0.14), transparent 48%),
+    linear-gradient(180deg, #fff8f4 0%, #fffdf8 100%);
+}
+
+.discover-hero {
+  padding: 3.2rem 0 1.6rem;
+}
+
+.discover-layout {
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.discover-hero-copy,
+.discover-sidecard,
+.discover-results-shell {
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow:
+    inset 0 0 0 1px rgba(120, 73, 82, 0.1),
+    0 16px 32px rgba(84, 41, 56, 0.08);
+}
+
+.discover-hero-copy {
+  padding: 1.4rem;
+}
+
+.discover-hero-copy h1 {
+  margin: 0.75rem 0 0;
+  max-width: 16ch;
+  font-size: clamp(2.1rem, 4.8vw, 4rem);
+  line-height: 0.99;
+  letter-spacing: -0.04em;
+  color: #221618;
+}
+
+.discover-hero-copy p {
+  margin: 0.85rem 0 0;
+  max-width: 60ch;
+  color: #634c52;
+  line-height: 1.6;
+}
+
+.discover-search-console {
+  margin-top: 1.25rem;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.discover-search-status {
+  margin-top: 0.72rem;
+  color: #624b51;
+  font-size: 0.9rem;
+}
+
+.discover-input-group {
+  display: grid;
+  gap: 0.46rem;
+}
+
+.discover-input-group span,
+.discover-filters span {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #53353e;
+}
+
+.discover-input-group input,
+.discover-filters select {
+  width: 100%;
+  border: 1px solid rgba(104, 64, 73, 0.18);
+  border-radius: 0.82rem;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 0.98rem 1rem;
+  color: #241517;
+  font: inherit;
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+}
+
+.discover-input-group input:focus,
+.discover-filters select:focus {
+  border-color: rgba(109, 56, 71, 0.6);
+  box-shadow: 0 0 0 4px rgba(141, 72, 97, 0.12);
+}
+
+.discover-input-group small {
+  color: #735b60;
+  line-height: 1.45;
+}
+
+.discover-submit-btn,
+.discover-evaluate-btn {
+  border: 0;
+  border-radius: 0.82rem;
+  padding: 0.92rem 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 120ms ease, opacity 120ms ease;
+}
+
+.discover-submit-btn {
+  background: linear-gradient(135deg, #6f3946 0%, #53303f 100%);
+  color: #fffdfb;
+  box-shadow: 0 10px 24px rgba(111, 57, 70, 0.18);
+}
+
+.discover-submit-btn:hover,
+.discover-evaluate-btn:hover {
+  transform: translateY(-1px);
+}
+
+.discover-sidecard {
+  padding: 1.25rem;
+}
+
+.discover-sidecard ul {
+  margin: 0.75rem 0 0;
+  padding-left: 1rem;
+  color: #624a50;
+  line-height: 1.6;
+}
+
+.discover-results {
+  padding: 0.2rem 0 4rem;
+}
+
+.discover-results-shell {
+  padding: 1.2rem;
+}
+
+.discover-results-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+.discover-results-head h2 {
+  margin: 0.58rem 0 0;
+  font-size: clamp(1.5rem, 2.5vw, 2.2rem);
+  letter-spacing: -0.03em;
+  color: #26191b;
+}
+
+.discover-filters {
+  display: flex;
+  gap: 0.72rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.discover-filters label {
+  display: grid;
+  gap: 0.34rem;
+  min-width: 8.6rem;
+}
+
+.discover-phase-card {
+  margin-top: 0.95rem;
+  border-radius: 0.95rem;
+  padding: 0.95rem;
+  background: rgba(255, 250, 245, 0.9);
+  box-shadow:
+    inset 0 0 0 1px rgba(120, 73, 82, 0.12),
+    0 10px 20px rgba(84, 41, 56, 0.08);
+}
+
+.discover-phase-card h3 {
+  margin: 0.45rem 0 0;
+  color: #2a191d;
+}
+
+.discover-phase-card p {
+  margin: 0.45rem 0 0;
+  color: #5f4950;
+}
+
+.discover-phase-card--reasoning {
+  background: rgba(253, 246, 240, 0.95);
+}
+
+.discover-empty-state {
+  margin-top: 0.95rem;
+  border-radius: 0.95rem;
+  padding: 0.95rem;
+  background: rgba(255, 247, 241, 0.85);
+  box-shadow: inset 0 0 0 1px rgba(120, 73, 82, 0.14);
+}
+
+.discover-empty-state h3 {
+  margin: 0;
+  color: #301e22;
+}
+
+.discover-empty-state p {
+  margin: 0.5rem 0 0;
+  color: #5f4950;
+}
+
+.discover-empty-state ul {
+  margin: 0.72rem 0 0;
+  padding-left: 1.15rem;
+  color: #5f4950;
+}
+
+.discover-empty-state--weak {
+  background: rgba(255, 243, 228, 0.9);
+}
+
+.discover-results-grid {
+  margin-top: 1.15rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.discover-result-card {
+  border-radius: 1rem;
+  padding: 1rem;
+  background: #fffefb;
+  box-shadow:
+    inset 0 0 0 1px rgba(120, 73, 82, 0.1),
+    0 14px 26px rgba(84, 41, 56, 0.08);
+}
+
+.discover-result-topline {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.discover-rank,
+.discover-category,
+.discover-recency {
+  border-radius: 999px;
+  padding: 0.24rem 0.56rem;
+  background: rgba(141, 72, 97, 0.12);
+  color: #643342;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.discover-result-card h3 {
+  margin: 0.82rem 0 0;
+  font-size: 1.08rem;
+  line-height: 1.3;
+  color: #241517;
+}
+
+.discover-seller {
+  margin: 0.48rem 0 0;
+  color: #725960;
+  font-size: 0.86rem;
+}
+
+.discover-reason {
+  margin: 0.7rem 0 0;
+  color: #5d464c;
+  line-height: 1.55;
+}
+
+.discover-metrics {
+  margin-top: 0.9rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.58rem;
+}
+
+.discover-metrics div {
+  border-radius: 0.8rem;
+  background: rgba(255, 252, 249, 0.92);
+  padding: 0.72rem;
+  box-shadow: inset 0 0 0 1px rgba(120, 73, 82, 0.08);
+}
+
+.discover-metrics span {
+  display: block;
+  font-size: 0.73rem;
+  color: #7a6066;
+}
+
+.discover-metrics strong {
+  display: block;
+  margin-top: 0.32rem;
+  color: #231618;
+  font-size: 0.95rem;
+}
+
+.discover-trust-cues {
+  margin-top: 0.72rem;
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.discover-status-chip,
+.discover-risk-chip {
+  border-radius: 999px;
+  padding: 0.25rem 0.58rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.discover-status-chip {
+  background: rgba(70, 122, 92, 0.15);
+  color: #2e5a43;
+}
+
+.discover-risk-chip {
+  background: rgba(188, 147, 72, 0.18);
+  color: #6d4d14;
+}
+
+.discover-risk-chip.is-risk {
+  background: rgba(164, 68, 79, 0.18);
+  color: #6f2933;
+}
+
+.discover-logic {
+  margin-top: 0.8rem;
+  border-left: 2px solid rgba(111, 57, 70, 0.18);
+  padding-left: 0.72rem;
+}
+
+.discover-logic p {
+  margin: 0;
+  color: #5f4950;
+  line-height: 1.5;
+}
+
+.discover-evaluate-btn {
+  width: 100%;
+  margin-top: 0.9rem;
+  background: rgba(141, 72, 97, 0.12);
+  color: #5d2d3a;
+}
+
+.discover-footer-note {
+  margin-top: 1rem;
+  color: #61494f;
+}
+
+.discover-footer-note a {
+  color: #6f3946;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.discover-footer-note a:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 1080px) {
   .sell-studio-layout,
   .sell-studio-grid {
@@ -873,5 +1233,21 @@ h3 {
 
   .home-footer-actions {
     flex-direction: column;
+  }
+
+  .discover-layout,
+  .discover-results-head,
+  .discover-results-grid,
+  .discover-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .discover-filters {
+    justify-content: stretch;
+  }
+
+  .discover-filters label {
+    min-width: 0;
+    width: 100%;
   }
 }

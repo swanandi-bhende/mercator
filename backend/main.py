@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import asyncio
+import json
 import logging
 import os
 from pathlib import Path
@@ -20,6 +21,7 @@ from algosdk.logic import get_application_address
 from algosdk.v2client import algod, indexer
 
 from backend.agent import run_agent
+from backend.tools.semantic_search import semantic_search as semantic_search_tool
 from backend.utils.runtime_env import configure_demo_logging, normalize_network_env, warn_missing_required_env
 from backend.utils.error_handler import contract_error, ipfs_down
 
@@ -91,6 +93,10 @@ class DemoPurchaseRequest(BaseModel):
     buyer_address: str | None = None
     user_approval_input: str = "approve"
     force_buy_for_test: bool = True
+
+
+class DiscoverRequest(BaseModel):
+    user_query: str
 
 
 def _get_algod_client() -> algod.AlgodClient:
@@ -340,6 +346,61 @@ async def demo_purchase(request: DemoPurchaseRequest) -> dict[str, object]:
         "final_insight_text": final_insight_text,
         "result": result,
     }
+
+
+@app.post("/discover")
+async def discover_insights(request: DiscoverRequest) -> dict[str, object]:
+    normalize_network_env()
+    user_query = request.user_query.strip()
+    if not user_query:
+        return {
+            "success": True,
+            "query": "",
+            "matches": [],
+            "message": "Empty query",
+            "degraded": False,
+            "diagnostics": {
+                "code": "EMPTY_QUERY",
+                "detail": "No query provided",
+            },
+        }
+
+    try:
+        raw = await semantic_search_tool.ainvoke({"query": user_query})
+        parsed: dict[str, object]
+        if isinstance(raw, str):
+            parsed = json.loads(raw)
+        elif isinstance(raw, dict):
+            parsed = raw
+        else:
+            parsed = {"query": user_query, "matches": []}
+
+        return {
+            "success": True,
+            "query": str(parsed.get("query", user_query)),
+            "embedding_fallback": bool(parsed.get("embedding_fallback", False)),
+            "matches": parsed.get("matches", []) if isinstance(parsed.get("matches", []), list) else [],
+            "message": parsed.get("message") if isinstance(parsed.get("message"), str) else None,
+            "degraded": False,
+            "diagnostics": {
+                "code": "OK",
+                "detail": "Ranked insights returned",
+            },
+        }
+    except Exception as err:
+        logger.error("Discover search failed | error=%s", err, exc_info=True)
+        return {
+            "success": True,
+            "query": user_query,
+            "embedding_fallback": True,
+            "matches": [],
+            "message": "Ranking is temporarily unavailable. Please retry shortly.",
+            "degraded": True,
+            "diagnostics": {
+                "code": "DISCOVER_RANKING_FAILED",
+                "detail": str(err),
+            },
+        }
 
 
 __all__ = ["app", "upload_insight_to_ipfs", "store_cid_in_listing"]

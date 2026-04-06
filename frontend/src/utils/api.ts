@@ -4,6 +4,7 @@ import type {
   DemoPurchaseRequest,
   DemoPurchaseResponse,
   HealthResponse,
+  DiscoverResponse,
 } from '../types'
 
 const API_BASE = 'http://localhost:8000'
@@ -53,6 +54,20 @@ export const api = {
       return response.data
     } catch (error) {
       throw new ApiError('Failed to purchase insight', error)
+    }
+  },
+
+  /**
+   * Discover and rank insights (buyer query flow)
+   */
+  discoverInsights: async (query: string) => {
+    try {
+      const response = await client.post<DiscoverResponse>('/discover', {
+        user_query: query.trim(),
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('Failed to discover insights', error)
     }
   },
 

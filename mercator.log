@@ -131,3 +131,26 @@
 2026-04-05 15:34:45,919 | WARNING | backend.agent | Evaluation step hit Gemini limit; falling back to SKIP
 2026-04-05 15:34:45,922 | ERROR | backend.agent | low_reputation | details=top_reputation=10.0
 2026-04-05 15:34:47,570 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-06 10:27:49,025 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-06 10:28:02,320 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-06 10:28:08,003 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-06 10:29:26,676 | ERROR | mercator.backend | Discover search failed | error=name 'semantic_search_tool' is not defined
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 363, in discover_insights
+    raw = await semantic_search_tool.ainvoke({"query": user_query})
+                ^^^^^^^^^^^^^^^^^^^^
+NameError: name 'semantic_search_tool' is not defined
+2026-04-06 10:31:07,834 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-06 10:31:29,845 | ERROR | mercator.backend | Discover search failed | error=name 'semantic_search_tool' is not defined
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 368, in discover_insights
+    raw = await semantic_search_tool.ainvoke({"query": user_query})
+                ^^^^^^^^^^^^^^^^^^^^
+NameError: name 'semantic_search_tool' is not defined
+2026-04-06 10:31:41,061 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-06 10:35:18,676 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-06 10:35:21,176 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-06 10:35:23,305 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-06 10:35:23,306 | WARNING | backend.tools.semantic_search | Embedding failure during semantic_search: RetryError[<Future at 0x10ae34a70 state=finished raised GoogleGenerativeAIError>]
+2026-04-06 10:35:23,308 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-06 10:35:25,541 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode

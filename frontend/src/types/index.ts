@@ -49,6 +49,33 @@ export interface DemoPurchaseResponse {
   message?: string
 }
 
+export interface DiscoverMatch {
+  listing_id: number
+  price_micro_usdc: number
+  price_usdc: number
+  reputation: number
+  cid: string
+  asa_id: number
+  score: number
+  insight_preview: string
+  seller_wallet?: string
+  listing_status?: string
+}
+
+export interface DiscoverResponse {
+  success: boolean
+  query: string
+  embedding_fallback?: boolean
+  matches: DiscoverMatch[]
+  message?: string
+  error?: string
+  degraded?: boolean
+  diagnostics?: {
+    code: string
+    detail: string
+  }
+}
+
 export interface HealthResponse {
   status: 'ok' | 'error'
   version?: string

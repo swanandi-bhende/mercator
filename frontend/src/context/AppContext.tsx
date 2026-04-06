@@ -21,8 +21,20 @@ export interface AppContextType {
     reputation?: number
     address?: string
     totalSales?: number
+    listingStatus?: string
+    riskSignal?: string
+    rankingReason?: string
   } | null
-  setSellerMetadata: (metadata: any) => void
+  setSellerMetadata: (
+    metadata: {
+      reputation?: number
+      address?: string
+      totalSales?: number
+      listingStatus?: string
+      riskSignal?: string
+      rankingReason?: string
+    } | null,
+  ) => void
   buyerWallet: string | null
   setBuyerWallet: (wallet: string | null) => void
 
@@ -59,7 +71,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // Buyer state
   const [selectedInsight, setSelectedInsight] = useState<Insight | null>(null)
-  const [sellerMetadata, setSellerMetadata] = useState<any>(null)
+  const [sellerMetadata, setSellerMetadata] = useState<{
+    reputation?: number
+    address?: string
+    totalSales?: number
+    listingStatus?: string
+    riskSignal?: string
+    rankingReason?: string
+  } | null>(null)
   const [buyerWallet, setBuyerWallet] = useState<string | null>(null)
 
   // Transaction state (shared)

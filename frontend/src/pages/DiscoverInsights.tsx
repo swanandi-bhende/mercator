@@ -1,141 +1,464 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
+import { api, ApiError } from '../utils/api'
+import type { DiscoverMatch } from '../types'
 
-const SAMPLE_INSIGHTS = [
+type SearchPhase = 'idle' | 'fetching' | 'evaluating' | 'ready'
+type BackendStatus = 'unknown' | 'online' | 'offline'
+
+type RankedInsight = {
+  id: string
+  title: string
+  seller: string
+  wallet: string
+  price: number
+  reputation: number
+  relevance: number
+  reason: string
+  category: string
+  recency: string
+  listingStatus: string
+  riskSignal: string
+  txId: string
+  cid: string
+  listingId: string
+  asaId: string
+}
+
+const DEMO_INSIGHTS: RankedInsight[] = [
   {
-    id: '1',
-    text: 'NIFTY expected to test 24500 resistance today',
+    id: 'demo-1',
+    title: 'NIFTY expected to test 24500 resistance today',
     seller: 'Market Analyst Pro',
+    wallet: 'MKT...PRO1',
     price: 2.5,
     reputation: 87,
     relevance: 95,
+    reason: 'Strong topical fit, high trust score, and reasonable value.',
+    category: 'Indices',
+    recency: '2h ago',
+    listingStatus: 'Demo',
+    riskSignal: 'Low risk',
+    txId: 'N/A',
+    cid: 'demo-cid-1',
+    listingId: 'D-1',
+    asaId: '0',
   },
   {
-    id: '2',
-    text: 'Banking sector showing weakness, avoid financials',
+    id: 'demo-2',
+    title: 'Best short-term bank index setup this session',
     seller: 'Equity Research Lab',
+    wallet: 'EQL...LAB7',
     price: 1.5,
     reputation: 72,
-    relevance: 78,
-  },
-  {
-    id: '3',
-    text: 'Fed speakers this week may trigger volatility',
-    seller: 'Macro Observer',
-    price: 3.0,
-    reputation: 91,
-    relevance: 65,
+    relevance: 81,
+    reason: 'Good thematic overlap but weaker trust profile than top options.',
+    category: 'Banking',
+    recency: '5h ago',
+    listingStatus: 'Demo',
+    riskSignal: 'Medium risk',
+    txId: 'N/A',
+    cid: 'demo-cid-2',
+    listingId: 'D-2',
+    asaId: '0',
   },
 ]
+
+function summarizeReason(match: DiscoverMatch, relevance: number, query: string) {
+  const reasons: string[] = []
+
+  if (relevance >= 85) {
+    reasons.push('high topical match')
+  } else if (relevance >= 70) {
+    reasons.push('solid topical match')
+  } else {
+    reasons.push('weaker topical match')
+  }
+
+  if (match.reputation >= 85) {
+    reasons.push('strong reputation')
+  } else if (match.reputation >= 70) {
+    reasons.push('acceptable trust signal')
+  } else {
+    reasons.push('weaker trust signal')
+  }
+
+  if (match.price_usdc <= 2) {
+    reasons.push('fair price')
+  } else {
+    reasons.push('higher price for this query')
+  }
+
+  if (query.toLowerCase().includes('bank')) {
+    reasons.push('category aligned with banking intent')
+  }
+
+  return reasons.join(', ')
+}
+
+function deriveCategory(preview: string, query: string) {
+  const text = `${preview} ${query}`.toLowerCase()
+  if (text.includes('nifty') || text.includes('index')) return 'Indices'
+  if (text.includes('bank')) return 'Banking'
+  if (text.includes('fed') || text.includes('macro')) return 'Macro'
+  return 'General'
+}
 
 export default function DiscoverInsightsPage() {
   const navigate = useNavigate()
   const { setSelectedInsight, setSellerMetadata } = useAppContext()
-  const [query, setQuery] = useState('')
 
-  const handleSelectInsight = (insight: typeof SAMPLE_INSIGHTS[0]) => {
-    // Store selected insight and seller metadata in context
+  const [query, setQuery] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('All')
+  const [priceFilter, setPriceFilter] = useState('Any')
+  const [reputationFilter, setReputationFilter] = useState('Any')
+  const [recencyFilter, setRecencyFilter] = useState('Any')
+  const [phase, setPhase] = useState<SearchPhase>('idle')
+  const [backendStatus, setBackendStatus] = useState<BackendStatus>('unknown')
+  const [hasSearched, setHasSearched] = useState(false)
+  const [rawInsights, setRawInsights] = useState<RankedInsight[]>([])
+  const [weakOnly, setWeakOnly] = useState(false)
+  const [searchFeedback, setSearchFeedback] = useState<string | null>(null)
+
+  const recencyInHours = (recency: string) => {
+    if (recency.includes('h')) return Number.parseInt(recency, 10)
+    if (recency.includes('d')) return Number.parseInt(recency, 10) * 24
+    if (recency === 'Live') return 1
+    return Number.POSITIVE_INFINITY
+  }
+
+  const applyFilters = (insight: RankedInsight) => {
+    const matchesCategory = categoryFilter === 'All' || insight.category === categoryFilter
+    const matchesPrice =
+      priceFilter === 'Any' ||
+      (priceFilter === 'Under 2' && insight.price < 2) ||
+      (priceFilter === '2 to 3' && insight.price >= 2 && insight.price <= 3) ||
+      (priceFilter === 'Above 3' && insight.price > 3)
+    const matchesReputation =
+      reputationFilter === 'Any' ||
+      (reputationFilter === '70+' && insight.reputation >= 70) ||
+      (reputationFilter === '85+' && insight.reputation >= 85)
+
+    const ageHours = recencyInHours(insight.recency)
+    const matchesRecency =
+      recencyFilter === 'Any' ||
+      (recencyFilter === 'Under 6h' && ageHours <= 6) ||
+      (recencyFilter === 'Under 24h' && ageHours <= 24)
+
+    return matchesCategory && matchesPrice && matchesReputation && matchesRecency
+  }
+
+  const visibleInsights = (hasSearched ? rawInsights : DEMO_INSIGHTS).filter(applyFilters)
+
+  const runSearch = async () => {
+    setHasSearched(true)
+    setPhase('fetching')
+    setWeakOnly(false)
+    setSearchFeedback(null)
+    setRawInsights([])
+
+    const searchQuery = query.trim()
+    if (!searchQuery) {
+      setPhase('ready')
+      setSearchFeedback('Please enter a market question to rank live insights.')
+      return
+    }
+
+    try {
+      const response = await api.discoverInsights(searchQuery)
+      setBackendStatus('online')
+
+      setPhase('evaluating')
+      await new Promise((resolve) => setTimeout(resolve, 450))
+
+      const mapped: RankedInsight[] = response.matches.map((match, index) => {
+        const relevance = Math.max(1, Math.min(99, Math.round(match.score * 100)))
+        const wallet = match.seller_wallet || 'Seller wallet unavailable'
+        const category = deriveCategory(match.insight_preview, searchQuery)
+        const riskSignal = match.reputation < 70 ? 'Below trust threshold' : 'Low risk'
+
+        return {
+          id: `${match.listing_id}-${index}`,
+          title: match.insight_preview,
+          seller: wallet.slice(0, 8) + '...'.repeat(wallet.length > 12 ? 1 : 0),
+          wallet,
+          price: match.price_usdc,
+          reputation: Number(match.reputation || 0),
+          relevance,
+          reason: summarizeReason(match, relevance, searchQuery),
+          category,
+          recency: 'Live',
+          listingStatus: match.listing_status || 'Active',
+          riskSignal,
+          txId: 'Pending reveal',
+          cid: match.cid,
+          listingId: `L-${match.listing_id}`,
+          asaId: String(match.asa_id),
+        }
+      })
+
+      const strongCandidates = mapped.filter(
+        (insight) => insight.reputation >= 75 && insight.relevance >= 72 && insight.price <= 3,
+      )
+
+      setRawInsights(mapped)
+      if (response.degraded) {
+        setSearchFeedback(
+          response.message ||
+            `Search degraded (${response.diagnostics?.code || 'unknown'}). Please retry shortly.`,
+        )
+      } else if (mapped.length === 0) {
+        setSearchFeedback(
+          response.message || 'No suitable insight found for this query and filter combination.',
+        )
+      } else if (strongCandidates.length === 0) {
+        setWeakOnly(true)
+        setSearchFeedback('Results found, but trust/value strength is weak. Review risk signals carefully.')
+      } else {
+        setSearchFeedback('Ranked results are ready. Mercator scored relevance, reputation, and value.')
+      }
+
+      setPhase('ready')
+    } catch (error) {
+      const message =
+        error instanceof ApiError
+          ? error.userMessage
+          : 'Mercator backend is currently unreachable. Please retry in a moment.'
+      setBackendStatus('offline')
+      setRawInsights([])
+      setWeakOnly(false)
+      setSearchFeedback(message)
+      setPhase('ready')
+    }
+  }
+
+  const handleSelectInsight = (insight: RankedInsight) => {
     setSelectedInsight({
-      insight_text: insight.text,
+      insight_text: insight.title,
       price: insight.price,
-      seller_wallet: insight.seller,
+      seller_wallet: insight.wallet,
+      listing_id: insight.listingId,
+      cid: insight.cid,
+      tx_id: insight.txId,
+      asa_id: insight.asaId,
     })
 
     setSellerMetadata({
       reputation: insight.reputation,
-      address: insight.seller,
+      address: insight.wallet,
+      totalSales: insight.reputation > 80 ? 18 : 9,
+      listingStatus: insight.listingStatus,
+      riskSignal: insight.riskSignal,
+      rankingReason: insight.reason,
     })
 
-    // Navigate to evaluation page
     navigate('/evaluate')
   }
 
   return (
-    <div className="min-h-screen bg-white px-4 py-12">
-      <div className="mx-auto max-w-4xl">
-        <h1 className="mb-4 text-3xl font-bold text-gray-900">Find Market Insights</h1>
-        <p className="mb-8 text-gray-600">
-          Search for insights from verified sellers. Our AI evaluates relevance and reputation.
-        </p>
+    <div className="discover-page">
+      <section className="discover-hero">
+        <div className="home-wrap discover-layout">
+          <div className="discover-hero-copy">
+            <p className="home-kicker">Buyer Console</p>
+            <h1>Ask Mercator a market question and get ranked answers.</h1>
+            <p>
+              Enter a natural-language query and Mercator will search, rank, and justify insights
+              using relevance, reputation, and value.
+            </p>
 
-        <div className="mb-12 rounded-lg border border-gray-200 bg-gray-50 p-6">
-          <div className="mb-6">
-            <label className="mb-2 block text-sm font-semibold text-gray-900">
-              Market Question
-            </label>
-            <input
-              type="text"
-              placeholder="What is the outlook for NIFTY next week?"
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
+            <div className="discover-search-console">
+              <label className="discover-input-group">
+                <span>Market question</span>
+                <input
+                  type="text"
+                  placeholder="NIFTY breakout setup today"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                />
+                <small>
+                  Try prompts like "best short-term bank index insight" or "NIFTY breakout setup
+                  today".
+                </small>
+              </label>
+
+              <button type="button" className="discover-submit-btn" onClick={runSearch}>
+                {phase === 'fetching' || phase === 'evaluating' ? 'Running Search...' : 'Search Insights'}
+              </button>
+            </div>
+
+            <div className="discover-search-status">
+              <p>
+                Backend scoring dimensions: relevance, reputation, and value.
+                {backendStatus === 'online' && ' Backend online.'}
+                {backendStatus === 'offline' && ' Backend offline.'}
+                {backendStatus === 'unknown' && ' Backend status will be verified on search.'}
+              </p>
+              {searchFeedback && <p>{searchFeedback}</p>}
+            </div>
           </div>
 
-          <button className="w-full rounded-lg bg-gray-900 px-6 py-3 font-medium text-white hover:bg-gray-800">
-            Search Insights
-          </button>
+          <aside className="discover-sidecard">
+            <p className="home-kicker">What happens next</p>
+            <ul>
+              <li>Mercator searches live listings from the backend.</li>
+              <li>Results are ranked by topical fit, reputation, and value.</li>
+              <li>Choose one result to continue into evaluation and approval.</li>
+            </ul>
+          </aside>
         </div>
+      </section>
 
-        {/* Results */}
-        <div>
-          <h2 className="mb-6 text-xl font-bold text-gray-900">Recent Insights</h2>
-          <div className="space-y-4">
-            {SAMPLE_INSIGHTS.map((insight) => (
-              <div
-                key={insight.id}
-                className="rounded-lg border border-gray-200 bg-white p-6 transition hover:border-gray-300 hover:shadow-sm"
-              >
-                <div className="mb-4 flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">{insight.text}</h3>
-                    <p className="mt-2 text-sm text-gray-600">by {insight.seller}</p>
+      <section className="discover-results">
+        <div className="home-wrap discover-results-shell">
+          <div className="discover-results-head">
+            <div>
+              <p className="home-kicker">Ranked Results</p>
+              <h2>{query ? `Matches for "${query}"` : 'Ranked insights ready to compare'}</h2>
+            </div>
+
+            <div className="discover-filters">
+              <label>
+                <span>Category</span>
+                <select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)}>
+                  <option>All</option>
+                  <option>Indices</option>
+                  <option>Banking</option>
+                  <option>Macro</option>
+                  <option>General</option>
+                </select>
+              </label>
+              <label>
+                <span>Price</span>
+                <select value={priceFilter} onChange={(event) => setPriceFilter(event.target.value)}>
+                  <option>Any</option>
+                  <option>Under 2</option>
+                  <option>2 to 3</option>
+                  <option>Above 3</option>
+                </select>
+              </label>
+              <label>
+                <span>Reputation</span>
+                <select value={reputationFilter} onChange={(event) => setReputationFilter(event.target.value)}>
+                  <option>Any</option>
+                  <option>70+</option>
+                  <option>85+</option>
+                </select>
+              </label>
+              <label>
+                <span>Recency</span>
+                <select value={recencyFilter} onChange={(event) => setRecencyFilter(event.target.value)}>
+                  <option>Any</option>
+                  <option>Under 6h</option>
+                  <option>Under 24h</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          {phase === 'fetching' && (
+            <div className="discover-phase-card">
+              <p className="home-kicker">Searching listings</p>
+              <h3>Fetching candidate insights from the network...</h3>
+              <p>Mercator is retrieving listings and preparing semantic comparison.</p>
+            </div>
+          )}
+
+          {phase === 'evaluating' && (
+            <div className="discover-phase-card discover-phase-card--reasoning">
+              <p className="home-kicker">Agent evaluation</p>
+              <h3>Scoring trust, relevance, and value for your query...</h3>
+              <p>
+                The agent is reasoning over query fit, seller reputation thresholds, and price
+                fairness before presenting ranked outcomes.
+              </p>
+            </div>
+          )}
+
+          {phase === 'ready' && hasSearched && visibleInsights.length === 0 && (
+            <div className="discover-empty-state">
+              <h3>No suitable insight found for this query.</h3>
+              <p>
+                Try a more specific market context, reduce filters, or broaden the time horizon in
+                your prompt.
+              </p>
+              <ul>
+                <li>Use instrument + timeframe (example: "NIFTY breakout setup for today").</li>
+                <li>Relax reputation or category filters.</li>
+                <li>Try a broader intent (example: "short-term banking insight").</li>
+              </ul>
+            </div>
+          )}
+
+          {phase === 'ready' && hasSearched && visibleInsights.length > 0 && weakOnly && (
+            <div className="discover-empty-state discover-empty-state--weak">
+              <h3>No strong candidate passed trust/value thresholds.</h3>
+              <p>
+                Results exist, but they are currently weaker in reputation, topical fit, or value.
+                Review risk signals before continuing.
+              </p>
+            </div>
+          )}
+
+          <div className="discover-results-grid">
+            {visibleInsights.map((insight, index) => (
+              <article key={insight.id} className="discover-result-card">
+                <div className="discover-result-topline">
+                  <span className="discover-rank">#{index + 1}</span>
+                  <span className="discover-category">{insight.category}</span>
+                  <span className="discover-recency">{insight.recency}</span>
+                </div>
+
+                <h3>{insight.title}</h3>
+                <p className="discover-seller">
+                  by {insight.seller} · {insight.wallet}
+                </p>
+                <p className="discover-reason">{insight.reason}</p>
+
+                <div className="discover-metrics">
+                  <div>
+                    <span>Relevance</span>
+                    <strong>{insight.relevance}%</strong>
                   </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-gray-900">{insight.price} USDC</p>
+                  <div>
+                    <span>Reputation</span>
+                    <strong>{insight.reputation}</strong>
+                  </div>
+                  <div>
+                    <span>Price</span>
+                    <strong>{insight.price} USDC</strong>
                   </div>
                 </div>
 
-                {/* Stats Grid */}
-                <div className="mb-4 grid grid-cols-3 gap-4 border-t border-gray-100 pt-4">
-                  <div>
-                    <p className="text-xs font-semibold uppercase text-gray-500">Relevance</p>
-                    <p className="mt-1 text-lg font-bold text-gray-900">{insight.relevance}%</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase text-gray-500">Reputation</p>
-                    <p className="mt-1 text-lg font-bold text-gray-900">{insight.reputation}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase text-gray-500">Price</p>
-                    <p className="mt-1 text-sm font-semibold text-green-700">Fair ✓</p>
-                  </div>
+                <div className="discover-trust-cues">
+                  <span className="discover-status-chip">Listing {insight.listingStatus}</span>
+                  <span className={`discover-risk-chip ${insight.reputation < 75 ? 'is-risk' : ''}`}>
+                    {insight.reputation < 75 ? 'Below trust threshold' : insight.riskSignal}
+                  </span>
                 </div>
 
-                {/* Action */}
-                <button
-                  onClick={() => handleSelectInsight(insight)}
-                  className="w-full rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
-                >
-                  View & Evaluate
+                <div className="discover-logic">
+                  <p>
+                    <strong>Why ranked here:</strong> {insight.reason}.
+                  </p>
+                </div>
+
+                <button onClick={() => handleSelectInsight(insight)} className="discover-evaluate-btn">
+                  Choose This Insight
                 </button>
-              </div>
+              </article>
             ))}
           </div>
-        </div>
 
-        {/* Trust Link */}
-        <div className="mt-12 rounded-lg border border-blue-200 bg-blue-50 p-6">
-          <h3 className="font-bold text-blue-900">How Do We Rank These?</h3>
-          <p className="mt-2 text-sm text-blue-800">
-            Our AI agent evaluates relevance to your query, seller reputation score, and fair pricing.{' '}
-            <a href="/trust" className="underline hover:text-blue-900">
-              Learn more about trust and reputation.
-            </a>
-          </p>
+          <div className="discover-footer-note">
+            <p>
+              Mercator is ranking the insights, not just listing them.{' '}
+              <a href="/trust">Learn how reputation and skip logic affect ranking.</a>
+            </p>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   )
 }

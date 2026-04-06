@@ -282,6 +282,8 @@ async def semantic_search(query: str) -> str:
             "asa_id": item["asa_id"],
             "score": item["score"],
             "insight_preview": str(item["text"])[:180],
+            "seller_wallet": item["seller"],
+            "listing_status": "Active",
         }
         for item in ranked
     ]
