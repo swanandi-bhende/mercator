@@ -51,6 +51,15 @@ export interface DemoPurchaseResponse {
       tx_id?: string
       message?: string
       error?: string
+      explorer_url?: string
+      post_payment_output?: string
+      payment_details?: {
+        listing_id?: number
+        buyer_address?: string
+        seller_address?: string
+        amount_usdc?: number
+        settlement_asset_id?: number
+      }
     }
     escrow_status?: string
     message?: string
@@ -106,6 +115,14 @@ export interface PaymentState {
   txId?: string
   error?: string
   timestamp?: string
+  paymentTxId?: string
+  escrowTxId?: string
+  ipfsCid?: string
+  listingId?: string
+  deliveredInsightText?: string
+  escrowReleased?: boolean
+  explorerPaymentUrl?: string
+  explorerEscrowUrl?: string
 }
 
 export interface OperatorMetrics {

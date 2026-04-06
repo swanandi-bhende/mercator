@@ -33,6 +33,12 @@ type DeliveryOutcome = {
   detail: string
 }
 
+function extractTxFromOutput(output: string, kind: 'payment' | 'escrow') {
+  const pattern = kind === 'payment' ? /payment=([A-Z0-9]+)/i : /escrow=([A-Z0-9]+)/i
+  const match = output.match(pattern)
+  return match?.[1] || null
+}
+
 const APPROVAL_TEXT = 'I understand this is a paid insight and I approve this transaction.'
 
 const CHECKOUT_STAGES: { key: CheckoutStageKey; label: string; detail: string }[] = [
@@ -341,6 +347,23 @@ export default function CheckoutPage() {
           ? String(paymentStatus.tx_id)
           : selectedInsight.tx_id || null
 
+      const postPaymentOutput =
+        typeof paymentStatus === 'object' && typeof paymentStatus?.post_payment_output === 'string'
+          ? paymentStatus.post_payment_output
+          : ''
+      const paymentTxFromOutput = postPaymentOutput ? extractTxFromOutput(postPaymentOutput, 'payment') : null
+      const escrowTxFromOutput = postPaymentOutput ? extractTxFromOutput(postPaymentOutput, 'escrow') : null
+      const finalPaymentTx = txId || paymentTxFromOutput
+      const explorerPaymentUrl =
+        typeof paymentStatus === 'object' && paymentStatus?.explorer_url
+          ? paymentStatus.explorer_url
+          : finalPaymentTx
+            ? `https://explorer.perawallet.app/tx/${finalPaymentTx}/`
+            : undefined
+      const explorerEscrowUrl = escrowTxFromOutput
+        ? `https://explorer.perawallet.app/tx/${escrowTxFromOutput}/`
+        : undefined
+
       setSubmittedTxId(txId)
       setActiveStage('waiting_confirmation')
       setConfirmationState('confirming')
@@ -366,7 +389,15 @@ export default function CheckoutPage() {
         setDeliveryOutcome(outcome)
         setPaymentState({
           stage: 'failed',
-          txId: txId || undefined,
+          txId: finalPaymentTx || undefined,
+          paymentTxId: finalPaymentTx || undefined,
+          escrowTxId: escrowTxFromOutput || undefined,
+          ipfsCid: selectedInsight.cid,
+          listingId: selectedInsight.listing_id,
+          deliveredInsightText: response.final_insight_text || undefined,
+          escrowReleased: false,
+          explorerPaymentUrl,
+          explorerEscrowUrl,
           error: outcome.body,
           timestamp: new Date().toLocaleTimeString(),
         })
@@ -377,13 +408,22 @@ export default function CheckoutPage() {
       setDeliveryOutcome(outcome)
       setPaymentState({
         stage: 'completed',
-        txId: txId || undefined,
+        txId: finalPaymentTx || undefined,
+        paymentTxId: finalPaymentTx || undefined,
+        escrowTxId: escrowTxFromOutput || undefined,
+        ipfsCid: selectedInsight.cid,
+        listingId: selectedInsight.listing_id,
+        deliveredInsightText: response.final_insight_text || undefined,
+        escrowReleased: true,
+        explorerPaymentUrl,
+        explorerEscrowUrl,
         timestamp: new Date().toLocaleTimeString(),
       })
-      if (txId) {
-        setLastTransactionId(txId)
+      if (finalPaymentTx) {
+        setLastTransactionId(finalPaymentTx)
       }
       setStatusMessage('Payment approved, confirmed, and delivery finalized.')
+      navigate('/transaction')
     } catch (error) {
       const message =
         error instanceof ApiError

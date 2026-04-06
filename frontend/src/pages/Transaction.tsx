@@ -1,195 +1,267 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
 
 export default function TransactionPage() {
   const navigate = useNavigate()
-  const {
-    lastTransactionId,
-    currentJourney,
-    listingInsight,
-    selectedInsight,
-    paymentState,
-  } = useAppContext()
+  const { paymentState, selectedInsight } = useAppContext()
+  const [copied, setCopied] = useState(false)
 
-  if (!lastTransactionId && !paymentState?.txId) {
+  const paymentTxId = paymentState?.paymentTxId || paymentState?.txId || ''
+  const escrowTxId = paymentState?.escrowTxId || ''
+  const cid = paymentState?.ipfsCid || selectedInsight?.cid || ''
+  const listingId = paymentState?.listingId || selectedInsight?.listing_id || ''
+  const deliveredInsight =
+    paymentState?.deliveredInsightText ||
+    selectedInsight?.insight_text ||
+    'Insight delivery text unavailable.'
+
+  if (!paymentTxId && !listingId && !cid) {
     return (
-      <div className="min-h-screen bg-white px-4 py-12">
-        <div className="mx-auto max-w-2xl text-center">
-          <h1 className="text-3xl font-bold text-gray-900">No Transaction</h1>
-          <p className="mt-4 text-gray-600">
-            No recent transaction found. Start a new flow to get started.
-          </p>
-          <button
-            onClick={() => navigate('/')}
-            className="mt-8 rounded-lg bg-gray-900 px-6 py-3 font-medium text-white hover:bg-gray-800"
-          >
-            Back to Home
-          </button>
-        </div>
+      <div className="receipt-page">
+        <section className="receipt-empty">
+          <div className="home-wrap">
+            <div className="receipt-empty-card">
+              <p className="home-kicker">Receipt / Unlock</p>
+              <h1>No completed purchase found.</h1>
+              <p>Complete checkout to unlock delivered insight and on-chain proof details.</p>
+              <button className="receipt-btn receipt-btn--primary" onClick={() => navigate('/discover')}>
+                Back to Discover
+              </button>
+            </div>
+          </div>
+        </section>
       </div>
     )
   }
 
-  const txId = lastTransactionId || paymentState?.txId || ''
-  const explorerUrl = `https://explorer.perawallet.app/tx/${txId}/`
-  const isSellerFlow = currentJourney === 'seller'
+  const paymentExplorerUrl =
+    paymentState?.explorerPaymentUrl ||
+    (paymentTxId ? `https://explorer.perawallet.app/tx/${paymentTxId}/` : '')
+  const escrowExplorerUrl =
+    paymentState?.explorerEscrowUrl ||
+    (escrowTxId ? `https://explorer.perawallet.app/tx/${escrowTxId}/` : '')
+  const ipfsRecordUrl = cid ? `https://ipfs.io/ipfs/${cid}` : ''
+
+  const escrowReleased = paymentState?.escrowReleased ?? Boolean(escrowTxId)
+
+  const timeline = [
+    {
+      label: 'Payment confirmed',
+      done: Boolean(paymentTxId),
+      detail: paymentTxId ? 'USDC transfer confirmed on TestNet.' : 'Awaiting payment confirmation.',
+    },
+    {
+      label: 'Escrow locked',
+      done: Boolean(paymentTxId),
+      detail: paymentTxId
+        ? 'Funds were routed through escrow before release.'
+        : 'Escrow lock pending payment confirmation.',
+    },
+    {
+      label: 'Insight delivered',
+      done: Boolean(deliveredInsight && deliveredInsight !== 'Insight delivery text unavailable.'),
+      detail:
+        deliveredInsight && deliveredInsight !== 'Insight delivery text unavailable.'
+          ? 'IPFS-backed insight content unlocked for buyer.'
+          : 'Delivery output pending.',
+    },
+    {
+      label: 'Escrow released',
+      done: escrowReleased,
+      detail: escrowReleased
+        ? 'Escrow released to seller after delivery.'
+        : 'Escrow release pending or delayed.',
+    },
+  ]
+
+  const handleCopyInsight = async () => {
+    try {
+      await navigator.clipboard.writeText(deliveredInsight)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch {
+      setCopied(false)
+    }
+  }
+
+  const handleCopyPaymentTx = async () => {
+    if (!paymentTxId) return
+    try {
+      await navigator.clipboard.writeText(paymentTxId)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch {
+      setCopied(false)
+    }
+  }
+
+  const handleSaveInsight = () => {
+    const content = `Mercator Insight Receipt\n\nListing ID: ${listingId || 'Unavailable'}\nCID: ${cid || 'Unavailable'}\nPayment Tx: ${paymentTxId || 'Unavailable'}\nEscrow Tx: ${escrowTxId || 'Unavailable'}\n\nDelivered Insight:\n${deliveredInsight}\n`
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `mercator-insight-${listingId || 'receipt'}.txt`
+    anchor.click()
+    URL.revokeObjectURL(url)
+  }
 
   return (
-    <div className="min-h-screen bg-white px-4 py-12">
-      <div className="mx-auto max-w-2xl">
-        {/* Success Header */}
-        <div className="mb-12 text-center">
-          <div className="mb-4 text-6xl">✓</div>
-          <h1 className="mb-2 text-4xl font-bold text-gray-900">
-            {isSellerFlow ? 'Insight Listed Successfully' : 'Purchase Complete'}
-          </h1>
-          <p className="text-lg text-gray-600">
-            {isSellerFlow
-              ? 'Your market insight is now live on Mercator'
-              : 'Your insight has been unlocked and delivered'}
-          </p>
-        </div>
-
-        {/* Transaction Details Card */}
-        <div className="mb-8 space-y-6">
-          <div className="rounded-lg border border-gray-200 bg-white p-6">
-            <h2 className="mb-4 text-lg font-bold text-gray-900">
-              Transaction Details
-            </h2>
-
-            <div className="space-y-4">
-              {/* Transaction ID */}
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  Transaction ID
-                </p>
-                <div className="mt-1 flex items-center gap-3">
-                  <code className="flex-1 break-all rounded bg-gray-100 px-3 py-2 font-mono text-sm text-gray-900">
-                    {txId}
-                  </code>
-                  <a
-                    href={explorerUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
-                  >
-                    View on Explorer
-                  </a>
-                </div>
-              </div>
-
-              {/* Status */}
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  Status
-                </p>
-                <p className="mt-1 inline-block rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800">
-                  ✓ Confirmed on Algorand
-                </p>
-              </div>
-
-              {/* Details Grid */}
-              <div className="grid grid-cols-2 gap-4 border-t border-gray-200 pt-4">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    {isSellerFlow ? 'Insight' : 'Amount'}
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-gray-900">
-                    {isSellerFlow
-                      ? listingInsight?.insight_text?.substring(0, 40) + '...'
-                      : `${selectedInsight?.price ?? '--'} USDC`}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    Time
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-gray-900">
-                    {paymentState?.timestamp ||
-                      new Date().toLocaleTimeString()}
-                  </p>
-                </div>
-                {isSellerFlow && (
-                  <>
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                        IPFS CID
-                      </p>
-                      <p className="mt-1 text-sm font-mono font-semibold text-gray-900">
-                        {listingInsight?.cid?.substring(0, 12) || 'Pending...'}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                        Listing ID
-                      </p>
-                      <p className="mt-1 text-sm font-mono font-semibold text-gray-900">
-                        {listingInsight?.listing_id?.substring(0, 12) ||
-                          'Generating...'}
-                      </p>
-                    </div>
-                  </>
-                )}
-              </div>
+    <div className="receipt-page">
+      <section className="receipt-hero">
+        <div className="home-wrap receipt-shell">
+          <div className="receipt-hero-head">
+            <p className="home-kicker">Receipt / Unlock</p>
+            <h1>Purchase complete, insight unlocked.</h1>
+            <p>
+              Mercator confirms payment, escrow outcome, and delivered content in one verifiable
+              receipt.
+            </p>
+            <div className="receipt-hero-icons" aria-hidden="true">
+              <span>✓</span>
+              <span>🔐</span>
+              <span>⛓</span>
+              <span>📦</span>
             </div>
           </div>
 
-          {/* Next Steps */}
-          <div className="rounded-lg border border-blue-200 bg-blue-50 p-6">
-            <h3 className="mb-3 font-bold text-blue-900">What Happens Next?</h3>
-            {isSellerFlow ? (
-              <ol className="space-y-2 text-sm text-blue-800">
-                <li>
-                  1. Your insight has been uploaded to IPFS and posted to Algorand
+          <article className="receipt-timeline-card">
+            <p className="home-kicker">Purchase Timeline</p>
+            <h2>Multi-step flow confirmation</h2>
+            <ul className="receipt-timeline-list">
+              {timeline.map((step) => (
+                <li key={step.label} className={step.done ? 'is-done' : 'is-pending'}>
+                  <div>
+                    <strong>{step.label}</strong>
+                    <span>{step.detail}</span>
+                  </div>
+                  <em>{step.done ? 'Done' : 'Pending'}</em>
                 </li>
-                <li>
-                  2. Buyers can now find and purchase your insight through the
-                  discovery page
-                </li>
-                <li>
-                  3. Your reputation score will increase with each successful sale
-                </li>
-                <li>4. Check Activity Ledger to see sales and confirmations</li>
-              </ol>
-            ) : (
-              <ol className="space-y-2 text-sm text-blue-800">
-                <li>1. Payment has been confirmed on-chain</li>
-                <li>
-                  2. Your escrow account will hold funds until you confirm receipt
-                </li>
-                <li>
-                  3. Content is now available for download from IPFS via the CID
-                </li>
-                <li>4. View details and confirmations in Activity Ledger</li>
-              </ol>
-            )}
-          </div>
+              ))}
+            </ul>
+          </article>
 
-          {/* Actions */}
-          <div className="grid grid-cols-2 gap-4">
-            <button
-              onClick={() => navigate('/activity')}
-              className="rounded-lg bg-gray-900 px-6 py-3 font-medium text-white hover:bg-gray-800"
-            >
-              View Details in Activity
+          <article className="receipt-insight-card">
+            <p className="home-kicker">Delivered Insight</p>
+            <h2>Your purchased market insight</h2>
+            <div className="receipt-insight-body">
+              <p>{deliveredInsight}</p>
+            </div>
+            <div className="receipt-inline-actions">
+              <button className="receipt-btn receipt-btn--secondary" onClick={handleCopyInsight}>
+                {copied ? 'Copied' : 'Copy Insight'}
+              </button>
+              <button className="receipt-btn receipt-btn--secondary" onClick={handleSaveInsight}>
+                Save Locally
+              </button>
+            </div>
+          </article>
+
+          <article className="receipt-proof-card">
+            <p className="home-kicker">Transaction Summary</p>
+            <h2>On-chain proof elements</h2>
+            <div className="receipt-proof-grid">
+              <div>
+                <span>Payment tx ID</span>
+                <strong>{paymentTxId || 'Unavailable'}</strong>
+                {paymentExplorerUrl && (
+                  <a href={paymentExplorerUrl} target="_blank" rel="noreferrer">
+                    View payment on explorer
+                  </a>
+                )}
+              </div>
+              <div>
+                <span>Escrow release tx ID</span>
+                <strong>{escrowTxId || 'Unavailable / delayed'}</strong>
+                {escrowExplorerUrl && (
+                  <a href={escrowExplorerUrl} target="_blank" rel="noreferrer">
+                    View escrow release on explorer
+                  </a>
+                )}
+              </div>
+              <div>
+                <span>IPFS CID</span>
+                <strong>{cid || 'Unavailable'}</strong>
+                {ipfsRecordUrl && (
+                  <a href={ipfsRecordUrl} target="_blank" rel="noreferrer">
+                    Open IPFS record
+                  </a>
+                )}
+              </div>
+              <div>
+                <span>Listing ID</span>
+                <strong>{listingId || 'Unavailable'}</strong>
+              </div>
+              <div>
+                <span>Payment confirmation</span>
+                <strong>{paymentTxId ? 'Confirmed' : 'Not confirmed'}</strong>
+              </div>
+              <div>
+                <span>Escrow confirmation</span>
+                <strong>{escrowReleased ? 'Released to seller' : 'Pending or failed'}</strong>
+              </div>
+            </div>
+          </article>
+
+          <article className="receipt-trust-card">
+            <p className="home-kicker">Trust & Verification</p>
+            <h2>What just happened</h2>
+            <ul>
+              <li>Escrow held payment during fulfillment to protect buyer and seller incentives.</li>
+              <li>Insight content is tied to an IPFS CID for integrity and retrieval proof.</li>
+              <li>Payment and escrow transactions are traceable on-chain through explorer links.</li>
+              <li>Listing ID, CID, and tx records create an auditable marketplace trail.</li>
+            </ul>
+          </article>
+
+          <article className={`receipt-escrow-card ${escrowReleased ? 'is-success' : 'is-pending'}`}>
+            <p className="home-kicker">Escrow Status</p>
+            <h2>{escrowReleased ? 'Escrow released to seller' : 'Escrow release pending review'}</h2>
+            <p>
+              {escrowReleased
+                ? 'Payment was held by escrow and released after delivery confirmation, protecting both buyer and seller.'
+                : 'Payment is confirmed but escrow release has not been fully confirmed yet. Check explorer links and activity logs.'}
+            </p>
+          </article>
+
+          <div className="receipt-actions">
+            <button className="receipt-btn receipt-btn--primary" onClick={() => navigate('/activity')}>
+              View Full Activity Log
             </button>
             <button
-              onClick={() => navigate(isSellerFlow ? '/sell' : '/discover')}
-              className="rounded-lg border border-gray-200 px-6 py-3 font-medium text-gray-900 hover:bg-gray-50"
+              className="receipt-btn receipt-btn--secondary"
+              onClick={handleCopyPaymentTx}
+              disabled={!paymentTxId}
             >
-              {isSellerFlow ? 'List Another' : 'Find More'}
+              {copied ? 'Copied' : 'Copy Payment Tx ID'}
+            </button>
+            <button
+              className="receipt-btn receipt-btn--secondary"
+              onClick={() => paymentExplorerUrl && window.open(paymentExplorerUrl, '_blank', 'noreferrer')}
+              disabled={!paymentExplorerUrl}
+            >
+              Verify Payment Tx
+            </button>
+            <button
+              className="receipt-btn receipt-btn--secondary"
+              onClick={() => escrowExplorerUrl && window.open(escrowExplorerUrl, '_blank', 'noreferrer')}
+              disabled={!escrowExplorerUrl}
+            >
+              Verify Escrow Tx
+            </button>
+            <button className="receipt-btn receipt-btn--secondary" onClick={() => navigate('/discover')}>
+              Find More Insights
+            </button>
+            <button className="receipt-btn receipt-btn--secondary" onClick={() => navigate('/discover')}>
+              Explore Seller Listings
+            </button>
+            <button className="receipt-btn receipt-btn--secondary" onClick={() => navigate('/sell')}>
+              Create Another Listing
             </button>
           </div>
-
-          {/* Back to Home */}
-          <button
-            onClick={() => navigate('/')}
-            className="w-full rounded-lg border border-gray-200 px-6 py-3 text-center font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-          >
-            ← Back to Home
-          </button>
         </div>
-      </div>
+      </section>
     </div>
   )
 }
