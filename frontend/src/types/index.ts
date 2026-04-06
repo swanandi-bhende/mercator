@@ -41,13 +41,20 @@ export interface DemoPurchaseResponse {
   success: boolean
   final_insight_text: string
   result: {
-    decision: 'BUY' | 'SKIP'
+    decision: 'BUY' | 'SKIP' | 'BUY_PENDING_APPROVAL' | 'ERROR'
     relevance?: number
     reputation?: number
     price_ok?: boolean
     reasoning?: string
-    payment_status?: string
+    payment_status?: string | {
+      success?: boolean
+      tx_id?: string
+      message?: string
+      error?: string
+    }
     escrow_status?: string
+    message?: string
+    error?: string
   }
   error?: string
   message?: string

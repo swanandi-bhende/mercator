@@ -11,7 +11,7 @@ function clamp(value: number, min: number, max: number) {
 
 export default function InsightDetailPage() {
   const navigate = useNavigate()
-  const { selectedInsight, sellerMetadata } = useAppContext()
+  const { selectedInsight, sellerMetadata, setHasReviewedEvaluation } = useAppContext()
 
   if (!selectedInsight) {
     return (
@@ -116,6 +116,11 @@ export default function InsightDetailPage() {
   ]
 
   const shouldShowRiskRecovery = recommendation.tone !== 'go'
+
+  const handleContinueToCheckout = () => {
+    setHasReviewedEvaluation(true)
+    navigate('/checkout')
+  }
 
   return (
     <div className="insight-decision-page">
@@ -272,7 +277,7 @@ export default function InsightDetailPage() {
           {recommendation.tone === 'go' ? (
             <>
               <button
-                onClick={() => navigate('/checkout')}
+                onClick={handleContinueToCheckout}
                 className="insight-decision-btn insight-decision-btn--primary"
               >
                 Continue to Checkout

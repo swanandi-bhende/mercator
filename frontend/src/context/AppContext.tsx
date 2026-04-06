@@ -37,6 +37,8 @@ export interface AppContextType {
   ) => void
   buyerWallet: string | null
   setBuyerWallet: (wallet: string | null) => void
+  hasReviewedEvaluation: boolean
+  setHasReviewedEvaluation: (reviewed: boolean) => void
 
   // Transaction State (shared across seller & buyer flows)
   paymentState: PaymentState | null
@@ -80,6 +82,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     rankingReason?: string
   } | null>(null)
   const [buyerWallet, setBuyerWallet] = useState<string | null>(null)
+  const [hasReviewedEvaluation, setHasReviewedEvaluation] = useState(false)
 
   // Transaction state (shared)
   const [paymentState, setPaymentState] = useState<PaymentState | null>(null)
@@ -106,6 +109,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setSelectedInsight(null)
     setSellerMetadata(null)
     setBuyerWallet(null)
+    setHasReviewedEvaluation(false)
     setPaymentState(null)
     setCurrentJourney('home')
   }, [])
@@ -134,6 +138,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setSellerMetadata,
         buyerWallet,
         setBuyerWallet,
+        hasReviewedEvaluation,
+        setHasReviewedEvaluation,
         paymentState,
         setPaymentState,
         lastTransactionId,
