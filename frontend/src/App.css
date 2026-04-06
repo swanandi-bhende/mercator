@@ -2160,6 +2160,320 @@ h3 {
   margin-top: 1rem;
 }
 
+.activity-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 560px at 5% -3%, rgba(129, 170, 151, 0.2), transparent 50%),
+    radial-gradient(980px 560px at 100% 8%, rgba(151, 112, 80, 0.14), transparent 46%),
+    linear-gradient(180deg, #f8fcfa 0%, #fffdf8 100%);
+}
+
+.activity-hero {
+  padding: 3rem 0 4rem;
+}
+
+.activity-shell {
+  display: grid;
+  gap: 0.95rem;
+}
+
+.activity-head-card,
+.activity-controls-card,
+.activity-table-card,
+.activity-proof-note {
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow:
+    inset 0 0 0 1px rgba(76, 107, 88, 0.12),
+    0 14px 28px rgba(44, 71, 56, 0.08);
+  padding: 1.2rem;
+}
+
+.activity-head-card h1 {
+  margin: 0.7rem 0 0;
+  font-size: clamp(2rem, 4.4vw, 3.2rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: #1d2b22;
+}
+
+.activity-head-card p,
+.activity-proof-note p {
+  margin: 0.62rem 0 0;
+  color: #45584c;
+  line-height: 1.58;
+}
+
+.activity-sync-note {
+  margin-top: 0.72rem;
+  border-radius: 0.78rem;
+  background: rgba(244, 251, 247, 0.94);
+  box-shadow: inset 0 0 0 1px rgba(76, 107, 88, 0.14);
+  padding: 0.62rem 0.72rem;
+}
+
+.activity-sync-note strong {
+  display: block;
+  color: #274234;
+  font-size: 0.86rem;
+}
+
+.activity-sync-note span {
+  display: block;
+  margin-top: 0.24rem;
+  color: #4f6659;
+  font-size: 0.82rem;
+}
+
+.activity-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.62rem;
+}
+
+.activity-controls-grid label {
+  display: grid;
+  gap: 0.36rem;
+}
+
+.activity-controls-grid span {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #3f5849;
+}
+
+.activity-controls-grid input,
+.activity-controls-grid select {
+  width: 100%;
+  border: 1px solid rgba(76, 107, 88, 0.2);
+  border-radius: 0.78rem;
+  background: rgba(255, 255, 255, 0.96);
+  padding: 0.76rem 0.82rem;
+  color: #1f2c23;
+  font: inherit;
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.activity-controls-grid input:focus,
+.activity-controls-grid select:focus {
+  border-color: rgba(56, 101, 77, 0.56);
+  box-shadow: 0 0 0 4px rgba(76, 119, 95, 0.14);
+}
+
+.activity-report-actions {
+  margin-top: 0.74rem;
+  display: flex;
+  gap: 0.54rem;
+  flex-wrap: wrap;
+}
+
+.activity-action-btn {
+  border: 0;
+  border-radius: 0.74rem;
+  padding: 0.62rem 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: rgba(76, 107, 88, 0.14);
+  color: #2e513d;
+}
+
+.activity-action-btn.is-primary {
+  background: linear-gradient(135deg, #3c704e 0%, #30583f 100%);
+  color: #f6fff9;
+}
+
+.activity-metrics-card {
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow:
+    inset 0 0 0 1px rgba(76, 107, 88, 0.12),
+    0 14px 28px rgba(44, 71, 56, 0.08);
+  padding: 1.2rem;
+}
+
+.activity-metrics-grid {
+  margin-top: 0.76rem;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.activity-metrics-grid div {
+  border-radius: 0.8rem;
+  background: rgba(246, 252, 248, 0.95);
+  box-shadow: inset 0 0 0 1px rgba(76, 107, 88, 0.12);
+  padding: 0.65rem;
+}
+
+.activity-metrics-grid span {
+  display: block;
+  font-size: 0.74rem;
+  color: #5f7568;
+}
+
+.activity-metrics-grid strong {
+  display: block;
+  margin-top: 0.3rem;
+  color: #213126;
+}
+
+.activity-table-scroll {
+  overflow-x: auto;
+}
+
+.activity-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 980px;
+}
+
+.activity-table th,
+.activity-table td {
+  text-align: left;
+  padding: 0.74rem 0.62rem;
+  vertical-align: top;
+  border-bottom: 1px solid rgba(76, 107, 88, 0.12);
+}
+
+.activity-table th {
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5e7567;
+}
+
+.activity-table td {
+  color: #293a30;
+  font-size: 0.9rem;
+}
+
+.activity-table tbody tr {
+  cursor: pointer;
+}
+
+.activity-table tbody tr:hover {
+  background: rgba(243, 250, 246, 0.84);
+}
+
+.activity-table tbody tr.is-expanded {
+  background: rgba(238, 248, 242, 0.9);
+}
+
+.activity-table td strong {
+  display: block;
+  color: #1f2f24;
+}
+
+.activity-table td span {
+  display: block;
+  color: #4f6659;
+}
+
+.activity-table td small {
+  display: block;
+  margin-top: 0.24rem;
+  color: #60786a;
+  font-size: 0.76rem;
+}
+
+.activity-table a {
+  color: #2f6b4c;
+  text-decoration: none;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.activity-table a:hover {
+  text-decoration: underline;
+}
+
+.activity-status {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.52rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.activity-status.is-good {
+  background: rgba(47, 138, 89, 0.18);
+  color: #215f3f;
+}
+
+.activity-status.is-warn {
+  background: rgba(184, 145, 62, 0.2);
+  color: #73571b;
+}
+
+.activity-status.is-bad {
+  background: rgba(177, 65, 65, 0.2);
+  color: #7a2c2c;
+}
+
+.activity-detail-row td {
+  padding-top: 0;
+  background: rgba(245, 252, 248, 0.92);
+}
+
+.activity-detail-grid {
+  border-radius: 0.86rem;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: inset 0 0 0 1px rgba(76, 107, 88, 0.12);
+  padding: 0.76rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.56rem;
+}
+
+.activity-detail-grid div {
+  border-radius: 0.72rem;
+  background: rgba(248, 253, 250, 0.96);
+  box-shadow: inset 0 0 0 1px rgba(76, 107, 88, 0.11);
+  padding: 0.6rem;
+}
+
+.activity-detail-grid span {
+  display: block;
+  font-size: 0.74rem;
+  color: #5f7568;
+}
+
+.activity-detail-grid strong,
+.activity-detail-grid a {
+  display: block;
+  margin-top: 0.3rem;
+  color: #213126;
+  overflow-wrap: anywhere;
+}
+
+.activity-detail-actions {
+  margin-top: 0.7rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.activity-empty {
+  margin-top: 0.75rem;
+  border-radius: 0.84rem;
+  background: rgba(255, 250, 244, 0.9);
+  box-shadow: inset 0 0 0 1px rgba(151, 112, 80, 0.2);
+  padding: 0.86rem;
+}
+
+.activity-empty h3 {
+  margin: 0;
+  color: #2d3d33;
+}
+
+.activity-empty p {
+  margin: 0.48rem 0 0;
+  color: #52665a;
+}
+
 .trust-page {
   min-height: 100vh;
   background:
@@ -2560,8 +2874,20 @@ h3 {
   .checkout-live-grid,
   .receipt-proof-grid,
   .trust-edu-grid,
-  .trust-principles-grid {
+  .trust-principles-grid,
+  .activity-controls-grid,
+  .activity-detail-grid,
+  .activity-metrics-grid {
     grid-template-columns: 1fr;
+  }
+
+  .activity-report-actions,
+  .activity-detail-actions {
+    justify-content: stretch;
+  }
+
+  .activity-action-btn {
+    width: 100%;
   }
 }
 

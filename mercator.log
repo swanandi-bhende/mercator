@@ -154,3 +154,10 @@ NameError: name 'semantic_search_tool' is not defined
 2026-04-06 10:35:23,306 | WARNING | backend.tools.semantic_search | Embedding failure during semantic_search: RetryError[<Future at 0x10ae34a70 state=finished raised GoogleGenerativeAIError>]
 2026-04-06 10:35:23,308 | INFO | demo.flow | Agent semantic search returned 3 results
 2026-04-06 10:35:25,541 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-06 11:29:12,430 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-06 11:30:20,223 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-06 11:30:48,440 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-06 11:32:10,080 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-06 11:32:57,353 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-06 11:34:00,335 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-06 11:35:26,708 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode

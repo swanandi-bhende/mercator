@@ -100,6 +100,44 @@ export interface HealthResponse {
   status: 'ok' | 'error'
   version?: string
   timestamp?: string
+  services?: {
+    api?: { status: string; detail: string }
+    algod?: { status: string; detail: string }
+    indexer?: { status: string; detail: string }
+    listing_app?: { status: string; detail: string }
+    escrow_app?: { status: string; detail: string }
+  }
+}
+
+export interface LedgerRecord {
+  id: string
+  timestampIso: string
+  actionType: 'listing_created' | 'payment_confirmed' | 'escrow_released' | 'insight_delivered'
+  seller: string
+  buyer: string
+  amountUsdc: number
+  status: 'confirmed' | 'pending' | 'failed' | 'completed'
+  txId: string
+  explorerUrl: string
+  cid: string
+  ipfsUrl: string
+  listingId: string
+  contractId: string
+  confirmationRound: number
+  feeAlgo: string
+  escrowStatus: string
+  contentHash: string
+  listingMetadata: string
+  errorMessage?: string
+}
+
+export interface LedgerResponse {
+  success: boolean
+  records: LedgerRecord[]
+  count: number
+  nextToken?: string | null
+  source?: string
+  error?: string
 }
 
 // Application State Types

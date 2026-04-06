@@ -1,83 +1,154 @@
+import { useEffect, useMemo, useState } from 'react'
+import { api, ApiError } from '../utils/api'
+import type { HealthResponse, LedgerRecord } from '../types'
+
+type ServiceKey = 'api' | 'algod' | 'indexer' | 'listing_app' | 'escrow_app'
+
+function fmtPct(v: number) {
+  return `${Math.max(0, Math.min(100, v)).toFixed(1)}%`
+}
+
+function timeAgo(iso: string) {
+  const d = new Date(iso).getTime()
+  if (Number.isNaN(d)) return 'Unknown'
+  const mins = Math.max(1, Math.floor((Date.now() - d) / 60000))
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  return `${Math.floor(hrs / 24)}d ago`
+}
+
 export default function OperationsPage() {
+  const [health, setHealth] = useState<HealthResponse | null>(null)
+  const [records, setRecords] = useState<LedgerRecord[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [lastRefresh, setLastRefresh] = useState<string>('')
+
+  const loadData = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const [healthResponse, ledgerResponse] = await Promise.all([
+        api.health(),
+        api.ledger({ limit: 120 }),
+      ])
+      setHealth(healthResponse)
+      setRecords(ledgerResponse.records || [])
+      setLastRefresh(new Date().toLocaleTimeString())
+    } catch (err) {
+      const msg =
+        err instanceof ApiError ? err.userMessage : err instanceof Error ? err.message : 'Failed to load operations data'
+      setError(msg)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const metrics = useMemo(() => {
+    const total = records.length
+    const success = records.filter((r) => r.status === 'confirmed' || r.status === 'completed').length
+    const failed = records.filter((r) => r.status === 'failed').length
+    const pending = records.filter((r) => r.status === 'pending').length
+    const successRate = total ? (success / total) * 100 : 0
+    const errorRate = total ? (failed / total) * 100 : 0
+    const volume = records
+      .filter((r) => r.actionType === 'payment_confirmed')
+      .reduce((sum, r) => sum + r.amountUsdc, 0)
+
+    return { total, successRate, errorRate, pending, failed, volume }
+  }, [records])
+
+  const recentEvents = useMemo(() => records.slice(0, 8), [records])
+
+  const services: ServiceKey[] = ['api', 'algod', 'indexer', 'listing_app', 'escrow_app']
+
   return (
-    <div className="min-h-screen bg-white px-4 py-12">
-      <div className="mx-auto max-w-4xl">
-        <h1 className="mb-2 text-3xl font-bold text-gray-900">System Status</h1>
-        <p className="mb-8 text-gray-600">Backend health and operational metrics</p>
-
-        <div className="space-y-6">
-          {/* System Health */}
-          <div className="rounded-lg border border-gray-200 p-6">
-            <h2 className="mb-4 text-lg font-bold text-gray-900">System Health</h2>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">API Server</span>
-                <span className="text-sm font-medium text-green-700">✓ Operational</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Algorand Network</span>
-                <span className="text-sm font-medium text-green-700">✓ Connected</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">IPFS Gateway</span>
-                <span className="text-sm font-medium text-green-700">✓ Available</span>
-              </div>
+    <div className="activity-page">
+      <section className="activity-hero">
+        <div className="home-wrap activity-shell">
+          <article className="activity-head-card">
+            <p className="home-kicker">Operations / Health</p>
+            <h1>Backend status and operational transparency.</h1>
+            <p>
+              Monitor service health, indexer readiness, and transaction reliability using live backend and ledger telemetry.
+            </p>
+            <div className="activity-report-actions">
+              <button type="button" className="activity-action-btn is-primary" onClick={loadData}>
+                {loading ? 'Refreshing...' : 'Refresh Status'}
+              </button>
+              <button type="button" className="activity-action-btn" onClick={() => window.location.assign('/activity')}>
+                Open Activity Ledger
+              </button>
             </div>
-          </div>
+            {lastRefresh && <div className="activity-sync-note"><strong>Last refresh</strong><span>{lastRefresh}</span></div>}
+            {error && <div className="activity-empty"><h3>Health check warning</h3><p>{error}</p></div>}
+          </article>
 
-          {/* Metrics */}
-          <div className="rounded-lg border border-gray-200 p-6">
-            <h2 className="mb-4 text-lg font-bold text-gray-900">Metrics</h2>
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-              <div>
-                <p className="text-xs font-semibold text-gray-500">Avg Latency</p>
-                <p className="text-2xl font-bold text-gray-900">145ms</p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500">Success Rate</p>
-                <p className="text-2xl font-bold text-green-700">99.2%</p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500">Transactions</p>
-                <p className="text-2xl font-bold text-gray-900">1,234</p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-gray-500">Uptime</p>
-                <p className="text-2xl font-bold text-green-700">99.9%</p>
-              </div>
+          <article className="activity-metrics-card">
+            <p className="home-kicker">Live Metrics</p>
+            <div className="activity-metrics-grid">
+              <div><span>Total transactions</span><strong>{metrics.total}</strong></div>
+              <div><span>Total payment volume</span><strong>{metrics.volume.toFixed(2)} USDC</strong></div>
+              <div><span>Success rate</span><strong>{fmtPct(metrics.successRate)}</strong></div>
+              <div><span>Error rate</span><strong>{fmtPct(metrics.errorRate)}</strong></div>
+              <div><span>Pending tx</span><strong>{metrics.pending}</strong></div>
+              <div><span>Failed tx</span><strong>{metrics.failed}</strong></div>
             </div>
-          </div>
+          </article>
 
-          {/* Recent Events */}
-          <div className="rounded-lg border border-gray-200 p-6">
-            <h2 className="mb-4 text-lg font-bold text-gray-900">Recent Events</h2>
-            <div className="space-y-3 text-sm">
-              <div className="flex gap-3">
-                <span className="text-green-700">✓</span>
-                <div>
-                  <p className="font-medium text-gray-900">System recovered</p>
-                  <p className="text-gray-500">5 minutes ago</p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <span className="text-yellow-600">⚠</span>
-                <div>
-                  <p className="font-medium text-gray-900">High latency detected</p>
-                  <p className="text-gray-500">12 minutes ago</p>
-                </div>
-              </div>
+          <article className="activity-table-card">
+            <p className="home-kicker">Component Health</p>
+            <div className="activity-detail-grid">
+              {services.map((key) => {
+                const service = health?.services?.[key]
+                const status = service?.status || 'unknown'
+                return (
+                  <div key={key}>
+                    <span>{key.replace('_', ' ')}</span>
+                    <strong>{status}</strong>
+                    <small>{service?.detail || 'No detail available'}</small>
+                  </div>
+                )
+              })}
             </div>
-          </div>
+          </article>
 
-          {/* Operator Tools */}
-          <div className="rounded-lg border border-blue-200 bg-blue-50 p-6">
-            <h2 className="mb-4 text-lg font-bold text-blue-900">Operator Tools</h2>
-            <button className="w-full rounded-lg bg-blue-900 px-6 py-3 font-medium text-white hover:bg-blue-800">
-              Run Test Flow
-            </button>
-          </div>
+          <article className="activity-table-card">
+            <p className="home-kicker">Recent Backend Events</p>
+            <table className="activity-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Action</th>
+                  <th>Status</th>
+                  <th>Tx ID</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentEvents.map((event) => (
+                  <tr key={event.id}>
+                    <td>{timeAgo(event.timestampIso)}</td>
+                    <td>{event.actionType.replace('_', ' ')}</td>
+                    <td>
+                      <span className={`activity-status is-${event.status === 'failed' ? 'bad' : event.status === 'pending' ? 'warn' : 'good'}`}>
+                        {event.status}
+                      </span>
+                    </td>
+                    <td>
+                      <a href={event.explorerUrl} target="_blank" rel="noreferrer">{event.txId}</a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </article>
         </div>
-      </div>
+      </section>
     </div>
   )
 }

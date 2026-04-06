@@ -227,6 +227,13 @@ export default function SellInsightPage() {
               <li><strong>What backend does:</strong> pin to IPFS, create listing, confirm tx.</li>
               <li><strong>What proof you get:</strong> tx ID, CID, listing ID, receipt state.</li>
             </ul>
+            <button
+              type="button"
+              className="sell-secondary-btn"
+              onClick={() => navigate('/activity')}
+            >
+              Open Activity Ledger
+            </button>
           </aside>
         </div>
       </section>

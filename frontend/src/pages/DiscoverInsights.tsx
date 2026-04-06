@@ -311,6 +311,9 @@ export default function DiscoverInsightsPage() {
               <li>Results are ranked by topical fit, reputation, and value.</li>
               <li>Choose one result to continue into evaluation and approval.</li>
             </ul>
+            <button className="discover-side-link" onClick={() => navigate('/activity')}>
+              Open Activity Ledger
+            </button>
             <button className="discover-side-link" onClick={() => navigate('/trust')}>
               Understand Reputation Rules
             </button>

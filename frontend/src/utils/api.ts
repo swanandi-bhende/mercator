@@ -5,6 +5,7 @@ import type {
   DemoPurchaseResponse,
   HealthResponse,
   DiscoverResponse,
+  LedgerResponse,
 } from '../types'
 
 const API_BASE = 'http://localhost:8000'
@@ -80,6 +81,24 @@ export const api = {
       return response.data
     } catch (error) {
       throw new ApiError('System health check failed', error)
+    }
+  },
+
+  /**
+   * Fetch normalized transaction ledger from backend indexer endpoint
+   */
+  ledger: async (params?: { limit?: number; address?: string; nextToken?: string }) => {
+    try {
+      const response = await client.get<LedgerResponse>('/ledger', {
+        params: {
+          limit: params?.limit ?? 250,
+          address: params?.address,
+          next_token: params?.nextToken,
+        },
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('Failed to fetch activity ledger', error)
     }
   },
 }

@@ -7,6 +7,7 @@ import asyncio
 import json
 import logging
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -97,6 +98,164 @@ class DemoPurchaseRequest(BaseModel):
 
 class DiscoverRequest(BaseModel):
     user_query: str
+
+
+def _safe_iso_from_round_time(round_time: object) -> str:
+    if isinstance(round_time, (int, float)) and round_time > 0:
+        return datetime.fromtimestamp(float(round_time), tz=timezone.utc).isoformat()
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _decode_app_args(app_args: list[object]) -> list[str]:
+    decoded: list[str] = []
+    for encoded_arg in app_args:
+        if not isinstance(encoded_arg, str):
+            continue
+        try:
+            decoded_value = base64.b64decode(encoded_arg).decode("utf-8", errors="ignore")
+            if decoded_value:
+                decoded.append(decoded_value)
+        except Exception:
+            continue
+    return decoded
+
+
+def _extract_cid_from_args(decoded_args: list[str]) -> str:
+    for value in decoded_args:
+        for token in value.replace("\n", " ").split(" "):
+            if token.startswith("Qm") and len(token) >= 12:
+                return token.strip()
+    return ""
+
+
+def _derive_action_type(txn: dict[str, object]) -> str:
+    app_txn = txn.get("application-transaction") if isinstance(txn.get("application-transaction"), dict) else {}
+    payment_txn = txn.get("payment-transaction") if isinstance(txn.get("payment-transaction"), dict) else {}
+    asset_txn = txn.get("asset-transfer-transaction") if isinstance(txn.get("asset-transfer-transaction"), dict) else {}
+
+    app_id = int(app_txn.get("application-id", 0) or 0) if isinstance(app_txn, dict) else 0
+    listing_app_id = int(os.getenv("INSIGHT_LISTING_APP_ID", "0") or 0)
+    escrow_app_id = int(os.getenv("ESCROW_APP_ID", "0") or 0)
+
+    decoded_args = _decode_app_args(app_txn.get("application-args", []) if isinstance(app_txn, dict) else [])
+    joined = " ".join(decoded_args).lower()
+
+    if app_id and app_id == listing_app_id:
+        return "listing_created"
+    if app_id and app_id == escrow_app_id:
+        if "release" in joined:
+            return "escrow_released"
+        return "payment_confirmed"
+
+    if isinstance(asset_txn, dict) and int(asset_txn.get("amount", 0) or 0) > 0:
+        return "payment_confirmed"
+    if isinstance(payment_txn, dict) and int(payment_txn.get("amount", 0) or 0) > 0:
+        return "payment_confirmed"
+
+    if "deliver" in joined or "insight" in joined:
+        return "insight_delivered"
+
+    return "listing_created"
+
+
+def _normalize_ledger_record(txn: dict[str, object]) -> dict[str, object]:
+    app_txn = txn.get("application-transaction") if isinstance(txn.get("application-transaction"), dict) else {}
+    payment_txn = txn.get("payment-transaction") if isinstance(txn.get("payment-transaction"), dict) else {}
+    asset_txn = txn.get("asset-transfer-transaction") if isinstance(txn.get("asset-transfer-transaction"), dict) else {}
+
+    tx_id = str(txn.get("id", ""))
+    sender = str(txn.get("sender", ""))
+    confirmed_round = int(txn.get("confirmed-round", 0) or 0)
+    pool_error = str(txn.get("pool-error", "") or "")
+
+    action_type = _derive_action_type(txn)
+    status = "failed" if pool_error else ("confirmed" if confirmed_round > 0 else "pending")
+
+    receiver = ""
+    amount_micro = 0
+    amount_usdc = 0.0
+
+    if isinstance(asset_txn, dict):
+        receiver = str(asset_txn.get("receiver", ""))
+        amount_micro = int(asset_txn.get("amount", 0) or 0)
+        amount_usdc = amount_micro / 1_000_000
+    elif isinstance(payment_txn, dict):
+        receiver = str(payment_txn.get("receiver", ""))
+        amount_micro = int(payment_txn.get("amount", 0) or 0)
+        amount_usdc = amount_micro / 1_000_000
+
+    app_id = int(app_txn.get("application-id", 0) or 0) if isinstance(app_txn, dict) else 0
+    app_args = app_txn.get("application-args", []) if isinstance(app_txn, dict) else []
+    decoded_args = _decode_app_args(app_args if isinstance(app_args, list) else [])
+    cid = _extract_cid_from_args(decoded_args)
+
+    first_valid_time = txn.get("round-time")
+    timestamp_iso = _safe_iso_from_round_time(first_valid_time)
+
+    listing_id = ""
+    if isinstance(txn.get("note"), str) and txn.get("note"):
+        listing_id = str(txn.get("note"))
+
+    fee_micro = int(txn.get("fee", 0) or 0)
+
+    return {
+        "id": tx_id or f"idx-{hash(json.dumps(txn, default=str))}",
+        "timestampIso": timestamp_iso,
+        "actionType": action_type,
+        "seller": sender or "Unknown",
+        "buyer": receiver or "-",
+        "amountUsdc": amount_usdc,
+        "status": status,
+        "txId": tx_id,
+        "explorerUrl": f"{EXPLORER_TX_BASE}/{tx_id}/" if tx_id else "",
+        "cid": cid or "",
+        "ipfsUrl": f"https://ipfs.io/ipfs/{cid}" if cid else "",
+        "listingId": listing_id or "",
+        "contractId": f"app:{app_id}" if app_id else "payment",
+        "confirmationRound": confirmed_round,
+        "feeAlgo": f"{fee_micro / 1_000_000:.6f}",
+        "escrowStatus": "released" if action_type == "escrow_released" else ("locked" if action_type == "payment_confirmed" else "n/a"),
+        "contentHash": "",
+        "listingMetadata": " | ".join(decoded_args) if decoded_args else "",
+        "errorMessage": pool_error or "",
+    }
+
+
+def _is_mercator_transaction(txn: dict[str, object]) -> bool:
+    app_txn = txn.get("application-transaction") if isinstance(txn.get("application-transaction"), dict) else {}
+    payment_txn = txn.get("payment-transaction") if isinstance(txn.get("payment-transaction"), dict) else {}
+    asset_txn = txn.get("asset-transfer-transaction") if isinstance(txn.get("asset-transfer-transaction"), dict) else {}
+
+    listing_app_id = int(os.getenv("INSIGHT_LISTING_APP_ID", "0") or 0)
+    escrow_app_id = int(os.getenv("ESCROW_APP_ID", "0") or 0)
+    app_id = int(app_txn.get("application-id", 0) or 0) if isinstance(app_txn, dict) else 0
+
+    if app_id and app_id in {listing_app_id, escrow_app_id}:
+        return True
+
+    known_wallets = {
+      os.getenv("DEPLOYER_ADDRESS", "").strip(),
+      os.getenv("SELLER_ADDRESS", "").strip(),
+      os.getenv("BUYER_ADDRESS", "").strip(),
+      os.getenv("BUYER_WALLET", "").strip(),
+    }
+    known_wallets = {wallet for wallet in known_wallets if wallet}
+
+    sender = str(txn.get("sender", ""))
+    receiver = ""
+    if isinstance(asset_txn, dict):
+        receiver = str(asset_txn.get("receiver", ""))
+    elif isinstance(payment_txn, dict):
+        receiver = str(payment_txn.get("receiver", ""))
+
+    if known_wallets and (sender in known_wallets or receiver in known_wallets):
+        return True
+
+    decoded_args = _decode_app_args(app_txn.get("application-args", []) if isinstance(app_txn, dict) else [])
+    if _extract_cid_from_args(decoded_args):
+        return True
+
+    return False
 
 
 def _get_algod_client() -> algod.AlgodClient:
@@ -216,8 +375,57 @@ def _get_signing_mnemonic() -> str:
 
 
 @app.get("/health")
-def health() -> dict[str, str]:
-    return {"status": "ok"}
+def health() -> dict[str, object]:
+    normalize_network_env()
+    timestamp = datetime.now(timezone.utc).isoformat()
+
+    services: dict[str, dict[str, str]] = {
+        "api": {"status": "ok", "detail": "FastAPI service is running"},
+        "algod": {"status": "unknown", "detail": "Not checked"},
+        "indexer": {"status": "unknown", "detail": "Not checked"},
+        "listing_app": {"status": "unknown", "detail": "Not checked"},
+        "escrow_app": {"status": "unknown", "detail": "Not checked"},
+    }
+
+    overall_status = "ok"
+
+    try:
+        algod_client = _get_algod_client()
+        params = algod_client.suggested_params()
+        if params is None:
+            raise RuntimeError("No suggested params returned")
+        services["algod"] = {"status": "ok", "detail": "Connected"}
+    except Exception as err:
+        overall_status = "degraded"
+        services["algod"] = {"status": "error", "detail": str(err)}
+
+    try:
+        idx = _get_indexer_client()
+        idx.search_transactions(limit=1)
+        services["indexer"] = {"status": "ok", "detail": "Connected"}
+    except Exception as err:
+        overall_status = "degraded"
+        services["indexer"] = {"status": "error", "detail": str(err)}
+
+    listing_app = os.getenv("INSIGHT_LISTING_APP_ID", "").strip()
+    if listing_app and listing_app.isdigit() and int(listing_app) > 0:
+        services["listing_app"] = {"status": "ok", "detail": f"Configured ({listing_app})"}
+    else:
+        overall_status = "degraded"
+        services["listing_app"] = {"status": "error", "detail": "INSIGHT_LISTING_APP_ID missing/invalid"}
+
+    escrow_app = os.getenv("ESCROW_APP_ID", "").strip()
+    if escrow_app and escrow_app.isdigit() and int(escrow_app) > 0:
+        services["escrow_app"] = {"status": "ok", "detail": f"Configured ({escrow_app})"}
+    else:
+        overall_status = "degraded"
+        services["escrow_app"] = {"status": "error", "detail": "ESCROW_APP_ID missing/invalid"}
+
+    return {
+        "status": overall_status,
+        "timestamp": timestamp,
+        "services": services,
+    }
 
 
 @app.post("/list")
@@ -400,6 +608,127 @@ async def discover_insights(request: DiscoverRequest) -> dict[str, object]:
                 "code": "DISCOVER_RANKING_FAILED",
                 "detail": str(err),
             },
+        }
+
+
+@app.get("/ledger")
+async def ledger_feed(
+    limit: int = 250,
+    next_token: str | None = None,
+    address: str | None = None,
+    max_scan_pages: int = 12,
+) -> dict[str, object]:
+    """Return normalized ledger records from Algorand indexer transactions."""
+    normalize_network_env()
+    idx = _get_indexer_client()
+
+    safe_limit = max(1, min(limit, 1000))
+
+    try:
+        current_token = next_token
+        records: list[dict[str, object]] = []
+        record_ids: set[str] = set()
+        pages_scanned = 0
+        max_pages = max(1, min(max_scan_pages, 50))
+
+        listing_app_id = int(os.getenv("INSIGHT_LISTING_APP_ID", "0") or 0)
+        escrow_app_id = int(os.getenv("ESCROW_APP_ID", "0") or 0)
+
+        targeted_queries: list[dict[str, object]] = []
+        if listing_app_id > 0:
+            targeted_queries.append({"application_id": listing_app_id})
+        if escrow_app_id > 0:
+            targeted_queries.append({"application_id": escrow_app_id})
+        if address:
+            targeted_queries.append({"address": address})
+
+        for query_filters in targeted_queries:
+            local_token = current_token
+            local_scans = 0
+            while local_scans < max_pages and len(records) < safe_limit:
+                search_params: dict[str, object] = {
+                    "limit": safe_limit,
+                    **query_filters,
+                }
+                if local_token:
+                    search_params["next_page"] = local_token
+
+                response = idx.search_transactions(**search_params)
+                raw_transactions = response.get("transactions", [])
+                transactions = raw_transactions if isinstance(raw_transactions, list) else []
+
+                for txn in transactions:
+                    if not isinstance(txn, dict) or not _is_mercator_transaction(txn):
+                        continue
+                    normalized = _normalize_ledger_record(txn)
+                    rec_id = str(normalized.get("id", ""))
+                    if rec_id and rec_id not in record_ids:
+                        record_ids.add(rec_id)
+                        records.append(normalized)
+
+                local_scans += 1
+                pages_scanned += 1
+                next_page_token = response.get("next-token")
+                local_token = str(next_page_token) if isinstance(next_page_token, str) and next_page_token else None
+                if not local_token:
+                    break
+
+            if len(records) >= safe_limit:
+                break
+
+        while pages_scanned < max_pages and len(records) < safe_limit:
+            search_params: dict[str, object] = {
+                "limit": safe_limit,
+            }
+            if current_token:
+                search_params["next_page"] = current_token
+            if address:
+                search_params["address"] = address
+
+            response = idx.search_transactions(**search_params)
+            raw_transactions = response.get("transactions", [])
+            transactions = raw_transactions if isinstance(raw_transactions, list) else []
+
+            mercator_txns = [txn for txn in transactions if isinstance(txn, dict) and _is_mercator_transaction(txn)]
+            for txn in mercator_txns:
+                normalized = _normalize_ledger_record(txn)
+                rec_id = str(normalized.get("id", ""))
+                if rec_id and rec_id not in record_ids:
+                    record_ids.add(rec_id)
+                    records.append(normalized)
+
+            pages_scanned += 1
+            next_page_token = response.get("next-token")
+            current_token = str(next_page_token) if isinstance(next_page_token, str) and next_page_token else None
+            if not current_token:
+                break
+
+        records = records[:safe_limit]
+
+        records.sort(
+            key=lambda item: str(item.get("timestampIso", "")),
+            reverse=True,
+        )
+
+        return {
+            "success": True,
+            "records": records,
+            "count": len(records),
+            "nextToken": current_token,
+            "source": "indexer",
+            "pagesScanned": pages_scanned,
+        }
+    except HTTPException:
+        raise
+    except Exception as err:
+        logger.error("Ledger feed failed | error=%s", err, exc_info=True)
+        return {
+            "success": False,
+            "records": [],
+            "count": 0,
+            "nextToken": None,
+            "source": "indexer",
+            "error": str(err),
         }
 
 
