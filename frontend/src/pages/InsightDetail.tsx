@@ -283,6 +283,12 @@ export default function InsightDetailPage() {
                 Continue to Checkout
               </button>
               <button
+                onClick={() => navigate('/trust')}
+                className="insight-decision-btn insight-decision-btn--secondary"
+              >
+                Trust / Reputation Guide
+              </button>
+              <button
                 onClick={() => navigate('/discover')}
                 className="insight-decision-btn insight-decision-btn--secondary"
               >

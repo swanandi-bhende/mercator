@@ -311,6 +311,9 @@ export default function DiscoverInsightsPage() {
               <li>Results are ranked by topical fit, reputation, and value.</li>
               <li>Choose one result to continue into evaluation and approval.</li>
             </ul>
+            <button className="discover-side-link" onClick={() => navigate('/trust')}>
+              Understand Reputation Rules
+            </button>
           </aside>
         </div>
       </section>
@@ -321,6 +324,9 @@ export default function DiscoverInsightsPage() {
             <div>
               <p className="home-kicker">Ranked Results</p>
               <h2>{query ? `Matches for "${query}"` : 'Ranked insights ready to compare'}</h2>
+              <button className="discover-results-link" onClick={() => navigate('/trust')}>
+                Open Trust / Reputation Guide
+              </button>
             </div>
 
             <div className="discover-filters">

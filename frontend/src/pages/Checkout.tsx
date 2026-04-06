@@ -522,6 +522,10 @@ export default function CheckoutPage() {
                 placeholder="Enter buyer Algorand wallet"
               />
             </label>
+
+            <button className="checkout-btn checkout-btn--subtle" onClick={() => navigate('/trust')}>
+              Read Trust / Reputation Rules
+            </button>
           </aside>
         </div>
       </section>
@@ -655,6 +659,8 @@ export default function CheckoutPage() {
           <p>
             Checkout is the trust climax: you can verify what is being paid for, why it was selected,
             how x402 progresses, and what delivery outcome was reached.
+            {' '}
+            <a href="/trust">Open Trust / Reputation.</a>
           </p>
         </div>
       </section>

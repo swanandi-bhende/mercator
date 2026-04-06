@@ -256,6 +256,9 @@ export default function TransactionPage() {
             <button className="receipt-btn receipt-btn--secondary" onClick={() => navigate('/discover')}>
               Explore Seller Listings
             </button>
+            <button className="receipt-btn receipt-btn--secondary" onClick={() => navigate('/trust')}>
+              Trust / Reputation Guide
+            </button>
             <button className="receipt-btn receipt-btn--secondary" onClick={() => navigate('/sell')}>
               Create Another Listing
             </button>
