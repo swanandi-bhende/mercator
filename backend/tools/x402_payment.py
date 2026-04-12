@@ -391,7 +391,7 @@ async def trigger_x402_payment(
         def _friendly_payment_error(raw: str) -> str:
             low = raw.lower()
             if "underflow" in low or "insufficient" in low or "overspend" in low:
-                return insufficient_balance(logger, raw)
+                return f"insufficient balance: {insufficient_balance(logger, raw)}"
             if "rejected" in low:
                 return payment_rejected(logger, raw)
             if "timeout" in low or "network" in low or "connection" in low:

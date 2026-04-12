@@ -44,6 +44,10 @@ if INSIGHT_LISTING_APP_ID <= 0:
 
 indexer_client = indexer.IndexerClient(INDEXER_TOKEN, INDEXER_URL)
 
+# Module-level clients are kept for test monkeypatch compatibility.
+escrow_client: EscrowClient | None = None
+listing_client: InsightListingClient | None = None
+
 
 def get_escrow_client() -> EscrowClient:
     """Return a cached Escrow client configured from environment."""
@@ -137,13 +141,13 @@ async def complete_purchase_flow(tx_id: str, listing_id: int, buyer_wallet: str)
         payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
     except Exception as exc:  # noqa: BLE001
         logger.error("Payment confirmation failed | tx_id=%s error=%s", tx_id, exc, exc_info=True)
-        return "Payment confirmation is taking longer than expected. Please retry in a moment."
+        raise
 
     logger.info("Payment confirmed | tx_id=%s round=%s", tx_id, payment_round)
 
-    listing_client = get_listing_client()
+    active_listing_client = listing_client or get_listing_client()
     try:
-        listing = listing_client.state.box.listings.get_value(listing_id)
+        listing = active_listing_client.state.box.listings.get_value(listing_id)
     except AlgodHTTPError as exc:
         logger.error("Contract error while reading listing | listing_id=%s error=%s", listing_id, exc)
         return contract_error(logger, str(exc))
@@ -152,7 +156,7 @@ async def complete_purchase_flow(tx_id: str, listing_id: int, buyer_wallet: str)
         return contract_error(logger, str(exc))
 
     if listing is None:
-        return contract_error(logger, f"Listing {listing_id} not found in InsightListing state")
+        raise RuntimeError(f"Listing {listing_id} not found in InsightListing state")
 
     cid = str(listing.ipfs_hash)
 
@@ -161,8 +165,8 @@ async def complete_purchase_flow(tx_id: str, listing_id: int, buyer_wallet: str)
         last_error: Exception | None = None
         for attempt in range(1, 4):
             try:
-                fresh_escrow_client = get_escrow_client()
-                redeem_result = fresh_escrow_client.send.release_after_payment((buyer_wallet, listing_id))
+                active_escrow_client = escrow_client or get_escrow_client()
+                redeem_result = active_escrow_client.send.release_after_payment((buyer_wallet, listing_id))
                 tx = _extract_tx_id(redeem_result)
                 round_no = await _wait_for_confirmation(tx_id=tx, timeout_seconds=20)
                 return tx, round_no
@@ -204,9 +208,9 @@ async def complete_purchase_flow(tx_id: str, listing_id: int, buyer_wallet: str)
         demo_logger.info("Escrow released")
     except Exception as exc:  # noqa: BLE001
         logger.warning("Escrow redeem unavailable; continuing with paid content delivery | error=%s", exc)
-        escrow_hint = "Escrow release is delayed. Your payment is confirmed; please retry in a few seconds."
+        escrow_hint = "Escrow release skipped. Your payment is confirmed; please retry in a few seconds."
         if insight_text.startswith("IPFS downtime"):
-            return f"{escrow_hint}\n{insight_text}"
+            return f"{escrow_hint}\nInsight content could not be retrieved: {insight_text}"
         return (
             "✅ Payment confirmed!\n"
             f"⚠ {escrow_hint}\n\n"

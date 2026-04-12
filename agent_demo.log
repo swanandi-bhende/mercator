@@ -1,0 +1,9 @@
+/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/langchain_core/_api/deprecation.py:25: UserWarning: Core Pydantic V1 functionality isn't compatible with Python 3.14 or greater.
+  from pydantic.v1.fields import FieldInfo as FieldInfoV1
+2026-04-12 16:34:48,886 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-12 16:34:48,892 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=approve
+2026-04-12 16:38:46,679 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:38:46,685 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-04-12 16:38:46,861 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 429 Too Many Requests"
+2026-04-12 16:38:46,862 | WARNING | backend.agent | Evaluation step hit Gemini limit; falling back to SKIP
+{'success': True, 'decision': 'SKIP', 'evaluation': 'Reasoning: Gemini limit reached during evaluation; cannot verify safely.\nDecision: SKIP', 'message': 'Skipped based on evaluation rules (reputation/value-for-price).'}

@@ -386,3 +386,1452 @@ TimeoutError: The read operation timed out
 2026-04-12 16:07:40,447 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
 2026-04-12 16:07:40,449 | WARNING | backend.tools.semantic_search | Embedding failure during semantic_search: RetryError[<Future at 0x112386c30 state=finished raised GoogleGenerativeAIError>]
 2026-04-12 16:07:40,450 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:24:49,658 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-12 16:24:49,688 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 16:24:49,689 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:24:49,689 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:24:49,689 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 16:24:49,690 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-12 16:24:49,690 | INFO | mercator.backend | On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-12 16:24:49,690 | INFO | demo.flow | Seller upload complete
+2026-04-12 16:24:49,690 | INFO | demo.flow | On-chain ASA created
+2026-04-12 16:24:49,690 | INFO | mercator.backend | Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-12 16:24:49,691 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-04-12 16:24:49,695 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=2.5, insight_len=58
+2026-04-12 16:24:49,695 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:24:49,695 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:24:49,695 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 16:24:49,695 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=2500000 app_id=758025190
+2026-04-12 16:24:49,695 | INFO | mercator.backend | On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-12 16:24:49,695 | INFO | demo.flow | Seller upload complete
+2026-04-12 16:24:49,695 | INFO | demo.flow | On-chain ASA created
+2026-04-12 16:24:49,695 | INFO | mercator.backend | Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-12 16:24:49,696 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-04-12 16:24:49,700 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=-1.0, insight_len=59
+2026-04-12 16:24:49,701 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-12 16:24:49,704 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=3
+2026-04-12 16:24:49,705 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-12 16:24:49,709 | INFO | mercator.backend | Incoming /list request: seller_wallet=BAD_WALLET, price=1.0, insight_len=59
+2026-04-12 16:24:49,710 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-12 16:24:49,714 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 16:24:49,714 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:24:49,714 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:24:49,714 | ERROR | mercator.backend | IPFS upload failed | error=IPFS failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1720, in create_listing
+    cid = await upload_insight_to_ipfs(request.insight_text)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.IPFSUploadError: IPFS failed
+2026-04-12 16:24:49,715 | ERROR | mercator.backend | ipfs_down | details=IPFS failed
+2026-04-12 16:24:49,716 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-12 16:24:49,721 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 16:24:49,721 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:24:49,721 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:24:49,721 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 16:24:49,721 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-12 16:24:49,721 | ERROR | mercator.backend | ASA creation failed | error=store failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1730, in create_listing
+    listing_id, asa_id = store_cid_in_listing(
+                         ~~~~~~~~~~~~~~~~~~~~^
+        cid=cid,
+        ^^^^^^^^
+    ...<3 lines>...
+        signer_mnemonic=signing_mnemonic,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1175, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1179, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1234, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: store failed
+2026-04-12 16:24:49,722 | ERROR | mercator.backend | contract_error | details=store failed
+2026-04-12 16:24:49,722 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-12 16:24:49,726 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 16:24:49,726 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:24:49,726 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:24:49,726 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 16:24:49,726 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-12 16:24:49,726 | INFO | mercator.backend | On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-12 16:24:49,726 | INFO | demo.flow | Seller upload complete
+2026-04-12 16:24:49,726 | INFO | demo.flow | On-chain ASA created
+2026-04-12 16:24:49,726 | ERROR | mercator.backend | Unexpected /list failure | error=timed out
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1746, in create_listing
+    tx_id = await _poll_for_listing_confirmation(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out
+2026-04-12 16:24:49,727 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-12 16:24:49,732 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:24:49,752 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:24:49,770 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:24:49,774 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:24:49,778 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:24:49,781 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:24:49,785 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:24:49,788 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:24:49,791 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:24:49,794 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:24:49,829 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:24:49,829 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:24:49,829 | INFO | demo.flow | Payment approved
+2026-04-12 16:24:49,829 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 7
+2026-04-12 16:24:49,829 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 999.0 USDC
+2026-04-12 16:24:49,829 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:24:49,829 | INFO | backend.tools.x402_payment | Listing 7: Price=2.25, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:24:49,829 | WARNING | backend.tools.x402_payment | Requested amount differs from listing; using on-chain listing price | requested=999.0 listed=2.25
+2026-04-12 16:24:49,829 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 16:24:49,830 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'is_safe': True}
+2026-04-12 16:24:49,830 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-04-12 16:24:49,830 | INFO | backend.tools.x402_payment | ✓ x402 micropayment executed: txid=TX402
+2026-04-12 16:24:49,830 | INFO | demo.flow | IPFS content delivered
+2026-04-12 16:24:49,830 | INFO | backend.tools.x402_payment | x402 payment flow completed successfully: {'success': True, 'approved': True, 'transaction_id': 'TX402', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 7, 'buyer_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 2.25, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Buyer receives instant access to insight'}, 'status': 'CONFIRMED', 'explorer_url': 'https://explorer.perawallet.app/tx/TX402/', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': 'Insight delivered in full text'}
+2026-04-12 16:24:49,832 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:24:49,833 | WARNING | backend.tools.x402_payment | User approval gate: Payment requires explicit user approval. Type 'approve' to continue.
+2026-04-12 16:24:49,835 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:24:49,835 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:24:49,835 | INFO | demo.flow | Payment approved
+2026-04-12 16:24:49,835 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 3
+2026-04-12 16:24:49,835 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 16:24:49,835 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:24:49,835 | INFO | backend.tools.x402_payment | Listing 3: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:24:49,835 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 16:24:49,836 | ERROR | backend.tools.x402_payment | Payment simulation failed safety check: {'is_safe': False, 'reason': 'unsafe'}
+2026-04-12 16:24:49,838 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:24:49,838 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:24:49,838 | INFO | demo.flow | Payment approved
+2026-04-12 16:24:49,838 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 3
+2026-04-12 16:24:49,838 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 16:24:49,838 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:24:49,838 | INFO | backend.tools.x402_payment | Listing 3: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:24:49,838 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 16:24:49,839 | ERROR | backend.tools.x402_payment | Payment simulation error: insufficient balance
+2026-04-12 16:24:49,839 | ERROR | backend.tools.x402_payment | insufficient_balance | details=insufficient balance
+2026-04-12 16:24:49,841 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:24:49,842 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:24:49,842 | INFO | demo.flow | Payment approved
+2026-04-12 16:24:49,842 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 999
+2026-04-12 16:24:49,842 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 16:24:49,842 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:24:49,842 | ERROR | backend.tools.x402_payment | contract_error | details=Listing 999 not found
+2026-04-12 16:24:49,844 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:24:49,844 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:24:49,844 | INFO | demo.flow | Payment approved
+2026-04-12 16:24:49,844 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 1
+2026-04-12 16:24:49,844 | INFO | backend.tools.x402_payment | Buyer: INVALID, Amount: 1.0 USDC
+2026-04-12 16:24:49,844 | ERROR | backend.tools.x402_payment | Invalid buyer address: INVALID
+2026-04-12 16:24:49,847 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:24:49,847 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:24:49,847 | INFO | demo.flow | Payment approved
+2026-04-12 16:24:49,847 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 2
+2026-04-12 16:24:49,847 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 0.0 USDC
+2026-04-12 16:24:49,847 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:24:49,847 | INFO | backend.tools.x402_payment | Listing 2: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:24:49,847 | ERROR | backend.tools.x402_payment | Invalid payment amount: 0.0. Must be > 0
+2026-04-12 16:24:49,851 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:24:49,851 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:24:49,851 | INFO | demo.flow | Payment approved
+2026-04-12 16:24:49,851 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 2
+2026-04-12 16:24:49,851 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 16:24:49,851 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:24:49,852 | INFO | backend.tools.x402_payment | Listing 2: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:24:49,852 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 16:24:49,852 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'is_safe': True}
+2026-04-12 16:24:49,852 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-04-12 16:24:49,852 | ERROR | backend.tools.x402_payment | x402 micropayment execution failed: network submission failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 557, in trigger_x402_payment
+    txid = await x402_client.send_micropayment(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: network submission failed
+2026-04-12 16:24:49,854 | ERROR | backend.tools.x402_payment | payment_rejected | details=network submission failed
+2026-04-12 16:24:49,856 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=1 buyer=buyer
+2026-04-12 16:24:49,856 | ERROR | backend.tools.post_payment_flow | Payment confirmation failed | tx_id=PAY_TX error=timed out waiting for confirmation
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 137, in complete_purchase_flow
+    payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out waiting for confirmation
+2026-04-12 16:24:49,863 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=1 buyer=FALLBACK_BUYER
+2026-04-12 16:24:49,863 | ERROR | backend.tools.post_payment_flow | Payment confirmation failed | tx_id=PAY_TX error=stop after fallback check
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 137, in complete_purchase_flow
+    payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: stop after fallback check
+2026-04-12 16:25:53,180 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-12 16:25:53,209 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 16:25:53,211 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:25:53,211 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:25:53,211 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 16:25:53,211 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-12 16:25:53,211 | INFO | mercator.backend | On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-12 16:25:53,211 | INFO | demo.flow | Seller upload complete
+2026-04-12 16:25:53,211 | INFO | demo.flow | On-chain ASA created
+2026-04-12 16:25:53,211 | INFO | mercator.backend | Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-12 16:25:53,212 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-04-12 16:25:53,216 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=2.5, insight_len=58
+2026-04-12 16:25:53,217 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:25:53,217 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:25:53,217 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 16:25:53,217 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=2500000 app_id=758025190
+2026-04-12 16:25:53,217 | INFO | mercator.backend | On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-12 16:25:53,217 | INFO | demo.flow | Seller upload complete
+2026-04-12 16:25:53,217 | INFO | demo.flow | On-chain ASA created
+2026-04-12 16:25:53,217 | INFO | mercator.backend | Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-12 16:25:53,218 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-04-12 16:25:53,222 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=-1.0, insight_len=59
+2026-04-12 16:25:53,222 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-12 16:25:53,226 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=3
+2026-04-12 16:25:53,226 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-12 16:25:53,231 | INFO | mercator.backend | Incoming /list request: seller_wallet=BAD_WALLET, price=1.0, insight_len=59
+2026-04-12 16:25:53,231 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-12 16:25:53,235 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 16:25:53,236 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:25:53,236 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:25:53,236 | ERROR | mercator.backend | IPFS upload failed | error=IPFS failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1720, in create_listing
+    cid = await upload_insight_to_ipfs(request.insight_text)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.IPFSUploadError: IPFS failed
+2026-04-12 16:25:53,237 | ERROR | mercator.backend | ipfs_down | details=IPFS failed
+2026-04-12 16:25:53,237 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-12 16:25:53,241 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 16:25:53,241 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:25:53,241 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:25:53,241 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 16:25:53,241 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-12 16:25:53,241 | ERROR | mercator.backend | ASA creation failed | error=store failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1730, in create_listing
+    listing_id, asa_id = store_cid_in_listing(
+                         ~~~~~~~~~~~~~~~~~~~~^
+        cid=cid,
+        ^^^^^^^^
+    ...<3 lines>...
+        signer_mnemonic=signing_mnemonic,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1175, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1179, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1234, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: store failed
+2026-04-12 16:25:53,242 | ERROR | mercator.backend | contract_error | details=store failed
+2026-04-12 16:25:53,242 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-12 16:25:53,247 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 16:25:53,247 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:25:53,247 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:25:53,247 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 16:25:53,247 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-12 16:25:53,247 | INFO | mercator.backend | On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-12 16:25:53,247 | INFO | demo.flow | Seller upload complete
+2026-04-12 16:25:53,247 | INFO | demo.flow | On-chain ASA created
+2026-04-12 16:25:53,247 | ERROR | mercator.backend | Unexpected /list failure | error=timed out
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1746, in create_listing
+    tx_id = await _poll_for_listing_confirmation(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out
+2026-04-12 16:25:53,248 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-12 16:25:53,252 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:25:53,273 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:25:53,292 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:25:53,297 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:25:53,300 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:25:53,304 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:25:53,307 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:25:53,310 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:25:53,314 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:25:53,318 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:25:53,351 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:25:53,351 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:25:53,351 | INFO | demo.flow | Payment approved
+2026-04-12 16:25:53,351 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 7
+2026-04-12 16:25:53,351 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 999.0 USDC
+2026-04-12 16:25:53,351 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:25:53,352 | INFO | backend.tools.x402_payment | Listing 7: Price=2.25, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:25:53,352 | WARNING | backend.tools.x402_payment | Requested amount differs from listing; using on-chain listing price | requested=999.0 listed=2.25
+2026-04-12 16:25:53,352 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 16:25:53,352 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'is_safe': True}
+2026-04-12 16:25:53,352 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-04-12 16:25:53,352 | INFO | backend.tools.x402_payment | ✓ x402 micropayment executed: txid=TX402
+2026-04-12 16:25:53,352 | INFO | demo.flow | IPFS content delivered
+2026-04-12 16:25:53,352 | INFO | backend.tools.x402_payment | x402 payment flow completed successfully: {'success': True, 'approved': True, 'transaction_id': 'TX402', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 7, 'buyer_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 2.25, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Buyer receives instant access to insight'}, 'status': 'CONFIRMED', 'explorer_url': 'https://explorer.perawallet.app/tx/TX402/', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': 'Insight delivered in full text'}
+2026-04-12 16:25:53,355 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:25:53,355 | WARNING | backend.tools.x402_payment | User approval gate: Payment requires explicit user approval. Type 'approve' to continue.
+2026-04-12 16:25:53,357 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:25:53,357 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:25:53,357 | INFO | demo.flow | Payment approved
+2026-04-12 16:25:53,357 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 3
+2026-04-12 16:25:53,357 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 16:25:53,357 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:25:53,357 | INFO | backend.tools.x402_payment | Listing 3: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:25:53,357 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 16:25:53,358 | ERROR | backend.tools.x402_payment | Payment simulation failed safety check: {'is_safe': False, 'reason': 'unsafe'}
+2026-04-12 16:25:53,360 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:25:53,360 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:25:53,360 | INFO | demo.flow | Payment approved
+2026-04-12 16:25:53,360 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 3
+2026-04-12 16:25:53,360 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 16:25:53,360 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:25:53,360 | INFO | backend.tools.x402_payment | Listing 3: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:25:53,360 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 16:25:53,360 | ERROR | backend.tools.x402_payment | Payment simulation error: insufficient balance
+2026-04-12 16:25:53,361 | ERROR | backend.tools.x402_payment | insufficient_balance | details=insufficient balance
+2026-04-12 16:25:53,364 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:25:53,364 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:25:53,364 | INFO | demo.flow | Payment approved
+2026-04-12 16:25:53,364 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 999
+2026-04-12 16:25:53,364 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 16:25:53,364 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:25:53,364 | ERROR | backend.tools.x402_payment | contract_error | details=Listing 999 not found
+2026-04-12 16:25:53,367 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:25:53,367 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:25:53,367 | INFO | demo.flow | Payment approved
+2026-04-12 16:25:53,367 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 1
+2026-04-12 16:25:53,367 | INFO | backend.tools.x402_payment | Buyer: INVALID, Amount: 1.0 USDC
+2026-04-12 16:25:53,367 | ERROR | backend.tools.x402_payment | Invalid buyer address: INVALID
+2026-04-12 16:25:53,369 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:25:53,369 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:25:53,369 | INFO | demo.flow | Payment approved
+2026-04-12 16:25:53,369 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 2
+2026-04-12 16:25:53,369 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 0.0 USDC
+2026-04-12 16:25:53,369 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:25:53,370 | INFO | backend.tools.x402_payment | Listing 2: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:25:53,370 | ERROR | backend.tools.x402_payment | Invalid payment amount: 0.0. Must be > 0
+2026-04-12 16:25:53,372 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:25:53,372 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:25:53,372 | INFO | demo.flow | Payment approved
+2026-04-12 16:25:53,372 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 2
+2026-04-12 16:25:53,372 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 16:25:53,372 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:25:53,372 | INFO | backend.tools.x402_payment | Listing 2: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:25:53,372 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 16:25:53,372 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'is_safe': True}
+2026-04-12 16:25:53,373 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-04-12 16:25:53,373 | ERROR | backend.tools.x402_payment | x402 micropayment execution failed: network submission failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 557, in trigger_x402_payment
+    txid = await x402_client.send_micropayment(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: network submission failed
+2026-04-12 16:25:53,374 | ERROR | backend.tools.x402_payment | payment_rejected | details=network submission failed
+2026-04-12 16:25:53,376 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=1 buyer=buyer
+2026-04-12 16:25:53,376 | ERROR | backend.tools.post_payment_flow | Payment confirmation failed | tx_id=PAY_TX error=timed out waiting for confirmation
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 137, in complete_purchase_flow
+    payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out waiting for confirmation
+2026-04-12 16:25:53,383 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=1 buyer=FALLBACK_BUYER
+2026-04-12 16:25:53,383 | ERROR | backend.tools.post_payment_flow | Payment confirmation failed | tx_id=PAY_TX error=stop after fallback check
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 137, in complete_purchase_flow
+    payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: stop after fallback check
+2026-04-12 16:27:13,124 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-12 16:27:13,156 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 16:27:13,158 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:27:13,158 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:27:13,158 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 16:27:13,158 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-12 16:27:13,158 | INFO | mercator.backend | On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-12 16:27:13,158 | INFO | demo.flow | Seller upload complete
+2026-04-12 16:27:13,158 | INFO | demo.flow | On-chain ASA created
+2026-04-12 16:27:13,158 | INFO | mercator.backend | Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-12 16:27:13,159 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-04-12 16:27:13,163 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=2.5, insight_len=58
+2026-04-12 16:27:13,164 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:27:13,164 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:27:13,164 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 16:27:13,164 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=2500000 app_id=758025190
+2026-04-12 16:27:13,164 | INFO | mercator.backend | On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-12 16:27:13,164 | INFO | demo.flow | Seller upload complete
+2026-04-12 16:27:13,164 | INFO | demo.flow | On-chain ASA created
+2026-04-12 16:27:13,164 | INFO | mercator.backend | Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-12 16:27:13,164 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-04-12 16:27:13,169 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=-1.0, insight_len=59
+2026-04-12 16:27:13,169 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-12 16:27:13,174 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=3
+2026-04-12 16:27:13,174 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-12 16:27:13,178 | INFO | mercator.backend | Incoming /list request: seller_wallet=BAD_WALLET, price=1.0, insight_len=59
+2026-04-12 16:27:13,179 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-12 16:27:13,183 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 16:27:13,183 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:27:13,183 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:27:13,183 | ERROR | mercator.backend | IPFS upload failed | error=IPFS failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1720, in create_listing
+    cid = await upload_insight_to_ipfs(request.insight_text)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.IPFSUploadError: IPFS failed
+2026-04-12 16:27:13,184 | ERROR | mercator.backend | ipfs_down | details=IPFS failed
+2026-04-12 16:27:13,185 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-12 16:27:13,188 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 16:27:13,189 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:27:13,189 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:27:13,189 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 16:27:13,189 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-12 16:27:13,189 | ERROR | mercator.backend | ASA creation failed | error=store failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1730, in create_listing
+    listing_id, asa_id = store_cid_in_listing(
+                         ~~~~~~~~~~~~~~~~~~~~^
+        cid=cid,
+        ^^^^^^^^
+    ...<3 lines>...
+        signer_mnemonic=signing_mnemonic,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1175, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1179, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1234, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: store failed
+2026-04-12 16:27:13,189 | ERROR | mercator.backend | contract_error | details=store failed
+2026-04-12 16:27:13,190 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-12 16:27:13,194 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 16:27:13,194 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:27:13,194 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:27:13,194 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 16:27:13,194 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-12 16:27:13,194 | INFO | mercator.backend | On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-12 16:27:13,194 | INFO | demo.flow | Seller upload complete
+2026-04-12 16:27:13,194 | INFO | demo.flow | On-chain ASA created
+2026-04-12 16:27:13,194 | ERROR | mercator.backend | Unexpected /list failure | error=timed out
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1746, in create_listing
+    tx_id = await _poll_for_listing_confirmation(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out
+2026-04-12 16:27:13,196 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-12 16:27:13,200 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:27:13,223 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:27:13,287 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:27:13,291 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:27:13,295 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:27:13,299 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:27:13,302 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:27:13,305 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:27:13,308 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:27:13,311 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:27:13,401 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:27:13,402 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:27:13,402 | INFO | demo.flow | Payment approved
+2026-04-12 16:27:13,402 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 7
+2026-04-12 16:27:13,402 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 999.0 USDC
+2026-04-12 16:27:13,402 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:27:13,402 | INFO | backend.tools.x402_payment | Listing 7: Price=2.25, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:27:13,402 | WARNING | backend.tools.x402_payment | Requested amount differs from listing; using on-chain listing price | requested=999.0 listed=2.25
+2026-04-12 16:27:13,402 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 16:27:13,402 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'is_safe': True}
+2026-04-12 16:27:13,402 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-04-12 16:27:13,402 | INFO | backend.tools.x402_payment | ✓ x402 micropayment executed: txid=TX402
+2026-04-12 16:27:13,402 | INFO | demo.flow | IPFS content delivered
+2026-04-12 16:27:13,402 | INFO | backend.tools.x402_payment | x402 payment flow completed successfully: {'success': True, 'approved': True, 'transaction_id': 'TX402', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 7, 'buyer_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 2.25, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Buyer receives instant access to insight'}, 'status': 'CONFIRMED', 'explorer_url': 'https://explorer.perawallet.app/tx/TX402/', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': 'Insight delivered in full text'}
+2026-04-12 16:27:13,408 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:27:13,408 | WARNING | backend.tools.x402_payment | User approval gate: Payment requires explicit user approval. Type 'approve' to continue.
+2026-04-12 16:27:13,413 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:27:13,413 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:27:13,413 | INFO | demo.flow | Payment approved
+2026-04-12 16:27:13,413 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 3
+2026-04-12 16:27:13,414 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 16:27:13,414 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:27:13,414 | INFO | backend.tools.x402_payment | Listing 3: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:27:13,414 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 16:27:13,414 | ERROR | backend.tools.x402_payment | Payment simulation failed safety check: {'is_safe': False, 'reason': 'unsafe'}
+2026-04-12 16:27:13,425 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:27:13,425 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:27:13,425 | INFO | demo.flow | Payment approved
+2026-04-12 16:27:13,425 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 3
+2026-04-12 16:27:13,425 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 16:27:13,425 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:27:13,425 | INFO | backend.tools.x402_payment | Listing 3: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:27:13,425 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 16:27:13,426 | ERROR | backend.tools.x402_payment | Payment simulation error: insufficient balance
+2026-04-12 16:27:13,426 | ERROR | backend.tools.x402_payment | insufficient_balance | details=insufficient balance
+2026-04-12 16:27:13,431 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:27:13,431 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:27:13,431 | INFO | demo.flow | Payment approved
+2026-04-12 16:27:13,431 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 999
+2026-04-12 16:27:13,431 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 16:27:13,431 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:27:13,431 | ERROR | backend.tools.x402_payment | contract_error | details=Listing 999 not found
+2026-04-12 16:27:13,434 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:27:13,434 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:27:13,434 | INFO | demo.flow | Payment approved
+2026-04-12 16:27:13,434 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 1
+2026-04-12 16:27:13,434 | INFO | backend.tools.x402_payment | Buyer: INVALID, Amount: 1.0 USDC
+2026-04-12 16:27:13,434 | ERROR | backend.tools.x402_payment | Invalid buyer address: INVALID
+2026-04-12 16:27:13,437 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:27:13,437 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:27:13,437 | INFO | demo.flow | Payment approved
+2026-04-12 16:27:13,437 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 2
+2026-04-12 16:27:13,437 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 0.0 USDC
+2026-04-12 16:27:13,437 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:27:13,437 | INFO | backend.tools.x402_payment | Listing 2: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:27:13,437 | ERROR | backend.tools.x402_payment | Invalid payment amount: 0.0. Must be > 0
+2026-04-12 16:27:13,439 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:27:13,439 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:27:13,439 | INFO | demo.flow | Payment approved
+2026-04-12 16:27:13,439 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 2
+2026-04-12 16:27:13,439 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 16:27:13,439 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:27:13,440 | INFO | backend.tools.x402_payment | Listing 2: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:27:13,440 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 16:27:13,440 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'is_safe': True}
+2026-04-12 16:27:13,440 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-04-12 16:27:13,440 | ERROR | backend.tools.x402_payment | x402 micropayment execution failed: network submission failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 557, in trigger_x402_payment
+    txid = await x402_client.send_micropayment(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: network submission failed
+2026-04-12 16:27:13,441 | ERROR | backend.tools.x402_payment | payment_rejected | details=network submission failed
+2026-04-12 16:27:13,443 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=1 buyer=buyer
+2026-04-12 16:27:13,443 | ERROR | backend.tools.post_payment_flow | Payment confirmation failed | tx_id=PAY_TX error=timed out waiting for confirmation
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 137, in complete_purchase_flow
+    payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out waiting for confirmation
+2026-04-12 16:27:13,450 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=1 buyer=FALLBACK_BUYER
+2026-04-12 16:27:13,450 | ERROR | backend.tools.post_payment_flow | Payment confirmation failed | tx_id=PAY_TX error=stop after fallback check
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 137, in complete_purchase_flow
+    payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: stop after fallback check
+2026-04-12 16:27:16,053 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-12 16:27:23,395 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-12 16:27:23,399 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=approve
+2026-04-12 16:29:48,522 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-12 16:29:48,553 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 16:29:48,554 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:29:48,554 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:29:48,554 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 16:29:48,554 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-12 16:29:48,554 | INFO | mercator.backend | On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-12 16:29:48,554 | INFO | demo.flow | Seller upload complete
+2026-04-12 16:29:48,554 | INFO | demo.flow | On-chain ASA created
+2026-04-12 16:29:48,554 | INFO | mercator.backend | Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-12 16:29:48,555 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-04-12 16:29:48,559 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=2.5, insight_len=58
+2026-04-12 16:29:48,559 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:29:48,559 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:29:48,559 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 16:29:48,559 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=2500000 app_id=758025190
+2026-04-12 16:29:48,559 | INFO | mercator.backend | On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-12 16:29:48,559 | INFO | demo.flow | Seller upload complete
+2026-04-12 16:29:48,559 | INFO | demo.flow | On-chain ASA created
+2026-04-12 16:29:48,560 | INFO | mercator.backend | Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-12 16:29:48,560 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-04-12 16:29:48,564 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=-1.0, insight_len=59
+2026-04-12 16:29:48,565 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-12 16:29:48,569 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=3
+2026-04-12 16:29:48,569 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-12 16:29:48,573 | INFO | mercator.backend | Incoming /list request: seller_wallet=BAD_WALLET, price=1.0, insight_len=59
+2026-04-12 16:29:48,573 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-12 16:29:48,577 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 16:29:48,578 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:29:48,578 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:29:48,578 | ERROR | mercator.backend | IPFS upload failed | error=IPFS failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1720, in create_listing
+    cid = await upload_insight_to_ipfs(request.insight_text)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.IPFSUploadError: IPFS failed
+2026-04-12 16:29:48,579 | ERROR | mercator.backend | ipfs_down | details=IPFS failed
+2026-04-12 16:29:48,579 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-12 16:29:48,612 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 16:29:48,613 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:29:48,613 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:29:48,613 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 16:29:48,613 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-12 16:29:48,613 | ERROR | mercator.backend | ASA creation failed | error=store failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1730, in create_listing
+    listing_id, asa_id = store_cid_in_listing(
+                         ~~~~~~~~~~~~~~~~~~~~^
+        cid=cid,
+        ^^^^^^^^
+    ...<3 lines>...
+        signer_mnemonic=signing_mnemonic,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1175, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1179, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1234, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: store failed
+2026-04-12 16:29:48,613 | ERROR | mercator.backend | contract_error | details=store failed
+2026-04-12 16:29:48,614 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-12 16:29:48,628 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 16:29:48,628 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:29:48,628 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:29:48,628 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 16:29:48,628 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-12 16:29:48,628 | INFO | mercator.backend | On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-12 16:29:48,628 | INFO | demo.flow | Seller upload complete
+2026-04-12 16:29:48,628 | INFO | demo.flow | On-chain ASA created
+2026-04-12 16:29:48,628 | ERROR | mercator.backend | Unexpected /list failure | error=timed out
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1746, in create_listing
+    tx_id = await _poll_for_listing_confirmation(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out
+2026-04-12 16:29:48,629 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-12 16:29:48,635 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:29:48,655 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:29:48,675 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:29:48,679 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:29:48,682 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:29:48,686 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:29:48,689 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:29:48,693 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:29:48,696 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:29:48,700 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:29:48,734 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:29:48,734 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:29:48,734 | INFO | demo.flow | Payment approved
+2026-04-12 16:29:48,734 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 7
+2026-04-12 16:29:48,734 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 999.0 USDC
+2026-04-12 16:29:48,734 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:29:48,734 | INFO | backend.tools.x402_payment | Listing 7: Price=2.25, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:29:48,734 | WARNING | backend.tools.x402_payment | Requested amount differs from listing; using on-chain listing price | requested=999.0 listed=2.25
+2026-04-12 16:29:48,734 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 16:29:48,735 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'is_safe': True}
+2026-04-12 16:29:48,735 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-04-12 16:29:48,735 | INFO | backend.tools.x402_payment | ✓ x402 micropayment executed: txid=TX402
+2026-04-12 16:29:48,735 | INFO | demo.flow | IPFS content delivered
+2026-04-12 16:29:48,735 | INFO | backend.tools.x402_payment | x402 payment flow completed successfully: {'success': True, 'approved': True, 'transaction_id': 'TX402', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 7, 'buyer_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 2.25, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Buyer receives instant access to insight'}, 'status': 'CONFIRMED', 'explorer_url': 'https://explorer.perawallet.app/tx/TX402/', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': 'Insight delivered in full text'}
+2026-04-12 16:29:48,737 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:29:48,737 | WARNING | backend.tools.x402_payment | User approval gate: Payment requires explicit user approval. Type 'approve' to continue.
+2026-04-12 16:29:48,740 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:29:48,740 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:29:48,740 | INFO | demo.flow | Payment approved
+2026-04-12 16:29:48,740 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 3
+2026-04-12 16:29:48,740 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 16:29:48,740 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:29:48,740 | INFO | backend.tools.x402_payment | Listing 3: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:29:48,740 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 16:29:48,740 | ERROR | backend.tools.x402_payment | Payment simulation failed safety check: {'is_safe': False, 'reason': 'unsafe'}
+2026-04-12 16:29:48,743 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:29:48,743 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:29:48,743 | INFO | demo.flow | Payment approved
+2026-04-12 16:29:48,743 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 3
+2026-04-12 16:29:48,743 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 16:29:48,743 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:29:48,743 | INFO | backend.tools.x402_payment | Listing 3: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:29:48,743 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 16:29:48,744 | ERROR | backend.tools.x402_payment | Payment simulation error: insufficient balance
+2026-04-12 16:29:48,744 | ERROR | backend.tools.x402_payment | insufficient_balance | details=insufficient balance
+2026-04-12 16:29:48,747 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:29:48,747 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:29:48,747 | INFO | demo.flow | Payment approved
+2026-04-12 16:29:48,747 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 999
+2026-04-12 16:29:48,747 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 16:29:48,747 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:29:48,747 | ERROR | backend.tools.x402_payment | contract_error | details=Listing 999 not found
+2026-04-12 16:29:48,750 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:29:48,750 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:29:48,750 | INFO | demo.flow | Payment approved
+2026-04-12 16:29:48,750 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 1
+2026-04-12 16:29:48,750 | INFO | backend.tools.x402_payment | Buyer: INVALID, Amount: 1.0 USDC
+2026-04-12 16:29:48,750 | ERROR | backend.tools.x402_payment | Invalid buyer address: INVALID
+2026-04-12 16:29:48,752 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:29:48,753 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:29:48,753 | INFO | demo.flow | Payment approved
+2026-04-12 16:29:48,753 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 2
+2026-04-12 16:29:48,753 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 0.0 USDC
+2026-04-12 16:29:48,753 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:29:48,753 | INFO | backend.tools.x402_payment | Listing 2: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:29:48,753 | ERROR | backend.tools.x402_payment | Invalid payment amount: 0.0. Must be > 0
+2026-04-12 16:29:48,755 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:29:48,755 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:29:48,755 | INFO | demo.flow | Payment approved
+2026-04-12 16:29:48,755 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 2
+2026-04-12 16:29:48,755 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 16:29:48,755 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:29:48,755 | INFO | backend.tools.x402_payment | Listing 2: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:29:48,756 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 16:29:48,756 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'is_safe': True}
+2026-04-12 16:29:48,756 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-04-12 16:29:48,756 | ERROR | backend.tools.x402_payment | x402 micropayment execution failed: network submission failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 557, in trigger_x402_payment
+    txid = await x402_client.send_micropayment(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: network submission failed
+2026-04-12 16:29:48,757 | ERROR | backend.tools.x402_payment | payment_rejected | details=network submission failed
+2026-04-12 16:29:48,759 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=1 buyer=buyer
+2026-04-12 16:29:48,760 | ERROR | backend.tools.post_payment_flow | Payment confirmation failed | tx_id=PAY_TX error=timed out waiting for confirmation
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 137, in complete_purchase_flow
+    payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out waiting for confirmation
+2026-04-12 16:29:48,767 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=1 buyer=FALLBACK_BUYER
+2026-04-12 16:29:48,767 | ERROR | backend.tools.post_payment_flow | Payment confirmation failed | tx_id=PAY_TX error=stop after fallback check
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 137, in complete_purchase_flow
+    payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: stop after fallback check
+2026-04-12 16:29:51,585 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-12 16:29:59,095 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-12 16:29:59,100 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=approve
+2026-04-12 16:33:45,778 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-12 16:33:47,897 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-12 16:33:50,029 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-12 16:33:50,029 | WARNING | backend.tools.semantic_search | Embedding failure during semantic_search: RetryError[<Future at 0x1205cd5b0 state=finished raised GoogleGenerativeAIError>]
+2026-04-12 16:33:50,030 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:33:50,033 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-04-12 16:33:50,188 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 429 Too Many Requests"
+2026-04-12 16:33:50,189 | WARNING | backend.agent | Evaluation step hit Gemini limit; falling back to SKIP
+2026-04-12 16:34:38,257 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-12 16:34:38,292 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 16:34:38,293 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:34:38,293 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:34:38,294 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 16:34:38,294 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-12 16:34:38,294 | INFO | mercator.backend | On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-12 16:34:38,294 | INFO | demo.flow | Seller upload complete
+2026-04-12 16:34:38,294 | INFO | demo.flow | On-chain ASA created
+2026-04-12 16:34:38,294 | INFO | mercator.backend | Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-12 16:34:38,295 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-04-12 16:34:38,300 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=2.5, insight_len=58
+2026-04-12 16:34:38,300 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:34:38,300 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:34:38,300 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 16:34:38,300 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=2500000 app_id=758025190
+2026-04-12 16:34:38,301 | INFO | mercator.backend | On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-12 16:34:38,301 | INFO | demo.flow | Seller upload complete
+2026-04-12 16:34:38,301 | INFO | demo.flow | On-chain ASA created
+2026-04-12 16:34:38,301 | INFO | mercator.backend | Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-12 16:34:38,301 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-04-12 16:34:38,306 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=-1.0, insight_len=59
+2026-04-12 16:34:38,307 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-12 16:34:38,312 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=3
+2026-04-12 16:34:38,313 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-12 16:34:38,318 | INFO | mercator.backend | Incoming /list request: seller_wallet=BAD_WALLET, price=1.0, insight_len=59
+2026-04-12 16:34:38,319 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-12 16:34:38,323 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 16:34:38,324 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:34:38,324 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:34:38,324 | ERROR | mercator.backend | IPFS upload failed | error=IPFS failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1720, in create_listing
+    cid = await upload_insight_to_ipfs(request.insight_text)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.IPFSUploadError: IPFS failed
+2026-04-12 16:34:38,325 | ERROR | mercator.backend | ipfs_down | details=IPFS failed
+2026-04-12 16:34:38,325 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-12 16:34:38,331 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 16:34:38,331 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:34:38,331 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:34:38,331 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 16:34:38,331 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-12 16:34:38,331 | ERROR | mercator.backend | ASA creation failed | error=store failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1730, in create_listing
+    listing_id, asa_id = store_cid_in_listing(
+                         ~~~~~~~~~~~~~~~~~~~~^
+        cid=cid,
+        ^^^^^^^^
+    ...<3 lines>...
+        signer_mnemonic=signing_mnemonic,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1175, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1179, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1234, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: store failed
+2026-04-12 16:34:38,332 | ERROR | mercator.backend | contract_error | details=store failed
+2026-04-12 16:34:38,333 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-12 16:34:38,337 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 16:34:38,338 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:34:38,338 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:34:38,338 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 16:34:38,338 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-12 16:34:38,338 | INFO | mercator.backend | On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-12 16:34:38,338 | INFO | demo.flow | Seller upload complete
+2026-04-12 16:34:38,338 | INFO | demo.flow | On-chain ASA created
+2026-04-12 16:34:38,338 | ERROR | mercator.backend | Unexpected /list failure | error=timed out
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1746, in create_listing
+    tx_id = await _poll_for_listing_confirmation(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out
+2026-04-12 16:34:38,339 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-12 16:34:38,344 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:34:38,370 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:34:38,392 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:34:38,397 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:34:38,401 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:34:38,437 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:34:38,442 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:34:38,455 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:34:38,460 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:34:38,464 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:34:38,506 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:34:38,506 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:34:38,506 | INFO | demo.flow | Payment approved
+2026-04-12 16:34:38,506 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 7
+2026-04-12 16:34:38,506 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 999.0 USDC
+2026-04-12 16:34:38,506 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:34:38,506 | INFO | backend.tools.x402_payment | Listing 7: Price=2.25, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:34:38,506 | WARNING | backend.tools.x402_payment | Requested amount differs from listing; using on-chain listing price | requested=999.0 listed=2.25
+2026-04-12 16:34:38,506 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 16:34:38,507 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'is_safe': True}
+2026-04-12 16:34:38,507 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-04-12 16:34:38,507 | INFO | backend.tools.x402_payment | ✓ x402 micropayment executed: txid=TX402
+2026-04-12 16:34:38,507 | INFO | demo.flow | IPFS content delivered
+2026-04-12 16:34:38,507 | INFO | backend.tools.x402_payment | x402 payment flow completed successfully: {'success': True, 'approved': True, 'transaction_id': 'TX402', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 7, 'buyer_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 2.25, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Buyer receives instant access to insight'}, 'status': 'CONFIRMED', 'explorer_url': 'https://explorer.perawallet.app/tx/TX402/', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': 'Insight delivered in full text'}
+2026-04-12 16:34:38,510 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:34:38,511 | WARNING | backend.tools.x402_payment | User approval gate: Payment requires explicit user approval. Type 'approve' to continue.
+2026-04-12 16:34:38,514 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:34:38,514 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:34:38,514 | INFO | demo.flow | Payment approved
+2026-04-12 16:34:38,514 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 3
+2026-04-12 16:34:38,514 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 16:34:38,514 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:34:38,514 | INFO | backend.tools.x402_payment | Listing 3: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:34:38,514 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 16:34:38,515 | ERROR | backend.tools.x402_payment | Payment simulation failed safety check: {'is_safe': False, 'reason': 'unsafe'}
+2026-04-12 16:34:38,518 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:34:38,518 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:34:38,518 | INFO | demo.flow | Payment approved
+2026-04-12 16:34:38,518 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 3
+2026-04-12 16:34:38,518 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 16:34:38,518 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:34:38,518 | INFO | backend.tools.x402_payment | Listing 3: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:34:38,518 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 16:34:38,519 | ERROR | backend.tools.x402_payment | Payment simulation error: insufficient balance
+2026-04-12 16:34:38,519 | ERROR | backend.tools.x402_payment | insufficient_balance | details=insufficient balance
+2026-04-12 16:34:38,522 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:34:38,522 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:34:38,522 | INFO | demo.flow | Payment approved
+2026-04-12 16:34:38,522 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 999
+2026-04-12 16:34:38,522 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 16:34:38,522 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:34:38,522 | ERROR | backend.tools.x402_payment | contract_error | details=Listing 999 not found
+2026-04-12 16:34:38,525 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:34:38,525 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:34:38,525 | INFO | demo.flow | Payment approved
+2026-04-12 16:34:38,525 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 1
+2026-04-12 16:34:38,525 | INFO | backend.tools.x402_payment | Buyer: INVALID, Amount: 1.0 USDC
+2026-04-12 16:34:38,525 | ERROR | backend.tools.x402_payment | Invalid buyer address: INVALID
+2026-04-12 16:34:38,529 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:34:38,529 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:34:38,529 | INFO | demo.flow | Payment approved
+2026-04-12 16:34:38,529 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 2
+2026-04-12 16:34:38,529 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 0.0 USDC
+2026-04-12 16:34:38,529 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:34:38,529 | INFO | backend.tools.x402_payment | Listing 2: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:34:38,529 | ERROR | backend.tools.x402_payment | Invalid payment amount: 0.0. Must be > 0
+2026-04-12 16:34:38,532 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 16:34:38,532 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 16:34:38,532 | INFO | demo.flow | Payment approved
+2026-04-12 16:34:38,532 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 2
+2026-04-12 16:34:38,532 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 16:34:38,532 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 16:34:38,533 | INFO | backend.tools.x402_payment | Listing 2: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 16:34:38,533 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 16:34:38,533 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'is_safe': True}
+2026-04-12 16:34:38,533 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-04-12 16:34:38,533 | ERROR | backend.tools.x402_payment | x402 micropayment execution failed: network submission failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 557, in trigger_x402_payment
+    txid = await x402_client.send_micropayment(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: network submission failed
+2026-04-12 16:34:38,535 | ERROR | backend.tools.x402_payment | payment_rejected | details=network submission failed
+2026-04-12 16:34:38,537 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=1 buyer=buyer
+2026-04-12 16:34:38,537 | ERROR | backend.tools.post_payment_flow | Payment confirmation failed | tx_id=PAY_TX error=timed out waiting for confirmation
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 137, in complete_purchase_flow
+    payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out waiting for confirmation
+2026-04-12 16:34:38,546 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=1 buyer=FALLBACK_BUYER
+2026-04-12 16:34:38,546 | ERROR | backend.tools.post_payment_flow | Payment confirmation failed | tx_id=PAY_TX error=stop after fallback check
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 137, in complete_purchase_flow
+    payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: stop after fallback check
+2026-04-12 16:34:41,999 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-12 16:34:48,886 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-12 16:34:48,892 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=approve
+2026-04-12 16:38:46,679 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 16:38:46,685 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-04-12 16:38:46,861 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 429 Too Many Requests"
+2026-04-12 16:38:46,862 | WARNING | backend.agent | Evaluation step hit Gemini limit; falling back to SKIP
+2026-04-12 17:16:50,155 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-12 17:16:50,198 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 17:16:50,199 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:16:50,199 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:16:50,199 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 17:16:50,199 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-12 17:16:50,199 | INFO | mercator.backend | On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-12 17:16:50,199 | INFO | demo.flow | Seller upload complete
+2026-04-12 17:16:50,199 | INFO | demo.flow | On-chain ASA created
+2026-04-12 17:16:50,199 | INFO | mercator.backend | Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-12 17:16:50,203 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-04-12 17:16:50,212 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=2.5, insight_len=58
+2026-04-12 17:16:50,213 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:16:50,213 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:16:50,213 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 17:16:50,213 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=2500000 app_id=758025190
+2026-04-12 17:16:50,213 | INFO | mercator.backend | On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-12 17:16:50,213 | INFO | demo.flow | Seller upload complete
+2026-04-12 17:16:50,213 | INFO | demo.flow | On-chain ASA created
+2026-04-12 17:16:50,213 | INFO | mercator.backend | Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-12 17:16:50,214 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-04-12 17:16:50,219 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=-1.0, insight_len=59
+2026-04-12 17:16:50,220 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-12 17:16:50,226 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=3
+2026-04-12 17:16:50,227 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-12 17:16:50,234 | INFO | mercator.backend | Incoming /list request: seller_wallet=BAD_WALLET, price=1.0, insight_len=59
+2026-04-12 17:16:50,236 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-12 17:16:50,242 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 17:16:50,243 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:16:50,243 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:16:50,243 | ERROR | mercator.backend | IPFS upload failed | error=IPFS failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1720, in create_listing
+    cid = await upload_insight_to_ipfs(request.insight_text)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.IPFSUploadError: IPFS failed
+2026-04-12 17:16:50,245 | ERROR | mercator.backend | ipfs_down | details=IPFS failed
+2026-04-12 17:16:50,246 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-12 17:16:50,252 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 17:16:50,253 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:16:50,253 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:16:50,253 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 17:16:50,253 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-12 17:16:50,253 | ERROR | mercator.backend | ASA creation failed | error=store failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1730, in create_listing
+    listing_id, asa_id = store_cid_in_listing(
+                         ~~~~~~~~~~~~~~~~~~~~^
+        cid=cid,
+        ^^^^^^^^
+    ...<3 lines>...
+        signer_mnemonic=signing_mnemonic,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1175, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1179, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1234, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: store failed
+2026-04-12 17:16:50,254 | ERROR | mercator.backend | contract_error | details=store failed
+2026-04-12 17:16:50,254 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-12 17:16:50,261 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 17:16:50,261 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:16:50,261 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:16:50,261 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 17:16:50,261 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-12 17:16:50,261 | INFO | mercator.backend | On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-12 17:16:50,261 | INFO | demo.flow | Seller upload complete
+2026-04-12 17:16:50,261 | INFO | demo.flow | On-chain ASA created
+2026-04-12 17:16:50,261 | ERROR | mercator.backend | Unexpected /list failure | error=timed out
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1746, in create_listing
+    tx_id = await _poll_for_listing_confirmation(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out
+2026-04-12 17:16:50,263 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-12 17:16:50,269 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 17:16:50,274 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 17:16:50,279 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 17:16:50,284 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 17:16:50,288 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 17:16:50,318 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 17:16:50,323 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 17:16:50,337 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 17:16:50,364 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 17:16:50,378 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 17:16:50,429 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 17:16:50,429 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 17:16:50,430 | INFO | demo.flow | Payment approved
+2026-04-12 17:16:50,430 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 7
+2026-04-12 17:16:50,430 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 999.0 USDC
+2026-04-12 17:16:50,430 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 17:16:50,430 | INFO | backend.tools.x402_payment | Listing 7: Price=2.25, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:16:50,430 | WARNING | backend.tools.x402_payment | Requested amount differs from listing; using on-chain listing price | requested=999.0 listed=2.25
+2026-04-12 17:16:50,430 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 17:16:50,430 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'is_safe': True}
+2026-04-12 17:16:50,430 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-04-12 17:16:50,430 | INFO | backend.tools.x402_payment | ✓ x402 micropayment executed: txid=TX402
+2026-04-12 17:16:50,431 | INFO | demo.flow | IPFS content delivered
+2026-04-12 17:16:50,431 | INFO | backend.tools.x402_payment | x402 payment flow completed successfully: {'success': True, 'approved': True, 'transaction_id': 'TX402', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 7, 'buyer_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 2.25, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Buyer receives instant access to insight'}, 'status': 'CONFIRMED', 'explorer_url': 'https://explorer.perawallet.app/tx/TX402/', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': 'Insight delivered in full text'}
+2026-04-12 17:16:50,434 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 17:16:50,434 | WARNING | backend.tools.x402_payment | User approval gate: Payment requires explicit user approval. Type 'approve' to continue.
+2026-04-12 17:16:50,438 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 17:16:50,438 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 17:16:50,438 | INFO | demo.flow | Payment approved
+2026-04-12 17:16:50,438 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 3
+2026-04-12 17:16:50,438 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 17:16:50,438 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 17:16:50,438 | INFO | backend.tools.x402_payment | Listing 3: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:16:50,439 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 17:16:50,439 | ERROR | backend.tools.x402_payment | Payment simulation failed safety check: {'is_safe': False, 'reason': 'unsafe'}
+2026-04-12 17:16:50,442 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 17:16:50,442 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 17:16:50,443 | INFO | demo.flow | Payment approved
+2026-04-12 17:16:50,443 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 3
+2026-04-12 17:16:50,443 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 17:16:50,443 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 17:16:50,443 | INFO | backend.tools.x402_payment | Listing 3: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:16:50,443 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 17:16:50,443 | ERROR | backend.tools.x402_payment | Payment simulation error: insufficient balance
+2026-04-12 17:16:50,443 | ERROR | backend.tools.x402_payment | insufficient_balance | details=insufficient balance
+2026-04-12 17:16:50,448 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 17:16:50,448 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 17:16:50,448 | INFO | demo.flow | Payment approved
+2026-04-12 17:16:50,448 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 999
+2026-04-12 17:16:50,448 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 17:16:50,448 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 17:16:50,448 | ERROR | backend.tools.x402_payment | contract_error | details=Listing 999 not found
+2026-04-12 17:16:50,452 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 17:16:50,452 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 17:16:50,452 | INFO | demo.flow | Payment approved
+2026-04-12 17:16:50,452 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 1
+2026-04-12 17:16:50,452 | INFO | backend.tools.x402_payment | Buyer: INVALID, Amount: 1.0 USDC
+2026-04-12 17:16:50,452 | ERROR | backend.tools.x402_payment | Invalid buyer address: INVALID
+2026-04-12 17:16:50,456 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 17:16:50,456 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 17:16:50,456 | INFO | demo.flow | Payment approved
+2026-04-12 17:16:50,456 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 2
+2026-04-12 17:16:50,456 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 0.0 USDC
+2026-04-12 17:16:50,456 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 17:16:50,456 | INFO | backend.tools.x402_payment | Listing 2: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:16:50,456 | ERROR | backend.tools.x402_payment | Invalid payment amount: 0.0. Must be > 0
+2026-04-12 17:16:50,459 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 17:16:50,459 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 17:16:50,459 | INFO | demo.flow | Payment approved
+2026-04-12 17:16:50,459 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 2
+2026-04-12 17:16:50,460 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 17:16:50,460 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 17:16:50,460 | INFO | backend.tools.x402_payment | Listing 2: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:16:50,460 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 17:16:50,460 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'is_safe': True}
+2026-04-12 17:16:50,460 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-04-12 17:16:50,460 | ERROR | backend.tools.x402_payment | x402 micropayment execution failed: network submission failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 557, in trigger_x402_payment
+    txid = await x402_client.send_micropayment(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: network submission failed
+2026-04-12 17:16:50,461 | ERROR | backend.tools.x402_payment | payment_rejected | details=network submission failed
+2026-04-12 17:16:50,463 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=9 buyer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:16:50,463 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=PAY_TX round=12345
+2026-04-12 17:16:50,463 | INFO | demo.flow | IPFS content delivered
+2026-04-12 17:16:50,463 | INFO | backend.tools.post_payment_flow | Escrow redeem confirmed | tx_id=ESCROW_TX round=12346
+2026-04-12 17:16:50,464 | INFO | demo.flow | Escrow released
+2026-04-12 17:16:50,465 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=1 buyer=buyer
+2026-04-12 17:16:50,465 | ERROR | backend.tools.post_payment_flow | Payment confirmation failed | tx_id=PAY_TX error=timed out waiting for confirmation
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 141, in complete_purchase_flow
+    payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out waiting for confirmation
+2026-04-12 17:16:50,466 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=2 buyer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:16:50,466 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=PAY_TX round=12345
+2026-04-12 17:16:50,467 | INFO | demo.flow | IPFS content delivered
+2026-04-12 17:16:50,467 | INFO | backend.tools.post_payment_flow | Escrow redeem confirmed | tx_id=ESCROW_TX round=12346
+2026-04-12 17:16:50,467 | INFO | demo.flow | Escrow released
+2026-04-12 17:16:50,468 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=2 buyer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:16:50,468 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=PAY_TX round=12345
+2026-04-12 17:16:50,468 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=1 listing_id=2 error=guard reject
+2026-04-12 17:16:50,468 | INFO | demo.flow | IPFS content delivered
+2026-04-12 17:16:50,869 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=2 listing_id=2 error=guard reject
+2026-04-12 17:16:51,281 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=3 listing_id=2 error=guard reject
+2026-04-12 17:16:51,682 | WARNING | backend.tools.post_payment_flow | Escrow redeem unavailable; continuing with paid content delivery | error=Escrow redeem failed after retries: guard reject
+2026-04-12 17:16:51,687 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=2 buyer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:16:51,688 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=PAY_TX round=12345
+2026-04-12 17:16:51,688 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=1 listing_id=2 error=guard reject
+2026-04-12 17:16:51,688 | WARNING | backend.tools.post_payment_flow | IPFS fetch failed after payment confirmation | cid=QmBrokenCID error=ipfs unavailable
+2026-04-12 17:16:51,688 | ERROR | backend.tools.post_payment_flow | ipfs_down | details=ipfs unavailable
+2026-04-12 17:16:52,088 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=2 listing_id=2 error=guard reject
+2026-04-12 17:16:52,490 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=3 listing_id=2 error=guard reject
+2026-04-12 17:16:52,891 | WARNING | backend.tools.post_payment_flow | Escrow redeem unavailable; continuing with paid content delivery | error=Escrow redeem failed after retries: guard reject
+2026-04-12 17:16:52,897 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=2 buyer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:16:52,898 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=PAY_TX round=12345
+2026-04-12 17:16:52,904 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=1 buyer=FALLBACK_BUYER
+2026-04-12 17:16:52,904 | ERROR | backend.tools.post_payment_flow | Payment confirmation failed | tx_id=PAY_TX error=stop after fallback check
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 141, in complete_purchase_flow
+    payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: stop after fallback check
+2026-04-12 17:17:01,682 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-12 17:17:01,719 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=2 buyer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:17:01,719 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=PAY_TX round=12345
+2026-04-12 17:17:01,719 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=1 listing_id=2 error=guard reject
+2026-04-12 17:17:01,719 | INFO | demo.flow | IPFS content delivered
+2026-04-12 17:17:02,121 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=2 listing_id=2 error=guard reject
+2026-04-12 17:17:02,522 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=3 listing_id=2 error=guard reject
+2026-04-12 17:17:02,924 | WARNING | backend.tools.post_payment_flow | Escrow redeem unavailable; continuing with paid content delivery | error=Escrow redeem failed after retries: guard reject
+2026-04-12 17:17:03,003 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=2 buyer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:17:03,004 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=PAY_TX round=12345
+2026-04-12 17:17:03,004 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=1 listing_id=2 error=guard reject
+2026-04-12 17:17:03,004 | WARNING | backend.tools.post_payment_flow | IPFS fetch failed after payment confirmation | cid=QmBrokenCID error=ipfs unavailable
+2026-04-12 17:17:03,004 | ERROR | backend.tools.post_payment_flow | ipfs_down | details=ipfs unavailable
+2026-04-12 17:17:03,405 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=2 listing_id=2 error=guard reject
+2026-04-12 17:17:03,806 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=3 listing_id=2 error=guard reject
+2026-04-12 17:17:04,208 | WARNING | backend.tools.post_payment_flow | Escrow redeem unavailable; continuing with paid content delivery | error=Escrow redeem failed after retries: guard reject
+2026-04-12 17:17:15,847 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-12 17:17:15,888 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 17:17:15,889 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:17:15,889 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:17:15,889 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 17:17:15,889 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-12 17:17:15,889 | INFO | mercator.backend | On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-12 17:17:15,889 | INFO | demo.flow | Seller upload complete
+2026-04-12 17:17:15,889 | INFO | demo.flow | On-chain ASA created
+2026-04-12 17:17:15,889 | INFO | mercator.backend | Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-12 17:17:15,890 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-04-12 17:17:15,896 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=2.5, insight_len=58
+2026-04-12 17:17:15,897 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:17:15,897 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:17:15,897 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 17:17:15,897 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=2500000 app_id=758025190
+2026-04-12 17:17:15,897 | INFO | mercator.backend | On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-12 17:17:15,897 | INFO | demo.flow | Seller upload complete
+2026-04-12 17:17:15,897 | INFO | demo.flow | On-chain ASA created
+2026-04-12 17:17:15,897 | INFO | mercator.backend | Transaction confirmed: tx_id=MOCK_LISTING_TX
+2026-04-12 17:17:15,898 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-04-12 17:17:15,904 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=-1.0, insight_len=59
+2026-04-12 17:17:15,904 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-12 17:17:15,910 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=3
+2026-04-12 17:17:15,910 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-12 17:17:15,917 | INFO | mercator.backend | Incoming /list request: seller_wallet=BAD_WALLET, price=1.0, insight_len=59
+2026-04-12 17:17:15,918 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-04-12 17:17:15,923 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 17:17:15,924 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:17:15,924 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:17:15,924 | ERROR | mercator.backend | IPFS upload failed | error=IPFS failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1720, in create_listing
+    cid = await upload_insight_to_ipfs(request.insight_text)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.IPFSUploadError: IPFS failed
+2026-04-12 17:17:15,925 | ERROR | mercator.backend | ipfs_down | details=IPFS failed
+2026-04-12 17:17:15,926 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-12 17:17:15,932 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 17:17:15,933 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:17:15,933 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:17:15,933 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 17:17:15,933 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-12 17:17:15,933 | ERROR | mercator.backend | ASA creation failed | error=store failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1730, in create_listing
+    listing_id, asa_id = store_cid_in_listing(
+                         ~~~~~~~~~~~~~~~~~~~~^
+        cid=cid,
+        ^^^^^^^^
+    ...<3 lines>...
+        signer_mnemonic=signing_mnemonic,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1175, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1179, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1234, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: store failed
+2026-04-12 17:17:15,934 | ERROR | mercator.backend | contract_error | details=store failed
+2026-04-12 17:17:15,934 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-12 17:17:15,940 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-12 17:17:15,940 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:17:15,940 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:17:15,941 | INFO | mercator.backend | IPFS upload complete, cid=QmMockCID
+2026-04-12 17:17:15,941 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-12 17:17:15,941 | INFO | mercator.backend | On-chain listing submitted: listing_id=4 asa_id=758196266
+2026-04-12 17:17:15,941 | INFO | demo.flow | Seller upload complete
+2026-04-12 17:17:15,941 | INFO | demo.flow | On-chain ASA created
+2026-04-12 17:17:15,941 | ERROR | mercator.backend | Unexpected /list failure | error=timed out
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1746, in create_listing
+    tx_id = await _poll_for_listing_confirmation(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out
+2026-04-12 17:17:15,942 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-04-12 17:17:15,948 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 17:17:15,953 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 17:17:15,958 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 17:17:15,963 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 17:17:15,968 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 17:17:15,992 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 17:17:15,997 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 17:17:16,002 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 17:17:16,007 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 17:17:16,011 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-12 17:17:16,061 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 17:17:16,061 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 17:17:16,061 | INFO | demo.flow | Payment approved
+2026-04-12 17:17:16,061 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 7
+2026-04-12 17:17:16,061 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 999.0 USDC
+2026-04-12 17:17:16,061 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 17:17:16,062 | INFO | backend.tools.x402_payment | Listing 7: Price=2.25, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:17:16,062 | WARNING | backend.tools.x402_payment | Requested amount differs from listing; using on-chain listing price | requested=999.0 listed=2.25
+2026-04-12 17:17:16,062 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 17:17:16,062 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'is_safe': True}
+2026-04-12 17:17:16,062 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-04-12 17:17:16,063 | INFO | backend.tools.x402_payment | ✓ x402 micropayment executed: txid=TX402
+2026-04-12 17:17:16,063 | INFO | demo.flow | IPFS content delivered
+2026-04-12 17:17:16,063 | INFO | backend.tools.x402_payment | x402 payment flow completed successfully: {'success': True, 'approved': True, 'transaction_id': 'TX402', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 7, 'buyer_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 2.25, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Buyer receives instant access to insight'}, 'status': 'CONFIRMED', 'explorer_url': 'https://explorer.perawallet.app/tx/TX402/', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': 'Insight delivered in full text'}
+2026-04-12 17:17:16,066 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 17:17:16,066 | WARNING | backend.tools.x402_payment | User approval gate: Payment requires explicit user approval. Type 'approve' to continue.
+2026-04-12 17:17:16,070 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 17:17:16,070 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 17:17:16,070 | INFO | demo.flow | Payment approved
+2026-04-12 17:17:16,070 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 3
+2026-04-12 17:17:16,070 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 17:17:16,070 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 17:17:16,070 | INFO | backend.tools.x402_payment | Listing 3: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:17:16,070 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 17:17:16,071 | ERROR | backend.tools.x402_payment | Payment simulation failed safety check: {'is_safe': False, 'reason': 'unsafe'}
+2026-04-12 17:17:16,075 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 17:17:16,075 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 17:17:16,075 | INFO | demo.flow | Payment approved
+2026-04-12 17:17:16,075 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 3
+2026-04-12 17:17:16,075 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 17:17:16,075 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 17:17:16,075 | INFO | backend.tools.x402_payment | Listing 3: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:17:16,075 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 17:17:16,075 | ERROR | backend.tools.x402_payment | Payment simulation error: insufficient balance
+2026-04-12 17:17:16,075 | ERROR | backend.tools.x402_payment | insufficient_balance | details=insufficient balance
+2026-04-12 17:17:16,079 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 17:17:16,079 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 17:17:16,079 | INFO | demo.flow | Payment approved
+2026-04-12 17:17:16,079 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 999
+2026-04-12 17:17:16,080 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 17:17:16,080 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 17:17:16,080 | ERROR | backend.tools.x402_payment | contract_error | details=Listing 999 not found
+2026-04-12 17:17:16,083 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 17:17:16,083 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 17:17:16,083 | INFO | demo.flow | Payment approved
+2026-04-12 17:17:16,083 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 1
+2026-04-12 17:17:16,083 | INFO | backend.tools.x402_payment | Buyer: INVALID, Amount: 1.0 USDC
+2026-04-12 17:17:16,083 | ERROR | backend.tools.x402_payment | Invalid buyer address: INVALID
+2026-04-12 17:17:16,087 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 17:17:16,087 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 17:17:16,087 | INFO | demo.flow | Payment approved
+2026-04-12 17:17:16,087 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 2
+2026-04-12 17:17:16,087 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 0.0 USDC
+2026-04-12 17:17:16,087 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 17:17:16,087 | INFO | backend.tools.x402_payment | Listing 2: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:17:16,087 | ERROR | backend.tools.x402_payment | Invalid payment amount: 0.0. Must be > 0
+2026-04-12 17:17:16,091 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-12 17:17:16,091 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-12 17:17:16,091 | INFO | demo.flow | Payment approved
+2026-04-12 17:17:16,091 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 2
+2026-04-12 17:17:16,091 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-12 17:17:16,091 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-12 17:17:16,091 | INFO | backend.tools.x402_payment | Listing 2: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:17:16,091 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-12 17:17:16,092 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'is_safe': True}
+2026-04-12 17:17:16,092 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-04-12 17:17:16,092 | ERROR | backend.tools.x402_payment | x402 micropayment execution failed: network submission failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 557, in trigger_x402_payment
+    txid = await x402_client.send_micropayment(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: network submission failed
+2026-04-12 17:17:16,093 | ERROR | backend.tools.x402_payment | payment_rejected | details=network submission failed
+2026-04-12 17:17:16,095 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=9 buyer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:17:16,095 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=PAY_TX round=12345
+2026-04-12 17:17:16,095 | INFO | demo.flow | IPFS content delivered
+2026-04-12 17:17:16,095 | INFO | backend.tools.post_payment_flow | Escrow redeem confirmed | tx_id=ESCROW_TX round=12346
+2026-04-12 17:17:16,095 | INFO | demo.flow | Escrow released
+2026-04-12 17:17:16,097 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=1 buyer=buyer
+2026-04-12 17:17:16,097 | ERROR | backend.tools.post_payment_flow | Payment confirmation failed | tx_id=PAY_TX error=timed out waiting for confirmation
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 141, in complete_purchase_flow
+    payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out waiting for confirmation
+2026-04-12 17:17:16,099 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=2 buyer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:17:16,099 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=PAY_TX round=12345
+2026-04-12 17:17:16,099 | INFO | demo.flow | IPFS content delivered
+2026-04-12 17:17:16,099 | INFO | backend.tools.post_payment_flow | Escrow redeem confirmed | tx_id=ESCROW_TX round=12346
+2026-04-12 17:17:16,099 | INFO | demo.flow | Escrow released
+2026-04-12 17:17:16,100 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=2 buyer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:17:16,100 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=PAY_TX round=12345
+2026-04-12 17:17:16,100 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=1 listing_id=2 error=guard reject
+2026-04-12 17:17:16,101 | INFO | demo.flow | IPFS content delivered
+2026-04-12 17:17:16,502 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=2 listing_id=2 error=guard reject
+2026-04-12 17:17:16,912 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=3 listing_id=2 error=guard reject
+2026-04-12 17:17:17,312 | WARNING | backend.tools.post_payment_flow | Escrow redeem unavailable; continuing with paid content delivery | error=Escrow redeem failed after retries: guard reject
+2026-04-12 17:17:17,316 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=2 buyer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:17:17,316 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=PAY_TX round=12345
+2026-04-12 17:17:17,316 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=1 listing_id=2 error=guard reject
+2026-04-12 17:17:17,317 | WARNING | backend.tools.post_payment_flow | IPFS fetch failed after payment confirmation | cid=QmBrokenCID error=ipfs unavailable
+2026-04-12 17:17:17,317 | ERROR | backend.tools.post_payment_flow | ipfs_down | details=ipfs unavailable
+2026-04-12 17:17:17,718 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=2 listing_id=2 error=guard reject
+2026-04-12 17:17:18,119 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=3 listing_id=2 error=guard reject
+2026-04-12 17:17:18,521 | WARNING | backend.tools.post_payment_flow | Escrow redeem unavailable; continuing with paid content delivery | error=Escrow redeem failed after retries: guard reject
+2026-04-12 17:17:18,525 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=2 buyer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-12 17:17:18,526 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=PAY_TX round=12345
+2026-04-12 17:17:18,533 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=1 buyer=FALLBACK_BUYER
+2026-04-12 17:17:18,533 | ERROR | backend.tools.post_payment_flow | Payment confirmation failed | tx_id=PAY_TX error=stop after fallback check
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 141, in complete_purchase_flow
+    payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: stop after fallback check

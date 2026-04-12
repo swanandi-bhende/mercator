@@ -255,25 +255,9 @@ async def semantic_search(query: str) -> str:
                 relevance = overlap / max(len(query_words), 1)
                 entry["relevance"] = float(relevance)
 
-    max_listing_id = max(int(entry["listing_id"]) for entry in listing_entries)
-    min_listing_id = min(int(entry["listing_id"]) for entry in listing_entries)
-    listing_span = max(max_listing_id - min_listing_id, 1)
-
     for entry in listing_entries:
-        text_words = set(re.findall(r"[a-z0-9_]+", str(entry["text"]).lower()))
-        overlap = len(query_words & text_words)
-        exact_overlap = overlap / max(len(query_words), 1)
         reputation_norm = min(max(float(entry["reputation"]), 0.0), 100.0) / 100.0
-        recency_norm = (int(entry["listing_id"]) - min_listing_id) / listing_span
-
-        # Bias toward exact lexical intent and newer listings so force-buy paths
-        # still pick the just-uploaded insight for the same unique query token set.
-        weighted_score = (
-            0.5 * float(entry["relevance"])
-            + 0.25 * exact_overlap
-            + 0.15 * recency_norm
-            + 0.10 * reputation_norm
-        )
+        weighted_score = 0.7 * float(entry["relevance"]) + 0.3 * reputation_norm
         entry["score"] = round(weighted_score, 6)
 
     ranked = sorted(listing_entries, key=lambda item: float(item["score"]), reverse=True)[:3]
