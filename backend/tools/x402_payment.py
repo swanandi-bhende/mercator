@@ -164,16 +164,25 @@ X402_PRIVATE_KEY = os.getenv("X402_PRIVATE_KEY", "")
 INSIGHT_LISTING_APP_ID = int(os.getenv("INSIGHT_LISTING_APP_ID", 758025190))
 ESCROW_APP_ID = int(os.getenv("ESCROW_APP_ID", 758022447))
 REPUTATION_APP_ID = int(os.getenv("REPUTATION_APP_ID", 758022459))
-USDC_ASA_ID = int(os.getenv("USDC_ASA_ID", 0))  # TestNet USDC asset ID if available
+USDC_ASA_ID = int(os.getenv("USDC_ASA_ID", 10458941))
+USDC_DECIMALS = int(os.getenv("USDC_DECIMALS", "6"))
+MAX_MICROPAYMENT_USDC = 5.0
 EXPLORER_TX_BASE = os.getenv("EXPLORER_TX_BASE", "https://explorer.perawallet.app/tx").rstrip("/")
 
 
 class X402Client:
     """Simulated x402 client for micropayment flows on Algorand."""
     
-    def __init__(self, algorand: AlgorandClient):
+    def __init__(
+        self,
+        algorand: AlgorandClient,
+        usdc_asset_id: int = USDC_ASA_ID,
+        decimals: int = USDC_DECIMALS,
+    ):
         self.algorand = algorand
         self.algod = algorand.client.algod
+        self.usdc_asset_id = usdc_asset_id
+        self.decimals = decimals
         # Get sender from environment or deployer
         self.sender = os.getenv("DEPLOYER_ADDRESS", "").strip()
 
@@ -465,6 +474,12 @@ async def trigger_x402_payment(
                 "error": "INVALID_ADDRESS",
                 "message": "Payment failed: invalid buyer address format"
             })
+
+        if amount_usdc > MAX_MICROPAYMENT_USDC:
+            raise ValueError(
+                f"Micropayment limit exceeded: {amount_usdc} USDC requested, "
+                f"max allowed is {MAX_MICROPAYMENT_USDC} USDC"
+            )
         
         # Fetch listing details from InsightListing contract
         logger.info("Fetching listing details from InsightListing app...")
@@ -497,7 +512,7 @@ async def trigger_x402_payment(
 
         seller_wallet = str(listing.seller)
         listed_price_micro = int(listing.price)
-        listed_price = listed_price_micro / 1_000_000
+        listed_price = listed_price_micro / (10 ** USDC_DECIMALS)
         settlement_asset_id = USDC_ASA_ID
 
         if settlement_asset_id <= 0:
@@ -537,8 +552,12 @@ async def trigger_x402_payment(
         # STEP 3: SIMULATE PAYMENT BEFORE BROADCASTING
         # =========================================================================
         logger.info("Simulating x402 payment transaction...")
-        
-        x402_client = X402Client(algorand)
+
+        x402_client = X402Client(
+            algorand,
+            usdc_asset_id=USDC_ASA_ID,
+            decimals=USDC_DECIMALS,
+        )
         
         try:
             simulation_result = await x402_client.simulate_payment(
@@ -672,6 +691,15 @@ async def trigger_x402_payment(
                 "next_step": "Verify buyer USDC balance and network connectivity"
             })
     
+    except ValueError as e:
+        error_msg = f"x402 payment validation error: {str(e)}"
+        logger.error(error_msg, exc_info=True)
+        return json.dumps({
+            "success": False,
+            "error": "PAYMENT_LIMIT_EXCEEDED",
+            "message": str(e),
+            "details": error_msg,
+        })
     except Exception as e:
         error_msg = f"x402 payment error: {str(e)}"
         logger.error(error_msg, exc_info=True)

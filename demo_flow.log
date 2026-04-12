@@ -7010,3 +7010,15 @@ RuntimeError: Transaction BOGUS_TX_FOR_TIMEOUT_CHECK was not confirmed within 30
 2026-04-12 15:36:44,935 INFO mercator.demo: On-chain ASA created
 2026-04-12 15:36:44,936 INFO mercator.demo: Listing response: {'success': 1, 'transaction_id': 'ZHNHHNLXBPT6EUPBYHJXGJPKK55DLXJCO3HX5K5OPUWINND2R57Q', 'txId': 'ZHNHHNLXBPT6EUPBYHJXGJPKK55DLXJCO3HX5K5OPUWINND2R57Q', 'explorer_url': 'https://explorer.perawallet.app/tx/ZHNHHNLXBPT6EUPBYHJXGJPKK55DLXJCO3HX5K5OPUWINND2R57Q/', 'message': 'Insight listed on-chain and pinned on IPFS', 'cid': 'QmRGRbfgwtaofvyMwwirBPzBcNEsCsp8n2AdFPqW5oLy7c', 'listing_id': 43, 'asa_id': 758712806}
 2026-04-12 15:36:47,937 INFO mercator.demo: Submitting buyer flow to /demo_purchase
+2026-04-13 01:30:15,782 INFO backend.tools.x402_payment: Checking user approval...
+2026-04-13 01:30:15,782 INFO backend.tools.x402_payment: ✓ User approval confirmed: 'approve'
+2026-04-13 01:30:15,782 INFO demo.flow: Payment approved
+2026-04-13 01:30:15,783 INFO backend.tools.x402_payment: Initiating x402 payment for listing 1
+2026-04-13 01:30:15,783 INFO backend.tools.x402_payment: Buyer: JVMEDYVM7LG64LNRRZOIH2MCG5NUQPG2TLXJ2KYDZ7O24XPM55VBII5UXY, Amount: 6.0 USDC
+2026-04-13 01:30:15,783 ERROR backend.tools.x402_payment: x402 payment validation error: Micropayment limit exceeded: 6.0 USDC requested, max allowed is 5.0 USDC
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 479, in trigger_x402_payment
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: Micropayment limit exceeded: 6.0 USDC requested, max allowed is 5.0 USDC

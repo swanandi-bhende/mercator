@@ -4,17 +4,9 @@ Mercator is an Agentic Commerce demo on Algorand TestNet where a seller lists a 
 
 ## Architecture
 
-```mermaid
-flowchart LR
-	A[React UI] --> B[FastAPI Backend]
-	B --> C[Algorand Smart Contracts\n(ASA + Escrow + Reputation)]
-	C --> D[IPFS (Pinata)]
-	D --> E[LangChain Agent (Gemini)]
-	E --> F[x402 Micropayment]
-	F --> G[Instant Content Delivery]
-```
+Architecture path: React UI -> FastAPI Backend -> Algorand Smart Contracts (ASA + Escrow + Reputation) -> IPFS (Pinata) -> LangChain Agent (Gemini) -> x402 Micropayment -> Instant Content Delivery.
 
-Diagram caption: This flowchart shows Mercator's single core feature from listing to monetization. The React UI captures seller and buyer actions, the FastAPI backend orchestrates storage and chain calls, IPFS stores the insight body, Algorand contracts anchor listing/escrow/reputation state, the LangChain agent performs reasoning with Gemini to decide BUY or SKIP, x402 executes settlement, and confirmed buyers receive immediate insight text.
+Flow caption: This architecture expresses Mercator's single core feature from listing to monetization. The React UI captures seller and buyer actions, the FastAPI backend orchestrates storage and chain calls, IPFS stores the insight body, Algorand contracts anchor listing/escrow/reputation state, the LangChain agent performs reasoning with Gemini to decide BUY or SKIP, x402 executes settlement, and confirmed buyers receive immediate insight text.
 
 In plain English: a seller submits text in the UI, the backend uploads it to Pinata and writes listing metadata on Algorand (price, CID, ASA linkage). A buyer query is evaluated by the agent using semantic relevance and on-chain reputation. If value and trust thresholds pass, the buyer approves payment, x402 transfers USDC atomically, escrow records unlock state, and the backend returns the full insight content to the buyer without waiting for manual reconciliation.
 
