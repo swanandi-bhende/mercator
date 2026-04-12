@@ -7022,3 +7022,208 @@ Traceback (most recent call last):
     ...<2 lines>...
     )
 ValueError: Micropayment limit exceeded: 6.0 USDC requested, max allowed is 5.0 USDC
+2026-04-13 01:42:30,428 INFO backend.tools.x402_payment: Checking user approval...
+2026-04-13 01:42:30,429 INFO backend.tools.x402_payment: ✓ User approval confirmed: 'approve'
+2026-04-13 01:42:30,429 INFO demo.flow: Payment approved
+2026-04-13 01:42:30,429 INFO backend.tools.x402_payment: Initiating x402 payment for listing 47
+2026-04-13 01:42:30,429 INFO backend.tools.x402_payment: Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 1.0 USDC
+2026-04-13 01:42:30,429 INFO backend.tools.x402_payment: Fetching listing details from InsightListing app...
+2026-04-13 01:42:30,596 INFO backend.tools.x402_payment: Listing 47: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-13 01:42:30,596 INFO backend.tools.x402_payment: Simulating x402 payment transaction...
+2026-04-13 01:42:30,596 INFO backend.tools.x402_payment: Simulating payment: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ -> M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, amount=1000000, asset_id=10458941
+2026-04-13 01:42:30,786 INFO backend.tools.x402_payment: Simulation successful: fee=False, asset_id=10458941
+2026-04-13 01:42:30,786 INFO backend.tools.x402_payment: ✓ Payment simulation passed: {'success': True, 'sender': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'receiver': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount': 1000000, 'asset_id': 10458941, 'estimated_fee': False, 'is_safe': True, 'message': 'Payment simulation passed - safe to broadcast'}
+2026-04-13 01:42:30,787 INFO backend.tools.x402_payment: Executing x402 micropayment transaction group...
+2026-04-13 01:42:30,958 INFO backend.tools.x402_payment: Sending x402 micropayment: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ -> M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, amount=1000000
+2026-04-13 01:42:31,330 INFO backend.tools.x402_payment: x402 micropayment sent: txid=KASFQY5QZISKGC2VT5S7YAFFZWJVLZBE35SJHPJ6MA3EN2A7BPXQ
+2026-04-13 01:42:35,256 INFO backend.tools.x402_payment: x402 payment confirmed in round 62356920
+2026-04-13 01:42:35,256 INFO backend.tools.x402_payment: ✓ x402 micropayment executed: txid=KASFQY5QZISKGC2VT5S7YAFFZWJVLZBE35SJHPJ6MA3EN2A7BPXQ
+2026-04-13 01:42:35,256 INFO backend.tools.post_payment_flow: Starting post-payment confirmation polling | tx_id=KASFQY5QZISKGC2VT5S7YAFFZWJVLZBE35SJHPJ6MA3EN2A7BPXQ listing_id=47 buyer=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-13 01:42:35,472 INFO backend.tools.post_payment_flow: Payment confirmed | tx_id=KASFQY5QZISKGC2VT5S7YAFFZWJVLZBE35SJHPJ6MA3EN2A7BPXQ round=62356920
+2026-04-13 01:42:36,113 WARNING backend.tools.post_payment_flow: Escrow redeem attempt failed | attempt=1 listing_id=47 error=Error resolving execution info via simulate in transaction 0: transaction NQKCZ3VFKYFXHYWUJCZZXMZ7ZQWYVDUQCJZBG6QJDGYQ6PDIEPAA: account CDOLEOVBVS2I2YIYUZW2UI4XSB66MDQYPY72KMG2MFORQBOETYXP6JUESY balance 500000 below min 504700 (0 assets)
+2026-04-13 01:42:36,113 INFO demo.flow: IPFS content delivered
+2026-04-13 01:42:36,929 WARNING backend.tools.post_payment_flow: Escrow redeem attempt failed | attempt=2 listing_id=47 error=Error resolving execution info via simulate in transaction 0: transaction NQKCZ3VFKYFXHYWUJCZZXMZ7ZQWYVDUQCJZBG6QJDGYQ6PDIEPAA: account CDOLEOVBVS2I2YIYUZW2UI4XSB66MDQYPY72KMG2MFORQBOETYXP6JUESY balance 500000 below min 504700 (0 assets)
+2026-04-13 01:42:37,711 WARNING backend.tools.post_payment_flow: Escrow redeem attempt failed | attempt=3 listing_id=47 error=Error resolving execution info via simulate in transaction 0: transaction NQKCZ3VFKYFXHYWUJCZZXMZ7ZQWYVDUQCJZBG6QJDGYQ6PDIEPAA: account CDOLEOVBVS2I2YIYUZW2UI4XSB66MDQYPY72KMG2MFORQBOETYXP6JUESY balance 500000 below min 504700 (0 assets)
+2026-04-13 01:42:38,113 WARNING backend.tools.post_payment_flow: Escrow redeem unavailable; continuing with paid content delivery | error=Escrow redeem failed after retries: Error resolving execution info via simulate in transaction 0: transaction NQKCZ3VFKYFXHYWUJCZZXMZ7ZQWYVDUQCJZBG6QJDGYQ6PDIEPAA: account CDOLEOVBVS2I2YIYUZW2UI4XSB66MDQYPY72KMG2MFORQBOETYXP6JUESY balance 500000 below min 504700 (0 assets)
+2026-04-13 01:42:38,114 INFO demo.flow: IPFS content delivered
+2026-04-13 01:42:38,114 INFO backend.tools.x402_payment: x402 payment flow completed successfully: {'success': True, 'approved': True, 'transaction_id': 'KASFQY5QZISKGC2VT5S7YAFFZWJVLZBE35SJHPJ6MA3EN2A7BPXQ', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 47, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 1.0, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Buyer receives instant access to insight'}, 'status': 'CONFIRMED', 'explorer_url': 'https://explorer.perawallet.app/tx/KASFQY5QZISKGC2VT5S7YAFFZWJVLZBE35SJHPJ6MA3EN2A7BPXQ/', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n⚠ Escrow release skipped. Your payment is confirmed; please retry in a few seconds.\n\nHere is your human trading insight:\n\nFinal security audit purchase run insight: NIFTY micro breakout with strict risk stops.\n\nTransaction IDs: payment=KASFQY5QZISKGC2VT5S7YAFFZWJVLZBE35SJHPJ6MA3EN2A7BPXQ'}
+2026-04-13 01:43:39,609 INFO backend.tools.x402_payment: Checking user approval...
+2026-04-13 01:43:39,610 INFO backend.tools.x402_payment: ✓ User approval confirmed: 'approve'
+2026-04-13 01:43:39,610 INFO demo.flow: Payment approved
+2026-04-13 01:43:39,610 INFO backend.tools.x402_payment: Initiating x402 payment for listing 47
+2026-04-13 01:43:39,610 INFO backend.tools.x402_payment: Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 1.0 USDC
+2026-04-13 01:43:39,610 INFO backend.tools.x402_payment: Fetching listing details from InsightListing app...
+2026-04-13 01:43:39,770 INFO backend.tools.x402_payment: Listing 47: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-13 01:43:39,770 INFO backend.tools.x402_payment: Simulating x402 payment transaction...
+2026-04-13 01:43:39,770 INFO backend.tools.x402_payment: Simulating payment: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ -> M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, amount=1000000, asset_id=10458941
+2026-04-13 01:43:39,938 INFO backend.tools.x402_payment: Simulation successful: fee=False, asset_id=10458941
+2026-04-13 01:43:39,939 INFO backend.tools.x402_payment: ✓ Payment simulation passed: {'success': True, 'sender': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'receiver': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount': 1000000, 'asset_id': 10458941, 'estimated_fee': False, 'is_safe': True, 'message': 'Payment simulation passed - safe to broadcast'}
+2026-04-13 01:43:39,939 INFO backend.tools.x402_payment: Executing x402 micropayment transaction group...
+2026-04-13 01:43:40,161 INFO backend.tools.x402_payment: Sending x402 micropayment: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ -> M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, amount=1000000
+2026-04-13 01:43:40,489 INFO backend.tools.x402_payment: x402 micropayment sent: txid=J5HERILKV5KV4ONBADLH43KEHAX2HYULUN27DETAHUXA3PX3MYZA
+2026-04-13 01:43:45,534 INFO backend.tools.x402_payment: x402 payment confirmed in round 62356946
+2026-04-13 01:43:45,534 INFO backend.tools.x402_payment: ✓ x402 micropayment executed: txid=J5HERILKV5KV4ONBADLH43KEHAX2HYULUN27DETAHUXA3PX3MYZA
+2026-04-13 01:43:45,534 INFO backend.tools.post_payment_flow: Starting post-payment confirmation polling | tx_id=J5HERILKV5KV4ONBADLH43KEHAX2HYULUN27DETAHUXA3PX3MYZA listing_id=47 buyer=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-13 01:43:45,736 INFO backend.tools.post_payment_flow: Payment confirmed | tx_id=J5HERILKV5KV4ONBADLH43KEHAX2HYULUN27DETAHUXA3PX3MYZA round=62356946
+2026-04-13 01:43:46,273 WARNING backend.tools.post_payment_flow: Escrow redeem attempt failed | attempt=1 listing_id=47 error=Error resolving execution info via simulate in transaction 0: transaction 6LFFFRZNTS5O3GX6URMBSNUSOUNIOKGPTC7I4IKWBCI2SG7HYUTA: account CDOLEOVBVS2I2YIYUZW2UI4XSB66MDQYPY72KMG2MFORQBOETYXP6JUESY balance 500000 below min 504700 (0 assets)
+2026-04-13 01:43:47,042 WARNING backend.tools.post_payment_flow: Escrow redeem attempt failed | attempt=2 listing_id=47 error=Error resolving execution info via simulate in transaction 0: transaction 6LFFFRZNTS5O3GX6URMBSNUSOUNIOKGPTC7I4IKWBCI2SG7HYUTA: account CDOLEOVBVS2I2YIYUZW2UI4XSB66MDQYPY72KMG2MFORQBOETYXP6JUESY balance 500000 below min 504700 (0 assets)
+2026-04-13 01:43:47,752 WARNING backend.tools.post_payment_flow: Escrow redeem attempt failed | attempt=3 listing_id=47 error=Error resolving execution info via simulate in transaction 0: transaction 6LFFFRZNTS5O3GX6URMBSNUSOUNIOKGPTC7I4IKWBCI2SG7HYUTA: account CDOLEOVBVS2I2YIYUZW2UI4XSB66MDQYPY72KMG2MFORQBOETYXP6JUESY balance 500000 below min 504700 (0 assets)
+2026-04-13 01:43:52,856 INFO demo.flow: IPFS content delivered
+2026-04-13 01:43:52,856 WARNING backend.tools.post_payment_flow: Escrow redeem unavailable; continuing with paid content delivery | error=Escrow redeem failed after retries: Error resolving execution info via simulate in transaction 0: transaction 6LFFFRZNTS5O3GX6URMBSNUSOUNIOKGPTC7I4IKWBCI2SG7HYUTA: account CDOLEOVBVS2I2YIYUZW2UI4XSB66MDQYPY72KMG2MFORQBOETYXP6JUESY balance 500000 below min 504700 (0 assets)
+2026-04-13 01:43:59,486 INFO backend.tools.post_payment_flow: Reputation update: seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM | before=77 | after=87 | delta=+10 | tx=I33TBLJ2KYQHJONG5IN63EZCCM6CTTPXABD7N3WSI3WOQ6ABJ4WQ
+2026-04-13 01:43:59,487 INFO demo.flow: IPFS content delivered
+2026-04-13 01:43:59,487 INFO backend.tools.x402_payment: x402 payment flow completed successfully: {'success': True, 'approved': True, 'transaction_id': 'J5HERILKV5KV4ONBADLH43KEHAX2HYULUN27DETAHUXA3PX3MYZA', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 47, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 1.0, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Buyer receives instant access to insight'}, 'status': 'CONFIRMED', 'explorer_url': 'https://explorer.perawallet.app/tx/J5HERILKV5KV4ONBADLH43KEHAX2HYULUN27DETAHUXA3PX3MYZA/', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n⚠ Escrow release skipped. Your payment is confirmed; please retry in a few seconds.\n\nHere is your human trading insight:\n\nFinal security audit purchase run insight: NIFTY micro breakout with strict risk stops.\n\nTransaction IDs: payment=J5HERILKV5KV4ONBADLH43KEHAX2HYULUN27DETAHUXA3PX3MYZA\n\nReputation update: seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM | before=77 | after=87 | delta=+10 | tx=I33TBLJ2KYQHJONG5IN63EZCCM6CTTPXABD7N3WSI3WOQ6ABJ4WQ'}
+2026-04-13 01:58:02,831 INFO backend.tools.x402_payment: Checking user approval...
+2026-04-13 01:58:02,832 INFO backend.tools.x402_payment: ✓ User approval confirmed: 'approve'
+2026-04-13 01:58:02,832 INFO demo.flow: Payment approved
+2026-04-13 01:58:02,832 INFO backend.tools.x402_payment: Initiating x402 payment for listing 47
+2026-04-13 01:58:02,832 INFO backend.tools.x402_payment: Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 1.0 USDC
+2026-04-13 01:58:02,832 INFO backend.tools.x402_payment: Fetching listing details from InsightListing app...
+2026-04-13 01:58:03,063 INFO backend.tools.x402_payment: Listing 47: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-13 01:58:03,064 INFO backend.tools.x402_payment: Simulating x402 payment transaction...
+2026-04-13 01:58:03,064 INFO backend.tools.x402_payment: Simulating payment: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ -> M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, amount=1000000, asset_id=10458941
+2026-04-13 01:58:03,249 INFO backend.tools.x402_payment: Simulation successful: fee=False, asset_id=10458941
+2026-04-13 01:58:03,249 INFO backend.tools.x402_payment: ✓ Payment simulation passed: {'success': True, 'sender': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'receiver': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount': 1000000, 'asset_id': 10458941, 'estimated_fee': False, 'is_safe': True, 'message': 'Payment simulation passed - safe to broadcast'}
+2026-04-13 01:58:03,249 INFO backend.tools.x402_payment: Executing x402 micropayment transaction group...
+2026-04-13 01:58:04,017 ERROR backend.tools.x402_payment: x402 atomic payment+redeem failed: Transaction failed at transaction(s) 1 in the group. transaction C7ADRBU7ZQYGFPPF3NGTCUBHASUBDMMOZ4PPIPJ4OOVW2A4QY4VQ: account CDOLEOVBVS2I2YIYUZW2UI4XSB66MDQYPY72KMG2MFORQBOETYXP6JUESY balance 500000 below min 504700 (0 assets)
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 457, in send_atomic_payment_and_redeem
+    simulation = composer.simulate(skip_signatures=False)
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/contracts/escrow/smart_contracts/artifacts/escrow/escrow_client.py", line 768, in simulate
+    return self._composer.simulate(
+           ~~~~~~~~~~~~~~~~~~~~~~~^
+        allow_more_logs=allow_more_logs,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+        skip_signatures=skip_signatures,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algokit_utils/transactions/transaction_composer.py", line 2017, in simulate
+    self._handle_simulate_error(response)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algokit_utils/transactions/transaction_composer.py", line 1943, in _handle_simulate_error
+    raise self._transform_error(original_error) from original_error
+Exception: Transaction failed at transaction(s) 1 in the group. transaction C7ADRBU7ZQYGFPPF3NGTCUBHASUBDMMOZ4PPIPJ4OOVW2A4QY4VQ: account CDOLEOVBVS2I2YIYUZW2UI4XSB66MDQYPY72KMG2MFORQBOETYXP6JUESY balance 500000 below min 504700 (0 assets)
+2026-04-13 01:58:04,025 ERROR backend.tools.x402_payment: x402 micropayment execution failed: x402 atomic payment+redeem failed: Transaction failed at transaction(s) 1 in the group. transaction C7ADRBU7ZQYGFPPF3NGTCUBHASUBDMMOZ4PPIPJ4OOVW2A4QY4VQ: account CDOLEOVBVS2I2YIYUZW2UI4XSB66MDQYPY72KMG2MFORQBOETYXP6JUESY balance 500000 below min 504700 (0 assets)
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 457, in send_atomic_payment_and_redeem
+    simulation = composer.simulate(skip_signatures=False)
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/contracts/escrow/smart_contracts/artifacts/escrow/escrow_client.py", line 768, in simulate
+    return self._composer.simulate(
+           ~~~~~~~~~~~~~~~~~~~~~~~^
+        allow_more_logs=allow_more_logs,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+        skip_signatures=skip_signatures,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algokit_utils/transactions/transaction_composer.py", line 2017, in simulate
+    self._handle_simulate_error(response)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algokit_utils/transactions/transaction_composer.py", line 1943, in _handle_simulate_error
+    raise self._transform_error(original_error) from original_error
+Exception: Transaction failed at transaction(s) 1 in the group. transaction C7ADRBU7ZQYGFPPF3NGTCUBHASUBDMMOZ4PPIPJ4OOVW2A4QY4VQ: account CDOLEOVBVS2I2YIYUZW2UI4XSB66MDQYPY72KMG2MFORQBOETYXP6JUESY balance 500000 below min 504700 (0 assets)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 684, in trigger_x402_payment
+    payment_txid, redeem_txid = await x402_client.send_atomic_payment_and_redeem(
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 476, in send_atomic_payment_and_redeem
+    raise Exception(error_msg) from e
+Exception: x402 atomic payment+redeem failed: Transaction failed at transaction(s) 1 in the group. transaction C7ADRBU7ZQYGFPPF3NGTCUBHASUBDMMOZ4PPIPJ4OOVW2A4QY4VQ: account CDOLEOVBVS2I2YIYUZW2UI4XSB66MDQYPY72KMG2MFORQBOETYXP6JUESY balance 500000 below min 504700 (0 assets)
+2026-04-13 01:58:04,027 ERROR backend.tools.x402_payment: payment_rejected | details=x402 atomic payment+redeem failed: Transaction failed at transaction(s) 1 in the group. transaction C7ADRBU7ZQYGFPPF3NGTCUBHASUBDMMOZ4PPIPJ4OOVW2A4QY4VQ: account CDOLEOVBVS2I2YIYUZW2UI4XSB66MDQYPY72KMG2MFORQBOETYXP6JUESY balance 500000 below min 504700 (0 assets)
+2026-04-13 01:58:35,553 INFO backend.tools.x402_payment: Checking user approval...
+2026-04-13 01:58:35,554 INFO backend.tools.x402_payment: ✓ User approval confirmed: 'approve'
+2026-04-13 01:58:35,554 INFO demo.flow: Payment approved
+2026-04-13 01:58:35,554 INFO backend.tools.x402_payment: Initiating x402 payment for listing 47
+2026-04-13 01:58:35,554 INFO backend.tools.x402_payment: Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-04-13 01:58:35,554 INFO backend.tools.x402_payment: Fetching listing details from InsightListing app...
+2026-04-13 01:58:35,718 INFO backend.tools.x402_payment: Listing 47: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-13 01:58:35,718 INFO backend.tools.x402_payment: Simulating x402 payment transaction...
+2026-04-13 01:58:35,719 INFO backend.tools.x402_payment: Simulating payment: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM -> M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, amount=1000000, asset_id=10458941
+2026-04-13 01:58:35,878 INFO backend.tools.x402_payment: Simulation successful: fee=False, asset_id=10458941
+2026-04-13 01:58:35,879 INFO backend.tools.x402_payment: ✓ Payment simulation passed: {'success': True, 'sender': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'receiver': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount': 1000000, 'asset_id': 10458941, 'estimated_fee': False, 'is_safe': True, 'message': 'Payment simulation passed - safe to broadcast'}
+2026-04-13 01:58:35,879 INFO backend.tools.x402_payment: Executing x402 micropayment transaction group...
+2026-04-13 01:58:36,611 ERROR backend.tools.x402_payment: x402 atomic payment+redeem failed: Transaction failed at transaction(s) 1 in the group. transaction KMYLI2SH6FSNCTHUVMHKEKOOOBMQPQO6Y6BDOE5UE6PEJULQF77A: account CDOLEOVBVS2I2YIYUZW2UI4XSB66MDQYPY72KMG2MFORQBOETYXP6JUESY balance 500000 below min 504700 (0 assets)
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 457, in send_atomic_payment_and_redeem
+    simulation = composer.simulate(skip_signatures=False)
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/contracts/escrow/smart_contracts/artifacts/escrow/escrow_client.py", line 768, in simulate
+    return self._composer.simulate(
+           ~~~~~~~~~~~~~~~~~~~~~~~^
+        allow_more_logs=allow_more_logs,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+        skip_signatures=skip_signatures,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algokit_utils/transactions/transaction_composer.py", line 2017, in simulate
+    self._handle_simulate_error(response)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algokit_utils/transactions/transaction_composer.py", line 1943, in _handle_simulate_error
+    raise self._transform_error(original_error) from original_error
+Exception: Transaction failed at transaction(s) 1 in the group. transaction KMYLI2SH6FSNCTHUVMHKEKOOOBMQPQO6Y6BDOE5UE6PEJULQF77A: account CDOLEOVBVS2I2YIYUZW2UI4XSB66MDQYPY72KMG2MFORQBOETYXP6JUESY balance 500000 below min 504700 (0 assets)
+2026-04-13 01:58:36,617 ERROR backend.tools.x402_payment: x402 micropayment execution failed: x402 atomic payment+redeem failed: Transaction failed at transaction(s) 1 in the group. transaction KMYLI2SH6FSNCTHUVMHKEKOOOBMQPQO6Y6BDOE5UE6PEJULQF77A: account CDOLEOVBVS2I2YIYUZW2UI4XSB66MDQYPY72KMG2MFORQBOETYXP6JUESY balance 500000 below min 504700 (0 assets)
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 457, in send_atomic_payment_and_redeem
+    simulation = composer.simulate(skip_signatures=False)
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/contracts/escrow/smart_contracts/artifacts/escrow/escrow_client.py", line 768, in simulate
+    return self._composer.simulate(
+           ~~~~~~~~~~~~~~~~~~~~~~~^
+        allow_more_logs=allow_more_logs,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+        skip_signatures=skip_signatures,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algokit_utils/transactions/transaction_composer.py", line 2017, in simulate
+    self._handle_simulate_error(response)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algokit_utils/transactions/transaction_composer.py", line 1943, in _handle_simulate_error
+    raise self._transform_error(original_error) from original_error
+Exception: Transaction failed at transaction(s) 1 in the group. transaction KMYLI2SH6FSNCTHUVMHKEKOOOBMQPQO6Y6BDOE5UE6PEJULQF77A: account CDOLEOVBVS2I2YIYUZW2UI4XSB66MDQYPY72KMG2MFORQBOETYXP6JUESY balance 500000 below min 504700 (0 assets)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 684, in trigger_x402_payment
+    payment_txid, redeem_txid = await x402_client.send_atomic_payment_and_redeem(
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 476, in send_atomic_payment_and_redeem
+    raise Exception(error_msg) from e
+Exception: x402 atomic payment+redeem failed: Transaction failed at transaction(s) 1 in the group. transaction KMYLI2SH6FSNCTHUVMHKEKOOOBMQPQO6Y6BDOE5UE6PEJULQF77A: account CDOLEOVBVS2I2YIYUZW2UI4XSB66MDQYPY72KMG2MFORQBOETYXP6JUESY balance 500000 below min 504700 (0 assets)
+2026-04-13 01:58:36,618 ERROR backend.tools.x402_payment: payment_rejected | details=x402 atomic payment+redeem failed: Transaction failed at transaction(s) 1 in the group. transaction KMYLI2SH6FSNCTHUVMHKEKOOOBMQPQO6Y6BDOE5UE6PEJULQF77A: account CDOLEOVBVS2I2YIYUZW2UI4XSB66MDQYPY72KMG2MFORQBOETYXP6JUESY balance 500000 below min 504700 (0 assets)
+2026-04-13 02:04:59,326 INFO backend.tools.x402_payment: Checking user approval...
+2026-04-13 02:04:59,327 INFO backend.tools.x402_payment: ✓ User approval confirmed: 'approve'
+2026-04-13 02:04:59,327 INFO demo.flow: Payment approved
+2026-04-13 02:04:59,327 INFO backend.tools.x402_payment: Initiating x402 payment for listing 47
+2026-04-13 02:04:59,327 INFO backend.tools.x402_payment: Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 1.0 USDC
+2026-04-13 02:04:59,327 INFO backend.tools.x402_payment: Fetching listing details from InsightListing app...
+2026-04-13 02:04:59,478 INFO backend.tools.x402_payment: Listing 47: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-13 02:04:59,478 INFO backend.tools.x402_payment: Simulating x402 payment transaction...
+2026-04-13 02:04:59,478 INFO backend.tools.x402_payment: Simulating payment: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ -> M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, amount=1000000, asset_id=10458941
+2026-04-13 02:04:59,700 INFO backend.tools.x402_payment: Simulation successful: fee=False, asset_id=10458941
+2026-04-13 02:04:59,700 INFO backend.tools.x402_payment: ✓ Payment simulation passed: {'success': True, 'sender': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'receiver': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount': 1000000, 'asset_id': 10458941, 'estimated_fee': False, 'is_safe': True, 'message': 'Payment simulation passed - safe to broadcast'}
+2026-04-13 02:04:59,700 INFO backend.tools.x402_payment: Executing x402 micropayment transaction group...
+2026-04-13 02:05:00,433 INFO backend.tools.x402_payment: Atomic group simulation complete | tx_count=2
+2026-04-13 02:05:05,623 INFO backend.tools.x402_payment: Atomic payment+redeem group confirmed | payment_tx=6RHL36IPWJDCZOYQ73VSCGRFGG5WPVT5XFWFZSGNXL63ZWHD6LKQ redeem_tx=MNZCPDINK5LZF3SZSIIINUEFPTVGUCVY37BC6UBCAPQYH6RIXK6A
+2026-04-13 02:05:05,623 INFO backend.tools.x402_payment: ✓ x402 atomic group executed: payment_tx=6RHL36IPWJDCZOYQ73VSCGRFGG5WPVT5XFWFZSGNXL63ZWHD6LKQ redeem_tx=MNZCPDINK5LZF3SZSIIINUEFPTVGUCVY37BC6UBCAPQYH6RIXK6A
+2026-04-13 02:05:05,623 INFO backend.tools.post_payment_flow: Starting post-payment confirmation polling | tx_id=6RHL36IPWJDCZOYQ73VSCGRFGG5WPVT5XFWFZSGNXL63ZWHD6LKQ listing_id=47 buyer=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-13 02:05:05,847 INFO backend.tools.post_payment_flow: Payment confirmed | tx_id=6RHL36IPWJDCZOYQ73VSCGRFGG5WPVT5XFWFZSGNXL63ZWHD6LKQ round=62357420
+2026-04-13 02:05:10,291 INFO demo.flow: IPFS content delivered
+2026-04-13 02:05:10,291 INFO backend.tools.post_payment_flow: Escrow redeem submit skipped: already executed in atomic group | tx_id=MNZCPDINK5LZF3SZSIIINUEFPTVGUCVY37BC6UBCAPQYH6RIXK6A
+2026-04-13 02:05:16,746 INFO backend.tools.post_payment_flow: Reputation update: seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM | before=87 | after=97 | delta=+10 | tx=YFHVORAUDXFB33JBWGIJWHJ7XSI54FYKVOALSR657DTW3EAPRX4A
+2026-04-13 02:05:16,748 INFO demo.flow: IPFS content delivered
+2026-04-13 02:05:16,748 INFO backend.tools.x402_payment: x402 payment flow completed successfully: {'success': True, 'approved': True, 'transaction_id': '6RHL36IPWJDCZOYQ73VSCGRFGG5WPVT5XFWFZSGNXL63ZWHD6LKQ', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 47, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 1.0, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic payment+redeem group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Escrow redeem recorded atomically with payment'}, 'status': 'CONFIRMED', 'explorer_url': 'https://explorer.perawallet.app/tx/6RHL36IPWJDCZOYQ73VSCGRFGG5WPVT5XFWFZSGNXL63ZWHD6LKQ/', 'redeem_transaction_id': 'MNZCPDINK5LZF3SZSIIINUEFPTVGUCVY37BC6UBCAPQYH6RIXK6A', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nFinal security audit purchase run insight: NIFTY micro breakout with strict risk stops.\n\nTransaction IDs: payment=6RHL36IPWJDCZOYQ73VSCGRFGG5WPVT5XFWFZSGNXL63ZWHD6LKQ | escrow=MNZCPDINK5LZF3SZSIIINUEFPTVGUCVY37BC6UBCAPQYH6RIXK6A\n\nReputation update: seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM | before=87 | after=97 | delta=+10 | tx=YFHVORAUDXFB33JBWGIJWHJ7XSI54FYKVOALSR657DTW3EAPRX4A'}

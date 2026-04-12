@@ -24,6 +24,7 @@ from algosdk.v2client import indexer
 from algosdk.error import AlgodHTTPError
 from contracts.escrow import EscrowClient
 from contracts.insight_listing import InsightListingClient
+from contracts.reputation import ReputationClient
 from dotenv import load_dotenv
 import os
 import asyncio
@@ -49,6 +50,8 @@ INDEXER_URL = os.getenv("INDEXER_URL") or os.getenv("INDEXER_SERVER", "")
 INDEXER_TOKEN = os.getenv("INDEXER_TOKEN") or os.getenv("ALGOD_TOKEN", "")
 ESCROW_APP_ID = int(os.getenv("ESCROW_APP_ID", "0"))
 INSIGHT_LISTING_APP_ID = int(os.getenv("INSIGHT_LISTING_APP_ID", "0"))
+REPUTATION_APP_ID = int(os.getenv("REPUTATION_APP_ID", "0"))
+REPUTATION_INCREMENT = int(os.getenv("REPUTATION_INCREMENT", "10"))
 BUYER_WALLET = os.getenv("BUYER_WALLET", "")
 BUYER_MNEMONIC = os.getenv("BUYER_MNEMONIC", "")
 
@@ -64,6 +67,7 @@ indexer_client = indexer.IndexerClient(INDEXER_TOKEN, INDEXER_URL)
 # Module-level clients are kept for test monkeypatch compatibility.
 escrow_client: EscrowClient | None = None
 listing_client: InsightListingClient | None = None
+reputation_client: ReputationClient | None = None
 
 
 def get_escrow_client() -> EscrowClient:
@@ -115,6 +119,35 @@ def get_listing_client() -> InsightListingClient:
         )
     return InsightListingClient(algorand=algorand, app_id=INSIGHT_LISTING_APP_ID)
 
+
+def get_reputation_client() -> ReputationClient | None:
+    """Create reputation client used to increase seller score after a completed purchase.
+
+    Input: none.
+    Output: ReputationClient when configured, otherwise None.
+    Micropayment role: records post-settlement seller reputation changes on-chain.
+    """
+    normalize_network_env()
+    if REPUTATION_APP_ID <= 0:
+        return None
+
+    algorand = AlgorandClient.from_environment()
+    signer_mnemonic = BUYER_MNEMONIC.strip() or os.getenv("DEPLOYER_MNEMONIC", "").strip()
+    signer_address = BUYER_WALLET.strip() or os.getenv("DEPLOYER_ADDRESS", "").strip()
+    if signer_mnemonic and signer_address:
+        signer = algorand.account.from_mnemonic(
+            mnemonic=signer_mnemonic,
+            sender=signer_address,
+        )
+        algorand.set_default_signer(signer)
+        return ReputationClient(
+            algorand=algorand,
+            app_id=REPUTATION_APP_ID,
+            default_sender=signer_address,
+        )
+
+    return ReputationClient(algorand=algorand, app_id=REPUTATION_APP_ID)
+
 async def _wait_for_confirmation(tx_id: str, timeout_seconds: int = 30) -> int:
     """Poll indexer until transaction is confirmed.
 
@@ -156,7 +189,13 @@ def _extract_tx_id(result: object) -> str:
     raise RuntimeError("Could not determine escrow transaction id from send result")
 
 
-async def complete_purchase_flow(tx_id: str, listing_id: int, buyer_wallet: str) -> str:
+async def complete_purchase_flow(
+    tx_id: str,
+    listing_id: int,
+    buyer_wallet: str,
+    skip_escrow_redeem: bool = False,
+    escrow_tx_id: str = "",
+) -> str:
     """Complete post-payment fulfillment and return buyer-facing content message.
 
     Inputs: payment tx id, listing id, buyer wallet.
@@ -201,6 +240,29 @@ async def complete_purchase_flow(tx_id: str, listing_id: int, buyer_wallet: str)
         raise RuntimeError(f"Listing {listing_id} not found in InsightListing state")
 
     cid = str(listing.ipfs_hash)
+    seller_wallet = str(listing.seller)
+
+    async def _update_reputation_line() -> str:
+        """Update seller reputation and return a user-facing summary line."""
+        try:
+            active_reputation_client = reputation_client or get_reputation_client()
+            if active_reputation_client is None:
+                return ""
+            score_before_raw = active_reputation_client.state.box.seller_scores.get_value(seller_wallet)
+            score_before = int(score_before_raw) if score_before_raw is not None else 0
+            score_after = score_before + max(REPUTATION_INCREMENT, 0)
+            reputation_result = active_reputation_client.send.update_score((seller_wallet, score_after))
+            reputation_tx_id = _extract_tx_id(reputation_result)
+            await _wait_for_confirmation(tx_id=reputation_tx_id, timeout_seconds=20)
+            line = (
+                f"Reputation update: seller={seller_wallet} | before={score_before} "
+                f"| after={score_after} | delta=+{score_after - score_before} | tx={reputation_tx_id}"
+            )
+            logger.info(line)
+            return line
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Reputation update skipped | seller=%s error=%s", seller_wallet, exc)
+            return ""
 
     async def _release_escrow_with_retry() -> tuple[str, int | None]:
         """Try escrow release a few times to avoid stale round failures."""
@@ -232,7 +294,9 @@ async def complete_purchase_flow(tx_id: str, listing_id: int, buyer_wallet: str)
                 await asyncio.sleep(0.4)
         raise RuntimeError(f"Escrow redeem failed after retries: {last_error}")
 
-    escrow_task = asyncio.create_task(_release_escrow_with_retry())
+    escrow_task = None
+    if not skip_escrow_redeem:
+        escrow_task = asyncio.create_task(_release_escrow_with_retry())
     ipfs_task = asyncio.create_task(fetch_insight_from_ipfs(cid))
 
     try:
@@ -242,28 +306,36 @@ async def complete_purchase_flow(tx_id: str, listing_id: int, buyer_wallet: str)
         logger.warning("IPFS fetch failed after payment confirmation | cid=%s error=%s", cid, exc)
         insight_text = ipfs_down(logger, str(exc))
 
-    escrow_tx_id = ""
     escrow_round = None
-    try:
-        escrow_tx_id, escrow_round = await escrow_task
-        logger.info("Escrow redeem confirmed | tx_id=%s round=%s", escrow_tx_id, escrow_round)
-        demo_logger.info("Escrow released")
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("Escrow redeem unavailable; continuing with paid content delivery | error=%s", exc)
-        escrow_hint = "Escrow release skipped. Your payment is confirmed; please retry in a few seconds."
-        if insight_text.startswith("IPFS downtime"):
-            return f"{escrow_hint}\nInsight content could not be retrieved: {insight_text}"
-        return (
-            "✅ Payment confirmed!\n"
-            f"⚠ {escrow_hint}\n\n"
-            "Here is your human trading insight:\n\n"
-            f"{insight_text}\n\n"
-            f"Transaction IDs: payment={tx_id}"
-        )
+    if skip_escrow_redeem:
+        logger.info("Escrow redeem submit skipped: already executed in atomic group | tx_id=%s", escrow_tx_id)
+    else:
+        try:
+            assert escrow_task is not None
+            escrow_tx_id, escrow_round = await escrow_task
+            logger.info("Escrow redeem confirmed | tx_id=%s round=%s", escrow_tx_id, escrow_round)
+            demo_logger.info("Escrow released")
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Escrow redeem unavailable; continuing with paid content delivery | error=%s", exc)
+            escrow_hint = "Escrow release skipped. Your payment is confirmed; please retry in a few seconds."
+            reputation_line = await _update_reputation_line()
+            reputation_suffix = f"\n\n{reputation_line}" if reputation_line else ""
+            if insight_text.startswith("IPFS downtime"):
+                return f"{escrow_hint}\nInsight content could not be retrieved: {insight_text}{reputation_suffix}"
+            return (
+                "✅ Payment confirmed!\n"
+                f"⚠ {escrow_hint}\n\n"
+                "Here is your human trading insight:\n\n"
+                f"{insight_text}\n\n"
+                f"Transaction IDs: payment={tx_id}"
+                f"{reputation_suffix}"
+            )
 
     escrow_line = f"Transaction IDs: payment={tx_id}"
     if escrow_tx_id:
         escrow_line += f" | escrow={escrow_tx_id}"
+
+    reputation_line = await _update_reputation_line()
 
     message_parts = [
         "✅ Payment confirmed!",
@@ -275,6 +347,8 @@ async def complete_purchase_flow(tx_id: str, listing_id: int, buyer_wallet: str)
         "",
         escrow_line,
     ]
+    if reputation_line:
+        message_parts.extend(["", reputation_line])
     return "\n".join(message_parts)
 
 

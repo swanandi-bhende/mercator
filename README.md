@@ -56,6 +56,7 @@ What `demo.sh` does:
 - Full Round 2 run ledger: [testnet-demo-runs.md](testnet-demo-runs.md)
 - Raw API capture: [testnet-demo-runs.raw.json](testnet-demo-runs.raw.json)
 - Runtime trace: [demo_flow.log](demo_flow.log)
+- Security audit report: [SECURITY.md](SECURITY.md)
 - Latest seller upload tx id: ZRD7Q7WXUAWTDEP77ERRRJ2GGE2NC35MATL3TTNH4HHLDDVRRGHA
 - Latest payment tx id: QUOO4WN6LPAUZVKYWVE362YDCAQ67MK7QS3T77MNO5IC33VXIIGA
 

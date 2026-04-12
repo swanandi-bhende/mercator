@@ -28,8 +28,10 @@ from langchain_core.tools import tool
 from algosdk.v2client import algod, indexer
 from algosdk import encoding, transaction, account as algo_account, mnemonic as algo_mnemonic
 from algosdk.error import AlgodHTTPError
+from algosdk.atomic_transaction_composer import AccountTransactionSigner
 from algosdk.transaction import ApplicationCallTxn, PaymentTxn
 from algokit_utils import AlgorandClient
+import algokit_utils
 from dotenv import load_dotenv
 import os
 import asyncio
@@ -399,6 +401,80 @@ class X402Client:
             logger.error(error_msg)
             raise Exception(error_msg) from e
 
+    async def send_atomic_payment_and_redeem(
+        self,
+        sender: str,
+        receiver: str,
+        amount: float,
+        listing_id: int,
+        memo: str = "",
+        asset_id: int = 0,
+    ) -> tuple[str, str]:
+        """Send payment + escrow redeem in one atomic group.
+
+        Returns tuple(payment_tx_id, redeem_tx_id).
+        """
+        try:
+            params = self.algod.suggested_params()
+            if asset_id > 0:
+                payment_txn = transaction.AssetTransferTxn(
+                    sender=sender,
+                    sp=params,
+                    index=asset_id,
+                    amt=int(amount),
+                    receiver=receiver,
+                )
+            else:
+                payment_txn = PaymentTxn(
+                    sender=sender,
+                    sp=params,
+                    receiver=receiver,
+                    amt=int(amount),
+                )
+
+            if memo:
+                payment_txn.note = memo.encode()
+
+            private_key = self._resolve_private_key_for_sender(sender)
+            txn_signer = AccountTransactionSigner(private_key)
+
+            escrow_client = EscrowClient(
+                algorand=self.algorand,
+                app_id=ESCROW_APP_ID,
+                default_sender=sender,
+            )
+
+            composer = escrow_client.new_group()
+            composer.add_transaction(payment_txn, signer=txn_signer)
+            composer.release_after_payment(
+                args=(sender, listing_id),
+                params=algokit_utils.CommonAppCallParams(
+                    sender=sender,
+                    signer=txn_signer,
+                ),
+            )
+
+            simulation = composer.simulate(skip_signatures=False)
+            logger.info("Atomic group simulation complete | tx_count=%s", len(simulation.tx_ids))
+
+            send_result = composer.send()
+            tx_ids = [str(tx) for tx in getattr(send_result, "tx_ids", [])]
+            if len(tx_ids) < 2:
+                raise RuntimeError(f"Atomic group returned unexpected tx ids: {tx_ids}")
+
+            payment_tx_id = tx_ids[0]
+            redeem_tx_id = tx_ids[1]
+            logger.info(
+                "Atomic payment+redeem group confirmed | payment_tx=%s redeem_tx=%s",
+                payment_tx_id,
+                redeem_tx_id,
+            )
+            return payment_tx_id, redeem_tx_id
+        except Exception as e:
+            error_msg = f"x402 atomic payment+redeem failed: {str(e)}"
+            logger.error(error_msg, exc_info=True)
+            raise Exception(error_msg) from e
+
 
 @tool
 async def trigger_x402_payment(
@@ -605,20 +681,27 @@ async def trigger_x402_payment(
         
         try:
             x402_client.ensure_asset_opt_in(seller_wallet, settlement_asset_id)
-            txid = await x402_client.send_micropayment(
+            payment_txid, redeem_txid = await x402_client.send_atomic_payment_and_redeem(
                 sender=buyer_address,
                 receiver=seller_wallet,
                 amount=listed_price_micro,
+                listing_id=listing_id,
                 memo=f"Mercator insight purchase: listing {listing_id}",
                 asset_id=settlement_asset_id
             )
-            
-            logger.info(f"✓ x402 micropayment executed: txid={txid}")
+
+            logger.info(
+                "✓ x402 atomic group executed: payment_tx=%s redeem_tx=%s",
+                payment_txid,
+                redeem_txid,
+            )
 
             post_payment_output = await complete_purchase_flow(
-                tx_id=txid,
+                tx_id=payment_txid,
                 listing_id=listing_id,
                 buyer_wallet=buyer_address,
+                skip_escrow_redeem=True,
+                escrow_tx_id=redeem_txid,
             )
             if post_payment_output:
                 demo_logger.info("IPFS content delivered")
@@ -626,12 +709,12 @@ async def trigger_x402_payment(
             # =====================================================================
             # STEP 5: RETURN CONFIRMATION WITH EXPLORER LINK
             # =====================================================================
-            explorer_url = f"{EXPLORER_TX_BASE}/{txid}/"
+            explorer_url = f"{EXPLORER_TX_BASE}/{payment_txid}/"
             
             response = {
                 "success": True,
                 "approved": True,
-                "transaction_id": txid,
+                "transaction_id": payment_txid,
                 "message": f"x402 USDC micropayment confirmed on TestNet",
                 "payment_details": {
                     "listing_id": listing_id,
@@ -644,12 +727,13 @@ async def trigger_x402_payment(
                 "x402_flow": {
                     "step_1": "✓ User approval confirmed",
                     "step_2": "✓ Payment transaction simulated for safety",
-                    "step_3": "✓ Atomic group executed on TestNet",
+                    "step_3": "✓ Atomic payment+redeem group executed on TestNet",
                     "step_4": "✓ USDC transferred to seller",
-                    "step_5": "✓ Buyer receives instant access to insight"
+                    "step_5": "✓ Escrow redeem recorded atomically with payment"
                 },
                 "status": "CONFIRMED",
                 "explorer_url": explorer_url,
+                "redeem_transaction_id": redeem_txid,
                 "next_step": "Buyer can now view the IPFS insight content",
                 "post_payment_output": post_payment_output,
             }

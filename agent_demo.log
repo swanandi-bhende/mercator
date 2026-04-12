@@ -1,9 +1,79 @@
 /Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/langchain_core/_api/deprecation.py:25: UserWarning: Core Pydantic V1 functionality isn't compatible with Python 3.14 or greater.
   from pydantic.v1.fields import FieldInfo as FieldInfoV1
-2026-04-13 01:18:09,610 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
-2026-04-13 01:18:09,616 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=approve
-2026-04-13 01:21:50,068 | INFO | demo.flow | Agent semantic search returned 3 results
-2026-04-13 01:21:50,080 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
-2026-04-13 01:21:50,297 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 429 Too Many Requests"
-2026-04-13 01:21:50,305 | WARNING | backend.agent | Evaluation step hit Gemini limit; falling back to SKIP
-{'success': True, 'decision': 'SKIP', 'evaluation': 'Reasoning: Gemini limit reached during evaluation; cannot verify safely.\nDecision: SKIP', 'message': 'Skipped based on evaluation rules (reputation/value-for-price).'}
+2026-04-13 01:36:56,552 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-13 01:36:56,557 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=approve
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/tasks.py", line 488, in wait_for
+    return await fut
+           ^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/agent.py", line 309, in run_agent
+    semantic_results = await semantic_search_tool.ainvoke({"query": user_query})
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/langchain_core/tools/structured.py", line 70, in ainvoke
+    return await super().ainvoke(input, config, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/langchain_core/tools/base.py", line 652, in ainvoke
+    return await self.arun(tool_input, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/langchain_core/tools/base.py", line 1097, in arun
+    response = await coro_with_context(coro, context)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/langchain_core/tools/structured.py", line 124, in _arun
+    return await self.coroutine(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/tenacity/asyncio/__init__.py", line 193, in async_wrapped
+    return await copy(fn, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/tenacity/asyncio/__init__.py", line 112, in __call__
+    do = await self.iter(retry_state=retry_state)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/tenacity/asyncio/__init__.py", line 157, in iter
+    result = await action(retry_state)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/tenacity/_utils.py", line 111, in inner
+    return call(*args, **kwargs)
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/tenacity/__init__.py", line 393, in <lambda>
+    self._add_action_func(lambda rs: rs.outcome.result())
+                                     ~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/concurrent/futures/_base.py", line 443, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/concurrent/futures/_base.py", line 395, in __get_result
+    raise self._exception
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/tenacity/asyncio/__init__.py", line 116, in __call__
+    result = await fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/semantic_search.py", line 262, in semantic_search
+    full_text = await fetch_insight_from_ipfs(cid)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/utils/ipfs.py", line 233, in fetch_insight_from_ipfs
+    response = await asyncio.to_thread(
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/threads.py", line 25, in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<stdin>", line 13, in <module>
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py", line 204, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "<stdin>", line 6, in _run
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/tasks.py", line 487, in wait_for
+    async with timeouts.timeout(timeout):
+               ~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/timeouts.py", line 114, in __aexit__
+    raise TimeoutError from exc_val
+TimeoutError
