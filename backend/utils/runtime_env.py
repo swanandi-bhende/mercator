@@ -14,10 +14,22 @@ from dotenv import dotenv_values, load_dotenv
 
 
 def repo_root() -> Path:
+    """Resolve repository root path.
+
+    Input: none.
+    Output: absolute Path to repository root.
+    Micropayment role: anchors .env/.env.testnet and shared log file resolution.
+    """
     return Path(__file__).resolve().parents[2]
 
 
 def load_repo_env_files() -> None:
+    """Load environment variables from repository env files.
+
+    Input: none (reads .env and .env.testnet from repo root).
+    Output: none (mutates process environment).
+    Micropayment role: ensures backend/tools/contracts share consistent network keys.
+    """
     root = repo_root()
     load_dotenv(root / ".env", override=False)
     testnet_values = dotenv_values(root / ".env.testnet")
@@ -30,6 +42,12 @@ def load_repo_env_files() -> None:
 
 
 def normalize_network_env() -> None:
+    """Normalize Algorand client env aliases for SDK compatibility.
+
+    Input: none.
+    Output: none (populates ALGOD_SERVER, INDEXER_SERVER, ALGOD_PORT when missing).
+    Micropayment role: guarantees algod/indexer clients work across demo, API, and tools.
+    """
     load_repo_env_files()
 
     algod_url = os.getenv("ALGOD_URL", "").strip()
@@ -44,6 +62,12 @@ def normalize_network_env() -> None:
 
 
 def missing_required_env_keys() -> list[str]:
+    """Return missing mandatory environment keys for end-to-end flow.
+
+    Input: none (reads current process env).
+    Output: list of missing key names.
+    Micropayment role: preflight validation before listing/search/payment paths run.
+    """
     required_keys = [
         "GEMINI_API_KEY",
         "PINATA_JWT",
@@ -71,6 +95,12 @@ def missing_required_env_keys() -> list[str]:
 
 
 def warn_missing_required_env(logger: logging.Logger | None = None) -> None:
+    """Log a warning when required env configuration is incomplete.
+
+    Input: optional logger.
+    Output: none.
+    Micropayment role: startup guardrail so operators catch config gaps before live demos.
+    """
     missing = missing_required_env_keys()
     if not missing:
         return

@@ -1,14 +1,14 @@
 INFO:     Will watch for changes in these directories: ['/Users/swanandibhende/Documents/Projects/mercator']
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process [24267] using StatReload
+INFO:     Started reloader process [8210] using StatReload
 /Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/langchain_core/_api/deprecation.py:25: UserWarning: Core Pydantic V1 functionality isn't compatible with Python 3.14 or greater.
   from pydantic.v1.fields import FieldInfo as FieldInfoV1
-2026-04-12 16:34:41,999 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
-INFO:     Started server process [24272]
+2026-04-13 01:18:03,208 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+INFO:     Started server process [8215]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Shutting down
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
-INFO:     Finished server process [24272]
-INFO:     Stopping reloader process [24267]
+INFO:     Finished server process [8215]
+INFO:     Stopping reloader process [8210]

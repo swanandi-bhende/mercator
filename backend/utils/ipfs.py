@@ -81,9 +81,11 @@ def upload_text_content(content: str, name: str = "insight.txt") -> dict[str, An
 
 
 def upload_json_content(payload: dict[str, Any]) -> dict[str, Any]:
-    """Upload JSON content to IPFS via Pinata.
+    """Upload JSON payload to Pinata and return pinning response.
 
-    Returns the Pinata response payload, including IpfsHash when successful.
+    Input: payload dictionary.
+    Output: Pinata response including IpfsHash on success.
+    Micropayment role: optional metadata channel for auxiliary flow artifacts.
     """
     response = requests.post(
         PIN_JSON_ENDPOINT,
@@ -96,7 +98,12 @@ def upload_json_content(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def unpin_cid(cid: str) -> None:
-    """Unpin an existing CID from Pinata."""
+    """Remove a CID from Pinata pinset.
+
+    Input: CID string.
+    Output: none (raises on request failure).
+    Micropayment role: cleanup helper for test artifacts and stale demo uploads.
+    """
     response = requests.delete(
         f"{UNPIN_ENDPOINT}/{cid}",
         headers=_get_pinata_headers(),
@@ -191,9 +198,15 @@ async def upload_insight_to_ipfs(text: str, filename: str = "insight.txt") -> st
 
 
 async def fetch_insight_from_ipfs(cid: str) -> str:
-    """Fetch plain text insight content from IPFS gateways.
+    """Fetch insight text by CID from Pinata/public gateways.
 
-    Tries Pinata gateway first, then falls back to ipfs.io.
+    Input: CID string.
+    Output: plain-text insight content.
+    Micropayment role: final content delivery stage after x402 payment + escrow flow.
+
+    Behavior:
+    - Tries gateway.pinata.cloud first, then ipfs.io fallback.
+    - Uses in-memory cache when available to reduce latency.
     """
     cid = cid.strip()
     if not cid:
@@ -250,7 +263,12 @@ async def fetch_insight_from_ipfs(cid: str) -> str:
 
 
 def _load_insight_listing_client_class() -> type:
-    """Load the generated InsightListingClient class from artifact path."""
+    """Load generated InsightListingClient class from artifacts directory.
+
+    Input: none.
+    Output: InsightListingClient class object.
+    Micropayment role: bridges backend helper code to contract ABI call wrapper.
+    """
     project_root = Path(__file__).resolve().parents[2]
     client_path = project_root / (
         "backend/contracts/insight_listing/smart_contracts/artifacts/"
@@ -281,9 +299,20 @@ def store_cid_in_listing(
     price: int | None = None,
     signer_mnemonic: str | None = None,
 ) -> tuple[int, int]:
-    """Call InsightListing.create_listing and link IPFS CID to on-chain listing.
+    """Create on-chain listing entry for an uploaded CID.
 
-    Uses the generated InsightListing contract client and configured deployer signer.
+    Inputs:
+    - cid: IPFS hash for insight text.
+    - listing_app_id: InsightListing app id.
+    - seller_address: seller wallet expected to sign transaction.
+    - price: optional price in micro-USDC.
+    - signer_mnemonic: optional mnemonic override.
+
+    Output:
+    - tuple(listing_id, asa_id) allocated by contract.
+
+    Micropayment role:
+    - Seller publish stage linking off-chain content (CID) to on-chain commercial metadata.
     """
     cid = cid.strip()
     if not cid:

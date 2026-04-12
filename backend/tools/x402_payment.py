@@ -53,7 +53,12 @@ demo_logger = configure_demo_logging()
 # Initialize Algorand clients
 @lru_cache(maxsize=1)
 def get_algorand_client() -> AlgorandClient:
-    """Return a cached Algorand client configured from environment."""
+    """Create cached Algorand SDK client for payment/reputation/listing access.
+
+    Input: none (reads env).
+    Output: AlgorandClient.
+    Micropayment role: shared network client for simulation, send, and confirmation checks.
+    """
     normalize_network_env()
     algod_client = AlgorandClient.from_environment()
     deployer_mnemonic = os.getenv("DEPLOYER_MNEMONIC", "").strip()
@@ -69,7 +74,12 @@ def get_algorand_client() -> AlgorandClient:
 
 @lru_cache(maxsize=1)
 def get_insight_listing_client() -> InsightListingClient:
-    """Return the deployed InsightListing app client."""
+    """Create listing contract client for payment-target metadata lookup.
+
+    Input: none.
+    Output: InsightListingClient instance.
+    Micropayment role: resolves seller wallet and listed price for payment execution.
+    """
     normalize_network_env()
     app_id = int(os.getenv("INSIGHT_LISTING_APP_ID", "0"))
     if app_id <= 0:
@@ -93,7 +103,12 @@ def get_insight_listing_client() -> InsightListingClient:
 
 @lru_cache(maxsize=1)
 def get_escrow_client() -> EscrowClient:
-    """Return the deployed Escrow app client."""
+    """Create escrow contract client for unlock tracking operations.
+
+    Input: none.
+    Output: EscrowClient instance.
+    Micropayment role: used indirectly by post-payment flow after transfer confirmation.
+    """
     normalize_network_env()
     app_id = int(os.getenv("ESCROW_APP_ID", "0"))
     if app_id <= 0:
@@ -117,7 +132,12 @@ def get_escrow_client() -> EscrowClient:
 
 @lru_cache(maxsize=1)
 def get_reputation_client() -> ReputationClient:
-    """Return the deployed Reputation app client."""
+    """Create reputation contract client.
+
+    Input: none.
+    Output: ReputationClient instance.
+    Micropayment role: trust context provider for agent decision pipeline.
+    """
     normalize_network_env()
     app_id = int(os.getenv("REPUTATION_APP_ID", "0"))
     if app_id <= 0:
@@ -379,7 +399,7 @@ async def trigger_x402_payment(
     user_approval_input: str = "",
 ) -> str:
     """
-    Trigger an x402 micropayment for a listed insight with full simulation and approval gate.
+    Trigger an x402 micropayment for a listed insight with simulation + approval gate.
     
     Process:
     1. Check user approval: User MUST type "approve" to continue
@@ -394,11 +414,10 @@ async def trigger_x402_payment(
         user_approval_input (str): User confirmation - MUST be "approve" to proceed
     
     Returns:
-        str: JSON string with payment status, transaction ID, and explorer link
+        str: JSON payload with success/error status, tx id, explorer link, and delivery output
     
-    Raises:
-        ValueError: If approval missing, listing not found, or simulation fails
-        Exception: If transaction submission fails
+    Micropayment role:
+        Core payment execution stage called by the agent when BUY decision is approved.
     """
     try:
         def _friendly_payment_error(raw: str) -> str:
@@ -679,6 +698,9 @@ async def validate_x402_payment(transaction_id: str) -> str:
     
     Returns:
         str: JSON string with validation status and details
+
+    Micropayment role:
+        Post-execution verification stage for agent/API diagnostics and user confirmation UX.
     """
     try:
         logger.info(f"Validating x402 payment transaction: {transaction_id}")

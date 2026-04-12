@@ -22,6 +22,12 @@ from backend.utils.ipfs import store_cid_in_listing, upload_insight_to_ipfs
 
 
 def _get_indexer_client() -> indexer.IndexerClient:
+    """Create indexer client for transaction search operations.
+
+    Input: none (reads INDEXER_URL/INDEXER_SERVER and token env vars).
+    Output: configured IndexerClient.
+    Micropayment role: verifies listing tx existence after CID-to-contract write.
+    """
     indexer_url = (
         os.getenv("INDEXER_URL", "").strip()
         or os.getenv("INDEXER_SERVER", "").strip()
@@ -34,6 +40,12 @@ def _get_indexer_client() -> indexer.IndexerClient:
 
 
 def _get_algod_client() -> algod.AlgodClient:
+    """Create algod client for account and transaction operations.
+
+    Input: none (reads ALGOD_URL/ALGOD_SERVER and ALGOD_TOKEN).
+    Output: configured AlgodClient.
+    Micropayment role: funds listing app account before storing listings.
+    """
     algod_url = os.getenv("ALGOD_URL", "").strip() or os.getenv("ALGOD_SERVER", "").strip()
     if not algod_url:
         raise RuntimeError("ALGOD_URL or ALGOD_SERVER must be set")
@@ -43,6 +55,12 @@ def _get_algod_client() -> algod.AlgodClient:
 
 
 def _ensure_listing_app_funded(app_id: int) -> None:
+    """Top up listing app account to satisfy min balance + box storage headroom.
+
+    Input: app_id for InsightListing application.
+    Output: none (submits payment tx only when top-up required).
+    Micropayment role: avoids on-chain write failures during create_listing calls.
+    """
     client = _get_algod_client()
     app_address = get_application_address(app_id)
     app_info = client.account_info(app_address)
@@ -78,6 +96,12 @@ def _ensure_listing_app_funded(app_id: int) -> None:
 
 
 def _find_cid_tx_id(app_id: int, sender: str, cid: str) -> str | None:
+    """Locate application call tx id that includes a target CID in app args.
+
+    Inputs: app_id, sender wallet, and target CID.
+    Output: matching tx id or None.
+    Micropayment role: maps off-chain CID upload to on-chain listing confirmation evidence.
+    """
     idx = _get_indexer_client()
     response = idx.search_transactions(
         application_id=app_id,
@@ -101,6 +125,12 @@ def _find_cid_tx_id(app_id: int, sender: str, cid: str) -> str | None:
 
 
 async def main() -> None:
+    """Run manual smoke test: upload sample text, store listing on-chain, print artifacts.
+
+    Input: none (reads env config and uses hardcoded sample insight text).
+    Output: console prints for CID, listing id, ASA id, tx id, and explorer links.
+    Micropayment role: operator validation of seller-side publish path before live demos.
+    """
     project_root = Path(__file__).resolve().parents[2]
     load_dotenv(project_root / ".env.testnet", override=True)
 

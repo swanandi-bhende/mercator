@@ -131,6 +131,10 @@ def _anonymize_client_ip(value: str | None) -> str:
 
 
 def _safe_int(value: object, default: int = 0) -> int:
+    """Safely coerce arbitrary values to int with fallback default.
+
+    Micropayment role: prevents dashboard/ledger parsing failures on mixed indexer payload types.
+    """
     try:
         return int(value)  # type: ignore[arg-type]
     except Exception:
@@ -138,6 +142,10 @@ def _safe_int(value: object, default: int = 0) -> int:
 
 
 def _service_tone(status: str) -> str:
+    """Map status labels to normalized health tone.
+
+    Micropayment role: standardizes operator panel severity (healthy/warning/broken).
+    """
     lowered = status.lower()
     if lowered in {"ok", "healthy", "active"}:
         return "healthy"
@@ -147,6 +155,10 @@ def _service_tone(status: str) -> str:
 
 
 def _tokenize_for_match(value: str) -> set[str]:
+    """Tokenize free text into normalized search tokens.
+
+    Micropayment role: lexical matching fallback so fresh insights remain discoverable.
+    """
     lowered = value.lower()
     chunks: list[str] = []
     current = []
@@ -290,6 +302,10 @@ def _operator_access_snapshot(request: Request) -> dict[str, object]:
 
 
 def _require_operator(request: Request) -> dict[str, object]:
+    """Enforce operator access for ops endpoints.
+
+    Micropayment role: protects diagnostics and synthetic test endpoints from public misuse.
+    """
     access = _operator_access_snapshot(request)
     if not bool(access.get("authorized")):
         raise HTTPException(status_code=403, detail=str(access.get("reason", "Operator access required")))
@@ -298,6 +314,10 @@ def _require_operator(request: Request) -> dict[str, object]:
 
 @app.middleware("http")
 async def capture_request_metrics(request: Request, call_next):
+    """Middleware that records per-request metrics into METRICS_WINDOW.
+
+    Micropayment role: powers latency/success observability for listing, discovery, and payment APIs.
+    """
     started = time.perf_counter()
     path = request.url.path
     method = request.method
@@ -337,6 +357,10 @@ async def capture_request_metrics(request: Request, call_next):
 
 
 def _error_response(status_code: int, message: str) -> JSONResponse:
+    """Return normalized JSON error payload.
+
+    Micropayment role: consistent error schema consumed by React seller/buyer flows.
+    """
     return JSONResponse(status_code=status_code, content={"error": message})
 
 app.add_middleware(
@@ -387,12 +411,20 @@ class OpsIpfsUploadRequest(BaseModel):
 
 
 def _safe_iso_from_round_time(round_time: object) -> str:
+    """Convert Algorand round-time values to ISO8601.
+
+    Micropayment role: canonical timestamp formatting for activity ledger records.
+    """
     if isinstance(round_time, (int, float)) and round_time > 0:
         return datetime.fromtimestamp(float(round_time), tz=timezone.utc).isoformat()
     return datetime.now(timezone.utc).isoformat()
 
 
 def _decode_app_args(app_args: list[object]) -> list[str]:
+    """Decode base64 app args into UTF-8 strings when possible.
+
+    Micropayment role: extracts CID and operation hints from contract call transactions.
+    """
     decoded: list[str] = []
     for encoded_arg in app_args:
         if not isinstance(encoded_arg, str):
@@ -626,11 +658,19 @@ def _ensure_listing_app_funded(app_id: int) -> None:
 
 @app.on_event("startup")
 def startup_checks() -> None:
+    """Startup hook to normalize env and warn on missing required keys.
+
+    Micropayment role: preflight guardrail before serving listing/payment endpoints.
+    """
     normalize_network_env()
     warn_missing_required_env(logger)
 
 
 def _extract_final_insight_text(result: dict[str, object]) -> str:
+    """Extract final delivered insight text from nested agent response payload.
+
+    Micropayment role: simplifies API response so frontend can render purchased content directly.
+    """
     payment_status = result.get("payment_status")
     if isinstance(payment_status, dict):
         post_payment_output = payment_status.get("post_payment_output")
@@ -643,6 +683,10 @@ def _extract_final_insight_text(result: dict[str, object]) -> str:
 
 
 def _find_cid_tx_id(app_id: int, sender: str, cid: str) -> str | None:
+    """Search indexer for listing app-call transaction containing target CID.
+
+    Micropayment role: binds uploaded IPFS content to on-chain listing confirmation tx.
+    """
     idx = _get_indexer_client()
     response = idx.search_transactions(
         application_id=app_id,
@@ -667,6 +711,10 @@ def _find_cid_tx_id(app_id: int, sender: str, cid: str) -> str | None:
 async def _poll_for_listing_confirmation(
     *, app_id: int, sender: str, cid: str, max_seconds: int = 30
 ) -> str:
+    """Poll indexer until listing transaction with CID appears or timeout occurs.
+
+    Micropayment role: ensures seller receives confirmed tx id after create_listing.
+    """
     waited = 0
     while waited <= max_seconds:
         tx_id = _find_cid_tx_id(app_id, sender, cid)
@@ -681,6 +729,10 @@ async def _poll_for_listing_confirmation(
 
 
 def _get_signing_mnemonic() -> str:
+    """Resolve signer mnemonic for seller-side listing transactions.
+
+    Micropayment role: enforces deterministic wallet signing in seller publish flow.
+    """
     seller_mnemonic = os.getenv("SELLER_MNEMONIC", "").strip()
     deployer_mnemonic = os.getenv("DEPLOYER_MNEMONIC", "").strip()
     selected = seller_mnemonic or deployer_mnemonic
@@ -854,6 +906,10 @@ def _collect_request_metrics(now: datetime) -> list[dict[str, object]]:
 
 
 def _tail_file(path: str, max_lines: int = 250) -> list[str]:
+    """Return trailing lines from a log file.
+
+    Micropayment role: surfaces recent operational diagnostics in `/ops/diagnostics` payload.
+    """
     try:
         with open(path, "r", encoding="utf-8") as handle:
             lines = handle.readlines()
@@ -863,6 +919,10 @@ def _tail_file(path: str, max_lines: int = 250) -> list[str]:
 
 
 def _probe_gateway(url: str, *, timeout: int = 8, headers: dict[str, str] | None = None) -> dict[str, object]:
+    """Execute HTTP probe against gateway/service and return status summary.
+
+    Micropayment role: monitors IPFS/pinata connectivity for listing and delivery reliability.
+    """
     started = time.perf_counter()
     try:
         response = requests.get(url, timeout=timeout, headers=headers or {})
@@ -887,6 +947,10 @@ def _probe_gateway(url: str, *, timeout: int = 8, headers: dict[str, str] | None
 
 
 def _collect_ipfs_health(now: datetime) -> dict[str, object]:
+    """Aggregate IPFS gateway and upload health metrics.
+
+    Micropayment role: operator visibility into content storage/delivery readiness.
+    """
     fallback_raw = os.getenv("IPFS_FALLBACK_GATEWAYS", "").strip()
     fallback_gateways = [g.strip().rstrip("/") for g in fallback_raw.split(",") if g.strip()]
     gateways = [
@@ -945,6 +1009,10 @@ def _collect_ipfs_health(now: datetime) -> dict[str, object]:
 
 
 def _collect_algorand_status(now: datetime) -> dict[str, object]:
+    """Collect Algorand node sync, latency, and fee telemetry.
+
+    Micropayment role: confirms chain readiness for x402 payments and contract calls.
+    """
     started = time.perf_counter()
     try:
         client = _get_algod_client()
@@ -1025,6 +1093,10 @@ def _collect_algorand_status(now: datetime) -> dict[str, object]:
 
 
 def _build_endpoint_heatmap(now: datetime) -> list[dict[str, object]]:
+    """Build endpoint-level health heatmap from recent metric windows.
+
+    Micropayment role: highlights unstable API surfaces impacting commerce flow.
+    """
     endpoints = ["/health", "/discover", "/ledger", "/ops/overview", "/list", "/demo_purchase"]
     entries = [entry for entry in list(METRICS_WINDOW) if isinstance(entry.get("timestamp"), str)]
 
@@ -1083,6 +1155,10 @@ def _build_endpoint_heatmap(now: datetime) -> list[dict[str, object]]:
 
 
 async def _run_manual_ping(endpoint: str, request: Request) -> dict[str, object]:
+    """Run one-shot health ping against supported API endpoints.
+
+    Micropayment role: operator sanity checks for critical buyer/seller paths.
+    """
     started = time.perf_counter()
     endpoint = endpoint.strip()
     try:
@@ -1119,6 +1195,10 @@ async def _run_manual_ping(endpoint: str, request: Request) -> dict[str, object]
 
 
 async def _run_synthetic_test(payload: OpsSyntheticTestRequest) -> dict[str, object]:
+    """Execute full synthetic commerce flow (list → purchase → delivery).
+
+    Micropayment role: controlled end-to-end validation path for operations review.
+    """
     started = time.perf_counter()
     run_id = f"syn-{uuid4().hex[:12]}"
     now = datetime.now(timezone.utc)
@@ -1332,6 +1412,10 @@ async def _run_synthetic_test(payload: OpsSyntheticTestRequest) -> dict[str, obj
 
 
 def _fetch_app_call_stats(idx: indexer.IndexerClient, app_id: int, max_pages: int = 8) -> tuple[int, str | None]:
+    """Fetch aggregate app-call volume and latest activity timestamp.
+
+    Micropayment role: contract activity indicators in ops dashboard cards.
+    """
     next_token: str | None = None
     total_calls = 0
     latest_iso: str | None = None
@@ -1368,6 +1452,10 @@ def _fetch_app_call_stats(idx: indexer.IndexerClient, app_id: int, max_pages: in
 
 
 def _build_contract_card(name: str, env_key: str, idx: indexer.IndexerClient) -> dict[str, object]:
+    """Build operator dashboard card for a contract app id.
+
+    Micropayment role: summarizes contract health for InsightListing/Escrow/Reputation.
+    """
     app_id_raw = os.getenv(env_key, "").strip()
     if not app_id_raw or not app_id_raw.isdigit():
         return {
@@ -1438,6 +1526,10 @@ def _build_contract_card(name: str, env_key: str, idx: indexer.IndexerClient) ->
 
 
 def _collect_environment_panel() -> dict[str, object]:
+    """Collect redacted environment and wallet balance panel for ops UI.
+
+    Micropayment role: gives operators a safe runtime snapshot without leaking secrets.
+    """
     algod_client: algod.AlgodClient | None = None
     try:
         algod_client = _get_algod_client()
@@ -1492,6 +1584,10 @@ def _collect_environment_panel() -> dict[str, object]:
 
 
 def _collect_system_events(now: datetime) -> list[dict[str, object]]:
+    """Derive event stream (errors/recoveries) from request metric history.
+
+    Micropayment role: incident/recovery trail for reliability reviews.
+    """
     events: list[dict[str, object]] = []
     previous_error_by_endpoint: dict[str, bool] = {}
 
@@ -1546,6 +1642,10 @@ def _collect_system_events(now: datetime) -> list[dict[str, object]]:
 
 @app.get("/ops/access-check")
 async def ops_access_check(request: Request) -> dict[str, object]:
+    """Operator auth validation endpoint.
+
+    Micropayment role: verifies privileged access path for diagnostics tooling.
+    """
     access = _operator_access_snapshot(request)
     if not bool(access.get("authorized")):
         raise HTTPException(status_code=403, detail=str(access.get("reason", "Operator access required")))
@@ -1558,6 +1658,10 @@ async def ops_access_check(request: Request) -> dict[str, object]:
 
 @app.get("/ops/overview")
 async def ops_overview(request: Request, verify_on_chain: bool = True) -> dict[str, object]:
+    """Return consolidated operations dashboard payload.
+
+    Micropayment role: unified health/contract/IPFS/chain metrics for demo operations.
+    """
     access = _require_operator(request)
     now = datetime.now(timezone.utc)
 
@@ -1616,6 +1720,10 @@ async def ops_overview(request: Request, verify_on_chain: bool = True) -> dict[s
 
 @app.get("/ops/synthetic-tests")
 async def ops_synthetic_tests(request: Request) -> dict[str, object]:
+    """Return recent synthetic test history.
+
+    Micropayment role: quick status of latest end-to-end commerce checks.
+    """
     _require_operator(request)
     return {
         "success": True,
@@ -1626,6 +1734,10 @@ async def ops_synthetic_tests(request: Request) -> dict[str, object]:
 
 @app.post("/ops/synthetic-test")
 async def ops_synthetic_test(request: Request, payload: OpsSyntheticTestRequest) -> dict[str, object]:
+    """Trigger a new synthetic commerce test run.
+
+    Micropayment role: active end-to-end verification for reliability gates.
+    """
     _require_operator(request)
     result = await _run_synthetic_test(payload)
     return {
@@ -1638,6 +1750,10 @@ async def ops_synthetic_test(request: Request, payload: OpsSyntheticTestRequest)
 
 @app.get("/ops/ipfs/health")
 async def ops_ipfs_health(request: Request) -> dict[str, object]:
+    """Expose current IPFS subsystem health summary.
+
+    Micropayment role: validates storage and delivery substrate readiness.
+    """
     _require_operator(request)
     now = datetime.now(timezone.utc)
     return {
@@ -1649,6 +1765,10 @@ async def ops_ipfs_health(request: Request) -> dict[str, object]:
 
 @app.post("/ops/ipfs/test-upload")
 async def ops_ipfs_test_upload(request: Request, payload: OpsIpfsUploadRequest) -> dict[str, object]:
+    """Run on-demand IPFS upload probe and record latency/result.
+
+    Micropayment role: live validation of seller upload path dependency.
+    """
     _require_operator(request)
     now = datetime.now(timezone.utc)
     started = time.perf_counter()
@@ -1690,6 +1810,10 @@ async def ops_ipfs_test_upload(request: Request, payload: OpsIpfsUploadRequest) 
 
 @app.get("/ops/algorand/status")
 async def ops_algorand_status(request: Request) -> dict[str, object]:
+    """Expose Algorand node status snapshot.
+
+    Micropayment role: verifies chain connectivity needed for payment and contract flows.
+    """
     _require_operator(request)
     now = datetime.now(timezone.utc)
     return {
@@ -1701,6 +1825,10 @@ async def ops_algorand_status(request: Request) -> dict[str, object]:
 
 @app.post("/ops/algorand/test")
 async def ops_algorand_test(request: Request) -> dict[str, object]:
+    """Run active Algorand telemetry test.
+
+    Micropayment role: operator-triggered validation for chain-side reliability.
+    """
     _require_operator(request)
     now = datetime.now(timezone.utc)
     status = _collect_algorand_status(now)
@@ -1713,6 +1841,10 @@ async def ops_algorand_test(request: Request) -> dict[str, object]:
 
 @app.post("/ops/ping")
 async def ops_manual_ping(request: Request, payload: OpsManualPingRequest) -> dict[str, object]:
+    """Execute manual ping against selected endpoint.
+
+    Micropayment role: rapid probe tool for troubleshooting specific flow surfaces.
+    """
     _require_operator(request)
     result = await _run_manual_ping(payload.endpoint, request)
     return {
@@ -1724,6 +1856,10 @@ async def ops_manual_ping(request: Request, payload: OpsManualPingRequest) -> di
 
 @app.get("/ops/diagnostics")
 async def ops_diagnostics(request: Request, include_contract_scan: bool = False) -> dict[str, object]:
+    """Return expanded diagnostics bundle including overview + logs.
+
+    Micropayment role: deep operator packet for incident triage and review submissions.
+    """
     _require_operator(request)
     now = datetime.now(timezone.utc)
     overview = await ops_overview(request, verify_on_chain=include_contract_scan)

@@ -68,7 +68,12 @@ def clear_semantic_search_cache() -> None:
 
 @lru_cache(maxsize=1)
 def get_algorand_client() -> AlgorandClient:
-    """Return a cached Algorand client configured from environment."""
+    """Build cached Algorand client for contract reads.
+
+    Input: none (reads env).
+    Output: configured AlgorandClient.
+    Micropayment role: foundation client for listing and reputation state reads.
+    """
     normalize_network_env()
     algod = AlgorandClient.from_environment()
     deployer_mnemonic = os.getenv("DEPLOYER_MNEMONIC", "").strip()
@@ -84,7 +89,12 @@ def get_algorand_client() -> AlgorandClient:
 
 @lru_cache(maxsize=1)
 def get_insight_listing_client() -> InsightListingClient:
-    """Return the deployed InsightListing app client."""
+    """Build cached InsightListing client bound to deployed app id.
+
+    Input: none (reads INSIGHT_LISTING_APP_ID and signer env).
+    Output: InsightListingClient instance.
+    Micropayment role: source of listings searched before payment decisions.
+    """
     normalize_network_env()
     app_id = int(os.getenv("INSIGHT_LISTING_APP_ID", "0"))
     if app_id <= 0:
@@ -108,7 +118,12 @@ def get_insight_listing_client() -> InsightListingClient:
 
 @lru_cache(maxsize=1)
 def get_reputation_client() -> ReputationClient | None:
-    """Return the deployed Reputation app client when configured."""
+    """Build cached Reputation client when configured.
+
+    Input: none.
+    Output: ReputationClient or None if REPUTATION_APP_ID is absent/invalid.
+    Micropayment role: provides trust scores used in BUY/SKIP gating.
+    """
     normalize_network_env()
     app_id = int(os.getenv("REPUTATION_APP_ID", "0"))
     if app_id <= 0:
@@ -132,7 +147,12 @@ def get_reputation_client() -> ReputationClient | None:
 
 @lru_cache(maxsize=1)
 def get_indexer_client() -> indexer.IndexerClient:
-    """Return a cached indexer client instance for read operations."""
+    """Build cached indexer client for historical read operations.
+
+    Input: none.
+    Output: IndexerClient.
+    Micropayment role: supporting lookup channel for listing/payment confirmations.
+    """
     normalize_network_env()
     token = os.getenv("ALGOD_TOKEN", "")
     idx_url = (
@@ -145,7 +165,12 @@ def get_indexer_client() -> indexer.IndexerClient:
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
 def _embed_text(text: str) -> np.ndarray:
-    """Embed text and return a dense vector with retry and rate-limit handling."""
+    """Create embedding vector for text with retry handling.
+
+    Input: plain text string.
+    Output: dense numpy vector.
+    Micropayment role: powers semantic ranking that selects candidate listings for purchase.
+    """
     if embeddings is None:
         raise RuntimeError("GEMINI_API_KEY not configured for embeddings")
     try:
@@ -160,7 +185,12 @@ def _embed_text(text: str) -> np.ndarray:
 
 
 def _cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
-    """Compute cosine similarity between two vectors."""
+    """Compute cosine similarity.
+
+    Inputs: two vectors.
+    Output: float relevance score.
+    Micropayment role: relevance signal in buyer pre-purchase ranking formula.
+    """
     denominator = float(np.linalg.norm(a) * np.linalg.norm(b))
     if denominator == 0.0:
         return 0.0
@@ -168,7 +198,12 @@ def _cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
 
 
 def _reputation_score_for_seller(seller: str) -> float:
-    """Fetch on-chain reputation score for a seller (0 when unavailable)."""
+    """Fetch seller trust score from Reputation contract.
+
+    Input: seller wallet address.
+    Output: score as float (0 when unavailable).
+    Micropayment role: trust factor in ranking and evaluation before payment execution.
+    """
     rep_client = get_reputation_client()
     if rep_client is None:
         return 0.0
@@ -321,7 +356,12 @@ async def semantic_search(query: str) -> str:
 
 
 async def _main() -> None:
-    """Standalone local test runner for this tool module."""
+    """Local smoke runner for semantic search tool.
+
+    Input: none.
+    Output: prints sample search JSON payload.
+    Micropayment role: developer validation helper for discovery stage.
+    """
     if hasattr(semantic_search, "ainvoke"):
         result = await semantic_search.ainvoke(
             {"query": "latest NIFTY breakout pattern"}

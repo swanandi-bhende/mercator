@@ -67,7 +67,12 @@ listing_client: InsightListingClient | None = None
 
 
 def get_escrow_client() -> EscrowClient:
-    """Return a cached Escrow client configured from environment."""
+    """Create escrow client used for release_after_payment calls.
+
+    Input: none (reads escrow app/signer env).
+    Output: EscrowClient instance.
+    Micropayment role: unlock-record write stage after payment confirmation.
+    """
     normalize_network_env()
     algorand = AlgorandClient.from_environment()
     signer_mnemonic = BUYER_MNEMONIC.strip() or os.getenv("DEPLOYER_MNEMONIC", "").strip()
@@ -87,7 +92,12 @@ def get_escrow_client() -> EscrowClient:
 
 
 def get_listing_client() -> InsightListingClient:
-    """Return a cached InsightListing client configured from environment."""
+    """Create listing client used to resolve purchased listing metadata.
+
+    Input: none.
+    Output: InsightListingClient instance.
+    Micropayment role: maps listing id to CID before content delivery.
+    """
     normalize_network_env()
     algorand = AlgorandClient.from_environment()
     signer_mnemonic = BUYER_MNEMONIC.strip() or os.getenv("DEPLOYER_MNEMONIC", "").strip()
@@ -106,7 +116,12 @@ def get_listing_client() -> InsightListingClient:
     return InsightListingClient(algorand=algorand, app_id=INSIGHT_LISTING_APP_ID)
 
 async def _wait_for_confirmation(tx_id: str, timeout_seconds: int = 30) -> int:
-    """Poll indexer for transaction confirmation and return confirmed round."""
+    """Poll indexer until transaction is confirmed.
+
+    Inputs: tx_id and timeout_seconds.
+    Output: confirmed round number.
+    Micropayment role: synchronization barrier before escrow release/content delivery.
+    """
     start = time.time()
     while time.time() - start < timeout_seconds:
         try:
@@ -123,7 +138,12 @@ async def _wait_for_confirmation(tx_id: str, timeout_seconds: int = 30) -> int:
 
 
 def _extract_tx_id(result: object) -> str:
-    """Extract tx id from algokit send result using resilient fallbacks."""
+    """Extract tx id from various algokit send result shapes.
+
+    Input: send result object.
+    Output: transaction id string.
+    Micropayment role: tracks escrow release tx for response and confirmation polling.
+    """
     tx_id = getattr(result, "tx_id", None)
     if tx_id:
         return str(tx_id)
@@ -137,7 +157,12 @@ def _extract_tx_id(result: object) -> str:
 
 
 async def complete_purchase_flow(tx_id: str, listing_id: int, buyer_wallet: str) -> str:
-    """Confirm payment, release escrow, fetch insight content, and return final output."""
+    """Complete post-payment fulfillment and return buyer-facing content message.
+
+    Inputs: payment tx id, listing id, buyer wallet.
+    Output: formatted string with confirmation + insight body + tx references.
+    Micropayment role: terminal stage of commerce flow after x402 transfer succeeds.
+    """
     if not tx_id.strip():
         raise ValueError("tx_id is required")
     if listing_id < 0:
@@ -255,5 +280,10 @@ async def complete_purchase_flow(tx_id: str, listing_id: int, buyer_wallet: str)
 
 @tool
 async def complete_purchase_flow_tool(tx_id: str, listing_id: int, buyer_wallet: str) -> str:
-    """LangChain tool wrapper for post-payment confirmation flow."""
+    """LangChain tool wrapper around complete_purchase_flow.
+
+    Inputs: tx_id, listing_id, buyer_wallet.
+    Output: same formatted fulfillment string as complete_purchase_flow.
+    Micropayment role: agent-callable bridge from payment tool to delivery stage.
+    """
     return await complete_purchase_flow(tx_id=tx_id, listing_id=listing_id, buyer_wallet=buyer_wallet)
