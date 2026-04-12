@@ -45,6 +45,11 @@ _CACHE_TTL_SECONDS = 300
 _query_cache: dict[str, tuple[float, str]] = {}
 
 
+def clear_semantic_search_cache() -> None:
+    """Invalidate cached query results so fresh listings are discoverable immediately."""
+    _query_cache.clear()
+
+
 @lru_cache(maxsize=1)
 def get_algorand_client() -> AlgorandClient:
     """Return a cached Algorand client configured from environment."""

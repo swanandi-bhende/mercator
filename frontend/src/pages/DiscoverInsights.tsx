@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
 import { api, ApiError } from '../utils/api'
@@ -109,15 +109,35 @@ export default function DiscoverInsightsPage() {
   const navigate = useNavigate()
   const { setSelectedInsight, setSellerMetadata } = useAppContext()
 
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState(() => {
+    if (typeof window === 'undefined') return ''
+    return sessionStorage.getItem('discover:lastQuery') || ''
+  })
   const [categoryFilter, setCategoryFilter] = useState('All')
   const [priceFilter, setPriceFilter] = useState('Any')
   const [reputationFilter, setReputationFilter] = useState('Any')
   const [recencyFilter, setRecencyFilter] = useState('Any')
-  const [phase, setPhase] = useState<SearchPhase>('idle')
+  const [phase, setPhase] = useState<SearchPhase>(() => {
+    if (typeof window === 'undefined') return 'idle'
+    const hasResults = sessionStorage.getItem('discover:lastResults')
+    return hasResults ? 'ready' : 'idle'
+  })
   const [backendStatus, setBackendStatus] = useState<BackendStatus>('unknown')
-  const [hasSearched, setHasSearched] = useState(false)
-  const [rawInsights, setRawInsights] = useState<RankedInsight[]>([])
+  const [hasSearched, setHasSearched] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return Boolean(sessionStorage.getItem('discover:lastResults'))
+  })
+  const [rawInsights, setRawInsights] = useState<RankedInsight[]>(() => {
+    if (typeof window === 'undefined') return []
+    const raw = sessionStorage.getItem('discover:lastResults')
+    if (!raw) return []
+    try {
+      const parsed = JSON.parse(raw)
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
+    }
+  })
   const [weakOnly, setWeakOnly] = useState(false)
   const [searchFeedback, setSearchFeedback] = useState<string | null>(null)
 
@@ -150,6 +170,18 @@ export default function DiscoverInsightsPage() {
   }
 
   const visibleInsights = (hasSearched ? rawInsights : DEMO_INSIGHTS).filter(applyFilters)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    sessionStorage.setItem('discover:lastQuery', query)
+  }, [query])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (hasSearched) {
+      sessionStorage.setItem('discover:lastResults', JSON.stringify(rawInsights))
+    }
+  }, [hasSearched, rawInsights])
 
   const runSearch = async () => {
     setHasSearched(true)
@@ -203,6 +235,8 @@ export default function DiscoverInsightsPage() {
       )
 
       setRawInsights(mapped)
+      sessionStorage.setItem('discover:lastResults', JSON.stringify(mapped))
+      sessionStorage.setItem('discover:lastQuery', searchQuery)
       if (response.degraded) {
         setSearchFeedback(
           response.message ||

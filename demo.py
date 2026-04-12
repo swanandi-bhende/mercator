@@ -34,15 +34,24 @@ def _launch(command: list[str], cwd: Path) -> subprocess.Popen[str]:
     )
 
 
-def _post_json(url: str, payload: dict[str, object]) -> dict[str, object]:
-    request = Request(
-        url,
-        data=json.dumps(payload).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    with urlopen(request, timeout=120) as response:
-        return json.loads(response.read().decode("utf-8"))
+def _post_json(url: str, payload: dict[str, object], timeout_seconds: int = 120, max_attempts: int = 3) -> dict[str, object]:
+    last_error: Exception | None = None
+    for attempt in range(1, max_attempts + 1):
+        request = Request(
+            url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urlopen(request, timeout=timeout_seconds) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except (TimeoutError, URLError) as err:
+            last_error = err
+            if attempt >= max_attempts:
+                break
+            time.sleep(min(5, attempt * 2))
+    raise RuntimeError(f"POST {url} failed after {max_attempts} attempts: {last_error}")
 
 
 def _get_json(url: str) -> dict[str, object]:
@@ -92,6 +101,8 @@ async def _run_demo_flow(logger: logging.Logger) -> str:
             "price": "1.00",
             "seller_wallet": seller_wallet,
         },
+        150,
+        2,
     )
 
     logger.info("Seller upload complete")
@@ -110,6 +121,8 @@ async def _run_demo_flow(logger: logging.Logger) -> str:
             "force_buy_for_test": True,
             "buyer_address": os.getenv("BUYER_WALLET", "").strip() or os.getenv("BUYER_ADDRESS", "").strip(),
         },
+        360,
+        2,
     )
 
     result = purchase_response.get("result", {}) if isinstance(purchase_response, dict) else {}

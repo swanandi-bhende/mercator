@@ -6998,3 +6998,15 @@ Traceback (most recent call last):
     )
 RuntimeError: Transaction BOGUS_TX_FOR_TIMEOUT_CHECK was not confirmed within 30 seconds
 2026-04-05 15:29:48,220 INFO backend.agent: LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-11 14:02:13,945 INFO demo.flow: Demo servers ready
+2026-04-11 14:02:13,959 INFO mercator.demo: Submitting seller listing to /list
+2026-04-11 14:02:28,254 INFO mercator.demo: Seller upload complete
+2026-04-11 14:02:28,254 INFO mercator.demo: On-chain ASA created
+2026-04-11 14:02:28,255 INFO mercator.demo: Listing response: {'success': 1, 'transaction_id': 'JYEHBI7CFVP6HWA5ORUUDME2NTYXSLNRTES5F4KDO4Y4X5B3BARQ', 'txId': 'JYEHBI7CFVP6HWA5ORUUDME2NTYXSLNRTES5F4KDO4Y4X5B3BARQ', 'explorer_url': 'https://explorer.perawallet.app/tx/JYEHBI7CFVP6HWA5ORUUDME2NTYXSLNRTES5F4KDO4Y4X5B3BARQ/', 'message': 'Insight listed on-chain and pinned on IPFS', 'cid': 'QmRGRbfgwtaofvyMwwirBPzBcNEsCsp8n2AdFPqW5oLy7c', 'listing_id': 42, 'asa_id': 758661271}
+2026-04-11 14:02:31,256 INFO mercator.demo: Submitting buyer flow to /demo_purchase
+2026-04-12 15:36:28,388 INFO demo.flow: Demo servers ready
+2026-04-12 15:36:28,396 INFO mercator.demo: Submitting seller listing to /list
+2026-04-12 15:36:44,935 INFO mercator.demo: Seller upload complete
+2026-04-12 15:36:44,935 INFO mercator.demo: On-chain ASA created
+2026-04-12 15:36:44,936 INFO mercator.demo: Listing response: {'success': 1, 'transaction_id': 'ZHNHHNLXBPT6EUPBYHJXGJPKK55DLXJCO3HX5K5OPUWINND2R57Q', 'txId': 'ZHNHHNLXBPT6EUPBYHJXGJPKK55DLXJCO3HX5K5OPUWINND2R57Q', 'explorer_url': 'https://explorer.perawallet.app/tx/ZHNHHNLXBPT6EUPBYHJXGJPKK55DLXJCO3HX5K5OPUWINND2R57Q/', 'message': 'Insight listed on-chain and pinned on IPFS', 'cid': 'QmRGRbfgwtaofvyMwwirBPzBcNEsCsp8n2AdFPqW5oLy7c', 'listing_id': 43, 'asa_id': 758712806}
+2026-04-12 15:36:47,937 INFO mercator.demo: Submitting buyer flow to /demo_purchase

@@ -28,7 +28,10 @@ from algosdk.logic import get_application_address
 from algosdk.v2client import algod, indexer
 
 from backend.agent import run_agent
-from backend.tools.semantic_search import semantic_search as semantic_search_tool
+from backend.tools.semantic_search import (
+    semantic_search as semantic_search_tool,
+    clear_semantic_search_cache,
+)
 from backend.utils.runtime_env import configure_demo_logging, normalize_network_env, warn_missing_required_env
 from backend.utils.error_handler import contract_error, ipfs_down
 
@@ -80,6 +83,8 @@ METRICS_WINDOW = deque(maxlen=3000)
 SYNTHETIC_RESULTS = deque(maxlen=20)
 IPFS_HEALTH_WINDOW = deque(maxlen=180)
 ALGOD_HEALTH_WINDOW = deque(maxlen=180)
+RECENT_LISTINGS = deque(maxlen=300)
+RECENT_LEDGER_RECORDS = deque(maxlen=600)
 METRIC_ENDPOINTS = {
     "/list",
     "/demo_purchase",
@@ -121,6 +126,107 @@ def _service_tone(status: str) -> str:
     if lowered in {"warning", "degraded", "unknown"}:
         return "warning"
     return "broken"
+
+
+def _tokenize_for_match(value: str) -> set[str]:
+    lowered = value.lower()
+    chunks: list[str] = []
+    current = []
+    for ch in lowered:
+        if ch.isalnum() or ch == "_":
+            current.append(ch)
+        elif current:
+            chunks.append("".join(current))
+            current = []
+    if current:
+        chunks.append("".join(current))
+    return {chunk for chunk in chunks if chunk}
+
+
+def _record_recent_listing(payload: dict[str, object]) -> None:
+    RECENT_LISTINGS.appendleft(payload)
+
+    ledger_record = {
+        "id": f"local-{payload.get('tx_id', uuid4().hex)}",
+        "timestampIso": str(payload.get("timestamp", datetime.now(timezone.utc).isoformat())),
+        "actionType": "listing_created",
+        "seller": str(payload.get("seller_wallet", "")),
+        "buyer": "-",
+        "amountUsdc": float(payload.get("price_usdc", 0.0) or 0.0),
+        "status": "confirmed",
+        "txId": str(payload.get("tx_id", "")),
+        "explorerUrl": f"{EXPLORER_TX_BASE}/{payload.get('tx_id', '')}/" if payload.get("tx_id") else "",
+        "cid": str(payload.get("cid", "")),
+        "ipfsUrl": f"https://ipfs.io/ipfs/{payload.get('cid', '')}" if payload.get("cid") else "",
+        "listingId": str(payload.get("listing_id", "")),
+        "contractId": f"app:{os.getenv('INSIGHT_LISTING_APP_ID', '0')}",
+        "confirmationRound": 0,
+        "feeAlgo": "0.000000",
+        "escrowStatus": "n/a",
+        "contentHash": "",
+        "listingMetadata": str(payload.get("insight_text", ""))[:200],
+        "errorMessage": "",
+    }
+    RECENT_LEDGER_RECORDS.appendleft(ledger_record)
+
+
+def _recent_listing_matches(query: str, limit: int = 8) -> list[dict[str, object]]:
+    now = datetime.now(timezone.utc)
+    query_tokens = _tokenize_for_match(query)
+
+    scored: list[tuple[float, dict[str, object]]] = []
+    for entry in list(RECENT_LISTINGS):
+        ts_raw = str(entry.get("timestamp", ""))
+        try:
+            ts = datetime.fromisoformat(ts_raw)
+        except Exception:
+            ts = now
+
+        age_hours = max(0.0, (now - ts).total_seconds() / 3600)
+        if age_hours > 48:
+            continue
+
+        text = str(entry.get("insight_text", ""))
+        text_tokens = _tokenize_for_match(text)
+        overlap = len(query_tokens & text_tokens)
+        relevance = overlap / max(len(query_tokens), 1) if query_tokens else 0.0
+        recency_bonus = max(0.0, 1.0 - (age_hours / 48.0))
+        score = round((0.75 * relevance + 0.25 * recency_bonus), 6)
+        scored.append((score, entry))
+
+    if not scored:
+        return []
+
+    scored.sort(key=lambda item: item[0], reverse=True)
+
+    if query_tokens and scored and scored[0][0] <= 0:
+        scored = scored[:3]
+
+    matches: list[dict[str, object]] = []
+    for score, entry in scored[:limit]:
+        listing_id = entry.get("listing_id", "")
+        try:
+            listing_id_int = int(listing_id)
+        except Exception:
+            continue
+
+        price_micro = int(float(entry.get("price_usdc", 0.0) or 0.0) * 1_000_000)
+        matches.append(
+            {
+                "listing_id": listing_id_int,
+                "price_micro_usdc": price_micro,
+                "price_usdc": round(float(entry.get("price_usdc", 0.0) or 0.0), 6),
+                "reputation": int(entry.get("seller_reputation", 0) or 0),
+                "cid": str(entry.get("cid", "")),
+                "asa_id": int(entry.get("asa_id", 0) or 0),
+                "score": score,
+                "insight_preview": str(entry.get("insight_text", ""))[:180],
+                "seller_wallet": str(entry.get("seller_wallet", "")),
+                "listing_status": "Recent",
+            }
+        )
+
+    return matches
 
 
 def _operator_access_snapshot(request: Request) -> dict[str, object]:
@@ -1643,6 +1749,25 @@ async def create_listing(request: ListingRequest) -> dict[str, int | str]:
             cid=cid,
         )
         logger.info("Transaction confirmed: tx_id=%s", tx_id)
+
+        _record_recent_listing(
+            {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "tx_id": tx_id,
+                "cid": cid,
+                "listing_id": listing_id,
+                "asa_id": asa_id,
+                "seller_wallet": request.seller_wallet,
+                "price_usdc": round(float(request.price), 6),
+                "insight_text": request.insight_text,
+                "seller_reputation": 0,
+            }
+        )
+        try:
+            clear_semantic_search_cache()
+        except Exception:
+            # Never block listing success on cache invalidation.
+            pass
     except IPFSUploadError as err:
         logger.error("IPFS upload failed | error=%s", err, exc_info=True)
         return _error_response(500, ipfs_down(logger, str(err)))
@@ -1714,11 +1839,27 @@ async def discover_insights(request: DiscoverRequest) -> dict[str, object]:
         else:
             parsed = {"query": user_query, "matches": []}
 
+        semantic_matches = parsed.get("matches", []) if isinstance(parsed.get("matches", []), list) else []
+        fallback_matches = _recent_listing_matches(user_query)
+
+        merged: dict[str, dict[str, object]] = {}
+        for item in semantic_matches + fallback_matches:
+            if not isinstance(item, dict):
+                continue
+            key = str(item.get("listing_id", ""))
+            if not key:
+                continue
+            existing = merged.get(key)
+            if not existing or float(item.get("score", 0.0) or 0.0) > float(existing.get("score", 0.0) or 0.0):
+                merged[key] = item
+
+        combined_matches = sorted(merged.values(), key=lambda row: float(row.get("score", 0.0) or 0.0), reverse=True)
+
         return {
             "success": True,
             "query": str(parsed.get("query", user_query)),
             "embedding_fallback": bool(parsed.get("embedding_fallback", False)),
-            "matches": parsed.get("matches", []) if isinstance(parsed.get("matches", []), list) else [],
+            "matches": combined_matches,
             "message": parsed.get("message") if isinstance(parsed.get("message"), str) else None,
             "degraded": False,
             "diagnostics": {
@@ -1754,6 +1895,18 @@ async def ledger_feed(
     idx = _get_indexer_client()
 
     safe_limit = max(1, min(limit, 1000))
+
+    def _recent_fallback_records() -> list[dict[str, object]]:
+        filtered = []
+        for row in list(RECENT_LEDGER_RECORDS):
+            if address:
+                seller = str(row.get("seller", ""))
+                buyer = str(row.get("buyer", ""))
+                if address != seller and address != buyer:
+                    continue
+            filtered.append(row)
+        filtered.sort(key=lambda item: str(item.get("timestampIso", "")), reverse=True)
+        return filtered[:safe_limit]
 
     try:
         current_token = next_token
@@ -1834,12 +1987,17 @@ async def ledger_feed(
             if not current_token:
                 break
 
-        records = records[:safe_limit]
+        for local_row in _recent_fallback_records():
+            rec_id = str(local_row.get("id", ""))
+            if rec_id and rec_id not in record_ids:
+                record_ids.add(rec_id)
+                records.append(local_row)
 
         records.sort(
             key=lambda item: str(item.get("timestampIso", "")),
             reverse=True,
         )
+        records = records[:safe_limit]
 
         return {
             "success": True,
@@ -1853,12 +2011,14 @@ async def ledger_feed(
         raise
     except Exception as err:
         logger.error("Ledger feed failed | error=%s", err, exc_info=True)
+        fallback = _recent_fallback_records()
         return {
-            "success": False,
-            "records": [],
-            "count": 0,
+            "success": bool(fallback),
+            "records": fallback,
+            "count": len(fallback),
             "nextToken": None,
-            "source": "indexer",
+            "source": "local-cache",
+            "degraded": True,
             "error": str(err),
         }
 
