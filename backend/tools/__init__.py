@@ -1,4 +1,8 @@
-"""Backend tool modules for agent capabilities."""
+"""Backend tool modules for agent capabilities.
+
+Purpose: Central export surface for LangChain-callable tools used in search, payment,
+and post-payment delivery flows.
+"""
 
 from .post_payment_flow import complete_purchase_flow_tool
 from .semantic_search import semantic_search

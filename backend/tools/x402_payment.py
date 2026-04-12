@@ -1,7 +1,20 @@
 """
 X402 Micropayment Tool for LangChain Agent
 
-This module implements the x402 micropayment pattern for atomic group transactions.
+Purpose: Implements full x402 atomic group payment flow:
+1. Fetch listed insight + validate listing exists & seller wallet.
+2. Check x402 config (settlement asset ID, escrow app ID).
+3. Simulate payment transaction for safety: check buyer USDC balance, receiver opt-in.
+4. Execute atomic group: send USDC to seller + record payment on-chain.
+5. Return explorer link + payment confirmation.
+
+Key Functions:
+- trigger_x402_payment: Main entrypoint. Requires explicit user approval input = "approve".
+- X402Client: Handles atomic group assembly, signing, and TestNet submission.
+- simulate_payment: Validation before broadcast - checks insufficient_balance, rejected, etc.
+- Fallback: If payment fails, buyer account + balance guaranteed atomically rolled back.
+
+This tool is called by Mercator agent when BUY decision + user types "approve" + reputation check passes.
 The x402 pattern allows instant, fee-efficient payments on Algorand using atomic groups.
 
 Includes:

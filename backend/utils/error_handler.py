@@ -1,4 +1,8 @@
-"""Centralized user-facing error helpers for backend flows."""
+"""Centralized user-facing error helpers for backend flows.
+
+Purpose: Map internal exceptions into consistent, UI-safe messages for IPFS, contract,
+reputation, and x402 payment stages in the micropayment flow.
+"""
 
 from __future__ import annotations
 

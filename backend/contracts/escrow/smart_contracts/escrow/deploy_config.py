@@ -1,3 +1,8 @@
+"""Deploy configuration for Escrow contract.
+
+Purpose: Deploy escrow release contract used post-payment to mark listing unlocks.
+"""
+
 import os
 from pathlib import Path
 
@@ -25,6 +30,7 @@ def _normalize_network_env() -> None:
 
 def deploy() -> None:
     """Deploy Escrow to the configured target network."""
+    # Deploys escrow app called by post_payment_flow after x402 payment confirmation.
     _normalize_network_env()
 
     deployer_mnemonic = os.getenv("DEPLOYER_MNEMONIC")

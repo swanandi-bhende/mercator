@@ -1,3 +1,8 @@
+"""Critical path reliability tests for Mercator backend.
+
+Purpose: Validate failure handling and guardrails across core micropayment path modules.
+"""
+
 from __future__ import annotations
 
 import asyncio

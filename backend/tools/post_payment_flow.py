@@ -1,4 +1,21 @@
-"""Post-payment flow for confirmation, escrow release, and content retrieval."""
+"""Post-payment flow for confirmation, escrow release, and content retrieval.
+
+Purpose: Completes x402 payment flow after on-chain settlement:
+1. Poll indexer for payment tx confirmation (up to 30 seconds).
+2. Fetch listing details from InsightListing contract (seller, IPFS CID).
+3. Fetch insight content from IPFS (with gateway fallback).
+4. Call Escrow contract release_after_payment() to unlock seller funds (atomic).
+5. Return formatted confirmation message with full insight text + tx links.
+
+Key Behaviors:
+- Polling: Waits for indexer to reflect payment tx (handles latency).
+- Escrow release: Retried 3 times if stale-round or brief unavailability.
+- Content fetch: Parallel with escrow release for speed; IPFS timeout = fallback message.
+- Fallback: If escrow fails, still delivers insight (payment confirmed, escrow will settle).
+
+This tool is called automatically by agent after x402 payment succeeds.
+Returns: formatted message with insight text + transaction IDs + explorer URLs.
+"""
 
 from __future__ import annotations
 

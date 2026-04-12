@@ -1,4 +1,15 @@
-"""FastAPI backend entrypoint for listing insights."""
+"""FastAPI backend entrypoint for the Mercator x402 micropayment platform.
+
+Purpose: Handles FastAPI endpoints for seller uploads to IPFS, on-chain listing storage, semantic discovery,
+buyer checkout with x402 micropayments, escrow settlement, and operational health/metrics dashboards.
+
+Key Flows:
+1. POST /list: Uploads insight text to IPFS via Pinata, stores CID on InsightListing smart contract.
+2. GET /discover: Semantic search + lexical fallback ranking, merged with recent local listings for immediate discovery.
+3. POST /demo_purchase: Launches LangChain agent for autonomous search, evaluation, and x402 payment.
+4. POST /ops/synthetic: Full end-to-end test cycle (list → discover → purchase → escrow release → content delivery).
+5. GET /ops/overview: Operational dashboard with metrics (latency, IPFS health, Algorand status).
+"""
 
 from __future__ import annotations
 
@@ -97,7 +108,12 @@ METRIC_ENDPOINTS = {
 }
 
 
+# ============================================================================
+# UTILITY HELPERS: Address/IP redaction, validation, and metadata extraction
+# ============================================================================
+
 def _truncate_address(value: str, left: int = 6, right: int = 4) -> str:
+    """Redact wallet address to format: first_6chars...last_4chars for display."""
     if not value:
         return ""
     if len(value) <= left + right + 3:
@@ -105,7 +121,9 @@ def _truncate_address(value: str, left: int = 6, right: int = 4) -> str:
     return f"{value[:left]}...{value[-right:]}"
 
 
+
 def _anonymize_client_ip(value: str | None) -> str:
+    """Hash client IP to anon-<10char_hex> for privacy-preserving request tracing."""
     if not value:
         return "unknown"
     hashed = hashlib.sha256(value.encode("utf-8")).hexdigest()[:10]
@@ -143,7 +161,13 @@ def _tokenize_for_match(value: str) -> set[str]:
     return {chunk for chunk in chunks if chunk}
 
 
+
 def _record_recent_listing(payload: dict[str, object]) -> None:
+    """Record newly created listing in local RECENT_LISTINGS and RECENT_LEDGER_RECORDS.
+    
+    Enables immediate /discover hit by merging fresh listings with semantic results.
+    Clears semantic cache to force re-ranking when new insight is added.
+    """
     RECENT_LISTINGS.appendleft(payload)
 
     ledger_record = {
@@ -170,7 +194,13 @@ def _record_recent_listing(payload: dict[str, object]) -> None:
     RECENT_LEDGER_RECORDS.appendleft(ledger_record)
 
 
+
 def _recent_listing_matches(query: str, limit: int = 8) -> list[dict[str, object]]:
+    """Lexical search over local RECENT_LISTINGS (48-hour window).
+    
+    Returns top matches scored by: 0.75 * lexical_relevance + 0.25 * recency_bonus.
+    Purpose: Fast discovery of freshly listed insights without waiting for semantic embedding service.
+    """
     now = datetime.now(timezone.utc)
     query_tokens = _tokenize_for_match(query)
 
@@ -229,7 +259,12 @@ def _recent_listing_matches(query: str, limit: int = 8) -> list[dict[str, object
     return matches
 
 
+
 def _operator_access_snapshot(request: Request) -> dict[str, object]:
+    """Check operator authorization: localhost OR valid x-api-key header.
+    
+    Returns: dict with authorized (bool), access_via_localhost, access_via_api_key, and reason.
+    """
     host = request.client.host if request.client else ""
     localhost_hosts = {"127.0.0.1", "::1", "localhost"}
     access_via_localhost = host in localhost_hosts
@@ -372,6 +407,10 @@ def _decode_app_args(app_args: list[object]) -> list[str]:
 
 
 def _extract_cid_from_args(decoded_args: list[str]) -> str:
+    """Extract IPFS CID (Qm...) from decoded contract application arguments.
+    
+    Purpose: Parse InsightListing contract invoke to retrieve stored IPFS hash.
+    """
     for value in decoded_args:
         for token in value.replace("\n", " ").split(" "):
             if token.startswith("Qm") and len(token) >= 12:
@@ -380,6 +419,11 @@ def _extract_cid_from_args(decoded_args: list[str]) -> str:
 
 
 def _derive_action_type(txn: dict[str, object]) -> str:
+    """Parse transaction type descriptor for activity ledger display.
+    
+    Returns one of: listing_created, escrow_released, payment_confirmed, insight_delivered.
+    Purpose: Categorize off-chain transactions for the /ledger endpoint.
+    """
     app_txn = txn.get("application-transaction") if isinstance(txn.get("application-transaction"), dict) else {}
     payment_txn = txn.get("payment-transaction") if isinstance(txn.get("payment-transaction"), dict) else {}
     asset_txn = txn.get("asset-transfer-transaction") if isinstance(txn.get("asset-transfer-transaction"), dict) else {}
@@ -410,6 +454,11 @@ def _derive_action_type(txn: dict[str, object]) -> str:
 
 
 def _normalize_ledger_record(txn: dict[str, object]) -> dict[str, object]:
+    """Convert indexer transaction to frontend-ready activity ledger record.
+    
+    Extracts: sender, receiver, amount, CID, action type, status, timestamp, explorer link.
+    Purpose: Standardize indexer/algod response format for /ledger endpoint consumption.
+    """
     app_txn = txn.get("application-transaction") if isinstance(txn.get("application-transaction"), dict) else {}
     payment_txn = txn.get("payment-transaction") if isinstance(txn.get("payment-transaction"), dict) else {}
     asset_txn = txn.get("asset-transfer-transaction") if isinstance(txn.get("asset-transfer-transaction"), dict) else {}
@@ -473,6 +522,11 @@ def _normalize_ledger_record(txn: dict[str, object]) -> dict[str, object]:
 
 
 def _is_mercator_transaction(txn: dict[str, object]) -> bool:
+    """Filter for transactions relevant to Mercator x402 flow.
+    
+    Matches: InsightListing/Escrow app invokes, known seller/buyer wallets, or CID presence.
+    Purpose: Exclude unrelated chain activity from activity ledger.
+    """
     app_txn = txn.get("application-transaction") if isinstance(txn.get("application-transaction"), dict) else {}
     payment_txn = txn.get("payment-transaction") if isinstance(txn.get("payment-transaction"), dict) else {}
     asset_txn = txn.get("asset-transfer-transaction") if isinstance(txn.get("asset-transfer-transaction"), dict) else {}
@@ -510,6 +564,10 @@ def _is_mercator_transaction(txn: dict[str, object]) -> bool:
 
 
 def _get_algod_client() -> algod.AlgodClient:
+    """Initialize Algorand SDK client connected to TestNet algod node.
+    
+    Purpose: Provide transaction submission, account info, and params lookup.
+    """
     normalize_network_env()
     algod_url = os.getenv("ALGOD_URL", "").strip() or os.getenv("ALGOD_SERVER", "").strip()
     if not algod_url:
@@ -519,6 +577,10 @@ def _get_algod_client() -> algod.AlgodClient:
 
 
 def _get_indexer_client() -> indexer.IndexerClient:
+    """Initialize indexer client for transaction history and account queries.
+    
+    Purpose: Read activity ledger, search for listings, confirm on-chain state.
+    """
     normalize_network_env()
     indexer_url = os.getenv("INDEXER_URL", "").strip() or os.getenv("INDEXER_SERVER", "").strip()
     if not indexer_url:
@@ -528,6 +590,11 @@ def _get_indexer_client() -> indexer.IndexerClient:
 
 
 def _ensure_listing_app_funded(app_id: int) -> None:
+    """Top up InsightListing app contract account to cover state box storage.
+    
+    Target: min_balance + 300K micro-Algo (box storage buffer).
+    Purpose: Prevent app account errors when buyers/sellers create/redeem listings.
+    """
     client = _get_algod_client()
     app_address = get_application_address(app_id)
     app_info = client.account_info(app_address)
@@ -627,6 +694,12 @@ def _get_signing_mnemonic() -> str:
 
 @app.get("/health")
 def health() -> dict[str, object]:
+    """System health check endpoint.
+    
+    Purpose: Return status of FastAPI service, Algorand algod, indexer, and deployed contract apps.
+    Used by: load balancers, monitoring dashboards, deployment checks.
+    Returns: service health dict with algod/indexer/listing_app/escrow_app status (ok/error/unknown).
+    """
     normalize_network_env()
     timestamp = datetime.now(timezone.utc).isoformat()
 
@@ -680,6 +753,11 @@ def health() -> dict[str, object]:
 
 
 def _collect_request_metrics(now: datetime) -> list[dict[str, object]]:
+    """Aggregate request latency, success rate, and error distribution over last 30 minutes.
+    
+    Returns per-endpoint metrics: throughput, success_rate, avg_latency, error_groups, trend buckets.
+    Purpose: Power /ops/overview operational dashboard (CloudWatch-like view).
+    """
     horizon_seconds = 30 * 60
     entries: list[dict[str, object]] = []
 
@@ -1667,6 +1745,20 @@ async def ops_diagnostics(request: Request, include_contract_scan: bool = False)
 
 @app.post("/list")
 async def create_listing(request: ListingRequest) -> dict[str, int | str]:
+    """Upload trading insight to IPFS and create on-chain listing.
+    
+    Purpose: Seller-facing endpoint for publishing insights. Uploads insight text to Pinata IPFS,
+    creates/updates InsightListing contract entry, and returns listing_id/CID/tx for frontend.
+    
+    Flow:
+    1. Validate insight text (non-empty), price (>0), seller wallet (58 char, valid Algorand address).
+    2. Upload insight text to Pinata → retrieve IPFS CID.
+    3. Call InsightListing contract store_on_marketplace() → get listing_id + ASA_id.
+    4. Poll indexer for confirmation → return success payload with explorer link.
+    5. Record listing in RECENT_LISTINGS + clear semantic cache for immediate /discover hit.
+    
+    Returns: {listing_id, asa_id, cid, txId, explorer_url, success}.
+    """
     normalize_network_env()
     logger.info(
         "Incoming /list request: seller_wallet=%s, price=%s, insight_len=%s",
@@ -1795,6 +1887,16 @@ async def create_listing(request: ListingRequest) -> dict[str, int | str]:
 
 @app.post("/demo_purchase")
 async def demo_purchase(request: DemoPurchaseRequest) -> dict[str, object]:
+    """Launch autonomous agent for semantic search → evaluation → x402 payment.
+    
+    Purpose: Buyer-facing endpoint that runs the full Mercator agent flow:
+    1. Semantic search for user query across live on-chain listings.
+    2. LLM evaluation: check on-chain reputation + value-for-price heuristics.
+    3. If BUY decision and user typed "approve", trigger x402 micropayment.
+    4. On payment confirmation, release escrow and deliver IPFS content.
+    
+    Returns: {success, decision, evaluation, payment_status, message}.
+    """
     normalize_network_env()
     buyer_address = (request.buyer_address or os.getenv("BUYER_WALLET", "").strip() or os.getenv("BUYER_ADDRESS", "").strip() or os.getenv("DEPLOYER_ADDRESS", "").strip())
     result = await run_agent(
@@ -1814,6 +1916,16 @@ async def demo_purchase(request: DemoPurchaseRequest) -> dict[str, object]:
 
 @app.post("/discover")
 async def discover_insights(request: DiscoverRequest) -> dict[str, object]:
+    """Semantic search + lexical fallback for trading insights.
+    
+    Purpose: Buyer-facing search endpoint that merges:
+    - Semantic embedding ranking (top 3 by relevance + seller reputation).
+    - Lexical fast-path fallback (exact word match when embedding service unavailable).
+    - Recent local listings (48-hour window) for immediate discovery.
+    
+    Returns top 3 results sorted by: 0.7*relevance + 0.3*reputation_norm.
+    Cache TTL: 300 seconds (invalidated after new listings created).
+    """
     normalize_network_env()
     user_query = request.user_query.strip()
     if not user_query:
@@ -1890,7 +2002,16 @@ async def ledger_feed(
     address: str | None = None,
     max_scan_pages: int = 12,
 ) -> dict[str, object]:
-    """Return normalized ledger records from Algorand indexer transactions."""
+    """Activity ledger: transaction history for listings, purchases, and escrow releases.
+    
+    Purpose: Show buyer/seller activity timeline with explorer links, IPFS CIDs, and action descriptions.
+    Merges indexer transactions with local recent-ledger fallback (immediate visibility).
+    
+    Filters for Mercator transactions by: InsightListing/Escrow app ID, known wallets, or CID presence.
+    Normalizes to standard record format: action_type, seller, buyer, amount_usdc, status, tx_link.
+    
+    Returns: sorted list of up to `limit` records, newest first.
+    """
     normalize_network_env()
     idx = _get_indexer_client()
 

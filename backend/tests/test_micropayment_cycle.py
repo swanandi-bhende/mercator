@@ -1,3 +1,8 @@
+"""End-to-end matrix tests for listing, discovery, payment, and delivery.
+
+Purpose: Verify full Mercator micropayment cycle behavior and edge-case regressions.
+"""
+
 from __future__ import annotations
 
 import importlib

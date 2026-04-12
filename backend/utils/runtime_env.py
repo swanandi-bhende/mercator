@@ -1,3 +1,9 @@
+"""Runtime environment normalization and logging utilities.
+
+Purpose: Load .env/.env.testnet, normalize algod/indexer variables, and provide
+shared demo logging helpers used across backend API, tools, and tests.
+"""
+
 from __future__ import annotations
 
 import logging

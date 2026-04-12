@@ -1,3 +1,9 @@
+"""Manual integration utility for IPFS + listing contract path.
+
+Purpose: Smoke-test seller publish flow by uploading sample text to Pinata,
+optionally funding listing app account, and storing CID via InsightListing contract.
+"""
+
 from __future__ import annotations
 
 import asyncio

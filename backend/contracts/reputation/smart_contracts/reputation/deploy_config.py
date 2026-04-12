@@ -1,3 +1,8 @@
+"""Deploy configuration for Reputation contract.
+
+Purpose: Deploy seller-score contract used by agent evaluation before buy decisions.
+"""
+
 import os
 
 from algokit_utils import AlgorandClient, OnSchemaBreak, OnUpdate
@@ -7,6 +12,7 @@ from smart_contracts.artifacts.reputation.reputation_client import ReputationFac
 
 def deploy() -> None:
     """Deploy Reputation to the configured target network."""
+    # Deploys reputation app queried by semantic/evaluation logic for trust gating.
     deployer_mnemonic = os.getenv("DEPLOYER_MNEMONIC")
     deployer_address = os.getenv("DEPLOYER_ADDRESS")
     if not deployer_mnemonic:

@@ -1,5 +1,14 @@
 """IPFS helper utilities for Pinata uploads and pin management.
 
+Purpose: Single interface for all IPFS/Pinata operations used by the backend.
+Handles: uploading insight text, fetching content by CID, unpinning obsolete files.
+
+Key Functions:
+- upload_insight_to_ipfs(text): Upload insight to Pinata, return IPFS CID.
+- fetch_insight_from_ipfs(cid): Retrieve insight content from IPFS gateway.
+- store_cid_in_listing(cid, listing_app_id, ...): Link CID to on-chain InsightListing contract.
+- unpin_cid(cid): Remove CID from Pinata pinset.
+
 This module is the single place for reusable IPFS interactions used by the backend.
 """
 
@@ -40,7 +49,11 @@ class ListingStoreError(RuntimeError):
 
 
 def _get_pinata_headers() -> dict[str, str]:
-    """Build authorization headers for Pinata API calls."""
+    """Build authorization headers for Pinata API calls.
+    
+    Purpose: Include Bearer token for Pinata JWT authentication on all requests.
+    Raises: PinataConfigError if PINATA_JWT not configured.
+    """
     jwt = os.getenv("PINATA_JWT", "").strip()
     if not jwt:
         raise PinataConfigError("PINATA_JWT is not set")
@@ -49,8 +62,10 @@ def _get_pinata_headers() -> dict[str, str]:
 
 def upload_text_content(content: str, name: str = "insight.txt") -> dict[str, Any]:
     """Upload plain-text content to IPFS via Pinata.
-
-    Returns the Pinata response payload, including IpfsHash when successful.
+    
+    Purpose: Persistence layer for insight text. Returns CID + full Pinata response.
+    Used by: /list endpoint to store insights before on-chain listing creation.
+    Returns: Pinata API response payload, including IpfsHash (CID) when successful.
     """
     files = {
         "file": (name, content.encode("utf-8"), "text/plain"),
@@ -92,8 +107,11 @@ def unpin_cid(cid: str) -> None:
 
 async def upload_insight_to_ipfs(text: str, filename: str = "insight.txt") -> str:
     """Upload insight text to Pinata and return the pinned CID.
-
-    The `pinFileToIPFS` endpoint pins automatically when upload succeeds.
+    
+    Purpose: Top-level API for seller insight uploads. Runs HTTP POST in thread pool.
+    Pinata's pinFileToIPFS endpoint pins automatically when upload succeeds.
+    Returns: IPFS CID (Qm...) which seller caches and uses in /list contract call.
+    Raises: IPFSUploadError if Pinata service fails or network timeout.
     """
     files = {
         "file": (filename, text.encode("utf-8"), "text/plain"),

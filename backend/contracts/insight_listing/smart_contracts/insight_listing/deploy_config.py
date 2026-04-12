@@ -1,3 +1,8 @@
+"""Deploy configuration for InsightListing contract.
+
+Purpose: Deploy listing registry contract used by sellers to publish CID+price metadata.
+"""
+
 import os
 
 from algokit_utils import AlgorandClient, OnSchemaBreak, OnUpdate
@@ -9,6 +14,7 @@ from smart_contracts.artifacts.insight_listing.insight_listing_client import (
 
 def deploy() -> None:
     """Deploy InsightListing to the configured target network."""
+    # Deploys/updates listing registry app used by /list and /discover backend flows.
     deployer_mnemonic = os.getenv("DEPLOYER_MNEMONIC")
     deployer_address = os.getenv("DEPLOYER_ADDRESS")
     if not deployer_mnemonic:

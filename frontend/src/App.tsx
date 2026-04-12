@@ -1,3 +1,6 @@
+// Purpose: Root React app routing for Mercator x402 micropayment platform.
+// Handles: navigation between buyer (discover/evaluate/checkout) and seller (/sell) flows.
+
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AppProvider } from './context/AppContext'
 import MainLayout from './layouts/MainLayout'

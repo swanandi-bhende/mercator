@@ -1,3 +1,8 @@
+"""Smart contract scaffold runner for Reputation package.
+
+Purpose: Build, test, and deploy the Reputation contract and generated clients.
+"""
+
 import dataclasses
 import importlib
 import logging

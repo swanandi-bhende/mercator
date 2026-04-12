@@ -1,3 +1,8 @@
+"""Smart contract scaffold runner for InsightListing package.
+
+Purpose: Build, test, and deploy the InsightListing contract and generated clients.
+"""
+
 import dataclasses
 import importlib
 import logging

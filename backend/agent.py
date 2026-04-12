@@ -1,3 +1,17 @@
+"""Autonomous trading insight buyer agent using LangChain + Gemini LLM.
+
+Purpose: Implements AI buyer logic for semantic search → evaluation → x402 micropayment.
+Uses chain-of-thought reasoning (CoT) with on-chain reputation checks and value heuristics
+to autonomously decide whether to purchase trading insights and execute x402 payments.
+
+Key Components:
+- SYSTEM_PROMPT: Agent instructions (search, evaluate, BUY/SKIP decision, x402 payment logic).
+- semantic_search_tool: Finds top 3 insights by relevance + reputation score.
+- evaluate_insights: 2-step evaluation (relevance check, reputation gate, value-for-price).
+- trigger_x402_payment: Simulates and executes Algorand micropayment + escrow release + content delivery.
+- run_agent: Main orchestration - chains tool calls and returns decision + payment status.
+"""
+
 from dotenv import load_dotenv
 import asyncio
 import os
@@ -59,6 +73,8 @@ llm = ChatGoogleGenerativeAI(
     max_retries=0,
 )
 
+# Purpose: Global system prompt that constrains agent behavior and tool usage safety.
+# It enforces explicit approval before x402 payment and disallows synthetic/fake insight data.
 SYSTEM_PROMPT = """You are Mercator, an autonomous AI trading-insight buyer on Algorand. Your job is to:
 1) Search for real human trading insights using semantic search
 2) Evaluate them using on-chain reputation and price
@@ -76,6 +92,8 @@ If any tool call or backend step fails, respond naturally and helpfully with:
 "Sorry, I encountered an issue: [clear message]. Would you like to try a different insight or check your wallet balance?"
 """
 
+# Purpose: Structured evaluation prompt for deterministic BUY/SKIP reasoning output.
+# The agent must score relevance, enforce reputation >= 50, compute value/price, then decide.
 EVALUATION_PROMPT_TEMPLATE = """You must evaluate semantic search results step-by-step before any payment decision.
 
 User Query: {query}
@@ -120,6 +138,11 @@ def on_chain_query(listing_id: int) -> str:
     return f"on_chain_query placeholder: listing_id={listing_id}."
 
 
+# Purpose: Ordered tool registry for agent runtime.
+# 1) on_chain_query placeholder (future detail fetch),
+# 2) semantic_search for candidate insights,
+# 3) trigger_x402_payment for purchase execution,
+# 4) validate_x402_payment for on-chain confirmation checks.
 tools = [on_chain_query, semantic_search_tool, trigger_x402_payment, validate_x402_payment]
 
 
@@ -131,6 +154,13 @@ decision_parser = PydanticOutputParser(pydantic_object=EvaluationDecision)
 
 
 def _parse_decision(eval_text: str) -> str:
+    """Extract BUY or SKIP decision from LLM evaluation output.
+    
+    Tries pydantic parser first, then regex fallback (\"Decision: BUY\" or \"Decision: SKIP\").
+    Defaults to SKIP if decision cannot be parsed (safety default).
+    
+    Purpose: Ensure agent decision is always machine-readable regardless of LLM response format.
+    """
     try:
         parsed = decision_parser.parse(eval_text)
         decision = parsed.decision.upper().strip()
@@ -146,6 +176,16 @@ def _parse_decision(eval_text: str) -> str:
 
 
 async def evaluate_insights(state: dict) -> dict:
+    """Chain-of-thought evaluation of semantic search results.
+    
+    Purpose: Use LLM to reason step-by-step:
+    1. Rate relevance of top result to user query (0-100 scale).
+    2. Check seller on-chain reputation (must be >= 50 or SKIP).
+    3. Calculate value_for_price = relevance / price_usdc (must be > 8.0 to BUY).
+    4. Return BUY or SKIP decision with full reasoning.
+    
+    Returns: Updated state dict with evaluation (reasoning text) + decision (BUY|SKIP).
+    """
     query = state.get("query", "")
     semantic_results = state.get("semantic_results", "")
     eval_prompt = EVALUATION_PROMPT_TEMPLATE.format(
@@ -176,6 +216,7 @@ async def evaluate_insights(state: dict) -> dict:
     return updated_state
 
 if create_tool_calling_agent and AgentExecutor:
+    # Preferred path: explicit tool-calling agent with intermediate steps and parsing safeguards.
     agent = create_tool_calling_agent(llm, tools, prompt)
     agent_executor = AgentExecutor(
         agent=agent,
@@ -185,6 +226,7 @@ if create_tool_calling_agent and AgentExecutor:
         return_intermediate_steps=True,
     )
 else:
+    # Compatibility fallback for environments lacking create_tool_calling_agent APIs.
     logger.info(
         "LangChain create_tool_calling_agent/AgentExecutor not available; "
         "using create_agent compatibility mode"
@@ -204,17 +246,29 @@ async def run_agent(
     user_approval_input: str = "",
     force_buy_for_test: bool = False,
 ):
-    """
-    Run the Mercator buyer agent with full x402 micropayment flow.
+    """Run the Mercator buyer agent with full x402 micropayment flow.
     
-    Args:
-        user_query (str): The search query for trading insights
-        user_approval (bool): Whether user has approved payment (legacy, use user_approval_input instead)
-        buyer_address (str): The buyer's Algorand wallet address
-        user_approval_input (str): User's explicit approval input (must be "approve" to trigger payment)
+    Purpose: Autonomous agent orchestration that chains:
+    1. semantic_search_tool: Find top 3 insights by relevance + reputation.
+    2. evaluate_insights: LLM chain-of-thought (CoT) reasoning with reputation + value heuristics.
+    3. user approval gate: If BUY decision, require user to type \"approve\" to proceed.
+    4. trigger_x402_payment: Simulate x402 micropayment \u2192 execute on TestNet \u2192 release escrow.
+    5. validate_x402_payment: Confirm on-chain settlement and content delivery.
     
     Returns:
-        dict: Agent response with decision, evaluation, and optional payment confirmation
+        dict: {success (bool), decision (BUY|SKIP|ERROR), evaluation (reasoning text),
+               payment_status (tx_id/confirmation if BUY), message (user-facing text)}
+    
+    Args:
+        user_query (str): The search query for trading insights.
+        user_approval_input (str): User's explicit approval (must be \"approve\" to trigger payment).
+        buyer_address (str): Buyer's Algorand wallet address.
+        force_buy_for_test (bool): Force BUY decision for operational tests (skip reputation gate).
+    
+    Key Behaviors:
+    - SKIP decision: returned when reputation < 50, value-for-price <= 8.0, or no results found.
+    - BUY decision: requires explicit user_approval_input = \"approve\" to execute payment.
+    - Error recovery: gracefully falls back to SKIP on network/Gemini issues.
     """
     logger.info("Starting agent run with user_approval=%s, user_approval_input=%s", user_approval, user_approval_input)
 

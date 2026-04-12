@@ -1,4 +1,17 @@
-"""Semantic search tool for ranking live on-chain listings."""
+"""Semantic search tool for ranking live on-chain listings.
+
+Purpose: Implements semantic + lexical search for buyer insight discovery.
+Ranks listings by: 0.7*semantic_relevance + 0.3*seller_reputation_norm.
+Returns top 3 results and caches for 300 seconds (invalidated after new listings).
+
+Key Components:
+- semantic_search(query): LLM embeddings (Gemini) for deep semantic ranking.
+- Fallback: Lexical word-overlap matching when embedding service unavailable.
+- Recent fallback: Immediate hit for freshly listed insights (local cache).
+- Cache: _query_cache dict with TTL to avoid redundant embedding calls.
+
+This tool is the single interface used by /discover endpoint and the agent tool.
+"""
 
 from __future__ import annotations
 
@@ -46,7 +59,10 @@ _query_cache: dict[str, tuple[float, str]] = {}
 
 
 def clear_semantic_search_cache() -> None:
-    """Invalidate cached query results so fresh listings are discoverable immediately."""
+    """Invalidate cached query results so fresh listings are discoverable immediately.
+    
+    Purpose: Called after successful /list endpoint to force re-ranking with new insight.
+    """
     _query_cache.clear()
 
 
@@ -169,7 +185,21 @@ def _reputation_score_for_seller(seller: str) -> float:
 @tool
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
 async def semantic_search(query: str) -> str:
-    """Run semantic ranking across live listings using relevance + reputation."""
+    """Run semantic ranking across live listings using relevance + reputation.
+    
+    Purpose: Main search tool for /discover endpoint and agent's semantic_search_tool.
+    Ranks by: 0.7 * relevance_score + 0.3 * reputation_norm (0-100 scale).
+    Returns: Top 3 matches as JSON with listing_id, price, reputation, CID, preview text.
+    
+    Flow:
+    1. Get all listings from InsightListing contract state.
+    2. For each listing, fetch full text from IPFS (cached).
+    3. Embed user query and each listing, compute cosine similarity.
+    4. Score: 0.7*relevance + 0.3*reputation, sort descending, return top 3.
+    5. Cache result with TTL=300 seconds.
+    
+    Fallback: If embedding service unavailable (429, RESOURCE_EXHAUSTED), use lexical matching.
+    """
     _ = upload_insight_to_ipfs
     _ = get_indexer_client()
 

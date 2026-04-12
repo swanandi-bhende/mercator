@@ -1,3 +1,6 @@
+// Purpose: Seller-facing React UI for uploading trading insights to IPFS + on-chain ASA.
+// Handles: insight text input, price setting, IPFS upload, InsightListing contract invocation.
+
 import { ArrowPathIcon } from '@heroicons/react/24/outline'
 import axios from 'axios'
 import toast from 'react-hot-toast'

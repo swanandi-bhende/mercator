@@ -1,3 +1,8 @@
+"""Smart contract scaffold runner for Escrow package.
+
+Purpose: Build, test, and deploy the Escrow contract and generated clients.
+"""
+
 import dataclasses
 import importlib
 import logging
