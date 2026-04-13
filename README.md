@@ -1,78 +1,241 @@
 # Mercator
 
-Mercator is an Agentic Commerce demo on Algorand TestNet where a seller lists a trading insight, and an autonomous LangChain buyer agent discovers, evaluates, pays via x402 micropayment, and unlocks instant content delivery.
+Mercator is an agentic commerce platform on Algorand where sellers list trading insights, an autonomous agent discovers and evaluates them, and buyers complete micropayments atomically with instant content delivery.
 
-## Architecture
+## Quick Start
 
-Architecture path: React UI -> FastAPI Backend -> Algorand Smart Contracts (ASA + Escrow + Reputation) -> IPFS (Pinata) -> LangChain Agent (Gemini) -> x402 Micropayment -> Instant Content Delivery.
-
-Flow caption: This architecture expresses Mercator's single core feature from listing to monetization. The React UI captures seller and buyer actions, the FastAPI backend orchestrates storage and chain calls, IPFS stores the insight body, Algorand contracts anchor listing/escrow/reputation state, the LangChain agent performs reasoning with Gemini to decide BUY or SKIP, x402 executes settlement, and confirmed buyers receive immediate insight text.
-
-In plain English: a seller submits text in the UI, the backend uploads it to Pinata and writes listing metadata on Algorand (price, CID, ASA linkage). A buyer query is evaluated by the agent using semantic relevance and on-chain reputation. If value and trust thresholds pass, the buyer approves payment, x402 transfers USDC atomically, escrow records unlock state, and the backend returns the full insight content to the buyer without waiting for manual reconciliation.
-
-## Project Structure
-
-- [frontend/src](frontend/src): React application (seller listing UI, buyer discovery/evaluation pages).
-- [backend/main.py](backend/main.py): FastAPI entrypoint and API orchestration.
-- [backend/agent.py](backend/agent.py): LangChain agent logic (search, evaluate, decide, pay).
-- [backend/tools](backend/tools): Tool modules for semantic search, x402 payment, and post-payment fulfillment.
-- [backend/utils](backend/utils): Shared helpers (IPFS, env normalization, error messages).
-- [backend/contracts](backend/contracts): Smart contract sources, deploy configs, and generated ABI clients.
-- [backend/tests](backend/tests): End-to-end and critical path tests.
-- [demo.sh](demo.sh): One-click demo runner for local showcase.
-- [demo.py](demo.py): Python demo runner for scripted API flow.
-
-## How the Micropayment Flow Works (Step-by-Step)
-
-1. Seller lists insight in the React UI.
-2. `POST /list` uploads the insight text to Pinata and receives a CID.
-3. Backend stores listing metadata on InsightListing contract (price, seller, CID, ASA id).
-4. Buyer triggers `POST /demo_purchase` with a natural-language query.
-5. Agent calls semantic search tool, ranks listings by relevance + seller reputation.
-6. Agent evaluates value-for-price and trust thresholds to produce BUY or SKIP.
-7. If BUY and user explicitly types `approve`, agent calls x402 payment tool.
-8. x402 simulates then executes USDC transfer on Algorand TestNet.
-9. Post-payment flow confirms transaction, calls escrow release, and fetches CID content from IPFS.
-10. Backend returns instant insight text and transaction metadata to the buyer.
-
-## How to Run the One-Click Demo
-
-Run the full flow (tests + backend + frontend + agent execution):
+### Run the Demo (2 minutes)
 
 ```bash
 ./demo.sh
 ```
 
-What `demo.sh` does:
+This one-click command starts the backend (port 8000), frontend (port 5173), runs tests, and executes a full purchase scenario end-to-end.
 
-1. Runs the micropayment regression test file.
-2. Starts FastAPI backend on port `8000`.
-3. Starts React frontend on port `5173`.
-4. Executes a live agent run that performs search, evaluation, and x402 purchase.
-5. Writes runtime logs to `backend.log`, `frontend.log`, `agent_demo.log`, and `mercator.log`.
+### Setup (First Time)
 
-## Latest Verified TestNet Runs
+Follow [Setup.md](docs/Setup.md) for detailed environment configuration.
 
-- Full Round 2 run ledger: [testnet-demo-runs.md](testnet-demo-runs.md)
-- Raw API capture: [testnet-demo-runs.raw.json](testnet-demo-runs.raw.json)
-- Runtime trace: [demo_flow.log](demo_flow.log)
-- Security audit report: [SECURITY.md](SECURITY.md)
-- Latest seller upload tx id: ZRD7Q7WXUAWTDEP77ERRRJ2GGE2NC35MATL3TTNH4HHLDDVRRGHA
-- Latest payment tx id: QUOO4WN6LPAUZVKYWVE362YDCAQ67MK7QS3T77MNO5IC33VXIIGA
+```bash
+# Quick setup overview
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r backend/requirements.txt
+cd frontend && npm install
+# Configure .env.testnet with Algorand and API keys
+./demo.sh
+```
 
-## API
+---
 
-- `POST /list`: publish insight to IPFS and Algorand listing contract.
-- `POST /discover`: semantic discovery endpoint (relevance + reputation ranking).
-- `POST /demo_purchase`: run autonomous buyer flow and return final insight text.
-- `GET /ledger`: normalized activity feed of listing/payment/escrow events.
+## Documentation
 
-## Environment
+The project is documented across the following primary guides:
 
-Required keys include `ALGOD_URL` or `ALGOD_SERVER`, `INDEXER_URL` or `INDEXER_SERVER`, `GEMINI_API_KEY`, `PINATA_JWT`, `INSIGHT_LISTING_APP_ID`, `ESCROW_APP_ID`, `REPUTATION_APP_ID`, `DEPLOYER_MNEMONIC`, `DEPLOYER_ADDRESS`, `BUYER_WALLET`, `BUYER_MNEMONIC`, and `USDC_ASA_ID`.
+- **[Setup.md](docs/Setup.md)**: Environment setup, dependency installation, wallet configuration, smart contract deployment
+- **[Demo.md](docs/Demo.md)**: Interactive UI walkthrough, page-by-page feature guide, demo scenarios
+- **[Features.md](docs/Features.md)**: Core features and system capabilities
+- **[x402_Implementation.md](docs/x402_Implementation.md)**: Architecture, API endpoints, core implementations
+- **[Algorand_Implementation.md](docs/Algorand_Implementation.md)**: ARC4 smart contracts, atomic grouping, reputation system, transaction verification
+- **[Security.md](docs/Security.md)**: Security audit, compliance checklist, successful transaction IDs, edge case test results
+- **[Tests.md](docs/Tests.md)**: Regression test suite, test scenarios, performance benchmarks
+- **[Troubleshooting.md](docs/Troubleshooting.md)**: Common issues and solutions
+
+---
+
+## What It Does
+
+1. **Seller Creates Listing**: Submits insight text with USDC price via React UI
+2. **Backend Processes**: Uploads content to IPFS (Pinata), registers on InsightListing contract
+3. **Agent Discovers**: LangChain + Gemini ranks insights by relevance and seller reputation
+4. **Atomic Payment**: x402 executes USDC transfer + escrow release in single transaction group (all-or-nothing)
+5. **Reputation Updates**: Seller reputation increases by +10 on confirmation
+6. **Instant Delivery**: Buyer receives insight content immediately (no manual reconciliation)
+
+---
+
+## Core Features
+
+### Atomic Micropayments
+- Payment + escrow release grouped in single Algorand transaction
+- 4-5 second finality (TestNet)
+- ~$0.0003 cost per transaction
+- Instant settlement without middleman
+
+### On-Chain Reputation
+- Seller trust scores stored immutably on blockchain
+- +10 per successful sale, never decreases
+- Agent uses reputation for buy/skip decisions
+- Queries by wallet address
+
+### Content Verification
+- IPFS CID stored with each listing (permanent, content-addressable)
+- Hash verification ensures buyer receives promised content
+- No centralized content server
+
+### Agent-Driven Commerce
+- Natural language queries ("latest NIFTY insight")
+- LLM evaluation with semantic search ranking
+- Automatic buy/skip decisions based on relevance + trust + price
+- User confirmation required before payment
+
+---
+
+## Architecture
+
+```
+React Frontend    ←→    FastAPI Backend    ←→    Algorand Contracts
+                                ├─ IPFS (Pinata)
+                                ├─ LangChain + Gemini
+                                └─ x402 Payment Engine
+```
+
+**Key Components**:
+- `frontend/src/`: React + Vite UI (SellInsight, DiscoverInsights, Checkout, Receipt, Ledger, Trust pages)
+- `backend/main.py`: FastAPI routing and orchestration
+- `backend/tools/x402_payment.py`: Atomic payment execution
+- `backend/tools/post_payment_flow.py`: Content delivery and reputation update
+- `backend/contracts/`: Three ARC4 smart contracts (InsightListing, Escrow, Reputation)
+
+---
+
+## API Endpoints
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| POST | `/list` | Seller creates insight listing |
+| GET | `/discover` | Buyer discovers insights by query |
+| POST | `/demo_purchase` | Execute autonomous purchase flow |
+| GET | `/ledger` | View activity audit trail |
+| GET | `/reputation/{address}` | Query seller reputation score |
+
+See [x402_Implementation.md](docs/x402_Implementation.md) for detailed request/response schemas.
+
+---
+
+## Latest Proof Artifacts
+
+**Latest Successful Purchase** (2026-04-13):
+- Payment TX: `6RHL36IPWJDCZOYQ73VSCGRFGG5WPVT5XFWFZSGNXL63ZWHD6LKQ`
+- Escrow Release TX: `MNZCPDINK5LZF3SZSIIINUEFPTVGUCVY37BC6UBCAPQYH6RIXK6A`
+- Reputation Update TX: `YFHVORAUDXFB33JBWGIJWHJ7XSI54FYKVOALSR657DTW3EAPRX4A`
+- Seller Reputation: 87 → 97 (+10)
+
+Full audit details in [Security.md](docs/Security.md).
+
+---
+
+## Project Structure
+
+```
+mercator/
+├─ frontend/                    # React Vite app
+│  └─ src/
+│     ├─ SellInsight.tsx       # Seller listing interface
+│     ├─ pages/
+│     │  ├─ DiscoverInsights.tsx
+│     │  ├─ Checkout.tsx
+│     │  ├─ Receipt.tsx
+│     │  ├─ ActivityLedger.tsx
+│     │  └─ Trust.tsx
+│     └─ components/
+│
+├─ backend/                     # FastAPI server
+│  ├─ main.py                  # API endpoints
+│  ├─ agent.py                 # LangChain agent
+│  ├─ tools/
+│  │  ├─ x402_payment.py       # Atomic payment
+│  │  ├─ post_payment_flow.py  # Content + reputation
+│  │  └─ semantic_search.py    # Vector search
+│  ├─ contracts/               # Smart contracts
+│  │  ├─ insight_listing/
+│  │  ├─ escrow/
+│  │  └─ reputation/
+│  └─ tests/
+│     ├─ test_micropayment_cycle.py
+│     └─ test_critical_path_coverage.py
+│
+├─ scripts/                     # Utility scripts
+│  ├─ final_purchase_check.py
+│  └─ security_edge_cases.py
+│
+├─ docs/                        # Documentation
+│  ├─ Setup.md                 # Environment setup guide
+│  ├─ Demo.md                  # UI walkthrough guide
+│  ├─ Features.md              # Core features overview
+│  ├─ x402_Implementation.md   # Implementation details
+│  ├─ Algorand_Implementation.md # Blockchain details
+│  ├─ Security.md              # Audit report
+│  ├─ Tests.md                 # Testing guide
+│  └─ Troubleshooting.md       # Troubleshooting guide
+│
+├─ LICENSE
+├─ README.md
+└─ demo.sh                     # One-click demo
+```
+
+---
+
+## Environment Requirements
+
+- **Python**: 3.12+
+- **Node.js**: 18+
+- **Algorand TestNet**: Account with funding from [dispenser](https://dispenser.testnet.algoexplorerapi.io/)
+- **API Keys**: Gemini (LangChain), Pinata JWT (IPFS)
+
+See [Setup.md](docs/Setup.md) for complete configuration.
+
+---
 
 ## Testing
 
 ```bash
-pytest backend/tests/test_micropayment_cycle.py -q --tb=no
+# Run all regression tests
+pytest backend/tests/ -v
+
+# Run specific test suite
+pytest backend/tests/test_micropayment_cycle.py -v
+
+# See docs/Tests.md for detailed testing guide
 ```
+
+Test suites cover:
+- Full purchase flow (listing, payment, delivery, reputation)
+- Edge cases (low reputation, insufficient balance, invalid addresses)
+- Error handling (payment limit enforcement, atomic group failure)
+- Performance (< 2 sec per test)
+
+---
+
+## Security
+
+All smart contracts follow ARC4 standards with:
+- Type-safe contract code
+- Atomic transaction grouping (no race conditions)
+- Access control per contract
+- Read-only methods for queries
+
+Full security audit in [Security.md](docs/Security.md).
+
+Checklist:
+- ✓ Atomic payment + escrow release (verified in testnet)
+- ✓ USDC limits enforced (max 5.0 per transaction)
+- ✓ Reputation immutable and monotonically increasing
+- ✓ No hardcoded credentials (.env properly configured)
+- ✓ Keypair scan shows no exposed secrets
+
+---
+
+## Support
+
+- **General Issues**: See [Troubleshooting.md](docs/Troubleshooting.md)
+- **Setup Issues**: See [Setup.md](docs/Setup.md)
+- **Demo Issues**: See [Demo.md](docs/Demo.md)
+- **Test Failures**: See [Tests.md](docs/Tests.md) debugging section
+- **Algorand Questions**: See [Algorand_Implementation.md](docs/Algorand_Implementation.md) resources
+
+---
+
+## License
+
+GPL-3.0. See [LICENSE](LICENSE).
