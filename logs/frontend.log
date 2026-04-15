@@ -5,7 +5,10 @@
 Port 5173 is in use, trying another one...
 Port 5174 is in use, trying another one...
 
-  VITE v5.4.21  ready in 236 ms
-
-  ➜  Local:   http://localhost:5175/
-  ➜  Network: use --host to expose
+  VITE v5.4.21  ready i12:17:08 PM [vite] hmr update /src/pages/SellInsight.tsx
+12:17:08 PM [vite] hmr update /src/pages/DiscoverInsights.tsx
+12:17:50 PM [vite] hmr update /src/pages/Se12:17:50 PM [v12:17:50 PM [vite] hmr update /src/pages/Di12:17:50 PM [vite] 1:41:44 PM [vite] hmr update /src/pages/SellInsight.tsx
+1:41:44 PM [vite] hmr update /src/pages/Transaction.tsx
+1:46:43 PM [vite] hmr update /src/pages/SellInsight.tsx
+1:46:43 PM [vite] hmr update /src/pages/Transaction.tsx
+9:20:57 PM [vite] hmr update /src/pages/Sel9:20:57 PM [vite] hmr update /src/pages/SellInsight.tsx, /src/pages/Checkout.tsx, /src/pages/DiscoverInsights.tsx, /src/pages/Act9:24:03 PM [vite] hmr update /src/pages/SellInsight.tsx, /src/pages/Checkout.tsx, /src9:24:03 PM [vite] hmr update /src/pages/ActivityLedger.tsx, /src/pages/DiscoverInsights.tsx, /src/pages/SellInsight.tsx, /src/pages/Checkout.tsx, /src/pages/Operations.tsx

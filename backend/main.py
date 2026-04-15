@@ -77,7 +77,20 @@ demo_logger = configure_demo_logging()
 app = FastAPI(title="Mercator Backend")
 logger = logging.getLogger("mercator.backend")
 
-EXPLORER_TX_BASE = os.getenv("EXPLORER_TX_BASE", "https://explorer.perawallet.app/tx").rstrip("/")
+EXPLORER_TX_BASE = os.getenv("EXPLORER_TX_BASE", "https://lora.algokit.io/testnet/tx").rstrip("/")
+
+frontend_origins_raw = os.getenv("FRONTEND_ORIGIN", "").strip()
+frontend_origins = [origin.strip() for origin in frontend_origins_raw.split(",") if origin.strip()]
+
+allowed_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+for origin in frontend_origins:
+    if origin not in allowed_origins:
+        allowed_origins.append(origin)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -365,12 +378,7 @@ def _error_response(status_code: int, message: str) -> JSONResponse:
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

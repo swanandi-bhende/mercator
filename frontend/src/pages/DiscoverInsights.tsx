@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
 import { api, ApiError } from '../utils/api'
@@ -105,9 +105,40 @@ function deriveCategory(preview: string, query: string) {
   return 'General'
 }
 
+function tokenize(value: string) {
+  return value
+    .toLowerCase()
+    .split(/[^a-z0-9]+/g)
+    .map((token) => token.trim())
+    .filter((token) => token.length > 1)
+}
+
+function buildFeaturedListingInsight(listingInsight: ReturnType<typeof useAppContext>['listingInsight']) {
+  if (!listingInsight) return null
+
+  return {
+    id: listingInsight.tx_id || listingInsight.listing_id || listingInsight.cid || 'recent-listing',
+    title: listingInsight.insight_text,
+    seller: listingInsight.seller_wallet.slice(0, 8) + '...',
+    wallet: listingInsight.seller_wallet,
+    price: listingInsight.price,
+    reputation: Number(listingInsight.seller_reputation ?? 87),
+    relevance: Number(listingInsight.relevance_score ?? 99),
+    reason: 'Recently published listing from your last seller flow.',
+    category: deriveCategory(listingInsight.insight_text, listingInsight.market_context || ''),
+    recency: 'Live',
+    listingStatus: 'Recent',
+    riskSignal: 'Fresh listing',
+    txId: listingInsight.tx_id || 'Pending reveal',
+    cid: listingInsight.cid || '',
+    listingId: listingInsight.listing_id || '',
+    asaId: listingInsight.asa_id || '',
+  } satisfies RankedInsight
+}
+
 export default function DiscoverInsightsPage() {
   const navigate = useNavigate()
-  const { setSelectedInsight, setSellerMetadata } = useAppContext()
+  const { listingInsight, setSelectedInsight, setSellerMetadata } = useAppContext()
 
   const [query, setQuery] = useState(() => {
     if (typeof window === 'undefined') return ''
@@ -141,11 +172,35 @@ export default function DiscoverInsightsPage() {
   const [weakOnly, setWeakOnly] = useState(false)
   const [searchFeedback, setSearchFeedback] = useState<string | null>(null)
 
+  const queryTokens = useMemo(() => tokenize(query), [query])
+  const featuredListing = useMemo(() => buildFeaturedListingInsight(listingInsight), [listingInsight])
+
   const recencyInHours = (recency: string) => {
     if (recency.includes('h')) return Number.parseInt(recency, 10)
     if (recency.includes('d')) return Number.parseInt(recency, 10) * 24
     if (recency === 'Live') return 1
     return Number.POSITIVE_INFINITY
+  }
+
+  const getQueryMatchScore = (insight: RankedInsight) => {
+    if (queryTokens.length === 0) return 1
+    const haystackTokens = tokenize(
+      [insight.title, insight.seller, insight.wallet, insight.category, insight.reason].join(' '),
+    )
+    const overlap = queryTokens.filter((token) => haystackTokens.includes(token)).length
+    return overlap / queryTokens.length
+  }
+
+  const matchesSearchQuery = (insight: RankedInsight) => {
+    if (queryTokens.length === 0) return true
+    const score = getQueryMatchScore(insight)
+    if (score > 0) return true
+
+    const lowerQuery = query.trim().toLowerCase()
+    const lowerText = [insight.title, insight.reason, insight.category, insight.wallet]
+      .join(' ')
+      .toLowerCase()
+    return lowerText.includes(lowerQuery) || lowerQuery.includes(lowerText)
   }
 
   const applyFilters = (insight: RankedInsight) => {
@@ -169,7 +224,8 @@ export default function DiscoverInsightsPage() {
     return matchesCategory && matchesPrice && matchesReputation && matchesRecency
   }
 
-  const visibleInsights = (hasSearched ? rawInsights : DEMO_INSIGHTS).filter(applyFilters)
+  const baseInsights = hasSearched ? rawInsights : featuredListing ? [featuredListing, ...DEMO_INSIGHTS] : DEMO_INSIGHTS
+  const visibleInsights = baseInsights.filter((insight) => applyFilters(insight) && matchesSearchQuery(insight))
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -193,7 +249,11 @@ export default function DiscoverInsightsPage() {
     const searchQuery = query.trim()
     if (!searchQuery) {
       setPhase('ready')
-      setSearchFeedback('Please enter a market question to rank live insights.')
+      setSearchFeedback(
+        featuredListing
+          ? 'Showing your most recent listing. Enter a market question to rank live insights.'
+          : 'Please enter a market question to rank live insights.',
+      )
       return
     }
 
@@ -230,19 +290,31 @@ export default function DiscoverInsightsPage() {
         }
       })
 
-      const strongCandidates = mapped.filter(
+      const queryFiltered = mapped.filter((insight) => matchesSearchQuery(insight))
+      const featuredMatchesQuery = featuredListing && matchesSearchQuery(featuredListing) ? featuredListing : null
+      const mergedMatches = featuredMatchesQuery
+        ? [
+            featuredMatchesQuery,
+            ...queryFiltered.filter(
+              (insight) =>
+                insight.id !== featuredMatchesQuery.id && insight.listingId !== featuredMatchesQuery.listingId,
+            ),
+          ]
+        : queryFiltered
+
+      const strongCandidates = mergedMatches.filter(
         (insight) => insight.reputation >= 75 && insight.relevance >= 72 && insight.price <= 3,
       )
 
-      setRawInsights(mapped)
-      sessionStorage.setItem('discover:lastResults', JSON.stringify(mapped))
+      setRawInsights(mergedMatches)
+      sessionStorage.setItem('discover:lastResults', JSON.stringify(mergedMatches))
       sessionStorage.setItem('discover:lastQuery', searchQuery)
       if (response.degraded) {
         setSearchFeedback(
           response.message ||
             `Search degraded (${response.diagnostics?.code || 'unknown'}). Please retry shortly.`,
         )
-      } else if (mapped.length === 0) {
+      } else if (mergedMatches.length === 0) {
         setSearchFeedback(
           response.message || 'No suitable insight found for this query and filter combination.',
         )
@@ -360,7 +432,7 @@ export default function DiscoverInsightsPage() {
           <div className="discover-results-head">
             <div>
               <p className="home-kicker">Ranked Results</p>
-              <h2>{query ? `Matches for "${query}"` : 'Ranked insights ready to compare'}</h2>
+              <h2>{query ? `Matches for "${query}"` : featuredListing ? 'Your latest listing is ready to compare' : 'Ranked insights ready to compare'}</h2>
               <button className="discover-results-link" onClick={() => navigate('/trust')}>
                 Open Trust / Reputation Guide
               </button>
@@ -428,8 +500,8 @@ export default function DiscoverInsightsPage() {
             <div className="discover-empty-state">
               <h3>No suitable insight found for this query.</h3>
               <p>
-                Try a more specific market context, reduce filters, or broaden the time horizon in
-                your prompt.
+                Try a more specific market context, reduce filters, or clear the search if you want
+                to review the latest listing.
               </p>
               <ul>
                 <li>Use instrument + timeframe (example: "NIFTY breakout setup for today").</li>

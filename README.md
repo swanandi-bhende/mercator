@@ -40,6 +40,7 @@ The project is documented across the following primary guides:
 - **[Security.md](docs/Security.md)**: Security audit, compliance checklist, successful transaction IDs, edge case test results
 - **[Tests.md](docs/Tests.md)**: Regression test suite, test scenarios, performance benchmarks
 - **[Troubleshooting.md](docs/Troubleshooting.md)**: Common issues and solutions
+- **[Deploy.md](docs/Deploy.md)**: Production deployment to public URLs (Render + Vercel)
 
 ---
 
@@ -184,6 +185,17 @@ mercator/
 - **API Keys**: Gemini (LangChain), Pinata JWT (IPFS)
 
 See [Setup.md](docs/Setup.md) for complete configuration.
+
+---
+
+## Deploy to Public URL
+
+Use [Deploy.md](docs/Deploy.md) for full instructions.
+
+Quick summary:
+1. Deploy backend to Render using `backend/requirements.txt` and start command `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`.
+2. Deploy frontend to Vercel from `frontend` with `VITE_API_BASE_URL` set to your backend URL.
+3. Set backend `FRONTEND_ORIGIN` to your frontend URL and redeploy backend.
 
 ---
 

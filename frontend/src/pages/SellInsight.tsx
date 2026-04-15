@@ -39,6 +39,8 @@ export default function SellInsightPage() {
   const [studioError, setStudioError] = useState<StudioFeedback | null>(null)
 
   const walletPattern = useMemo(() => /^[A-Z2-7]{58}$/, [])
+  const buildExplorerUrl = (txId?: string) =>
+    txId ? `https://lora.algokit.io/testnet/tx/${txId}` : ''
 
   const validateFields = () => {
     const nextErrors = { insight: '', price: '', wallet: '' }
@@ -154,7 +156,7 @@ export default function SellInsightPage() {
         cid: response.cid,
         listingId: response.listing_id,
         asaId: response.asa_id,
-        explorerUrl: response.explorer_url,
+        explorerUrl: response.explorer_url || buildExplorerUrl(response.txId),
       })
 
       setInsight('')
@@ -401,9 +403,17 @@ export default function SellInsightPage() {
                       <strong>{receipt.asaId || '--'}</strong>
                     </div>
                   </div>
-                  <a href={receipt.explorerUrl || '#'} target="_blank" rel="noreferrer">
-                    View explorer proof
-                  </a>
+                  {receipt.explorerUrl ? (
+                    <a href={receipt.explorerUrl} target="_blank" rel="noreferrer">
+                      View explorer proof
+                    </a>
+                  ) : receipt.txId ? (
+                    <a href={buildExplorerUrl(receipt.txId)} target="_blank" rel="noreferrer">
+                      View explorer proof
+                    </a>
+                  ) : (
+                    <span>Explorer proof unavailable</span>
+                  )}
                   <div className="sell-next-actions">
                     <button
                       type="button"

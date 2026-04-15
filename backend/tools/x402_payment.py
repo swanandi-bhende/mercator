@@ -169,7 +169,7 @@ REPUTATION_APP_ID = int(os.getenv("REPUTATION_APP_ID", 758022459))
 USDC_ASA_ID = int(os.getenv("USDC_ASA_ID", 10458941))
 USDC_DECIMALS = int(os.getenv("USDC_DECIMALS", "6"))
 MAX_MICROPAYMENT_USDC = 5.0
-EXPLORER_TX_BASE = os.getenv("EXPLORER_TX_BASE", "https://explorer.perawallet.app/tx").rstrip("/")
+EXPLORER_TX_BASE = os.getenv("EXPLORER_TX_BASE", "https://lora.algokit.io/testnet/tx").rstrip("/")
 
 
 class X402Client:

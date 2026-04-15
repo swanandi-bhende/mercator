@@ -17,7 +17,7 @@ import type {
   OpsDiagnosticsResponse,
 } from '../types'
 
-const API_BASE = 'http://localhost:8000'
+const API_BASE = import.meta.env.VITE_API_BASE_URL?.trim() || 'http://localhost:8000'
 
 const client = axios.create({
   baseURL: API_BASE,

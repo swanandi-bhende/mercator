@@ -22,6 +22,7 @@ BACKEND_URL = "http://127.0.0.1:8000"
 FRONTEND_URL = "http://127.0.0.1:3000"
 SAMPLE_INSIGHT = "Sample trading insight: Buy NIFTY above 24500 with SL 24380"
 SAMPLE_QUERY = "latest NIFTY 24500 call insight"
+KEEP_ALIVE = os.getenv("DEMO_KEEP_ALIVE", "").strip().lower() in {"1", "true", "yes", "on"}
 
 
 def _launch(command: list[str], cwd: Path) -> subprocess.Popen[str]:
@@ -163,6 +164,10 @@ async def main() -> None:
         await _wait_for_url(FRONTEND_URL)
         demo_logger.info("Demo servers ready")
         await _run_demo_flow(logger)
+        if KEEP_ALIVE:
+            logger.info("DEMO_KEEP_ALIVE is enabled; leaving backend and frontend running until interrupted.")
+            while True:
+                await asyncio.sleep(1)
     finally:
         _shutdown()
 

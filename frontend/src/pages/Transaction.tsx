@@ -37,10 +37,10 @@ export default function TransactionPage() {
 
   const paymentExplorerUrl =
     paymentState?.explorerPaymentUrl ||
-    (paymentTxId ? `https://explorer.perawallet.app/tx/${paymentTxId}/` : '')
+    (paymentTxId ? `https://lora.algokit.io/testnet/tx/${paymentTxId}` : '')
   const escrowExplorerUrl =
     paymentState?.explorerEscrowUrl ||
-    (escrowTxId ? `https://explorer.perawallet.app/tx/${escrowTxId}/` : '')
+    (escrowTxId ? `https://lora.algokit.io/testnet/tx/${escrowTxId}` : '')
   const ipfsRecordUrl = cid ? `https://ipfs.io/ipfs/${cid}` : ''
 
   const escrowReleased = paymentState?.escrowReleased ?? Boolean(escrowTxId)

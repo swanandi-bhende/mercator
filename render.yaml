@@ -1,0 +1,48 @@
+services:
+  - type: web
+    name: mercator-backend
+    runtime: python
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: NETWORK
+        value: testnet
+      - key: USDC_ASA_ID
+        value: 10458941
+      - key: USDC_DECIMALS
+        value: 6
+      - key: EXPLORER_TX_BASE
+        value: https://lora.algokit.io/testnet/tx
+      - key: FRONTEND_ORIGIN
+        sync: false
+      - key: ALGOD_URL
+        sync: false
+      - key: INDEXER_URL
+        sync: false
+      - key: ALGOD_TOKEN
+        sync: false
+      - key: INDEXER_TOKEN
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: PINATA_JWT
+        sync: false
+      - key: DEPLOYER_MNEMONIC
+        sync: false
+      - key: DEPLOYER_ADDRESS
+        sync: false
+      - key: BUYER_MNEMONIC
+        sync: false
+      - key: BUYER_WALLET
+        sync: false
+      - key: BUYER_ADDRESS
+        sync: false
+      - key: INSIGHT_LISTING_APP_ID
+        sync: false
+      - key: ESCROW_APP_ID
+        sync: false
+      - key: REPUTATION_APP_ID
+        sync: false
