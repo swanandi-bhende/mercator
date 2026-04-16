@@ -444,88 +444,138 @@ class X402Client:
         Returns tuple(payment_tx_id, redeem_tx_id).
         """
         import concurrent.futures
-        try:
-            # Get network params with timeout using thread pool
-            loop = asyncio.get_event_loop()
-            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-                params = await asyncio.wait_for(
-                    loop.run_in_executor(executor, self.algod.suggested_params),
-                    timeout=10.0
-                )
-            
-            if asset_id > 0:
-                payment_txn = transaction.AssetTransferTxn(
-                    sender=sender,
-                    sp=params,
-                    index=asset_id,
-                    amt=int(amount),
-                    receiver=receiver,
-                )
-            else:
-                payment_txn = PaymentTxn(
-                    sender=sender,
-                    sp=params,
-                    receiver=receiver,
-                    amt=int(amount),
-                )
+        loop = asyncio.get_event_loop()
 
-            if memo:
-                payment_txn.note = memo.encode()
-
-            private_key = self._resolve_private_key_for_sender(sender)
-            txn_signer = AccountTransactionSigner(private_key)
-
-            escrow_client = EscrowClient(
-                algorand=self.algorand,
-                app_id=ESCROW_APP_ID,
-                default_sender=sender,
+        def _is_retryable_chain_error(raw: str) -> bool:
+            low = raw.lower()
+            return (
+                "txn dead" in low
+                or "outside of" in low
+                or "timeout" in low
+                or "temporarily unavailable" in low
+                or "connection" in low
             )
 
-            composer = escrow_client.new_group()
-            composer.add_transaction(payment_txn, signer=txn_signer)
-            composer.release_after_payment(
-                args=(sender, listing_id),
-                params=algokit_utils.CommonAppCallParams(
-                    sender=sender,
-                    signer=txn_signer,
-                ),
-            )
+        attempts = 3
+        last_error: Exception | None = None
+        for attempt in range(1, attempts + 1):
+            try:
+                # Always fetch fresh params for each attempt to avoid stale round windows.
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                    params = await asyncio.wait_for(
+                        loop.run_in_executor(executor, self.algod.suggested_params),
+                        timeout=12.0,
+                    )
 
-            # Run simulation with timeout (this is often the slowest part)
-            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-                simulation = await asyncio.wait_for(
-                    loop.run_in_executor(executor, composer.simulate, False),
-                    timeout=20.0
+                first_valid_round = int(getattr(params, "first", 0) or 0)
+                if first_valid_round <= 0:
+                    raise RuntimeError("Could not determine first valid round from suggested params")
+                last_valid_round = first_valid_round + 1000
+                params.first = first_valid_round
+                params.last = last_valid_round
+
+                if asset_id > 0:
+                    payment_txn = transaction.AssetTransferTxn(
+                        sender=sender,
+                        sp=params,
+                        index=asset_id,
+                        amt=int(amount),
+                        receiver=receiver,
+                    )
+                else:
+                    payment_txn = PaymentTxn(
+                        sender=sender,
+                        sp=params,
+                        receiver=receiver,
+                        amt=int(amount),
+                    )
+
+                if memo:
+                    payment_txn.note = memo.encode()
+
+                private_key = self._resolve_private_key_for_sender(sender)
+                txn_signer = AccountTransactionSigner(private_key)
+
+                escrow_client = EscrowClient(
+                    algorand=self.algorand,
+                    app_id=ESCROW_APP_ID,
+                    default_sender=sender,
                 )
-            logger.info("Atomic group simulation complete | tx_count=%s", len(simulation.tx_ids))
 
-            # Send transaction with timeout
-            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-                send_result = await asyncio.wait_for(
-                    loop.run_in_executor(executor, composer.send),
-                    timeout=15.0
+                composer = escrow_client.new_group()
+                composer.add_transaction(payment_txn, signer=txn_signer)
+                composer.release_after_payment(
+                    args=(sender, listing_id),
+                    params=algokit_utils.CommonAppCallParams(
+                        sender=sender,
+                        signer=txn_signer,
+                        first_valid_round=first_valid_round,
+                        last_valid_round=last_valid_round,
+                        validity_window=1000,
+                    ),
                 )
-            
-            tx_ids = [str(tx) for tx in getattr(send_result, "tx_ids", [])]
-            if len(tx_ids) < 2:
-                raise RuntimeError(f"Atomic group returned unexpected tx ids: {tx_ids}")
 
-            payment_tx_id = tx_ids[0]
-            redeem_tx_id = tx_ids[1]
-            logger.info(
-                "Atomic payment+redeem group confirmed | payment_tx=%s redeem_tx=%s",
-                payment_tx_id,
-                redeem_tx_id,
-            )
-            return payment_tx_id, redeem_tx_id
-        except asyncio.TimeoutError as e:
-            error_msg = f"x402 atomic payment+redeem timed out: blockchain network is slow, check Algorand TestNet status"
+                # Skip extra atomic simulation here; pre-flight simulate_payment already ran.
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                    send_result = await asyncio.wait_for(
+                        loop.run_in_executor(
+                            executor,
+                            lambda: composer.send(
+                                send_params={
+                                    "max_rounds_to_wait": 200,
+                                    "populate_app_call_resources": True,
+                                }
+                            ),
+                        ),
+                        timeout=120.0,
+                    )
+
+                tx_ids = [str(tx) for tx in getattr(send_result, "tx_ids", [])]
+                if len(tx_ids) < 2:
+                    raise RuntimeError(f"Atomic group returned unexpected tx ids: {tx_ids}")
+
+                payment_tx_id = tx_ids[0]
+                redeem_tx_id = tx_ids[1]
+                logger.info(
+                    "Atomic payment+redeem group confirmed | payment_tx=%s redeem_tx=%s attempt=%s/%s",
+                    payment_tx_id,
+                    redeem_tx_id,
+                    attempt,
+                    attempts,
+                )
+                return payment_tx_id, redeem_tx_id
+            except asyncio.TimeoutError as e:
+                last_error = e
+                logger.warning(
+                    "Atomic send timed out | attempt=%s/%s",
+                    attempt,
+                    attempts,
+                )
+                if attempt >= attempts:
+                    break
+                await asyncio.sleep(min(2, attempt))
+            except Exception as e:
+                last_error = e
+                details = str(e)
+                if attempt < attempts and _is_retryable_chain_error(details):
+                    logger.warning(
+                        "Retryable atomic send error | attempt=%s/%s error=%s",
+                        attempt,
+                        attempts,
+                        details,
+                    )
+                    await asyncio.sleep(min(2, attempt))
+                    continue
+                break
+
+        if isinstance(last_error, asyncio.TimeoutError):
+            error_msg = "x402 atomic payment+redeem timed out: blockchain network is slow, please retry"
             logger.error(error_msg, exc_info=True)
-            raise TimeoutError(error_msg) from e
-        except Exception as e:
-            error_msg = f"x402 atomic payment+redeem failed: {str(e)}"
-            logger.error(error_msg, exc_info=True)
-            raise Exception(error_msg) from e
+            raise TimeoutError(error_msg) from last_error
+
+        error_msg = f"x402 atomic payment+redeem failed: {str(last_error) if last_error else 'unknown error'}"
+        logger.error(error_msg, exc_info=True)
+        raise Exception(error_msg) from last_error
 
 
 @tool
@@ -561,10 +611,12 @@ async def trigger_x402_payment(
             low = raw.lower()
             if "underflow" in low or "insufficient" in low or "overspend" in low:
                 return f"insufficient balance: {insufficient_balance(logger, raw)}"
+            if "txn dead" in low or "outside of" in low:
+                return "Network round changed during payment submission. Please retry now."
             if "rejected" in low:
                 return payment_rejected(logger, raw)
             if "timeout" in low or "network" in low or "connection" in low:
-                return payment_rejected(logger, raw)
+                return "Algorand TestNet is slow right now. Please retry payment."
             return payment_rejected(logger, raw)
 
         normalize_network_env()
