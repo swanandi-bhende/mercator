@@ -39,6 +39,15 @@ function extractTxFromOutput(output: string, kind: 'payment' | 'escrow') {
   return match?.[1] || null
 }
 
+function parseListingId(value: unknown): number | undefined {
+  if (value === null || value === undefined) return undefined
+  const normalized = String(value)
+  const digits = normalized.match(/\d+/)?.[0]
+  if (!digits) return undefined
+  const parsed = Number.parseInt(digits, 10)
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined
+}
+
 const APPROVAL_TEXT = 'I understand this is a paid insight and I approve this transaction.'
 
 const CHECKOUT_STAGES: { key: CheckoutStageKey; label: string; detail: string }[] = [
@@ -292,6 +301,7 @@ export default function CheckoutPage() {
       await new Promise((resolve) => setTimeout(resolve, 220))
 
       const query = selectedInsight.query_text || selectedInsight.insight_text
+      const targetListingId = parseListingId(selectedInsight.listing_id)
 
       setActiveStage('submitting_x402')
       setConfirmationState('submitting')
@@ -301,6 +311,7 @@ export default function CheckoutPage() {
         buyer_address: walletInput.trim(),
         user_approval_input: 'approve',
         force_buy_for_test: false,
+        target_listing_id: targetListingId,
       })
 
       const responseText = JSON.stringify(response).toLowerCase()

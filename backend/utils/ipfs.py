@@ -365,6 +365,7 @@ def store_cid_in_listing(
     except ListingStoreError:
         raise
     except Exception as err:
+        detail = str(err).strip() or err.__class__.__name__
         raise ListingStoreError(
-            "Could not link IPFS CID to listing on-chain"
+            f"Could not link IPFS CID to listing on-chain: {detail}"
         ) from err

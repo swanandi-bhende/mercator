@@ -245,6 +245,7 @@ async def run_agent(
     buyer_address: str = "",
     user_approval_input: str = "",
     force_buy_for_test: bool = False,
+    target_listing_id: int | None = None,
 ):
     """Run the Mercator buyer agent with full x402 micropayment flow.
     
@@ -305,14 +306,28 @@ async def run_agent(
             return None
         return None
 
-    try:
-        semantic_results = await semantic_search_tool.ainvoke({"query": user_query})
-        eval_state = await evaluate_insights(
-            {"query": user_query, "semantic_results": semantic_results}
+    if target_listing_id is not None:
+        semantic_results = {"matches": [{"listing_id": int(target_listing_id)}]}
+        eval_state = {
+            "decision": "BUY",
+            "evaluation": (
+                "Reasoning: explicit target listing provided by checkout context.\n"
+                "Decision: BUY"
+            ),
+        }
+        logger.info(
+            "target listing provided; bypassing search/evaluation and selecting listing %s",
+            target_listing_id,
         )
-    except Exception as exc:  # noqa: BLE001
-        logger.error("Agent pre-evaluation failed | error=%s", exc, exc_info=True)
-        return _agent_error_result(str(exc))
+    else:
+        try:
+            semantic_results = await semantic_search_tool.ainvoke({"query": user_query})
+            eval_state = await evaluate_insights(
+                {"query": user_query, "semantic_results": semantic_results}
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.error("Agent pre-evaluation failed | error=%s", exc, exc_info=True)
+            return _agent_error_result(str(exc))
 
     top_reputation = _extract_top_reputation(semantic_results)
     if top_reputation is not None and top_reputation < 50 and not force_buy_for_test:
@@ -359,26 +374,34 @@ async def run_agent(
         # Parse listing details from semantic results
         try:
             import json
-            listing_id = 1
+            listing_id: int | None = int(target_listing_id) if target_listing_id is not None else None
             price = 1.0
             search_results = json.loads(semantic_results) if isinstance(semantic_results, str) else semantic_results
             top_listing: dict[str, Any] | None = None
-            if isinstance(search_results, list) and len(search_results) > 0:
+            if listing_id is None and isinstance(search_results, list) and len(search_results) > 0:
                 top_listing = search_results[0]
-            elif isinstance(search_results, dict):
+            elif listing_id is None and isinstance(search_results, dict):
                 matches = search_results.get("matches", [])
                 if isinstance(matches, list) and matches:
                     top_listing = matches[0]
 
             if isinstance(top_listing, dict):
-                listing_id = int(top_listing.get("listing_id", 1))
+                listing_candidate = top_listing.get("listing_id")
+                if listing_candidate is not None:
+                    listing_id = int(listing_candidate)
                 if "price_usdc" in top_listing:
                     price = float(top_listing.get("price_usdc", 1.0))
                 elif "price" in top_listing:
                     price = float(top_listing.get("price", 1.0))
                 elif "price_micro_usdc" in top_listing:
                     price = float(top_listing.get("price_micro_usdc", 1_000_000)) / 1_000_000
-                
+
+            if listing_id is None or listing_id < 0:
+                return _agent_error_result(
+                    "No valid on-chain listing_id found for the selected insight",
+                    str(eval_state.get("evaluation", "")),
+                )
+
             if not buyer_address:
                 buyer_address = (
                     os.getenv("BUYER_WALLET", "").strip()

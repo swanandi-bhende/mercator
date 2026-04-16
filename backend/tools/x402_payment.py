@@ -194,61 +194,54 @@ class X402Client:
         if not sender:
             raise ValueError("Sender address is required")
 
-        key_candidates = [
-            (os.getenv("BUYER_MNEMONIC", "").strip(), os.getenv("BUYER_WALLET", "").strip()),
-            (os.getenv("BUYER_MNEMONIC", "").strip(), os.getenv("BUYER_ADDRESS", "").strip()),
-            (os.getenv("DEPLOYER_MNEMONIC", "").strip(), os.getenv("DEPLOYER_ADDRESS", "").strip()),
+        mnemonic_candidates = [
+            os.getenv("BUYER_MNEMONIC", "").strip(),
+            os.getenv("DEPLOYER_MNEMONIC", "").strip(),
         ]
 
-        for mnemonic, expected_address in key_candidates:
-            if not mnemonic or not expected_address:
+        for candidate in mnemonic_candidates:
+            if not candidate:
                 continue
-            if expected_address != sender:
-                continue
-            private_key = algo_mnemonic.to_private_key(mnemonic)
+            private_key = algo_mnemonic.to_private_key(candidate)
             derived_address = algo_account.address_from_private_key(private_key)
-            if derived_address != sender:
-                raise ValueError(
-                    f"Mnemonic/address mismatch for sender {sender}: derived {derived_address}"
-                )
-            return private_key
+            if derived_address == sender:
+                return private_key
 
         raise ValueError(
             f"No mnemonic configured for sender {sender}. "
-            "Set BUYER_MNEMONIC+BUYER_WALLET (or BUYER_ADDRESS) for buyer payments."
+            "Set BUYER_MNEMONIC or DEPLOYER_MNEMONIC for this wallet."
         )
 
-    def ensure_asset_opt_in(self, receiver: str, asset_id: int) -> Optional[str]:
-        """Opt a configured receiver wallet into an asset when needed."""
+    def ensure_asset_opt_in(self, address: str, asset_id: int) -> Optional[str]:
+        """Opt an address into an asset when mnemonic for that address is configured."""
         if asset_id <= 0:
             return None
 
         try:
-            account_info = self.algod.account_info(receiver)
+            account_info = self.algod.account_info(address)
             assets = account_info.get("assets", [])
             if any(int(asset.get("asset-id", -1)) == asset_id for asset in assets):
                 return None
         except Exception:
             pass
 
-        deployer_address = os.getenv("DEPLOYER_ADDRESS", "").strip()
-        deployer_mnemonic = os.getenv("DEPLOYER_MNEMONIC", "").strip()
-        if receiver != deployer_address or not deployer_mnemonic:
+        try:
+            private_key = self._resolve_private_key_for_sender(address)
+        except Exception:
             return None
 
-        private_key = algo_mnemonic.to_private_key(deployer_mnemonic)
         params = self.algod.suggested_params()
         opt_in_txn = transaction.AssetTransferTxn(
-            sender=receiver,
+            sender=address,
             sp=params,
-            receiver=receiver,
+            receiver=address,
             amt=0,
             index=asset_id,
         )
         signed_txn = opt_in_txn.sign(private_key)
         txid = self.algod.send_transaction(signed_txn)
         transaction.wait_for_confirmation(self.algod, txid, 4)
-        logger.info("Receiver opt-in confirmed for asset %s: txid=%s", asset_id, txid)
+        logger.info("Asset opt-in confirmed for address %s asset %s: txid=%s", address, asset_id, txid)
         return txid
     
     async def simulate_payment(
@@ -282,6 +275,42 @@ class X402Client:
             if not encoding.is_valid_address(receiver):
                 raise ValueError(f"Invalid receiver address: {receiver}")
             
+            if asset_id > 0:
+                # Make parallel account info calls to reduce latency
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+                    future_sender = executor.submit(self.algod.account_info, sender)
+                    future_receiver = executor.submit(self.algod.account_info, receiver)
+                    
+                    try:
+                        sender_info = future_sender.result(timeout=15)
+                        receiver_info = future_receiver.result(timeout=15)
+                    except concurrent.futures.TimeoutError:
+                        raise TimeoutError("Account info lookup took too long - network may be slow")
+
+                sender_assets = sender_info.get("assets", [])
+                receiver_assets = receiver_info.get("assets", [])
+
+                sender_holding = next(
+                    (asset for asset in sender_assets if int(asset.get("asset-id", -1)) == asset_id),
+                    None,
+                )
+                receiver_holding = next(
+                    (asset for asset in receiver_assets if int(asset.get("asset-id", -1)) == asset_id),
+                    None,
+                )
+
+                if sender_holding is None:
+                    raise ValueError(f"Buyer wallet is not opted into asset {asset_id}")
+                if receiver_holding is None:
+                    raise ValueError(f"Seller wallet is not opted into asset {asset_id}")
+
+                sender_amount = int(sender_holding.get("amount", 0) or 0)
+                if sender_amount < int(amount):
+                    raise ValueError(
+                        f"Insufficient asset balance: have {sender_amount}, need {int(amount)}"
+                    )
+
             # Get current network params for transaction creation
             params = self.algod.suggested_params()
             
@@ -414,8 +443,16 @@ class X402Client:
 
         Returns tuple(payment_tx_id, redeem_tx_id).
         """
+        import concurrent.futures
         try:
-            params = self.algod.suggested_params()
+            # Get network params with timeout using thread pool
+            loop = asyncio.get_event_loop()
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                params = await asyncio.wait_for(
+                    loop.run_in_executor(executor, self.algod.suggested_params),
+                    timeout=10.0
+                )
+            
             if asset_id > 0:
                 payment_txn = transaction.AssetTransferTxn(
                     sender=sender,
@@ -454,10 +491,21 @@ class X402Client:
                 ),
             )
 
-            simulation = composer.simulate(skip_signatures=False)
+            # Run simulation with timeout (this is often the slowest part)
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                simulation = await asyncio.wait_for(
+                    loop.run_in_executor(executor, composer.simulate, False),
+                    timeout=20.0
+                )
             logger.info("Atomic group simulation complete | tx_count=%s", len(simulation.tx_ids))
 
-            send_result = composer.send()
+            # Send transaction with timeout
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                send_result = await asyncio.wait_for(
+                    loop.run_in_executor(executor, composer.send),
+                    timeout=15.0
+                )
+            
             tx_ids = [str(tx) for tx in getattr(send_result, "tx_ids", [])]
             if len(tx_ids) < 2:
                 raise RuntimeError(f"Atomic group returned unexpected tx ids: {tx_ids}")
@@ -470,6 +518,10 @@ class X402Client:
                 redeem_tx_id,
             )
             return payment_tx_id, redeem_tx_id
+        except asyncio.TimeoutError as e:
+            error_msg = f"x402 atomic payment+redeem timed out: blockchain network is slow, check Algorand TestNet status"
+            logger.error(error_msg, exc_info=True)
+            raise TimeoutError(error_msg) from e
         except Exception as e:
             error_msg = f"x402 atomic payment+redeem failed: {str(e)}"
             logger.error(error_msg, exc_info=True)
@@ -680,6 +732,7 @@ async def trigger_x402_payment(
         logger.info("Executing x402 micropayment transaction group...")
         
         try:
+            x402_client.ensure_asset_opt_in(buyer_address, settlement_asset_id)
             x402_client.ensure_asset_opt_in(seller_wallet, settlement_asset_id)
             payment_txid, redeem_txid = await x402_client.send_atomic_payment_and_redeem(
                 sender=buyer_address,

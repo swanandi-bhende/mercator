@@ -468,3 +468,843 @@ Exception: x402 atomic payment+redeem failed: Transaction failed at transaction(
 2026-04-16 19:37:32,094 | INFO | demo.flow | Payment approved
 2026-04-16 19:37:32,094 | INFO | backend.agent | Payment triggered: {'success': False, 'decision': 'BUY', 'evaluation': 'Reasoning: Gemini limit reached during evaluation; cannot verify safely.\nDecision: SKIP', 'payment_status': {'success': False, 'approved': True, 'simulation_passed': True, 'error': 'PAYMENT_EXECUTION_FAILED', 'message': 'insufficient balance: Payment was rejected by x402 - please check your wallet balance', 'next_step': 'Verify buyer USDC balance and network connectivity'}, 'message': 'Sorry, I encountered an issue: Payment was rejected by x402 - please check your wallet balance. Would you like to try a different insight or check your wallet balance?'}
 2026-04-16 19:37:32,105 | INFO | mercator.demo | Buyer flow result: {'success': False, 'final_insight_text': '', 'result': {'success': False, 'decision': 'BUY', 'evaluation': 'Reasoning: Gemini limit reached during evaluation; cannot verify safely.\nDecision: SKIP', 'payment_status': {'success': False, 'approved': True, 'simulation_passed': True, 'error': 'PAYMENT_EXECUTION_FAILED', 'message': 'insufficient balance: Payment was rejected by x402 - please check your wallet balance', 'next_step': 'Verify buyer USDC balance and network connectivity'}, 'message': 'Sorry, I encountered an issue: Payment was rejected by x402 - please check your wallet balance. Would you like to try a different insight or check your wallet balance?'}}
+2026-04-16 19:54:21,666 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 19:54:28,958 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 19:54:29,669 | INFO | demo.flow | Demo servers ready
+2026-04-16 19:54:29,674 | INFO | mercator.demo | Submitting seller listing to /list
+2026-04-16 19:54:29,681 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-16 19:54:29,684 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 19:54:29,965 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 19:54:31,754 | INFO | mercator.backend | IPFS upload complete, cid=QmRGRbfgwtaofvyMwwirBPzBcNEsCsp8n2AdFPqW5oLy7c
+2026-04-16 19:54:31,754 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-16 19:54:36,095 | INFO | mercator.backend | On-chain listing submitted: listing_id=56 asa_id=758912047
+2026-04-16 19:54:36,095 | INFO | demo.flow | Seller upload complete
+2026-04-16 19:54:36,096 | INFO | demo.flow | On-chain ASA created
+2026-04-16 19:54:36,357 | INFO | mercator.backend | Transaction confirmed: tx_id=RZGBPQQHX3GCQL2RXNFTODDDYDD3LLS3YFBWCFZ6D3GDHLJ5ZYYQ
+2026-04-16 19:54:36,361 | INFO | mercator.demo | Seller upload complete
+2026-04-16 19:54:36,361 | INFO | mercator.demo | On-chain ASA created
+2026-04-16 19:54:36,361 | INFO | mercator.demo | Listing response: {'success': 1, 'transaction_id': 'RZGBPQQHX3GCQL2RXNFTODDDYDD3LLS3YFBWCFZ6D3GDHLJ5ZYYQ', 'txId': 'RZGBPQQHX3GCQL2RXNFTODDDYDD3LLS3YFBWCFZ6D3GDHLJ5ZYYQ', 'explorer_url': 'https://lora.algokit.io/testnet/tx/RZGBPQQHX3GCQL2RXNFTODDDYDD3LLS3YFBWCFZ6D3GDHLJ5ZYYQ/', 'message': 'Insight listed on-chain and pinned on IPFS', 'cid': 'QmRGRbfgwtaofvyMwwirBPzBcNEsCsp8n2AdFPqW5oLy7c', 'listing_id': 56, 'asa_id': 758912047}
+2026-04-16 19:54:39,362 | INFO | mercator.demo | Submitting buyer flow to /demo_purchase
+2026-04-16 19:54:39,371 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=approve
+2026-04-16 19:55:08,047 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=approve
+2026-04-16 19:55:46,269 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=approve
+2026-04-16 19:57:03,173 | ERROR | backend.utils.ipfs | IPFS fetch request error | url=https://gateway.pinata.cloud/ipfs/QmdCP32hCq7gUAB162agWkCLumtgo8N2HaPVqbindJy9fA error=429 Client Error: Too Many Requests for url: https://gateway.pinata.cloud/ipfs/QmdCP32hCq7gUAB162agWkCLumtgo8N2HaPVqbindJy9fA
+2026-04-16 19:57:19,204 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-16 19:57:20,857 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-16 19:57:21,348 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-16 19:57:21,362 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-16 19:57:23,019 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-16 19:57:23,473 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-16 19:57:23,487 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-16 19:57:23,489 | WARNING | backend.tools.semantic_search | Embedding failure during semantic_search: RetryError[<Future at 0x1119ff5b0 state=finished raised GoogleGenerativeAIError>]
+2026-04-16 19:57:23,491 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-16 19:57:23,498 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-04-16 19:57:23,676 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 429 Too Many Requests"
+2026-04-16 19:57:23,678 | WARNING | backend.agent | Evaluation step hit Gemini limit; falling back to SKIP
+2026-04-16 19:57:25,144 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-16 19:57:25,145 | WARNING | backend.tools.semantic_search | Embedding failure during semantic_search: RetryError[<Future at 0x1119e7c20 state=finished raised GoogleGenerativeAIError>]
+2026-04-16 19:57:25,146 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-16 19:57:25,147 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-04-16 19:57:25,298 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 429 Too Many Requests"
+2026-04-16 19:57:25,298 | WARNING | backend.agent | Evaluation step hit Gemini limit; falling back to SKIP
+2026-04-16 19:57:25,602 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-16 19:57:25,604 | WARNING | backend.tools.semantic_search | Embedding failure during semantic_search: RetryError[<Future at 0x111f94050 state=finished raised GoogleGenerativeAIError>]
+2026-04-16 19:57:25,605 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-16 19:57:25,607 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-04-16 19:57:25,747 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 429 Too Many Requests"
+2026-04-16 19:57:25,749 | WARNING | backend.agent | Evaluation step hit Gemini limit; falling back to SKIP
+2026-04-16 19:57:25,751 | INFO | backend.agent | force_buy_for_test enabled; overriding decision to BUY
+2026-04-16 19:57:25,751 | INFO | backend.agent | Decision is BUY and user approval confirmed ('approve'); triggering x402 payment
+2026-04-16 19:57:25,751 | INFO | backend.agent | Triggering x402 payment: listing 55, price 1.0, buyer MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 19:57:25,760 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-16 19:57:25,760 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-16 19:57:25,760 | INFO | demo.flow | Payment approved
+2026-04-16 19:57:25,760 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 55
+2026-04-16 19:57:25,760 | INFO | backend.tools.x402_payment | Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 1.0 USDC
+2026-04-16 19:57:25,760 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-16 19:57:25,927 | INFO | backend.tools.x402_payment | Listing 55: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 19:57:25,928 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-16 19:57:25,928 | INFO | backend.tools.x402_payment | Simulating payment: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ -> M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, amount=1000000, asset_id=10458941
+2026-04-16 19:57:26,405 | ERROR | backend.tools.x402_payment | Payment simulation failed: Insufficient asset balance: have 115433, need 1000000
+2026-04-16 19:57:26,405 | ERROR | backend.tools.x402_payment | Payment simulation error: Payment simulation failed: Insufficient asset balance: have 115433, need 1000000
+2026-04-16 19:57:26,405 | ERROR | backend.tools.x402_payment | insufficient_balance | details=Payment simulation failed: Insufficient asset balance: have 115433, need 1000000
+2026-04-16 19:57:26,406 | ERROR | backend.agent | payment_rejected | details={'success': False, 'error': 'SIMULATION_ERROR', 'message': 'insufficient balance: Payment was rejected by x402 - please check your wallet balance', 'next_step': 'Check buyer balance, receiver address, and asset availability'}
+2026-04-16 19:57:26,406 | INFO | demo.flow | Payment approved
+2026-04-16 19:57:26,406 | INFO | backend.agent | Payment triggered: {'success': False, 'decision': 'BUY', 'evaluation': 'Reasoning: Gemini limit reached during evaluation; cannot verify safely.\nDecision: SKIP', 'payment_status': {'success': False, 'error': 'SIMULATION_ERROR', 'message': 'insufficient balance: Payment was rejected by x402 - please check your wallet balance', 'next_step': 'Check buyer balance, receiver address, and asset availability'}, 'message': 'Sorry, I encountered an issue: Payment was rejected by x402 - please check your wallet balance. Would you like to try a different insight or check your wallet balance?'}
+2026-04-16 19:57:26,409 | INFO | mercator.demo | Buyer flow result: {'success': False, 'final_insight_text': '', 'result': {'success': False, 'decision': 'BUY', 'evaluation': 'Reasoning: Gemini limit reached during evaluation; cannot verify safely.\nDecision: SKIP', 'payment_status': {'success': False, 'error': 'SIMULATION_ERROR', 'message': 'insufficient balance: Payment was rejected by x402 - please check your wallet balance', 'next_step': 'Check buyer balance, receiver address, and asset availability'}, 'message': 'Sorry, I encountered an issue: Payment was rejected by x402 - please check your wallet balance. Would you like to try a different insight or check your wallet balance?'}}
+2026-04-16 20:06:50,612 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 20:06:55,051 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 20:06:56,429 | INFO | demo.flow | Demo servers ready
+2026-04-16 20:06:56,435 | INFO | mercator.demo | Submitting seller listing to /list
+2026-04-16 20:06:56,443 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-16 20:06:56,446 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 20:07:02,923 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 20:07:04,538 | INFO | mercator.backend | IPFS upload complete, cid=QmRGRbfgwtaofvyMwwirBPzBcNEsCsp8n2AdFPqW5oLy7c
+2026-04-16 20:07:04,539 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-16 20:07:08,920 | INFO | mercator.backend | On-chain listing submitted: listing_id=57 asa_id=758912533
+2026-04-16 20:07:08,920 | INFO | demo.flow | Seller upload complete
+2026-04-16 20:07:08,921 | INFO | demo.flow | On-chain ASA created
+2026-04-16 20:07:09,177 | INFO | mercator.backend | Transaction confirmed: tx_id=XHZEA7L2JI4STNI757SDY2MHJZDUOBFPSWV4BJJSWFME575EZCDQ
+2026-04-16 20:07:09,182 | INFO | mercator.demo | Seller upload complete
+2026-04-16 20:07:09,183 | INFO | mercator.demo | On-chain ASA created
+2026-04-16 20:07:09,183 | INFO | mercator.demo | Listing response: {'success': 1, 'transaction_id': 'XHZEA7L2JI4STNI757SDY2MHJZDUOBFPSWV4BJJSWFME575EZCDQ', 'txId': 'XHZEA7L2JI4STNI757SDY2MHJZDUOBFPSWV4BJJSWFME575EZCDQ', 'explorer_url': 'https://lora.algokit.io/testnet/tx/XHZEA7L2JI4STNI757SDY2MHJZDUOBFPSWV4BJJSWFME575EZCDQ/', 'message': 'Insight listed on-chain and pinned on IPFS', 'cid': 'QmRGRbfgwtaofvyMwwirBPzBcNEsCsp8n2AdFPqW5oLy7c', 'listing_id': 57, 'asa_id': 758912533}
+2026-04-16 20:07:12,183 | INFO | mercator.demo | Submitting buyer flow to /demo_purchase
+2026-04-16 20:07:12,189 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=approve
+2026-04-16 20:07:23,251 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=approve
+2026-04-16 20:09:58,370 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-16 20:10:00,513 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-16 20:10:00,844 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-16 20:10:02,647 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-16 20:10:02,648 | WARNING | backend.tools.semantic_search | Embedding failure during semantic_search: RetryError[<Future at 0x10deab350 state=finished raised GoogleGenerativeAIError>]
+2026-04-16 20:10:02,650 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-16 20:10:02,657 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-04-16 20:10:02,886 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 429 Too Many Requests"
+2026-04-16 20:10:02,888 | WARNING | backend.agent | Evaluation step hit Gemini limit; falling back to SKIP
+2026-04-16 20:10:02,982 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-16 20:10:05,108 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-16 20:10:05,111 | WARNING | backend.tools.semantic_search | Embedding failure during semantic_search: RetryError[<Future at 0x10defe5f0 state=finished raised GoogleGenerativeAIError>]
+2026-04-16 20:10:05,112 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-16 20:10:05,114 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-04-16 20:10:05,269 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 429 Too Many Requests"
+2026-04-16 20:10:05,273 | WARNING | backend.agent | Evaluation step hit Gemini limit; falling back to SKIP
+2026-04-16 20:10:05,281 | INFO | backend.agent | force_buy_for_test enabled; overriding decision to BUY
+2026-04-16 20:10:05,281 | INFO | backend.agent | Decision is BUY and user approval confirmed ('approve'); triggering x402 payment
+2026-04-16 20:10:05,281 | INFO | backend.agent | Triggering x402 payment: listing 48, price 1.0, buyer MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 20:10:05,287 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-16 20:10:05,287 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-16 20:10:05,287 | INFO | demo.flow | Payment approved
+2026-04-16 20:10:05,287 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 48
+2026-04-16 20:10:05,287 | INFO | backend.tools.x402_payment | Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 1.0 USDC
+2026-04-16 20:10:05,288 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-16 20:10:05,457 | INFO | backend.tools.x402_payment | Listing 48: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 20:10:05,457 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-16 20:10:05,457 | INFO | backend.tools.x402_payment | Simulating payment: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ -> M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, amount=1000000, asset_id=10458941
+2026-04-16 20:10:05,687 | ERROR | backend.tools.x402_payment | Payment simulation failed: Insufficient asset balance: have 115433, need 1000000
+2026-04-16 20:10:05,687 | ERROR | backend.tools.x402_payment | Payment simulation error: Payment simulation failed: Insufficient asset balance: have 115433, need 1000000
+2026-04-16 20:10:05,687 | ERROR | backend.tools.x402_payment | insufficient_balance | details=Payment simulation failed: Insufficient asset balance: have 115433, need 1000000
+2026-04-16 20:10:05,688 | ERROR | backend.agent | payment_rejected | details={'success': False, 'error': 'SIMULATION_ERROR', 'message': 'insufficient balance: Payment was rejected by x402 - please check your wallet balance', 'next_step': 'Check buyer balance, receiver address, and asset availability'}
+2026-04-16 20:10:05,688 | INFO | demo.flow | Payment approved
+2026-04-16 20:10:05,688 | INFO | backend.agent | Payment triggered: {'success': False, 'decision': 'BUY', 'evaluation': 'Reasoning: Gemini limit reached during evaluation; cannot verify safely.\nDecision: SKIP', 'payment_status': {'success': False, 'error': 'SIMULATION_ERROR', 'message': 'insufficient balance: Payment was rejected by x402 - please check your wallet balance', 'next_step': 'Check buyer balance, receiver address, and asset availability'}, 'message': 'Sorry, I encountered an issue: Payment was rejected by x402 - please check your wallet balance. Would you like to try a different insight or check your wallet balance?'}
+2026-04-16 20:10:05,692 | INFO | mercator.demo | Buyer flow result: {'success': False, 'final_insight_text': '', 'result': {'success': False, 'decision': 'BUY', 'evaluation': 'Reasoning: Gemini limit reached during evaluation; cannot verify safely.\nDecision: SKIP', 'payment_status': {'success': False, 'error': 'SIMULATION_ERROR', 'message': 'insufficient balance: Payment was rejected by x402 - please check your wallet balance', 'next_step': 'Check buyer balance, receiver address, and asset availability'}, 'message': 'Sorry, I encountered an issue: Payment was rejected by x402 - please check your wallet balance. Would you like to try a different insight or check your wallet balance?'}}
+2026-04-16 20:14:36,677 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 20:14:39,383 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 20:14:40,311 | INFO | demo.flow | Demo servers ready
+2026-04-16 20:14:40,315 | INFO | mercator.demo | Submitting seller listing to /list
+2026-04-16 20:14:40,320 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.05, insight_len=59
+2026-04-16 20:14:40,323 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 20:14:45,516 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 20:14:47,386 | INFO | mercator.backend | IPFS upload complete, cid=QmRGRbfgwtaofvyMwwirBPzBcNEsCsp8n2AdFPqW5oLy7c
+2026-04-16 20:14:47,387 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=50000 app_id=758025190
+2026-04-16 20:14:54,130 | INFO | mercator.backend | On-chain listing submitted: listing_id=58 asa_id=758912838
+2026-04-16 20:14:54,130 | INFO | demo.flow | Seller upload complete
+2026-04-16 20:14:54,130 | INFO | demo.flow | On-chain ASA created
+2026-04-16 20:14:54,343 | INFO | mercator.backend | Transaction confirmed: tx_id=EOFLYZ4MGFXKP7DCTV23E6CMMRORC6QV4PIFWXYL7OP6QSPCOPRA
+2026-04-16 20:14:54,348 | INFO | mercator.demo | Seller upload complete
+2026-04-16 20:14:54,348 | INFO | mercator.demo | On-chain ASA created
+2026-04-16 20:14:54,349 | INFO | mercator.demo | Listing response: {'success': 1, 'transaction_id': 'EOFLYZ4MGFXKP7DCTV23E6CMMRORC6QV4PIFWXYL7OP6QSPCOPRA', 'txId': 'EOFLYZ4MGFXKP7DCTV23E6CMMRORC6QV4PIFWXYL7OP6QSPCOPRA', 'explorer_url': 'https://lora.algokit.io/testnet/tx/EOFLYZ4MGFXKP7DCTV23E6CMMRORC6QV4PIFWXYL7OP6QSPCOPRA/', 'message': 'Insight listed on-chain and pinned on IPFS', 'cid': 'QmRGRbfgwtaofvyMwwirBPzBcNEsCsp8n2AdFPqW5oLy7c', 'listing_id': 58, 'asa_id': 758912838}
+2026-04-16 20:14:57,350 | INFO | mercator.demo | Submitting buyer flow to /demo_purchase
+2026-04-16 20:14:57,363 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=approve
+2026-04-16 20:14:57,363 | INFO | backend.agent | force_buy_for_test target enabled; bypassing search/evaluation and selecting listing 58
+2026-04-16 20:14:57,363 | INFO | backend.agent | force_buy_for_test enabled; overriding decision to BUY
+2026-04-16 20:14:57,363 | INFO | backend.agent | Decision is BUY and user approval confirmed ('approve'); triggering x402 payment
+2026-04-16 20:14:57,363 | INFO | backend.agent | Triggering x402 payment: listing 58, price 1.0, buyer MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 20:14:57,369 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-16 20:14:57,369 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-16 20:14:57,369 | INFO | demo.flow | Payment approved
+2026-04-16 20:14:57,369 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 58
+2026-04-16 20:14:57,369 | INFO | backend.tools.x402_payment | Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 1.0 USDC
+2026-04-16 20:14:57,369 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-16 20:14:57,570 | INFO | backend.tools.x402_payment | Listing 58: Price=0.05, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 20:14:57,571 | WARNING | backend.tools.x402_payment | Requested amount differs from listing; using on-chain listing price | requested=1.0 listed=0.05
+2026-04-16 20:14:57,571 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-16 20:14:57,571 | INFO | backend.tools.x402_payment | Simulating payment: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ -> M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, amount=50000, asset_id=10458941
+2026-04-16 20:14:57,982 | INFO | backend.tools.x402_payment | Simulation successful: fee=False, asset_id=10458941
+2026-04-16 20:14:57,983 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'success': True, 'sender': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'receiver': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount': 50000, 'asset_id': 10458941, 'estimated_fee': False, 'is_safe': True, 'message': 'Payment simulation passed - safe to broadcast'}
+2026-04-16 20:14:57,983 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-04-16 20:14:58,904 | INFO | backend.tools.x402_payment | Atomic group simulation complete | tx_count=2
+2026-04-16 20:15:05,109 | INFO | backend.tools.x402_payment | Atomic payment+redeem group confirmed | payment_tx=MOUVCZSRIJ2X4CVUCLMNAE2V7QTDUFFO3FRXNC72NAMIXFAXS4KA redeem_tx=PMPLEH2TTLZXQQA4IEKPX3FW5NTVLQFKEJTJR3PQTSNM73CNLUPQ
+2026-04-16 20:15:05,110 | INFO | backend.tools.x402_payment | ✓ x402 atomic group executed: payment_tx=MOUVCZSRIJ2X4CVUCLMNAE2V7QTDUFFO3FRXNC72NAMIXFAXS4KA redeem_tx=PMPLEH2TTLZXQQA4IEKPX3FW5NTVLQFKEJTJR3PQTSNM73CNLUPQ
+2026-04-16 20:15:05,110 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=MOUVCZSRIJ2X4CVUCLMNAE2V7QTDUFFO3FRXNC72NAMIXFAXS4KA listing_id=58 buyer=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 20:15:05,351 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=MOUVCZSRIJ2X4CVUCLMNAE2V7QTDUFFO3FRXNC72NAMIXFAXS4KA round=62477673
+2026-04-16 20:15:05,529 | INFO | demo.flow | IPFS content delivered
+2026-04-16 20:15:05,529 | INFO | backend.tools.post_payment_flow | Escrow redeem submit skipped: already executed in atomic group | tx_id=PMPLEH2TTLZXQQA4IEKPX3FW5NTVLQFKEJTJR3PQTSNM73CNLUPQ
+2026-04-16 20:15:10,353 | INFO | backend.tools.post_payment_flow | Reputation update: seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM | before=107 | after=117 | delta=+10 | tx=6CRTS6AOL6G7FNYJXVJJJE7WA7XVDD3FRYZLGSYDSI3ANNZ5C5MQ
+2026-04-16 20:15:10,354 | INFO | demo.flow | IPFS content delivered
+2026-04-16 20:15:10,354 | INFO | backend.tools.x402_payment | x402 payment flow completed successfully: {'success': True, 'approved': True, 'transaction_id': 'MOUVCZSRIJ2X4CVUCLMNAE2V7QTDUFFO3FRXNC72NAMIXFAXS4KA', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 58, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 0.05, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic payment+redeem group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Escrow redeem recorded atomically with payment'}, 'status': 'CONFIRMED', 'explorer_url': 'https://lora.algokit.io/testnet/tx/MOUVCZSRIJ2X4CVUCLMNAE2V7QTDUFFO3FRXNC72NAMIXFAXS4KA/', 'redeem_transaction_id': 'PMPLEH2TTLZXQQA4IEKPX3FW5NTVLQFKEJTJR3PQTSNM73CNLUPQ', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nSample trading insight: Buy NIFTY above 24500 with SL 24380\n\nTransaction IDs: payment=MOUVCZSRIJ2X4CVUCLMNAE2V7QTDUFFO3FRXNC72NAMIXFAXS4KA | escrow=PMPLEH2TTLZXQQA4IEKPX3FW5NTVLQFKEJTJR3PQTSNM73CNLUPQ\n\nReputation update: seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM | before=107 | after=117 | delta=+10 | tx=6CRTS6AOL6G7FNYJXVJJJE7WA7XVDD3FRYZLGSYDSI3ANNZ5C5MQ'}
+2026-04-16 20:15:10,355 | INFO | demo.flow | Payment approved
+2026-04-16 20:15:10,355 | INFO | backend.agent | Payment triggered: {'success': True, 'decision': 'BUY', 'evaluation': 'Reasoning: deterministic test purchase requested for target listing.\nDecision: BUY', 'payment_status': {'success': True, 'approved': True, 'transaction_id': 'MOUVCZSRIJ2X4CVUCLMNAE2V7QTDUFFO3FRXNC72NAMIXFAXS4KA', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 58, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 0.05, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic payment+redeem group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Escrow redeem recorded atomically with payment'}, 'status': 'CONFIRMED', 'explorer_url': 'https://lora.algokit.io/testnet/tx/MOUVCZSRIJ2X4CVUCLMNAE2V7QTDUFFO3FRXNC72NAMIXFAXS4KA/', 'redeem_transaction_id': 'PMPLEH2TTLZXQQA4IEKPX3FW5NTVLQFKEJTJR3PQTSNM73CNLUPQ', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nSample trading insight: Buy NIFTY above 24500 with SL 24380\n\nTransaction IDs: payment=MOUVCZSRIJ2X4CVUCLMNAE2V7QTDUFFO3FRXNC72NAMIXFAXS4KA | escrow=PMPLEH2TTLZXQQA4IEKPX3FW5NTVLQFKEJTJR3PQTSNM73CNLUPQ\n\nReputation update: seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM | before=107 | after=117 | delta=+10 | tx=6CRTS6AOL6G7FNYJXVJJJE7WA7XVDD3FRYZLGSYDSI3ANNZ5C5MQ'}, 'message': '✓ x402 micropayment executed successfully'}
+2026-04-16 20:15:10,360 | INFO | mercator.demo | Buyer flow result: {'success': True, 'final_insight_text': 'Sample trading insight: Buy NIFTY above 24500 with SL 24380', 'result': {'success': True, 'decision': 'BUY', 'evaluation': 'Reasoning: deterministic test purchase requested for target listing.\nDecision: BUY', 'payment_status': {'success': True, 'approved': True, 'transaction_id': 'MOUVCZSRIJ2X4CVUCLMNAE2V7QTDUFFO3FRXNC72NAMIXFAXS4KA', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 58, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 0.05, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic payment+redeem group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Escrow redeem recorded atomically with payment'}, 'status': 'CONFIRMED', 'explorer_url': 'https://lora.algokit.io/testnet/tx/MOUVCZSRIJ2X4CVUCLMNAE2V7QTDUFFO3FRXNC72NAMIXFAXS4KA/', 'redeem_transaction_id': 'PMPLEH2TTLZXQQA4IEKPX3FW5NTVLQFKEJTJR3PQTSNM73CNLUPQ', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nSample trading insight: Buy NIFTY above 24500 with SL 24380\n\nTransaction IDs: payment=MOUVCZSRIJ2X4CVUCLMNAE2V7QTDUFFO3FRXNC72NAMIXFAXS4KA | escrow=PMPLEH2TTLZXQQA4IEKPX3FW5NTVLQFKEJTJR3PQTSNM73CNLUPQ\n\nReputation update: seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM | before=107 | after=117 | delta=+10 | tx=6CRTS6AOL6G7FNYJXVJJJE7WA7XVDD3FRYZLGSYDSI3ANNZ5C5MQ'}, 'message': '✓ x402 micropayment executed successfully'}}
+2026-04-16 20:17:10,838 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 20:17:13,301 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 20:17:14,428 | INFO | demo.flow | Demo servers ready
+2026-04-16 20:17:14,433 | INFO | mercator.demo | Submitting seller listing to /list
+2026-04-16 20:17:14,440 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.05, insight_len=59
+2026-04-16 20:17:14,442 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 20:17:19,503 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 20:17:21,293 | INFO | mercator.backend | IPFS upload complete, cid=QmRGRbfgwtaofvyMwwirBPzBcNEsCsp8n2AdFPqW5oLy7c
+2026-04-16 20:17:21,294 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=50000 app_id=758025190
+2026-04-16 20:17:28,061 | INFO | mercator.backend | On-chain listing submitted: listing_id=59 asa_id=758912942
+2026-04-16 20:17:28,062 | INFO | demo.flow | Seller upload complete
+2026-04-16 20:17:28,062 | INFO | demo.flow | On-chain ASA created
+2026-04-16 20:17:28,310 | INFO | mercator.backend | Transaction confirmed: tx_id=DWQH2H4YCRSJKGZYUKTVB5LEFN6N6NUNGHQW4H7THZEICEXL4YWQ
+2026-04-16 20:17:28,315 | INFO | mercator.demo | Seller upload complete
+2026-04-16 20:17:28,316 | INFO | mercator.demo | On-chain ASA created
+2026-04-16 20:17:28,316 | INFO | mercator.demo | Listing response: {'success': 1, 'transaction_id': 'DWQH2H4YCRSJKGZYUKTVB5LEFN6N6NUNGHQW4H7THZEICEXL4YWQ', 'txId': 'DWQH2H4YCRSJKGZYUKTVB5LEFN6N6NUNGHQW4H7THZEICEXL4YWQ', 'explorer_url': 'https://lora.algokit.io/testnet/tx/DWQH2H4YCRSJKGZYUKTVB5LEFN6N6NUNGHQW4H7THZEICEXL4YWQ/', 'message': 'Insight listed on-chain and pinned on IPFS', 'cid': 'QmRGRbfgwtaofvyMwwirBPzBcNEsCsp8n2AdFPqW5oLy7c', 'listing_id': 59, 'asa_id': 758912942}
+2026-04-16 20:17:31,318 | INFO | mercator.demo | Submitting buyer flow to /demo_purchase
+2026-04-16 20:17:31,329 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=approve
+2026-04-16 20:17:31,330 | INFO | backend.agent | force_buy_for_test target enabled; bypassing search/evaluation and selecting listing 59
+2026-04-16 20:17:31,330 | INFO | backend.agent | force_buy_for_test enabled; overriding decision to BUY
+2026-04-16 20:17:31,330 | INFO | backend.agent | Decision is BUY and user approval confirmed ('approve'); triggering x402 payment
+2026-04-16 20:17:31,330 | INFO | backend.agent | Triggering x402 payment: listing 59, price 1.0, buyer MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 20:17:31,337 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-16 20:17:31,337 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-16 20:17:31,337 | INFO | demo.flow | Payment approved
+2026-04-16 20:17:31,337 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 59
+2026-04-16 20:17:31,338 | INFO | backend.tools.x402_payment | Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 1.0 USDC
+2026-04-16 20:17:31,338 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-16 20:17:31,636 | INFO | backend.tools.x402_payment | Listing 59: Price=0.05, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 20:17:31,637 | WARNING | backend.tools.x402_payment | Requested amount differs from listing; using on-chain listing price | requested=1.0 listed=0.05
+2026-04-16 20:17:31,637 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-16 20:17:31,637 | INFO | backend.tools.x402_payment | Simulating payment: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ -> M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, amount=50000, asset_id=10458941
+2026-04-16 20:17:32,055 | INFO | backend.tools.x402_payment | Simulation successful: fee=False, asset_id=10458941
+2026-04-16 20:17:32,055 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'success': True, 'sender': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'receiver': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount': 50000, 'asset_id': 10458941, 'estimated_fee': False, 'is_safe': True, 'message': 'Payment simulation passed - safe to broadcast'}
+2026-04-16 20:17:32,055 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-04-16 20:17:33,959 | INFO | backend.tools.x402_payment | Atomic group simulation complete | tx_count=2
+2026-04-16 20:17:38,925 | INFO | backend.tools.x402_payment | Atomic payment+redeem group confirmed | payment_tx=EJ4T4IRDKEDEU3FVL5DWVLJWQIWUM7XKGTQX2PBE6IBF5BEZN53A redeem_tx=OZFUHZOSNKJJJDHRM67NQ3GK6AYDFLU2YTSDHVDYMGDARG5DCXIQ
+2026-04-16 20:17:38,925 | INFO | backend.tools.x402_payment | ✓ x402 atomic group executed: payment_tx=EJ4T4IRDKEDEU3FVL5DWVLJWQIWUM7XKGTQX2PBE6IBF5BEZN53A redeem_tx=OZFUHZOSNKJJJDHRM67NQ3GK6AYDFLU2YTSDHVDYMGDARG5DCXIQ
+2026-04-16 20:17:38,925 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=EJ4T4IRDKEDEU3FVL5DWVLJWQIWUM7XKGTQX2PBE6IBF5BEZN53A listing_id=59 buyer=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 20:17:39,160 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=EJ4T4IRDKEDEU3FVL5DWVLJWQIWUM7XKGTQX2PBE6IBF5BEZN53A round=62477730
+2026-04-16 20:17:39,392 | INFO | demo.flow | IPFS content delivered
+2026-04-16 20:17:39,392 | INFO | backend.tools.post_payment_flow | Escrow redeem submit skipped: already executed in atomic group | tx_id=OZFUHZOSNKJJJDHRM67NQ3GK6AYDFLU2YTSDHVDYMGDARG5DCXIQ
+2026-04-16 20:17:44,396 | INFO | backend.tools.post_payment_flow | Reputation update: seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM | before=117 | after=127 | delta=+10 | tx=D7CFHLI7TFMKDNMXFU7BSGD747VIENAMQTY54PWR2MTFOESTBGXA
+2026-04-16 20:17:44,397 | INFO | demo.flow | IPFS content delivered
+2026-04-16 20:17:44,397 | INFO | backend.tools.x402_payment | x402 payment flow completed successfully: {'success': True, 'approved': True, 'transaction_id': 'EJ4T4IRDKEDEU3FVL5DWVLJWQIWUM7XKGTQX2PBE6IBF5BEZN53A', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 59, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 0.05, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic payment+redeem group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Escrow redeem recorded atomically with payment'}, 'status': 'CONFIRMED', 'explorer_url': 'https://lora.algokit.io/testnet/tx/EJ4T4IRDKEDEU3FVL5DWVLJWQIWUM7XKGTQX2PBE6IBF5BEZN53A/', 'redeem_transaction_id': 'OZFUHZOSNKJJJDHRM67NQ3GK6AYDFLU2YTSDHVDYMGDARG5DCXIQ', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nSample trading insight: Buy NIFTY above 24500 with SL 24380\n\nTransaction IDs: payment=EJ4T4IRDKEDEU3FVL5DWVLJWQIWUM7XKGTQX2PBE6IBF5BEZN53A | escrow=OZFUHZOSNKJJJDHRM67NQ3GK6AYDFLU2YTSDHVDYMGDARG5DCXIQ\n\nReputation update: seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM | before=117 | after=127 | delta=+10 | tx=D7CFHLI7TFMKDNMXFU7BSGD747VIENAMQTY54PWR2MTFOESTBGXA'}
+2026-04-16 20:17:44,398 | INFO | demo.flow | Payment approved
+2026-04-16 20:17:44,398 | INFO | backend.agent | Payment triggered: {'success': True, 'decision': 'BUY', 'evaluation': 'Reasoning: deterministic test purchase requested for target listing.\nDecision: BUY', 'payment_status': {'success': True, 'approved': True, 'transaction_id': 'EJ4T4IRDKEDEU3FVL5DWVLJWQIWUM7XKGTQX2PBE6IBF5BEZN53A', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 59, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 0.05, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic payment+redeem group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Escrow redeem recorded atomically with payment'}, 'status': 'CONFIRMED', 'explorer_url': 'https://lora.algokit.io/testnet/tx/EJ4T4IRDKEDEU3FVL5DWVLJWQIWUM7XKGTQX2PBE6IBF5BEZN53A/', 'redeem_transaction_id': 'OZFUHZOSNKJJJDHRM67NQ3GK6AYDFLU2YTSDHVDYMGDARG5DCXIQ', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nSample trading insight: Buy NIFTY above 24500 with SL 24380\n\nTransaction IDs: payment=EJ4T4IRDKEDEU3FVL5DWVLJWQIWUM7XKGTQX2PBE6IBF5BEZN53A | escrow=OZFUHZOSNKJJJDHRM67NQ3GK6AYDFLU2YTSDHVDYMGDARG5DCXIQ\n\nReputation update: seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM | before=117 | after=127 | delta=+10 | tx=D7CFHLI7TFMKDNMXFU7BSGD747VIENAMQTY54PWR2MTFOESTBGXA'}, 'message': '✓ x402 micropayment executed successfully'}
+2026-04-16 20:17:44,402 | INFO | mercator.demo | Buyer flow result: {'success': True, 'final_insight_text': 'Sample trading insight: Buy NIFTY above 24500 with SL 24380', 'result': {'success': True, 'decision': 'BUY', 'evaluation': 'Reasoning: deterministic test purchase requested for target listing.\nDecision: BUY', 'payment_status': {'success': True, 'approved': True, 'transaction_id': 'EJ4T4IRDKEDEU3FVL5DWVLJWQIWUM7XKGTQX2PBE6IBF5BEZN53A', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 59, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 0.05, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic payment+redeem group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Escrow redeem recorded atomically with payment'}, 'status': 'CONFIRMED', 'explorer_url': 'https://lora.algokit.io/testnet/tx/EJ4T4IRDKEDEU3FVL5DWVLJWQIWUM7XKGTQX2PBE6IBF5BEZN53A/', 'redeem_transaction_id': 'OZFUHZOSNKJJJDHRM67NQ3GK6AYDFLU2YTSDHVDYMGDARG5DCXIQ', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nSample trading insight: Buy NIFTY above 24500 with SL 24380\n\nTransaction IDs: payment=EJ4T4IRDKEDEU3FVL5DWVLJWQIWUM7XKGTQX2PBE6IBF5BEZN53A | escrow=OZFUHZOSNKJJJDHRM67NQ3GK6AYDFLU2YTSDHVDYMGDARG5DCXIQ\n\nReputation update: seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM | before=117 | after=127 | delta=+10 | tx=D7CFHLI7TFMKDNMXFU7BSGD747VIENAMQTY54PWR2MTFOESTBGXA'}, 'message': '✓ x402 micropayment executed successfully'}}
+2026-04-16 20:21:36,882 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 20:21:41,591 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 20:21:42,710 | INFO | demo.flow | Demo servers ready
+2026-04-16 20:21:42,714 | INFO | mercator.demo | Submitting seller listing to /list
+2026-04-16 20:21:42,743 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.05, insight_len=59
+2026-04-16 20:21:42,745 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 20:21:46,977 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 20:21:49,153 | INFO | mercator.backend | IPFS upload complete, cid=QmRGRbfgwtaofvyMwwirBPzBcNEsCsp8n2AdFPqW5oLy7c
+2026-04-16 20:21:49,153 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=50000 app_id=758025190
+2026-04-16 20:21:55,628 | INFO | mercator.backend | On-chain listing submitted: listing_id=60 asa_id=758913118
+2026-04-16 20:21:55,628 | INFO | demo.flow | Seller upload complete
+2026-04-16 20:21:55,629 | INFO | demo.flow | On-chain ASA created
+2026-04-16 20:21:55,923 | INFO | mercator.backend | Transaction confirmed: tx_id=4J3CGTDHPH4XPVJAJ4KGKLZBITE7N2IK6EDNLUDLZUTGJVHVAEZQ
+2026-04-16 20:21:55,928 | INFO | mercator.demo | Seller upload complete
+2026-04-16 20:21:55,928 | INFO | mercator.demo | On-chain ASA created
+2026-04-16 20:21:55,929 | INFO | mercator.demo | Listing response: {'success': 1, 'transaction_id': '4J3CGTDHPH4XPVJAJ4KGKLZBITE7N2IK6EDNLUDLZUTGJVHVAEZQ', 'txId': '4J3CGTDHPH4XPVJAJ4KGKLZBITE7N2IK6EDNLUDLZUTGJVHVAEZQ', 'explorer_url': 'https://lora.algokit.io/testnet/tx/4J3CGTDHPH4XPVJAJ4KGKLZBITE7N2IK6EDNLUDLZUTGJVHVAEZQ/', 'message': 'Insight listed on-chain and pinned on IPFS', 'cid': 'QmRGRbfgwtaofvyMwwirBPzBcNEsCsp8n2AdFPqW5oLy7c', 'listing_id': 60, 'asa_id': 758913118}
+2026-04-16 20:21:58,930 | INFO | mercator.demo | Submitting buyer flow to /demo_purchase
+2026-04-16 20:21:58,941 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=approve
+2026-04-16 20:21:58,941 | INFO | backend.agent | target listing provided; bypassing search/evaluation and selecting listing 60
+2026-04-16 20:21:58,941 | INFO | backend.agent | force_buy_for_test enabled; overriding decision to BUY
+2026-04-16 20:21:58,941 | INFO | backend.agent | Decision is BUY and user approval confirmed ('approve'); triggering x402 payment
+2026-04-16 20:21:58,941 | INFO | backend.agent | Triggering x402 payment: listing 60, price 1.0, buyer MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 20:21:58,947 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-16 20:21:58,947 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-16 20:21:58,948 | INFO | demo.flow | Payment approved
+2026-04-16 20:21:58,948 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 60
+2026-04-16 20:21:58,948 | INFO | backend.tools.x402_payment | Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 1.0 USDC
+2026-04-16 20:21:58,948 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-16 20:21:59,134 | INFO | backend.tools.x402_payment | Listing 60: Price=0.05, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 20:21:59,134 | WARNING | backend.tools.x402_payment | Requested amount differs from listing; using on-chain listing price | requested=1.0 listed=0.05
+2026-04-16 20:21:59,135 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-16 20:21:59,135 | INFO | backend.tools.x402_payment | Simulating payment: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ -> M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, amount=50000, asset_id=10458941
+2026-04-16 20:21:59,365 | ERROR | backend.tools.x402_payment | Payment simulation failed: Insufficient asset balance: have 15433, need 50000
+2026-04-16 20:21:59,365 | ERROR | backend.tools.x402_payment | Payment simulation error: Payment simulation failed: Insufficient asset balance: have 15433, need 50000
+2026-04-16 20:21:59,365 | ERROR | backend.tools.x402_payment | insufficient_balance | details=Payment simulation failed: Insufficient asset balance: have 15433, need 50000
+2026-04-16 20:21:59,365 | ERROR | backend.agent | payment_rejected | details={'success': False, 'error': 'SIMULATION_ERROR', 'message': 'insufficient balance: Payment was rejected by x402 - please check your wallet balance', 'next_step': 'Check buyer balance, receiver address, and asset availability'}
+2026-04-16 20:21:59,366 | INFO | demo.flow | Payment approved
+2026-04-16 20:21:59,366 | INFO | backend.agent | Payment triggered: {'success': False, 'decision': 'BUY', 'evaluation': 'Reasoning: explicit target listing provided by checkout context.\nDecision: BUY', 'payment_status': {'success': False, 'error': 'SIMULATION_ERROR', 'message': 'insufficient balance: Payment was rejected by x402 - please check your wallet balance', 'next_step': 'Check buyer balance, receiver address, and asset availability'}, 'message': 'Sorry, I encountered an issue: Payment was rejected by x402 - please check your wallet balance. Would you like to try a different insight or check your wallet balance?'}
+2026-04-16 20:21:59,371 | INFO | mercator.demo | Buyer flow result: {'success': False, 'final_insight_text': '', 'result': {'success': False, 'decision': 'BUY', 'evaluation': 'Reasoning: explicit target listing provided by checkout context.\nDecision: BUY', 'payment_status': {'success': False, 'error': 'SIMULATION_ERROR', 'message': 'insufficient balance: Payment was rejected by x402 - please check your wallet balance', 'next_step': 'Check buyer balance, receiver address, and asset availability'}, 'message': 'Sorry, I encountered an issue: Payment was rejected by x402 - please check your wallet balance. Would you like to try a different insight or check your wallet balance?'}}
+2026-04-16 20:23:31,196 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 20:23:34,462 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 20:23:35,839 | INFO | demo.flow | Demo servers ready
+2026-04-16 20:23:36,489 | INFO | mercator.demo | Demo pricing selected | buyer=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ buyer_usdc_micro=15433 listing_price_usdc=0.010433
+2026-04-16 20:23:36,490 | INFO | mercator.demo | Submitting seller listing to /list
+2026-04-16 20:23:36,499 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.010433, insight_len=59
+2026-04-16 20:23:36,502 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 20:23:37,079 | ERROR | mercator.backend | Unexpected /list failure | error=TransactionPool.Remember: transaction T33L6ZS3TRZZWYXG7YDXFD7BUOOQFNJE5RCNUWN5BIVDS2T2S7OA: account M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM balance 908100 below min 985500 (2 assets)
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 106, in algod_request
+    resp = urlopen(req, timeout=timeout)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 187, in urlopen
+    return opener.open(url, data, timeout)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 493, in open
+    response = meth(req, response)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 464, in _call_chain
+    result = func(*args)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1969, in create_listing
+    _ensure_listing_app_funded(listing_app_id)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 688, in _ensure_listing_app_funded
+    tx_id = client.send_transaction(pay_txn.sign(private_key))
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 344, in send_transaction
+    return self.send_raw_transaction(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        encoding.msgpack_encode(txn), **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 371, in send_raw_transaction
+    resp = self.algod_request("POST", req, data=txn_bytes, **kwargs)
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 116, in algod_request
+    raise error.AlgodHTTPError(m, code, j.get("data"))
+algosdk.error.AlgodHTTPError: TransactionPool.Remember: transaction T33L6ZS3TRZZWYXG7YDXFD7BUOOQFNJE5RCNUWN5BIVDS2T2S7OA: account M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM balance 908100 below min 985500 (2 assets)
+2026-04-16 20:23:39,103 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.010433, insight_len=59
+2026-04-16 20:23:39,105 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 20:23:39,691 | ERROR | mercator.backend | Unexpected /list failure | error=TransactionPool.Remember: transaction 5W6HIH44S4LXBSTLNMLJ3U3J4LUNAIB3GW4GZSFM424C3S34QC2A: account M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM balance 908100 below min 985500 (2 assets)
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 106, in algod_request
+    resp = urlopen(req, timeout=timeout)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 187, in urlopen
+    return opener.open(url, data, timeout)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 493, in open
+    response = meth(req, response)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 464, in _call_chain
+    result = func(*args)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1969, in create_listing
+    _ensure_listing_app_funded(listing_app_id)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 688, in _ensure_listing_app_funded
+    tx_id = client.send_transaction(pay_txn.sign(private_key))
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 344, in send_transaction
+    return self.send_raw_transaction(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        encoding.msgpack_encode(txn), **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 371, in send_raw_transaction
+    resp = self.algod_request("POST", req, data=txn_bytes, **kwargs)
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 116, in algod_request
+    raise error.AlgodHTTPError(m, code, j.get("data"))
+algosdk.error.AlgodHTTPError: TransactionPool.Remember: transaction 5W6HIH44S4LXBSTLNMLJ3U3J4LUNAIB3GW4GZSFM424C3S34QC2A: account M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM balance 908100 below min 985500 (2 assets)
+2026-04-16 20:25:11,952 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 20:25:14,544 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 20:25:15,548 | INFO | demo.flow | Demo servers ready
+2026-04-16 20:25:20,410 | INFO | mercator.demo | Auto-funded deployer for listing flow | from=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ to=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM amount_micro=342200 tx=J2T3ELTUW6JIC345MS2V6BV2CPKFJBX4AH2GUJ7Y3H7Z6EXCJAMQ
+2026-04-16 20:25:20,946 | INFO | mercator.demo | Demo pricing selected | buyer=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ buyer_usdc_micro=15433 listing_price_usdc=0.010433
+2026-04-16 20:25:20,946 | INFO | mercator.demo | Submitting seller listing to /list
+2026-04-16 20:25:20,954 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.010433, insight_len=59
+2026-04-16 20:25:20,955 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 20:25:25,734 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 20:25:27,487 | INFO | mercator.backend | IPFS upload complete, cid=QmRGRbfgwtaofvyMwwirBPzBcNEsCsp8n2AdFPqW5oLy7c
+2026-04-16 20:25:27,487 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=10433 app_id=758025190
+2026-04-16 20:25:34,416 | INFO | mercator.backend | On-chain listing submitted: listing_id=61 asa_id=758913261
+2026-04-16 20:25:34,417 | INFO | demo.flow | Seller upload complete
+2026-04-16 20:25:34,417 | INFO | demo.flow | On-chain ASA created
+2026-04-16 20:25:34,790 | INFO | mercator.backend | Transaction confirmed: tx_id=2OPESQN3QEOL7DTGMVZSJNYC4KGBPIZM2KZXIRJDWDQGVRWCRYHQ
+2026-04-16 20:25:34,795 | INFO | mercator.demo | Seller upload complete
+2026-04-16 20:25:34,796 | INFO | mercator.demo | On-chain ASA created
+2026-04-16 20:25:34,796 | INFO | mercator.demo | Listing response: {'success': 1, 'transaction_id': '2OPESQN3QEOL7DTGMVZSJNYC4KGBPIZM2KZXIRJDWDQGVRWCRYHQ', 'txId': '2OPESQN3QEOL7DTGMVZSJNYC4KGBPIZM2KZXIRJDWDQGVRWCRYHQ', 'explorer_url': 'https://lora.algokit.io/testnet/tx/2OPESQN3QEOL7DTGMVZSJNYC4KGBPIZM2KZXIRJDWDQGVRWCRYHQ/', 'message': 'Insight listed on-chain and pinned on IPFS', 'cid': 'QmRGRbfgwtaofvyMwwirBPzBcNEsCsp8n2AdFPqW5oLy7c', 'listing_id': 61, 'asa_id': 758913261}
+2026-04-16 20:25:37,797 | INFO | mercator.demo | Submitting buyer flow to /demo_purchase
+2026-04-16 20:25:37,808 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=approve
+2026-04-16 20:25:37,808 | INFO | backend.agent | target listing provided; bypassing search/evaluation and selecting listing 61
+2026-04-16 20:25:37,808 | INFO | backend.agent | force_buy_for_test enabled; overriding decision to BUY
+2026-04-16 20:25:37,808 | INFO | backend.agent | Decision is BUY and user approval confirmed ('approve'); triggering x402 payment
+2026-04-16 20:25:37,808 | INFO | backend.agent | Triggering x402 payment: listing 61, price 1.0, buyer MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 20:25:37,815 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-16 20:25:37,815 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-16 20:25:37,815 | INFO | demo.flow | Payment approved
+2026-04-16 20:25:37,815 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 61
+2026-04-16 20:25:37,815 | INFO | backend.tools.x402_payment | Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 1.0 USDC
+2026-04-16 20:25:37,815 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-16 20:25:38,019 | INFO | backend.tools.x402_payment | Listing 61: Price=0.010433, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 20:25:38,020 | WARNING | backend.tools.x402_payment | Requested amount differs from listing; using on-chain listing price | requested=1.0 listed=0.010433
+2026-04-16 20:25:38,020 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-16 20:25:38,020 | INFO | backend.tools.x402_payment | Simulating payment: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ -> M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, amount=10433, asset_id=10458941
+2026-04-16 20:25:38,408 | INFO | backend.tools.x402_payment | Simulation successful: fee=False, asset_id=10458941
+2026-04-16 20:25:38,408 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'success': True, 'sender': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'receiver': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount': 10433, 'asset_id': 10458941, 'estimated_fee': False, 'is_safe': True, 'message': 'Payment simulation passed - safe to broadcast'}
+2026-04-16 20:25:38,408 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-04-16 20:25:39,323 | INFO | backend.tools.x402_payment | Atomic group simulation complete | tx_count=2
+2026-04-16 20:25:45,226 | INFO | backend.tools.x402_payment | Atomic payment+redeem group confirmed | payment_tx=ASVVNUKK6YEVYS65AKR7EEZGAZURKWNFI3SJK2XB6S6N4DLLUMYQ redeem_tx=WCM54YJ4QDNFWTN4WZ3EDHJPUPIDPQ7EJ4ZHGOT7VNNBG7F4X55A
+2026-04-16 20:25:45,227 | INFO | backend.tools.x402_payment | ✓ x402 atomic group executed: payment_tx=ASVVNUKK6YEVYS65AKR7EEZGAZURKWNFI3SJK2XB6S6N4DLLUMYQ redeem_tx=WCM54YJ4QDNFWTN4WZ3EDHJPUPIDPQ7EJ4ZHGOT7VNNBG7F4X55A
+2026-04-16 20:25:45,227 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=ASVVNUKK6YEVYS65AKR7EEZGAZURKWNFI3SJK2XB6S6N4DLLUMYQ listing_id=61 buyer=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 20:25:45,397 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=ASVVNUKK6YEVYS65AKR7EEZGAZURKWNFI3SJK2XB6S6N4DLLUMYQ round=62477910
+2026-04-16 20:25:45,586 | INFO | demo.flow | IPFS content delivered
+2026-04-16 20:25:45,586 | INFO | backend.tools.post_payment_flow | Escrow redeem submit skipped: already executed in atomic group | tx_id=WCM54YJ4QDNFWTN4WZ3EDHJPUPIDPQ7EJ4ZHGOT7VNNBG7F4X55A
+2026-04-16 20:25:50,772 | INFO | backend.tools.post_payment_flow | Reputation update: seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM | before=127 | after=137 | delta=+10 | tx=MMBYUCOYNNHYBPTPNTXMO3SJSA5NAV77P6IO4YDTQTTOKDIRRFUQ
+2026-04-16 20:25:50,773 | INFO | demo.flow | IPFS content delivered
+2026-04-16 20:25:50,773 | INFO | backend.tools.x402_payment | x402 payment flow completed successfully: {'success': True, 'approved': True, 'transaction_id': 'ASVVNUKK6YEVYS65AKR7EEZGAZURKWNFI3SJK2XB6S6N4DLLUMYQ', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 61, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 0.010433, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic payment+redeem group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Escrow redeem recorded atomically with payment'}, 'status': 'CONFIRMED', 'explorer_url': 'https://lora.algokit.io/testnet/tx/ASVVNUKK6YEVYS65AKR7EEZGAZURKWNFI3SJK2XB6S6N4DLLUMYQ/', 'redeem_transaction_id': 'WCM54YJ4QDNFWTN4WZ3EDHJPUPIDPQ7EJ4ZHGOT7VNNBG7F4X55A', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nSample trading insight: Buy NIFTY above 24500 with SL 24380\n\nTransaction IDs: payment=ASVVNUKK6YEVYS65AKR7EEZGAZURKWNFI3SJK2XB6S6N4DLLUMYQ | escrow=WCM54YJ4QDNFWTN4WZ3EDHJPUPIDPQ7EJ4ZHGOT7VNNBG7F4X55A\n\nReputation update: seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM | before=127 | after=137 | delta=+10 | tx=MMBYUCOYNNHYBPTPNTXMO3SJSA5NAV77P6IO4YDTQTTOKDIRRFUQ'}
+2026-04-16 20:25:50,773 | INFO | demo.flow | Payment approved
+2026-04-16 20:25:50,774 | INFO | backend.agent | Payment triggered: {'success': True, 'decision': 'BUY', 'evaluation': 'Reasoning: explicit target listing provided by checkout context.\nDecision: BUY', 'payment_status': {'success': True, 'approved': True, 'transaction_id': 'ASVVNUKK6YEVYS65AKR7EEZGAZURKWNFI3SJK2XB6S6N4DLLUMYQ', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 61, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 0.010433, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic payment+redeem group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Escrow redeem recorded atomically with payment'}, 'status': 'CONFIRMED', 'explorer_url': 'https://lora.algokit.io/testnet/tx/ASVVNUKK6YEVYS65AKR7EEZGAZURKWNFI3SJK2XB6S6N4DLLUMYQ/', 'redeem_transaction_id': 'WCM54YJ4QDNFWTN4WZ3EDHJPUPIDPQ7EJ4ZHGOT7VNNBG7F4X55A', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nSample trading insight: Buy NIFTY above 24500 with SL 24380\n\nTransaction IDs: payment=ASVVNUKK6YEVYS65AKR7EEZGAZURKWNFI3SJK2XB6S6N4DLLUMYQ | escrow=WCM54YJ4QDNFWTN4WZ3EDHJPUPIDPQ7EJ4ZHGOT7VNNBG7F4X55A\n\nReputation update: seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM | before=127 | after=137 | delta=+10 | tx=MMBYUCOYNNHYBPTPNTXMO3SJSA5NAV77P6IO4YDTQTTOKDIRRFUQ'}, 'message': '✓ x402 micropayment executed successfully'}
+2026-04-16 20:25:50,776 | INFO | mercator.demo | Buyer flow result: {'success': True, 'final_insight_text': 'Sample trading insight: Buy NIFTY above 24500 with SL 24380', 'result': {'success': True, 'decision': 'BUY', 'evaluation': 'Reasoning: explicit target listing provided by checkout context.\nDecision: BUY', 'payment_status': {'success': True, 'approved': True, 'transaction_id': 'ASVVNUKK6YEVYS65AKR7EEZGAZURKWNFI3SJK2XB6S6N4DLLUMYQ', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 61, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 0.010433, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic payment+redeem group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Escrow redeem recorded atomically with payment'}, 'status': 'CONFIRMED', 'explorer_url': 'https://lora.algokit.io/testnet/tx/ASVVNUKK6YEVYS65AKR7EEZGAZURKWNFI3SJK2XB6S6N4DLLUMYQ/', 'redeem_transaction_id': 'WCM54YJ4QDNFWTN4WZ3EDHJPUPIDPQ7EJ4ZHGOT7VNNBG7F4X55A', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nSample trading insight: Buy NIFTY above 24500 with SL 24380\n\nTransaction IDs: payment=ASVVNUKK6YEVYS65AKR7EEZGAZURKWNFI3SJK2XB6S6N4DLLUMYQ | escrow=WCM54YJ4QDNFWTN4WZ3EDHJPUPIDPQ7EJ4ZHGOT7VNNBG7F4X55A\n\nReputation update: seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM | before=127 | after=137 | delta=+10 | tx=MMBYUCOYNNHYBPTPNTXMO3SJSA5NAV77P6IO4YDTQTTOKDIRRFUQ'}, 'message': '✓ x402 micropayment executed successfully'}}
+2026-04-16 20:28:14,885 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 20:28:16,250 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 20:28:17,425 | INFO | demo.flow | Demo servers ready
+2026-04-16 20:28:19,184 | INFO | mercator.demo | Demo pricing selected | buyer=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ buyer_usdc_micro=5000 listing_price_usdc=0.001000
+2026-04-16 20:28:19,184 | INFO | mercator.demo | Submitting seller listing to /list
+2026-04-16 20:28:19,195 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.001, insight_len=59
+2026-04-16 20:28:19,198 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 20:28:24,209 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 20:28:27,495 | INFO | mercator.backend | IPFS upload complete, cid=QmRGRbfgwtaofvyMwwirBPzBcNEsCsp8n2AdFPqW5oLy7c
+2026-04-16 20:28:27,496 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000 app_id=758025190
+2026-04-16 20:28:32,634 | INFO | mercator.backend | On-chain listing submitted: listing_id=62 asa_id=758913361
+2026-04-16 20:28:32,635 | INFO | demo.flow | Seller upload complete
+2026-04-16 20:28:32,635 | INFO | demo.flow | On-chain ASA created
+2026-04-16 20:28:32,919 | INFO | mercator.backend | Transaction confirmed: tx_id=6Q3GACLQLMJX4GCR3PMY2WLFOFGZ6ZDC7MJXIQ4CEQIG6YNOXFXQ
+2026-04-16 20:28:32,933 | INFO | mercator.demo | Seller upload complete
+2026-04-16 20:28:32,934 | INFO | mercator.demo | On-chain ASA created
+2026-04-16 20:28:32,934 | INFO | mercator.demo | Listing response: {'success': 1, 'transaction_id': '6Q3GACLQLMJX4GCR3PMY2WLFOFGZ6ZDC7MJXIQ4CEQIG6YNOXFXQ', 'txId': '6Q3GACLQLMJX4GCR3PMY2WLFOFGZ6ZDC7MJXIQ4CEQIG6YNOXFXQ', 'explorer_url': 'https://lora.algokit.io/testnet/tx/6Q3GACLQLMJX4GCR3PMY2WLFOFGZ6ZDC7MJXIQ4CEQIG6YNOXFXQ/', 'message': 'Insight listed on-chain and pinned on IPFS', 'cid': 'QmRGRbfgwtaofvyMwwirBPzBcNEsCsp8n2AdFPqW5oLy7c', 'listing_id': 62, 'asa_id': 758913361}
+2026-04-16 20:28:32,937 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=69
+2026-04-16 20:28:32,938 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 20:28:33,610 | ERROR | mercator.backend | Unexpected /list failure | error=TransactionPool.Remember: transaction IDNHJUTH7C6R5KUDZ64YUQMKLFX7MWDICPWW6B64KQVAOAHE5S3A: account M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM balance 948900 below min 985500 (2 assets)
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 106, in algod_request
+    resp = urlopen(req, timeout=timeout)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 187, in urlopen
+    return opener.open(url, data, timeout)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 493, in open
+    response = meth(req, response)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 464, in _call_chain
+    result = func(*args)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1969, in create_listing
+    _ensure_listing_app_funded(listing_app_id)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 688, in _ensure_listing_app_funded
+    tx_id = client.send_transaction(pay_txn.sign(private_key))
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 344, in send_transaction
+    return self.send_raw_transaction(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        encoding.msgpack_encode(txn), **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 371, in send_raw_transaction
+    resp = self.algod_request("POST", req, data=txn_bytes, **kwargs)
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 116, in algod_request
+    raise error.AlgodHTTPError(m, code, j.get("data"))
+algosdk.error.AlgodHTTPError: TransactionPool.Remember: transaction IDNHJUTH7C6R5KUDZ64YUQMKLFX7MWDICPWW6B64KQVAOAHE5S3A: account M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM balance 948900 below min 985500 (2 assets)
+2026-04-16 20:28:35,936 | INFO | mercator.demo | Submitting buyer flow to /demo_purchase
+2026-04-16 20:28:35,945 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=approve
+2026-04-16 20:28:35,945 | INFO | backend.agent | target listing provided; bypassing search/evaluation and selecting listing 62
+2026-04-16 20:28:35,945 | INFO | backend.agent | force_buy_for_test enabled; overriding decision to BUY
+2026-04-16 20:28:35,945 | INFO | backend.agent | Decision is BUY and user approval confirmed ('approve'); triggering x402 payment
+2026-04-16 20:28:35,945 | INFO | backend.agent | Triggering x402 payment: listing 62, price 1.0, buyer MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 20:28:35,953 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-16 20:28:35,953 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-16 20:28:35,953 | INFO | demo.flow | Payment approved
+2026-04-16 20:28:35,953 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 62
+2026-04-16 20:28:35,953 | INFO | backend.tools.x402_payment | Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 1.0 USDC
+2026-04-16 20:28:35,953 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-16 20:28:36,127 | INFO | backend.tools.x402_payment | Listing 62: Price=0.001, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 20:28:36,127 | WARNING | backend.tools.x402_payment | Requested amount differs from listing; using on-chain listing price | requested=1.0 listed=0.001
+2026-04-16 20:28:36,127 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-16 20:28:36,128 | INFO | backend.tools.x402_payment | Simulating payment: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ -> M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, amount=1000, asset_id=10458941
+2026-04-16 20:28:36,549 | INFO | backend.tools.x402_payment | Simulation successful: fee=False, asset_id=10458941
+2026-04-16 20:28:36,549 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'success': True, 'sender': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'receiver': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount': 1000, 'asset_id': 10458941, 'estimated_fee': False, 'is_safe': True, 'message': 'Payment simulation passed - safe to broadcast'}
+2026-04-16 20:28:36,549 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-04-16 20:28:37,406 | INFO | backend.tools.x402_payment | Atomic group simulation complete | tx_count=2
+2026-04-16 20:28:43,614 | INFO | backend.tools.x402_payment | Atomic payment+redeem group confirmed | payment_tx=IK3L6PLIWPZWVHC5BSEKG7YWL5UXJWA7UURDFZRJI36Y5WM4UT4A redeem_tx=FVV63IVBOK6VEIBDSTWGAEH34DSEXZHMVXU3KLIIXEZP3P5VIP2Q
+2026-04-16 20:28:43,615 | INFO | backend.tools.x402_payment | ✓ x402 atomic group executed: payment_tx=IK3L6PLIWPZWVHC5BSEKG7YWL5UXJWA7UURDFZRJI36Y5WM4UT4A redeem_tx=FVV63IVBOK6VEIBDSTWGAEH34DSEXZHMVXU3KLIIXEZP3P5VIP2Q
+2026-04-16 20:28:43,615 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=IK3L6PLIWPZWVHC5BSEKG7YWL5UXJWA7UURDFZRJI36Y5WM4UT4A listing_id=62 buyer=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 20:28:43,795 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=IK3L6PLIWPZWVHC5BSEKG7YWL5UXJWA7UURDFZRJI36Y5WM4UT4A round=62477976
+2026-04-16 20:28:43,974 | INFO | demo.flow | IPFS content delivered
+2026-04-16 20:28:43,974 | INFO | backend.tools.post_payment_flow | Escrow redeem submit skipped: already executed in atomic group | tx_id=FVV63IVBOK6VEIBDSTWGAEH34DSEXZHMVXU3KLIIXEZP3P5VIP2Q
+2026-04-16 20:28:48,971 | INFO | backend.tools.post_payment_flow | Reputation update: seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM | before=137 | after=147 | delta=+10 | tx=TWIEVOQ7M62QDH2S5Y7VQL7EDU5676IQGQBUK2EEL35SBOIO7N4Q
+2026-04-16 20:28:48,971 | INFO | demo.flow | IPFS content delivered
+2026-04-16 20:28:48,972 | INFO | backend.tools.x402_payment | x402 payment flow completed successfully: {'success': True, 'approved': True, 'transaction_id': 'IK3L6PLIWPZWVHC5BSEKG7YWL5UXJWA7UURDFZRJI36Y5WM4UT4A', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 62, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 0.001, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic payment+redeem group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Escrow redeem recorded atomically with payment'}, 'status': 'CONFIRMED', 'explorer_url': 'https://lora.algokit.io/testnet/tx/IK3L6PLIWPZWVHC5BSEKG7YWL5UXJWA7UURDFZRJI36Y5WM4UT4A/', 'redeem_transaction_id': 'FVV63IVBOK6VEIBDSTWGAEH34DSEXZHMVXU3KLIIXEZP3P5VIP2Q', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nSample trading insight: Buy NIFTY above 24500 with SL 24380\n\nTransaction IDs: payment=IK3L6PLIWPZWVHC5BSEKG7YWL5UXJWA7UURDFZRJI36Y5WM4UT4A | escrow=FVV63IVBOK6VEIBDSTWGAEH34DSEXZHMVXU3KLIIXEZP3P5VIP2Q\n\nReputation update: seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM | before=137 | after=147 | delta=+10 | tx=TWIEVOQ7M62QDH2S5Y7VQL7EDU5676IQGQBUK2EEL35SBOIO7N4Q'}
+2026-04-16 20:28:48,972 | INFO | demo.flow | Payment approved
+2026-04-16 20:28:48,972 | INFO | backend.agent | Payment triggered: {'success': True, 'decision': 'BUY', 'evaluation': 'Reasoning: explicit target listing provided by checkout context.\nDecision: BUY', 'payment_status': {'success': True, 'approved': True, 'transaction_id': 'IK3L6PLIWPZWVHC5BSEKG7YWL5UXJWA7UURDFZRJI36Y5WM4UT4A', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 62, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 0.001, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic payment+redeem group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Escrow redeem recorded atomically with payment'}, 'status': 'CONFIRMED', 'explorer_url': 'https://lora.algokit.io/testnet/tx/IK3L6PLIWPZWVHC5BSEKG7YWL5UXJWA7UURDFZRJI36Y5WM4UT4A/', 'redeem_transaction_id': 'FVV63IVBOK6VEIBDSTWGAEH34DSEXZHMVXU3KLIIXEZP3P5VIP2Q', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nSample trading insight: Buy NIFTY above 24500 with SL 24380\n\nTransaction IDs: payment=IK3L6PLIWPZWVHC5BSEKG7YWL5UXJWA7UURDFZRJI36Y5WM4UT4A | escrow=FVV63IVBOK6VEIBDSTWGAEH34DSEXZHMVXU3KLIIXEZP3P5VIP2Q\n\nReputation update: seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM | before=137 | after=147 | delta=+10 | tx=TWIEVOQ7M62QDH2S5Y7VQL7EDU5676IQGQBUK2EEL35SBOIO7N4Q'}, 'message': '✓ x402 micropayment executed successfully'}
+2026-04-16 20:28:48,976 | INFO | mercator.demo | Buyer flow result: {'success': True, 'final_insight_text': 'Sample trading insight: Buy NIFTY above 24500 with SL 24380', 'result': {'success': True, 'decision': 'BUY', 'evaluation': 'Reasoning: explicit target listing provided by checkout context.\nDecision: BUY', 'payment_status': {'success': True, 'approved': True, 'transaction_id': 'IK3L6PLIWPZWVHC5BSEKG7YWL5UXJWA7UURDFZRJI36Y5WM4UT4A', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 62, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 0.001, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic payment+redeem group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Escrow redeem recorded atomically with payment'}, 'status': 'CONFIRMED', 'explorer_url': 'https://lora.algokit.io/testnet/tx/IK3L6PLIWPZWVHC5BSEKG7YWL5UXJWA7UURDFZRJI36Y5WM4UT4A/', 'redeem_transaction_id': 'FVV63IVBOK6VEIBDSTWGAEH34DSEXZHMVXU3KLIIXEZP3P5VIP2Q', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nSample trading insight: Buy NIFTY above 24500 with SL 24380\n\nTransaction IDs: payment=IK3L6PLIWPZWVHC5BSEKG7YWL5UXJWA7UURDFZRJI36Y5WM4UT4A | escrow=FVV63IVBOK6VEIBDSTWGAEH34DSEXZHMVXU3KLIIXEZP3P5VIP2Q\n\nReputation update: seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM | before=137 | after=147 | delta=+10 | tx=TWIEVOQ7M62QDH2S5Y7VQL7EDU5676IQGQBUK2EEL35SBOIO7N4Q'}, 'message': '✓ x402 micropayment executed successfully'}}
+2026-04-16 20:31:30,260 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 20:31:57,700 | INFO | mercator.backend | Incoming /list request: seller_wallet=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, price=1.0, insight_len=14
+2026-04-16 20:31:57,829 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=14
+2026-04-16 20:31:57,829 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 20:31:58,464 | ERROR | mercator.backend | Unexpected /list failure | error=TransactionPool.Remember: transaction 7GAQZLDW4ERSBI27RI6AQQQUWTVJB3M5OJMQQPSKJGTI4UCZ36EA: account M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM balance 948900 below min 985500 (2 assets)
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 106, in algod_request
+    resp = urlopen(req, timeout=timeout)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 187, in urlopen
+    return opener.open(url, data, timeout)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 493, in open
+    response = meth(req, response)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 602, in http_response
+    response = self.parent.error(
+        'http', request, response, code, msg, hdrs)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 531, in error
+    return self._call_chain(*args)
+           ~~~~~~~~~~~~~~~~^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 464, in _call_chain
+    result = func(*args)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 611, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 400: Bad Request
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 1969, in create_listing
+    _ensure_listing_app_funded(listing_app_id)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 688, in _ensure_listing_app_funded
+    tx_id = client.send_transaction(pay_txn.sign(private_key))
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 344, in send_transaction
+    return self.send_raw_transaction(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        encoding.msgpack_encode(txn), **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 371, in send_raw_transaction
+    resp = self.algod_request("POST", req, data=txn_bytes, **kwargs)
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 116, in algod_request
+    raise error.AlgodHTTPError(m, code, j.get("data"))
+algosdk.error.AlgodHTTPError: TransactionPool.Remember: transaction 7GAQZLDW4ERSBI27RI6AQQQUWTVJB3M5OJMQQPSKJGTI4UCZ36EA: account M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM balance 948900 below min 985500 (2 assets)
+2026-04-16 20:37:01,427 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 20:37:18,094 | INFO | mercator.backend | Incoming /list request: seller_wallet=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, price=0.01, insight_len=35
+2026-04-16 20:37:18,098 | INFO | mercator.backend | Validation passed for seller MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ (effective signer=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ exact_match=True)
+2026-04-16 20:37:25,113 | INFO | mercator.backend | IPFS upload started | seller=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 20:37:27,708 | INFO | mercator.backend | IPFS upload complete, cid=QmYwGxdUkJ44g1XiWKzfr6DCT1TmK5aSoGJc6MiGNp1sT7
+2026-04-16 20:37:27,708 | INFO | mercator.backend | ASA creation attempted | seller=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ price_micro=10000 app_id=758025190
+2026-04-16 20:37:33,442 | INFO | mercator.backend | On-chain listing submitted: listing_id=63 asa_id=758913708
+2026-04-16 20:37:33,443 | INFO | demo.flow | Seller upload complete
+2026-04-16 20:37:33,443 | INFO | demo.flow | On-chain ASA created
+2026-04-16 20:37:33,730 | INFO | mercator.backend | Transaction confirmed: tx_id=Y62W4BZFZZ4JGEUHMSK7DGBAP7NTZKFMFN64WIKOHCWVV7BASALQ
+2026-04-16 20:37:33,906 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=0.01, insight_len=38
+2026-04-16 20:37:33,907 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM (effective signer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM exact_match=True)
+2026-04-16 20:37:38,319 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 20:37:39,793 | INFO | mercator.backend | IPFS upload complete, cid=QmaJtMARet7S59nBRytk1hRdBHq67FXEpycUvAHsfHGEkW
+2026-04-16 20:37:39,794 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=10000 app_id=758025190
+2026-04-16 20:37:44,231 | INFO | mercator.backend | On-chain listing submitted: listing_id=64 asa_id=758913713
+2026-04-16 20:37:44,231 | INFO | demo.flow | Seller upload complete
+2026-04-16 20:37:44,231 | INFO | demo.flow | On-chain ASA created
+2026-04-16 20:37:44,472 | INFO | mercator.backend | Transaction confirmed: tx_id=EK5H3ATIEY3HWQXZGRTTCPJ3HKP5I7FIARTYU2HN4NS6FG34HKQQ
+2026-04-16 20:38:18,678 | INFO | mercator.backend | Incoming /list request: seller_wallet=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, price=0.004, insight_len=34
+2026-04-16 20:38:18,678 | INFO | mercator.backend | Validation passed for seller MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ (effective signer=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ exact_match=True)
+2026-04-16 20:38:24,097 | INFO | mercator.backend | IPFS upload started | seller=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 20:38:25,712 | INFO | mercator.backend | IPFS upload complete, cid=QmYj3pdkfR2vGcUHh9q6wb7y6dp9YbFDKTBN9F5SboHdQy
+2026-04-16 20:38:25,712 | INFO | mercator.backend | ASA creation attempted | seller=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ price_micro=4000 app_id=758025190
+2026-04-16 20:38:30,036 | INFO | mercator.backend | On-chain listing submitted: listing_id=65 asa_id=758913752
+2026-04-16 20:38:30,036 | INFO | demo.flow | Seller upload complete
+2026-04-16 20:38:30,036 | INFO | demo.flow | On-chain ASA created
+2026-04-16 20:38:30,253 | INFO | mercator.backend | Transaction confirmed: tx_id=KWYLC3FXAUFYFMEVSRMZBT4FCS2NFVWU2PXVVDYGCSPJWQRGFPZQ
+2026-04-16 20:38:30,265 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=approve
+2026-04-16 20:38:30,265 | INFO | backend.agent | target listing provided; bypassing search/evaluation and selecting listing 65
+2026-04-16 20:38:30,265 | INFO | backend.agent | Decision is BUY and user approval confirmed ('approve'); triggering x402 payment
+2026-04-16 20:38:30,265 | INFO | backend.agent | Triggering x402 payment: listing 65, price 1.0, buyer MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 20:38:30,270 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-16 20:38:30,270 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-16 20:38:30,270 | INFO | demo.flow | Payment approved
+2026-04-16 20:38:30,270 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 65
+2026-04-16 20:38:30,270 | INFO | backend.tools.x402_payment | Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 1.0 USDC
+2026-04-16 20:38:30,270 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-16 20:38:30,454 | INFO | backend.tools.x402_payment | Listing 65: Price=0.004, Settlement asset=10458941, Seller=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 20:38:30,454 | WARNING | backend.tools.x402_payment | Requested amount differs from listing; using on-chain listing price | requested=1.0 listed=0.004
+2026-04-16 20:38:30,454 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-16 20:38:30,454 | INFO | backend.tools.x402_payment | Simulating payment: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ -> MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, amount=4000, asset_id=10458941
+2026-04-16 20:38:30,910 | INFO | backend.tools.x402_payment | Simulation successful: fee=False, asset_id=10458941
+2026-04-16 20:38:30,910 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'success': True, 'sender': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'receiver': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'amount': 4000, 'asset_id': 10458941, 'estimated_fee': False, 'is_safe': True, 'message': 'Payment simulation passed - safe to broadcast'}
+2026-04-16 20:38:30,910 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-04-16 20:38:31,754 | INFO | backend.tools.x402_payment | Atomic group simulation complete | tx_count=2
+2026-04-16 20:38:38,113 | INFO | backend.tools.x402_payment | Atomic payment+redeem group confirmed | payment_tx=FMAJZZUROV3Q5MG3G572PGWTYPNYWY23EI7MR2CRE4XMUEHVV2YA redeem_tx=WKJJUH4QXNBA4V7LWNALP2XBBKFEGWF7DS5YUBAQXQILQJTLNJ7A
+2026-04-16 20:38:38,113 | INFO | backend.tools.x402_payment | ✓ x402 atomic group executed: payment_tx=FMAJZZUROV3Q5MG3G572PGWTYPNYWY23EI7MR2CRE4XMUEHVV2YA redeem_tx=WKJJUH4QXNBA4V7LWNALP2XBBKFEGWF7DS5YUBAQXQILQJTLNJ7A
+2026-04-16 20:38:38,113 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=FMAJZZUROV3Q5MG3G572PGWTYPNYWY23EI7MR2CRE4XMUEHVV2YA listing_id=65 buyer=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 20:38:38,272 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=FMAJZZUROV3Q5MG3G572PGWTYPNYWY23EI7MR2CRE4XMUEHVV2YA round=62478196
+2026-04-16 20:38:38,438 | INFO | demo.flow | IPFS content delivered
+2026-04-16 20:38:38,438 | INFO | backend.tools.post_payment_flow | Escrow redeem submit skipped: already executed in atomic group | tx_id=WKJJUH4QXNBA4V7LWNALP2XBBKFEGWF7DS5YUBAQXQILQJTLNJ7A
+2026-04-16 20:38:38,616 | WARNING | backend.tools.post_payment_flow | Reputation update skipped | seller=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ error=box not found
+2026-04-16 20:38:38,616 | INFO | demo.flow | IPFS content delivered
+2026-04-16 20:38:38,617 | INFO | backend.tools.x402_payment | x402 payment flow completed successfully: {'success': True, 'approved': True, 'transaction_id': 'FMAJZZUROV3Q5MG3G572PGWTYPNYWY23EI7MR2CRE4XMUEHVV2YA', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 65, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'amount_usdc': 0.004, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic payment+redeem group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Escrow redeem recorded atomically with payment'}, 'status': 'CONFIRMED', 'explorer_url': 'https://lora.algokit.io/testnet/tx/FMAJZZUROV3Q5MG3G572PGWTYPNYWY23EI7MR2CRE4XMUEHVV2YA/', 'redeem_transaction_id': 'WKJJUH4QXNBA4V7LWNALP2XBBKFEGWF7DS5YUBAQXQILQJTLNJ7A', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nUI full-cycle verification insight\n\nTransaction IDs: payment=FMAJZZUROV3Q5MG3G572PGWTYPNYWY23EI7MR2CRE4XMUEHVV2YA | escrow=WKJJUH4QXNBA4V7LWNALP2XBBKFEGWF7DS5YUBAQXQILQJTLNJ7A'}
+2026-04-16 20:38:38,617 | INFO | demo.flow | Payment approved
+2026-04-16 20:38:38,617 | INFO | backend.agent | Payment triggered: {'success': True, 'decision': 'BUY', 'evaluation': 'Reasoning: explicit target listing provided by checkout context.\nDecision: BUY', 'payment_status': {'success': True, 'approved': True, 'transaction_id': 'FMAJZZUROV3Q5MG3G572PGWTYPNYWY23EI7MR2CRE4XMUEHVV2YA', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 65, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'amount_usdc': 0.004, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic payment+redeem group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Escrow redeem recorded atomically with payment'}, 'status': 'CONFIRMED', 'explorer_url': 'https://lora.algokit.io/testnet/tx/FMAJZZUROV3Q5MG3G572PGWTYPNYWY23EI7MR2CRE4XMUEHVV2YA/', 'redeem_transaction_id': 'WKJJUH4QXNBA4V7LWNALP2XBBKFEGWF7DS5YUBAQXQILQJTLNJ7A', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nUI full-cycle verification insight\n\nTransaction IDs: payment=FMAJZZUROV3Q5MG3G572PGWTYPNYWY23EI7MR2CRE4XMUEHVV2YA | escrow=WKJJUH4QXNBA4V7LWNALP2XBBKFEGWF7DS5YUBAQXQILQJTLNJ7A'}, 'message': '✓ x402 micropayment executed successfully'}
+2026-04-16 21:07:30,559 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 21:08:13,775 | INFO | mercator.backend | Incoming /list request: seller_wallet=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, price=1.0, insight_len=69
+2026-04-16 21:08:13,779 | INFO | mercator.backend | Validation passed for seller MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ (effective signer=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ exact_match=True)
+2026-04-16 21:08:45,289 | ERROR | mercator.backend | Unexpected /list failure | error=<urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1081)>
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 1321, in do_open
+    h.request(req.get_method(), req.selector, req.data, headers,
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              encode_chunked=req.has_header('Transfer-encoding'))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 1358, in request
+    self._send_request(method, url, body, headers, encode_chunked)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 1404, in _send_request
+    self.endheaders(body, encode_chunked=encode_chunked)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 1353, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 1113, in _send_output
+    self.send(msg)
+    ~~~~~~~~~^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 1057, in send
+    self.connect()
+    ~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 1499, in connect
+    self.sock = self._context.wrap_socket(self.sock,
+                ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+                                          server_hostname=server_hostname)
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/ssl.py", line 455, in wrap_socket
+    return self.sslsocket_class._create(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sock=sock,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        session=session
+        ^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/ssl.py", line 1076, in _create
+    self.do_handshake()
+    ~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/ssl.py", line 1372, in do_handshake
+    self._sslobj.do_handshake()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+ssl.SSLEOFError: [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1081)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 2077, in create_listing
+    _ensure_listing_app_funded(listing_app_id, preferred_sender=signer_address)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 795, in _ensure_listing_app_funded
+    tx_id = client.send_transaction(pay_txn.sign(private_key))
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 344, in send_transaction
+    return self.send_raw_transaction(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        encoding.msgpack_encode(txn), **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 371, in send_raw_transaction
+    resp = self.algod_request("POST", req, data=txn_bytes, **kwargs)
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algosdk/v2client/algod.py", line 106, in algod_request
+    resp = urlopen(req, timeout=timeout)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 187, in urlopen
+    return opener.open(url, data, timeout)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 487, in open
+    response = self._open(req, data)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 504, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+                              '_open', req)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 464, in _call_chain
+    result = func(*args)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 1369, in https_open
+    return self.do_open(http.client.HTTPSConnection, req,
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        context=self._context)
+                        ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/urllib/request.py", line 1324, in do_open
+    raise URLError(err)
+urllib.error.URLError: <urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1081)>
+2026-04-16 21:11:18,163 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 21:11:59,477 | INFO | mercator.backend | Incoming /list request: seller_wallet=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, price=1.0, insight_len=69
+2026-04-16 21:11:59,482 | INFO | mercator.backend | Validation passed for seller MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ (effective signer=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ exact_match=True)
+2026-04-16 21:12:32,889 | INFO | mercator.backend | IPFS upload started | seller=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 21:12:37,327 | INFO | mercator.backend | IPFS upload complete, cid=QmPmkv7CTqQZXkCerQaa2AWMrW8Y2A2cK7FG67uP9CC2yH
+2026-04-16 21:12:37,328 | INFO | mercator.backend | ASA creation attempted | seller=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ price_micro=1000000 app_id=758025190
+2026-04-16 21:12:59,272 | INFO | mercator.backend | On-chain listing submitted: listing_id=66 asa_id=758915118
+2026-04-16 21:12:59,273 | INFO | demo.flow | Seller upload complete
+2026-04-16 21:12:59,274 | INFO | demo.flow | On-chain ASA created
+2026-04-16 21:13:06,679 | INFO | mercator.backend | Transaction confirmed: tx_id=BZMRXOSALO3D6JWDXDVJUTIY7LZ4464JW6S3EMVKAOX4QE7UMKNQ
+2026-04-16 21:24:51,686 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 21:27:22,787 | INFO | mercator.backend | Incoming /list request: seller_wallet=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, price=0.003, insight_len=20
+2026-04-16 21:27:22,791 | INFO | mercator.backend | Validation passed for seller MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ (effective signer=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ exact_match=True)
+2026-04-16 21:27:22,792 | INFO | mercator.backend | IPFS upload started | seller=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 21:27:24,896 | INFO | mercator.backend | IPFS upload complete, cid=QmYPwemYWDJuuHPthrCJ8z4F6DV1utv3C7AfzfiwDGsbCC
+2026-04-16 21:27:30,545 | INFO | mercator.backend | ASA creation attempted | seller=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ price_micro=3000 app_id=758025190 attempt=1/3
+2026-04-16 21:27:36,559 | INFO | mercator.backend | On-chain listing submitted: listing_id=67 asa_id=758915706
+2026-04-16 21:27:36,560 | INFO | demo.flow | Seller upload complete
+2026-04-16 21:27:36,560 | INFO | demo.flow | On-chain ASA created
+2026-04-16 21:27:36,783 | INFO | mercator.backend | Transaction confirmed: tx_id=QFZFWOGDMGLCXN6NYECJ73KMVFCTNE2ADGWLPU3FVHBY6ZO6ALKA
+2026-04-16 21:27:36,797 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=approve
+2026-04-16 21:27:36,797 | INFO | backend.agent | target listing provided; bypassing search/evaluation and selecting listing 67
+2026-04-16 21:27:36,797 | INFO | backend.agent | Decision is BUY and user approval confirmed ('approve'); triggering x402 payment
+2026-04-16 21:27:36,797 | INFO | backend.agent | Triggering x402 payment: listing 67, price 1.0, buyer MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 21:27:36,804 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-16 21:27:36,804 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-16 21:27:36,804 | INFO | demo.flow | Payment approved
+2026-04-16 21:27:36,804 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 67
+2026-04-16 21:27:36,804 | INFO | backend.tools.x402_payment | Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 1.0 USDC
+2026-04-16 21:27:36,804 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-16 21:27:36,979 | INFO | backend.tools.x402_payment | Listing 67: Price=0.003, Settlement asset=10458941, Seller=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 21:27:36,979 | WARNING | backend.tools.x402_payment | Requested amount differs from listing; using on-chain listing price | requested=1.0 listed=0.003
+2026-04-16 21:27:36,979 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-16 21:27:36,979 | INFO | backend.tools.x402_payment | Simulating payment: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ -> MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, amount=3000, asset_id=10458941
+2026-04-16 21:27:37,357 | INFO | backend.tools.x402_payment | Simulation successful: fee=False, asset_id=10458941
+2026-04-16 21:27:37,357 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'success': True, 'sender': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'receiver': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'amount': 3000, 'asset_id': 10458941, 'estimated_fee': False, 'is_safe': True, 'message': 'Payment simulation passed - safe to broadcast'}
+2026-04-16 21:27:37,357 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-04-16 21:27:38,237 | INFO | backend.tools.x402_payment | Atomic group simulation complete | tx_count=2
+2026-04-16 21:27:44,588 | INFO | backend.tools.x402_payment | Atomic payment+redeem group confirmed | payment_tx=JFKIJ55PIIMAO5YIVDIXIKVXD26IOGY3Y4OOA2ZAK4GQXYXMKKIQ redeem_tx=UDHM2EB4276O5ZFFNSI3QLP4F23QULPEBZJOX4ZSQJUG2NY3XMRA
+2026-04-16 21:27:44,588 | INFO | backend.tools.x402_payment | ✓ x402 atomic group executed: payment_tx=JFKIJ55PIIMAO5YIVDIXIKVXD26IOGY3Y4OOA2ZAK4GQXYXMKKIQ redeem_tx=UDHM2EB4276O5ZFFNSI3QLP4F23QULPEBZJOX4ZSQJUG2NY3XMRA
+2026-04-16 21:27:44,588 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=JFKIJ55PIIMAO5YIVDIXIKVXD26IOGY3Y4OOA2ZAK4GQXYXMKKIQ listing_id=67 buyer=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 21:27:44,752 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=JFKIJ55PIIMAO5YIVDIXIKVXD26IOGY3Y4OOA2ZAK4GQXYXMKKIQ round=62479286
+2026-04-16 21:27:44,911 | INFO | demo.flow | IPFS content delivered
+2026-04-16 21:27:44,911 | INFO | backend.tools.post_payment_flow | Escrow redeem submit skipped: already executed in atomic group | tx_id=UDHM2EB4276O5ZFFNSI3QLP4F23QULPEBZJOX4ZSQJUG2NY3XMRA
+2026-04-16 21:27:45,074 | WARNING | backend.tools.post_payment_flow | Reputation update skipped | seller=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ error=box not found
+2026-04-16 21:27:45,074 | INFO | demo.flow | IPFS content delivered
+2026-04-16 21:27:45,074 | INFO | backend.tools.x402_payment | x402 payment flow completed successfully: {'success': True, 'approved': True, 'transaction_id': 'JFKIJ55PIIMAO5YIVDIXIKVXD26IOGY3Y4OOA2ZAK4GQXYXMKKIQ', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 67, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'amount_usdc': 0.003, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic payment+redeem group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Escrow redeem recorded atomically with payment'}, 'status': 'CONFIRMED', 'explorer_url': 'https://lora.algokit.io/testnet/tx/JFKIJ55PIIMAO5YIVDIXIKVXD26IOGY3Y4OOA2ZAK4GQXYXMKKIQ/', 'redeem_transaction_id': 'UDHM2EB4276O5ZFFNSI3QLP4F23QULPEBZJOX4ZSQJUG2NY3XMRA', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nfinal sanity insight\n\nTransaction IDs: payment=JFKIJ55PIIMAO5YIVDIXIKVXD26IOGY3Y4OOA2ZAK4GQXYXMKKIQ | escrow=UDHM2EB4276O5ZFFNSI3QLP4F23QULPEBZJOX4ZSQJUG2NY3XMRA'}
+2026-04-16 21:27:45,075 | INFO | demo.flow | Payment approved
+2026-04-16 21:27:45,075 | INFO | backend.agent | Payment triggered: {'success': True, 'decision': 'BUY', 'evaluation': 'Reasoning: explicit target listing provided by checkout context.\nDecision: BUY', 'payment_status': {'success': True, 'approved': True, 'transaction_id': 'JFKIJ55PIIMAO5YIVDIXIKVXD26IOGY3Y4OOA2ZAK4GQXYXMKKIQ', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 67, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'amount_usdc': 0.003, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic payment+redeem group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Escrow redeem recorded atomically with payment'}, 'status': 'CONFIRMED', 'explorer_url': 'https://lora.algokit.io/testnet/tx/JFKIJ55PIIMAO5YIVDIXIKVXD26IOGY3Y4OOA2ZAK4GQXYXMKKIQ/', 'redeem_transaction_id': 'UDHM2EB4276O5ZFFNSI3QLP4F23QULPEBZJOX4ZSQJUG2NY3XMRA', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nfinal sanity insight\n\nTransaction IDs: payment=JFKIJ55PIIMAO5YIVDIXIKVXD26IOGY3Y4OOA2ZAK4GQXYXMKKIQ | escrow=UDHM2EB4276O5ZFFNSI3QLP4F23QULPEBZJOX4ZSQJUG2NY3XMRA'}, 'message': '✓ x402 micropayment executed successfully'}
+2026-04-16 21:28:18,856 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 21:28:53,238 | INFO | mercator.backend | Incoming /list request: seller_wallet=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, price=1.0, insight_len=69
+2026-04-16 21:28:53,242 | INFO | mercator.backend | Validation passed for seller MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ (effective signer=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ exact_match=True)
+2026-04-16 21:28:53,242 | INFO | mercator.backend | IPFS upload started | seller=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 21:28:57,140 | INFO | mercator.backend | IPFS upload complete, cid=QmPmkv7CTqQZXkCerQaa2AWMrW8Y2A2cK7FG67uP9CC2yH
+2026-04-16 21:29:02,492 | INFO | mercator.backend | ASA creation attempted | seller=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ price_micro=1000000 app_id=758025190 attempt=1/3
+2026-04-16 21:29:08,235 | INFO | mercator.backend | On-chain listing submitted: listing_id=68 asa_id=758915750
+2026-04-16 21:29:08,236 | INFO | demo.flow | Seller upload complete
+2026-04-16 21:29:08,236 | INFO | demo.flow | On-chain ASA created
+2026-04-16 21:29:08,504 | INFO | mercator.backend | Transaction confirmed: tx_id=3C6BVEWU4ZJKF35LLJPSMWDXWQLCFHODEEKDL2FFKD2VGET4RH4A
+2026-04-16 21:29:32,549 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=approve
+2026-04-16 21:33:54,375 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 21:34:21,204 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-16 21:34:23,339 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-16 21:34:25,476 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-16 21:34:25,480 | WARNING | backend.tools.semantic_search | Embedding failure during semantic_search: RetryError[<Future at 0x10c213410 state=finished raised GoogleGenerativeAIError>]
+2026-04-16 21:34:25,481 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-16 21:34:25,488 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-04-16 21:34:25,648 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 429 Too Many Requests"
+2026-04-16 21:34:25,649 | WARNING | backend.agent | Evaluation step hit Gemini limit; falling back to SKIP
+2026-04-16 21:34:35,717 | INFO | mercator.backend | Incoming /list request: seller_wallet=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, price=0.001, insight_len=22
+2026-04-16 21:34:35,720 | INFO | mercator.backend | Validation passed for seller MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ (effective signer=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ exact_match=True)
+2026-04-16 21:34:35,720 | INFO | mercator.backend | IPFS upload started | seller=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 21:34:37,797 | INFO | mercator.backend | IPFS upload complete, cid=QmVQuFinQicdLPjebv2Bxn3xdpsP2MDjCvgSAyiPDVZrUQ
+2026-04-16 21:34:43,146 | INFO | mercator.backend | ASA creation attempted | seller=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ price_micro=1000 app_id=758025190 attempt=1/3
+2026-04-16 21:34:49,098 | INFO | mercator.backend | On-chain listing submitted: listing_id=69 asa_id=758915997
+2026-04-16 21:34:49,099 | INFO | demo.flow | Seller upload complete
+2026-04-16 21:34:49,099 | INFO | demo.flow | On-chain ASA created
+2026-04-16 21:34:49,267 | INFO | mercator.backend | Transaction confirmed: tx_id=6XGQTRACPO6LTPHYYTUPYLESNH2NQNLYM6SCF3YAZNLNINLT53EA
+2026-04-16 21:34:49,284 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=approve
+2026-04-16 21:34:49,284 | INFO | backend.agent | target listing provided; bypassing search/evaluation and selecting listing 69
+2026-04-16 21:34:49,284 | INFO | backend.agent | Decision is BUY and user approval confirmed ('approve'); triggering x402 payment
+2026-04-16 21:34:49,284 | INFO | backend.agent | Triggering x402 payment: listing 69, price 1.0, buyer MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 21:34:49,290 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-16 21:34:49,290 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-16 21:34:49,290 | INFO | demo.flow | Payment approved
+2026-04-16 21:34:49,290 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 69
+2026-04-16 21:34:49,290 | INFO | backend.tools.x402_payment | Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 1.0 USDC
+2026-04-16 21:34:49,290 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-16 21:34:49,470 | INFO | backend.tools.x402_payment | Listing 69: Price=0.001, Settlement asset=10458941, Seller=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 21:34:49,470 | WARNING | backend.tools.x402_payment | Requested amount differs from listing; using on-chain listing price | requested=1.0 listed=0.001
+2026-04-16 21:34:49,470 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-16 21:34:49,470 | INFO | backend.tools.x402_payment | Simulating payment: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ -> MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, amount=1000, asset_id=10458941
+2026-04-16 21:34:49,825 | INFO | backend.tools.x402_payment | Simulation successful: fee=False, asset_id=10458941
+2026-04-16 21:34:49,826 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'success': True, 'sender': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'receiver': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'amount': 1000, 'asset_id': 10458941, 'estimated_fee': False, 'is_safe': True, 'message': 'Payment simulation passed - safe to broadcast'}
+2026-04-16 21:34:49,826 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-04-16 21:34:50,732 | INFO | backend.tools.x402_payment | Atomic group simulation complete | tx_count=2
+2026-04-16 21:34:57,195 | INFO | backend.tools.x402_payment | Atomic payment+redeem group confirmed | payment_tx=2TK4JRPFXNUPY4UC6MODZR5HBUB3RMGQHAYS3266JUYYIHQGVZNA redeem_tx=5SWD2MOF5GWUAJFZ6D2EF3AIY57DJLBYZB6HQWFXP57JY2FU26XQ
+2026-04-16 21:34:57,195 | INFO | backend.tools.x402_payment | ✓ x402 atomic group executed: payment_tx=2TK4JRPFXNUPY4UC6MODZR5HBUB3RMGQHAYS3266JUYYIHQGVZNA redeem_tx=5SWD2MOF5GWUAJFZ6D2EF3AIY57DJLBYZB6HQWFXP57JY2FU26XQ
+2026-04-16 21:34:57,195 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=2TK4JRPFXNUPY4UC6MODZR5HBUB3RMGQHAYS3266JUYYIHQGVZNA listing_id=69 buyer=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 21:34:57,542 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=2TK4JRPFXNUPY4UC6MODZR5HBUB3RMGQHAYS3266JUYYIHQGVZNA round=62479446
+2026-04-16 21:34:57,719 | INFO | demo.flow | IPFS content delivered
+2026-04-16 21:34:57,720 | INFO | backend.tools.post_payment_flow | Escrow redeem submit skipped: already executed in atomic group | tx_id=5SWD2MOF5GWUAJFZ6D2EF3AIY57DJLBYZB6HQWFXP57JY2FU26XQ
+2026-04-16 21:34:57,944 | WARNING | backend.tools.post_payment_flow | Reputation update skipped | seller=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ error=box not found
+2026-04-16 21:34:57,944 | INFO | demo.flow | IPFS content delivered
+2026-04-16 21:34:57,945 | INFO | backend.tools.x402_payment | x402 payment flow completed successfully: {'success': True, 'approved': True, 'transaction_id': '2TK4JRPFXNUPY4UC6MODZR5HBUB3RMGQHAYS3266JUYYIHQGVZNA', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 69, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'amount_usdc': 0.001, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic payment+redeem group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Escrow redeem recorded atomically with payment'}, 'status': 'CONFIRMED', 'explorer_url': 'https://lora.algokit.io/testnet/tx/2TK4JRPFXNUPY4UC6MODZR5HBUB3RMGQHAYS3266JUYYIHQGVZNA/', 'redeem_transaction_id': '5SWD2MOF5GWUAJFZ6D2EF3AIY57DJLBYZB6HQWFXP57JY2FU26XQ', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nui timeout final check\n\nTransaction IDs: payment=2TK4JRPFXNUPY4UC6MODZR5HBUB3RMGQHAYS3266JUYYIHQGVZNA | escrow=5SWD2MOF5GWUAJFZ6D2EF3AIY57DJLBYZB6HQWFXP57JY2FU26XQ'}
+2026-04-16 21:34:57,945 | INFO | demo.flow | Payment approved
+2026-04-16 21:34:57,945 | INFO | backend.agent | Payment triggered: {'success': True, 'decision': 'BUY', 'evaluation': 'Reasoning: explicit target listing provided by checkout context.\nDecision: BUY', 'payment_status': {'success': True, 'approved': True, 'transaction_id': '2TK4JRPFXNUPY4UC6MODZR5HBUB3RMGQHAYS3266JUYYIHQGVZNA', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 69, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'amount_usdc': 0.001, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic payment+redeem group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Escrow redeem recorded atomically with payment'}, 'status': 'CONFIRMED', 'explorer_url': 'https://lora.algokit.io/testnet/tx/2TK4JRPFXNUPY4UC6MODZR5HBUB3RMGQHAYS3266JUYYIHQGVZNA/', 'redeem_transaction_id': '5SWD2MOF5GWUAJFZ6D2EF3AIY57DJLBYZB6HQWFXP57JY2FU26XQ', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nui timeout final check\n\nTransaction IDs: payment=2TK4JRPFXNUPY4UC6MODZR5HBUB3RMGQHAYS3266JUYYIHQGVZNA | escrow=5SWD2MOF5GWUAJFZ6D2EF3AIY57DJLBYZB6HQWFXP57JY2FU26XQ'}, 'message': '✓ x402 micropayment executed successfully'}
+2026-04-16 21:36:45,973 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 21:36:54,904 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 21:37:43,128 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 21:38:46,190 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 21:39:34,273 | INFO | mercator.backend | Incoming /list request: seller_wallet=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, price=1.0, insight_len=69
+2026-04-16 21:39:34,278 | INFO | mercator.backend | Validation passed for seller MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ (effective signer=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ exact_match=True)
+2026-04-16 21:39:34,278 | INFO | mercator.backend | IPFS upload started | seller=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 21:39:36,202 | INFO | mercator.backend | IPFS upload complete, cid=QmPmkv7CTqQZXkCerQaa2AWMrW8Y2A2cK7FG67uP9CC2yH
+2026-04-16 21:39:40,880 | INFO | mercator.backend | ASA creation attempted | seller=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ price_micro=1000000 app_id=758025190 attempt=1/3
+2026-04-16 21:39:46,876 | INFO | mercator.backend | On-chain listing submitted: listing_id=70 asa_id=758916271
+2026-04-16 21:39:46,877 | INFO | demo.flow | Seller upload complete
+2026-04-16 21:39:46,877 | INFO | demo.flow | On-chain ASA created
+2026-04-16 21:39:47,107 | INFO | mercator.backend | Transaction confirmed: tx_id=OTIGWPUQNS5UGTZEQM4TFW6ETQ6ATR72DDHUBNVB4LLKJYAU4QVA
+2026-04-16 21:40:25,505 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=approve
+2026-04-16 21:40:25,506 | INFO | backend.agent | target listing provided; bypassing search/evaluation and selecting listing 70
+2026-04-16 21:40:25,506 | INFO | backend.agent | Decision is BUY and user approval confirmed ('approve'); triggering x402 payment
+2026-04-16 21:40:25,506 | INFO | backend.agent | Triggering x402 payment: listing 70, price 1.0, buyer MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 21:40:25,517 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-16 21:40:25,517 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-16 21:40:25,517 | INFO | demo.flow | Payment approved
+2026-04-16 21:40:25,517 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 70
+2026-04-16 21:40:25,517 | INFO | backend.tools.x402_payment | Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 1.0 USDC
+2026-04-16 21:40:25,518 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-16 21:40:25,704 | INFO | backend.tools.x402_payment | Listing 70: Price=1.0, Settlement asset=10458941, Seller=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 21:40:25,705 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-16 21:40:25,705 | INFO | backend.tools.x402_payment | Simulating payment: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ -> MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, amount=1000000, asset_id=10458941
+2026-04-16 21:40:25,934 | ERROR | backend.tools.x402_payment | Payment simulation failed: Insufficient asset balance: have 4000, need 1000000
+2026-04-16 21:40:25,934 | ERROR | backend.tools.x402_payment | Payment simulation error: Payment simulation failed: Insufficient asset balance: have 4000, need 1000000
+2026-04-16 21:40:25,934 | ERROR | backend.tools.x402_payment | insufficient_balance | details=Payment simulation failed: Insufficient asset balance: have 4000, need 1000000
+2026-04-16 21:40:25,935 | ERROR | backend.agent | payment_rejected | details={'success': False, 'error': 'SIMULATION_ERROR', 'message': 'insufficient balance: Payment was rejected by x402 - please check your wallet balance', 'next_step': 'Check buyer balance, receiver address, and asset availability'}
+2026-04-16 21:40:25,935 | INFO | demo.flow | Payment approved
+2026-04-16 21:40:25,935 | INFO | backend.agent | Payment triggered: {'success': False, 'decision': 'BUY', 'evaluation': 'Reasoning: explicit target listing provided by checkout context.\nDecision: BUY', 'payment_status': {'success': False, 'error': 'SIMULATION_ERROR', 'message': 'insufficient balance: Payment was rejected by x402 - please check your wallet balance', 'next_step': 'Check buyer balance, receiver address, and asset availability'}, 'message': 'Sorry, I encountered an issue: Payment was rejected by x402 - please check your wallet balance. Would you like to try a different insight or check your wallet balance?'}
+2026-04-16 21:44:35,181 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=approve
+2026-04-16 21:44:35,182 | INFO | backend.agent | target listing provided; bypassing search/evaluation and selecting listing 70
+2026-04-16 21:44:35,184 | INFO | backend.agent | Decision is BUY and user approval confirmed ('approve'); triggering x402 payment
+2026-04-16 21:44:35,184 | INFO | backend.agent | Triggering x402 payment: listing 70, price 1.0, buyer MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 21:44:35,188 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-16 21:44:35,189 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-16 21:44:35,189 | INFO | demo.flow | Payment approved
+2026-04-16 21:44:35,189 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 70
+2026-04-16 21:44:35,189 | INFO | backend.tools.x402_payment | Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 1.0 USDC
+2026-04-16 21:44:35,189 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-16 21:44:35,359 | INFO | backend.tools.x402_payment | Listing 70: Price=1.0, Settlement asset=10458941, Seller=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 21:44:35,361 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-16 21:44:35,361 | INFO | backend.tools.x402_payment | Simulating payment: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ -> MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, amount=1000000, asset_id=10458941
+2026-04-16 21:44:35,746 | INFO | backend.tools.x402_payment | Simulation successful: fee=False, asset_id=10458941
+2026-04-16 21:44:35,747 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'success': True, 'sender': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'receiver': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'amount': 1000000, 'asset_id': 10458941, 'estimated_fee': False, 'is_safe': True, 'message': 'Payment simulation passed - safe to broadcast'}
+2026-04-16 21:44:35,747 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-04-16 21:44:36,633 | INFO | backend.tools.x402_payment | Atomic group simulation complete | tx_count=2
+2026-04-16 21:44:42,641 | INFO | backend.tools.x402_payment | Atomic payment+redeem group confirmed | payment_tx=QTZLIUZKLX6K66HX2BIDF5MRBKTKGZIUUR2P2BCR6ALEATM2VMFQ redeem_tx=DRPOQIBIWS4L5YUSFKKKNAF4J22IMC7GBWEDC7EY5JDB7ANBKEVA
+2026-04-16 21:44:42,641 | INFO | backend.tools.x402_payment | ✓ x402 atomic group executed: payment_tx=QTZLIUZKLX6K66HX2BIDF5MRBKTKGZIUUR2P2BCR6ALEATM2VMFQ redeem_tx=DRPOQIBIWS4L5YUSFKKKNAF4J22IMC7GBWEDC7EY5JDB7ANBKEVA
+2026-04-16 21:44:42,641 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=QTZLIUZKLX6K66HX2BIDF5MRBKTKGZIUUR2P2BCR6ALEATM2VMFQ listing_id=70 buyer=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 21:44:42,898 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=QTZLIUZKLX6K66HX2BIDF5MRBKTKGZIUUR2P2BCR6ALEATM2VMFQ round=62479662
+2026-04-16 21:44:43,082 | INFO | demo.flow | IPFS content delivered
+2026-04-16 21:44:43,082 | INFO | backend.tools.post_payment_flow | Escrow redeem submit skipped: already executed in atomic group | tx_id=DRPOQIBIWS4L5YUSFKKKNAF4J22IMC7GBWEDC7EY5JDB7ANBKEVA
+2026-04-16 21:44:43,264 | WARNING | backend.tools.post_payment_flow | Reputation update skipped | seller=MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ error=box not found
+2026-04-16 21:44:43,264 | INFO | demo.flow | IPFS content delivered
+2026-04-16 21:44:43,264 | INFO | backend.tools.x402_payment | x402 payment flow completed successfully: {'success': True, 'approved': True, 'transaction_id': 'QTZLIUZKLX6K66HX2BIDF5MRBKTKGZIUUR2P2BCR6ALEATM2VMFQ', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 70, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'amount_usdc': 1.0, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic payment+redeem group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Escrow redeem recorded atomically with payment'}, 'status': 'CONFIRMED', 'explorer_url': 'https://lora.algokit.io/testnet/tx/QTZLIUZKLX6K66HX2BIDF5MRBKTKGZIUUR2P2BCR6ALEATM2VMFQ/', 'redeem_transaction_id': 'DRPOQIBIWS4L5YUSFKKKNAF4J22IMC7GBWEDC7EY5JDB7ANBKEVA', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nBuy NIFTY above 24500 for 3-month target of 25000. Stop loss at 24100\n\nTransaction IDs: payment=QTZLIUZKLX6K66HX2BIDF5MRBKTKGZIUUR2P2BCR6ALEATM2VMFQ | escrow=DRPOQIBIWS4L5YUSFKKKNAF4J22IMC7GBWEDC7EY5JDB7ANBKEVA'}
+2026-04-16 21:44:43,264 | INFO | demo.flow | Payment approved
+2026-04-16 21:44:43,265 | INFO | backend.agent | Payment triggered: {'success': True, 'decision': 'BUY', 'evaluation': 'Reasoning: explicit target listing provided by checkout context.\nDecision: BUY', 'payment_status': {'success': True, 'approved': True, 'transaction_id': 'QTZLIUZKLX6K66HX2BIDF5MRBKTKGZIUUR2P2BCR6ALEATM2VMFQ', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 70, 'buyer_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'seller_address': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'amount_usdc': 1.0, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic payment+redeem group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Escrow redeem recorded atomically with payment'}, 'status': 'CONFIRMED', 'explorer_url': 'https://lora.algokit.io/testnet/tx/QTZLIUZKLX6K66HX2BIDF5MRBKTKGZIUUR2P2BCR6ALEATM2VMFQ/', 'redeem_transaction_id': 'DRPOQIBIWS4L5YUSFKKKNAF4J22IMC7GBWEDC7EY5JDB7ANBKEVA', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': '✅ Payment confirmed!\n✅ Escrow released!\n\nHere is your human trading insight:\n\nBuy NIFTY above 24500 for 3-month target of 25000. Stop loss at 24100\n\nTransaction IDs: payment=QTZLIUZKLX6K66HX2BIDF5MRBKTKGZIUUR2P2BCR6ALEATM2VMFQ | escrow=DRPOQIBIWS4L5YUSFKKKNAF4J22IMC7GBWEDC7EY5JDB7ANBKEVA'}, 'message': '✓ x402 micropayment executed successfully'}

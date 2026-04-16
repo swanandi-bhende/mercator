@@ -20,6 +20,7 @@ import logging
 import os
 import hashlib
 import time
+import warnings
 from uuid import uuid4
 from typing import Any
 import requests
@@ -35,8 +36,15 @@ from pydantic import BaseModel
 from algosdk import mnemonic, transaction
 from algosdk import encoding
 from algosdk import account
+from algosdk.error import AlgodHTTPError
 from algosdk.logic import get_application_address
 from algosdk.v2client import algod, indexer
+
+warnings.filterwarnings(
+    "ignore",
+    message="Core Pydantic V1 functionality isn't compatible with Python 3.14 or greater.",
+    category=UserWarning,
+)
 
 try:
     from backend.agent import run_agent
@@ -413,6 +421,7 @@ class DemoPurchaseRequest(BaseModel):
     buyer_address: str | None = None
     user_approval_input: str = "approve"
     force_buy_for_test: bool = True
+    target_listing_id: int | None = None
 
 
 class DiscoverRequest(BaseModel):
@@ -646,9 +655,71 @@ def _get_indexer_client() -> indexer.IndexerClient:
     return indexer.IndexerClient(indexer_token=token, indexer_address=indexer_url)
 
 
-def _ensure_listing_app_funded(app_id: int) -> None:
+def _available_signer_mnemonics() -> list[str]:
+    """Return configured signer mnemonics in preference order (unique, non-empty)."""
+    ordered = [
+        os.getenv("SELLER_MNEMONIC", "").strip(),
+        os.getenv("DEPLOYER_MNEMONIC", "").strip(),
+        os.getenv("BUYER_MNEMONIC", "").strip(),
+    ]
+    unique: list[str] = []
+    for value in ordered:
+        if value and value not in unique:
+            unique.append(value)
+    return unique
+
+
+def _resolve_signer_for_wallet(requested_wallet: str) -> tuple[str, str, bool]:
+    """Resolve signer mnemonic/address for seller wallet.
+
+    Returns: (mnemonic, resolved_address, exact_match)
+    """
+    normalized_requested = requested_wallet.strip().upper()
+    candidates = _available_signer_mnemonics()
+    if not candidates:
+        raise HTTPException(
+            status_code=500,
+            detail="SELLER_MNEMONIC, DEPLOYER_MNEMONIC, or BUYER_MNEMONIC must be configured",
+        )
+
+    derived: list[tuple[str, str]] = []
+    for cand in candidates:
+        try:
+            address = account.address_from_private_key(mnemonic.to_private_key(cand))
+            derived.append((cand, address))
+            if address == normalized_requested:
+                return cand, address, True
+        except Exception:
+            continue
+
+    allow_override = os.getenv("DEMO_ALLOW_SELLER_WALLET_OVERRIDE", "1").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+    if allow_override and derived:
+        fallback_mnemonic, fallback_address = derived[0]
+        logger.warning(
+            "Seller wallet override enabled: requested=%s using_signer=%s",
+            normalized_requested,
+            fallback_address,
+        )
+        return fallback_mnemonic, fallback_address, False
+
+    supported_wallets = ", ".join(addr for _, addr in derived) if derived else "none"
+    raise HTTPException(
+        status_code=400,
+        detail=(
+            f"seller_wallet is not signable with configured mnemonics. "
+            f"Supported wallets: {supported_wallets}"
+        ),
+    )
+
+
+def _ensure_listing_app_funded(app_id: int, preferred_sender: str = "") -> None:
     """Top up InsightListing app contract account to cover state box storage.
-    
+
     Target: min_balance + 300K micro-Algo (box storage buffer).
     Purpose: Prevent app account errors when buyers/sellers create/redeem listings.
     """
@@ -662,14 +733,58 @@ def _ensure_listing_app_funded(app_id: int) -> None:
     if balance >= target_balance:
         return
 
-    deployer_mnemonic = os.getenv("DEPLOYER_MNEMONIC", "").strip()
-    if not deployer_mnemonic:
-        raise HTTPException(status_code=500, detail="DEPLOYER_MNEMONIC is not configured")
-
-    sender = os.getenv("DEPLOYER_ADDRESS", "").strip() or mnemonic.to_public_key(deployer_mnemonic)
-    private_key = mnemonic.to_private_key(deployer_mnemonic)
-
     top_up = target_balance - balance
+    fee_buffer = 200_000
+
+    candidates = _available_signer_mnemonics()
+    if not candidates:
+        raise HTTPException(
+            status_code=500,
+            detail="No signer mnemonic available to fund listing app account",
+        )
+
+    # Prefer the active seller signer first, then fall back to other configured wallets.
+    ordered_candidates = candidates
+    if preferred_sender:
+        prioritized: list[str] = []
+        others: list[str] = []
+        for cand in candidates:
+            try:
+                cand_sender = account.address_from_private_key(mnemonic.to_private_key(cand))
+                if cand_sender == preferred_sender:
+                    prioritized.append(cand)
+                else:
+                    others.append(cand)
+            except Exception:
+                others.append(cand)
+        ordered_candidates = prioritized + others
+
+    sender: str | None = None
+    private_key: str | None = None
+    for candidate in ordered_candidates:
+        try:
+            cand_private_key = mnemonic.to_private_key(candidate)
+            cand_sender = account.address_from_private_key(cand_private_key)
+            info = client.account_info(cand_sender)
+            cand_balance = int(info.get("amount", 0) or 0)
+            cand_min = int(info.get("min-balance", 0) or 0)
+            spendable = max(0, cand_balance - cand_min)
+            if spendable >= top_up + fee_buffer:
+                sender = cand_sender
+                private_key = cand_private_key
+                break
+        except Exception:
+            continue
+
+    if not sender or not private_key:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Insufficient Algo balance to fund listing app account. "
+                "Top up DEPLOYER/SELLER/BUYER wallet and retry."
+            ),
+        )
+
     params = client.suggested_params()
     pay_txn = transaction.PaymentTxn(
         sender=sender,
@@ -679,6 +794,22 @@ def _ensure_listing_app_funded(app_id: int) -> None:
     )
     tx_id = client.send_transaction(pay_txn.sign(private_key))
     transaction.wait_for_confirmation(client, tx_id, 4)
+
+
+def _is_transient_chain_error(err: Exception) -> bool:
+    """Return True for intermittent network/SSL/timeout chain errors worth retrying."""
+    message = str(err).lower()
+    transient_tokens = (
+        "unexpected_eof_while_reading",
+        "ssl",
+        "connection reset",
+        "temporarily unavailable",
+        "timed out",
+        "timeout",
+        "connection aborted",
+        "connection refused",
+    )
+    return any(token in message for token in transient_tokens)
 
 
 @app.on_event("startup")
@@ -1946,53 +2077,88 @@ async def create_listing(request: ListingRequest) -> dict[str, int | str]:
         logger.error("Invalid listing app id in environment | value=%s", listing_app_id_raw)
         return _error_response(500, "INSIGHT_LISTING_APP_ID is invalid")
 
-    signing_mnemonic = _get_signing_mnemonic()
-    signer_private_key = mnemonic.to_private_key(signing_mnemonic)
-    signer_address = account.address_from_private_key(signer_private_key)
-    if signer_address != request.seller_wallet:
-        return _error_response(
-            400,
-            "seller_wallet does not match configured signing mnemonic address",
-        )
+    try:
+        signing_mnemonic, signer_address, signer_exact_match = _resolve_signer_for_wallet(request.seller_wallet)
+    except HTTPException as err:
+        return _error_response(err.status_code, str(err.detail))
 
-    logger.info("Validation passed for seller %s", request.seller_wallet)
+    logger.info(
+        "Validation passed for seller %s (effective signer=%s exact_match=%s)",
+        request.seller_wallet,
+        signer_address,
+        signer_exact_match,
+    )
 
     try:
-        _ensure_listing_app_funded(listing_app_id)
+        effective_seller_wallet = signer_address
 
-        logger.info("IPFS upload started | seller=%s", request.seller_wallet)
+        if request.seller_wallet != effective_seller_wallet:
+            logger.warning(
+                "Using effective seller wallet %s instead of requested wallet %s",
+                effective_seller_wallet,
+                request.seller_wallet,
+            )
+
+        logger.info("IPFS upload started | seller=%s", effective_seller_wallet)
         cid = await upload_insight_to_ipfs(request.insight_text)
         logger.info("IPFS upload complete, cid=%s", cid)
 
         micro_price = int(request.price * 1_000_000)
-        logger.info(
-            "ASA creation attempted | seller=%s price_micro=%s app_id=%s",
-            request.seller_wallet,
-            micro_price,
-            listing_app_id,
-        )
-        listing_id, asa_id = store_cid_in_listing(
-            cid=cid,
-            listing_app_id=listing_app_id,
-            seller_address=request.seller_wallet,
-            price=micro_price,
-            signer_mnemonic=signing_mnemonic,
-        )
+        listing_id = 0
+        asa_id = 0
+        tx_id = ""
+        attempts = 3
+        last_chain_error: Exception | None = None
 
-        logger.info(
-            "On-chain listing submitted: listing_id=%s asa_id=%s",
-            listing_id,
-            asa_id,
-        )
-        demo_logger.info("Seller upload complete")
-        demo_logger.info("On-chain ASA created")
+        for attempt in range(1, attempts + 1):
+            try:
+                _ensure_listing_app_funded(listing_app_id, preferred_sender=signer_address)
 
-        tx_id = await _poll_for_listing_confirmation(
-            app_id=listing_app_id,
-            sender=request.seller_wallet,
-            cid=cid,
-        )
-        logger.info("Transaction confirmed: tx_id=%s", tx_id)
+                logger.info(
+                    "ASA creation attempted | seller=%s price_micro=%s app_id=%s attempt=%s/%s",
+                    effective_seller_wallet,
+                    micro_price,
+                    listing_app_id,
+                    attempt,
+                    attempts,
+                )
+                listing_id, asa_id = store_cid_in_listing(
+                    cid=cid,
+                    listing_app_id=listing_app_id,
+                    seller_address=effective_seller_wallet,
+                    price=micro_price,
+                    signer_mnemonic=signing_mnemonic,
+                )
+
+                logger.info(
+                    "On-chain listing submitted: listing_id=%s asa_id=%s",
+                    listing_id,
+                    asa_id,
+                )
+                demo_logger.info("Seller upload complete")
+                demo_logger.info("On-chain ASA created")
+
+                tx_id = await _poll_for_listing_confirmation(
+                    app_id=listing_app_id,
+                    sender=effective_seller_wallet,
+                    cid=cid,
+                )
+                logger.info("Transaction confirmed: tx_id=%s", tx_id)
+                break
+            except Exception as chain_err:
+                last_chain_error = chain_err
+                if attempt == attempts or not _is_transient_chain_error(chain_err):
+                    raise
+                logger.warning(
+                    "Transient chain error during /list; retrying | attempt=%s/%s error=%s",
+                    attempt,
+                    attempts,
+                    chain_err,
+                )
+                await asyncio.sleep(min(3, attempt))
+
+        if not tx_id and last_chain_error is not None:
+            raise last_chain_error
 
         _record_recent_listing(
             {
@@ -2001,7 +2167,7 @@ async def create_listing(request: ListingRequest) -> dict[str, int | str]:
                 "cid": cid,
                 "listing_id": listing_id,
                 "asa_id": asa_id,
-                "seller_wallet": request.seller_wallet,
+                "seller_wallet": effective_seller_wallet,
                 "price_usdc": round(float(request.price), 6),
                 "insight_text": request.insight_text,
                 "seller_reputation": 0,
@@ -2022,9 +2188,12 @@ async def create_listing(request: ListingRequest) -> dict[str, int | str]:
     except HTTPException as err:
         logger.error("Transaction confirmation failed | detail=%s", err.detail, exc_info=True)
         return _error_response(err.status_code, str(err.detail))
+    except AlgodHTTPError as err:
+        logger.error("Algod rejected /list transaction | error=%s", err, exc_info=True)
+        return _error_response(400, f"Algorand node rejected listing transaction: {err}")
     except Exception as err:
         logger.error("Unexpected /list failure | error=%s", err, exc_info=True)
-        return _error_response(500, "Transaction failed - please try again")
+        return _error_response(500, f"Transaction failed: {err}")
 
     return {
         "success": True,
@@ -2057,6 +2226,7 @@ async def demo_purchase(request: DemoPurchaseRequest) -> dict[str, object]:
         buyer_address=buyer_address,
         user_approval_input=request.user_approval_input,
         force_buy_for_test=request.force_buy_for_test,
+        target_listing_id=request.target_listing_id,
     )
 
     final_insight_text = _extract_final_insight_text(result if isinstance(result, dict) else {})

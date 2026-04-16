@@ -21,7 +21,13 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL?.trim() || 'http://localhost:
 
 const client = axios.create({
   baseURL: API_BASE,
-  timeout: 30000,
+  timeout: 90000, // 90 seconds - increased from 30s to handle slow Algorand network + contract operations
+})
+
+// Extended timeout client for payment operations (up to 2 minutes for full payment + confirmation)
+const paymentClient = axios.create({
+  baseURL: API_BASE,
+  timeout: 180000, // 180 seconds - gives headroom for transient testnet latency
 })
 
 function opsHeaders(apiKey?: string) {
@@ -56,14 +62,19 @@ export const api = {
 
   /**
    * Purchase an insight (buyer flow)
+   * NOTE: Uses extended timeout (120s) because payment operations involve:
+   * - Blockchain simulation (can be slow on testnet)
+   * - Multiple contract calls (listing, escrow, reputation)
+   * - Atomic group assembly and submission
    */
   demoPurchase: async (request: DemoPurchaseRequest) => {
     try {
-      const response = await client.post<DemoPurchaseResponse>('/demo_purchase', {
+      const response = await paymentClient.post<DemoPurchaseResponse>('/demo_purchase', {
         user_query: request.user_query.trim(),
         buyer_address: request.buyer_address.trim(),
         user_approval_input: request.user_approval_input.trim(),
         force_buy_for_test: request.force_buy_for_test,
+        target_listing_id: request.target_listing_id,
       })
       return response.data
     } catch (error) {
@@ -276,6 +287,15 @@ export class ApiError extends Error {
       if (typeof data?.error === 'string') return data.error
       if (typeof data?.detail === 'string') return data.detail
       if (typeof data?.message === 'string') return data.message
+
+      // Network/CORS/backend-down cases should never fall through to generic message.
+      if (!error.response) {
+        if (error.code === 'ECONNABORTED') return errorMessageMap.TIMEOUT
+        if (error.code === 'ERR_NETWORK') {
+          return 'Cannot reach backend API. Ensure backend server is running and CORS origin is configured.'
+        }
+        return 'Network request failed. Verify backend URL and internet connectivity.'
+      }
 
       // Map common error codes
       for (const [code, message] of Object.entries(errorMessageMap)) {

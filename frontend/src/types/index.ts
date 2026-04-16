@@ -35,6 +35,7 @@ export interface DemoPurchaseRequest {
   buyer_address: string
   user_approval_input: string
   force_buy_for_test: boolean
+  target_listing_id?: number
 }
 
 export interface DemoPurchaseResponse {

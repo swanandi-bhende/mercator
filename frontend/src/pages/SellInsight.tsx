@@ -72,6 +72,14 @@ export default function SellInsightPage() {
       }
     }
 
+    if (lowerMessage.includes('below min') || lowerMessage.includes('insufficient') || lowerMessage.includes('algorand node rejected')) {
+      return {
+        title: 'Insufficient Algo balance',
+        body: 'The signer wallet does not have enough Algo to fund listing/app minimum balance requirements.',
+        nextStep: 'Top up the signer wallet with Algo on TestNet and try publishing again.',
+      }
+    }
+
     if (lowerMessage.includes('contract') || lowerMessage.includes('listing') || lowerMessage.includes('on-chain')) {
       return {
         title: 'Contract execution failed',
