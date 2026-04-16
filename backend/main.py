@@ -38,7 +38,24 @@ from algosdk import account
 from algosdk.logic import get_application_address
 from algosdk.v2client import algod, indexer
 
-from backend.agent import run_agent
+try:
+    from backend.agent import run_agent
+except Exception as exc:  # pragma: no cover
+    _agent_import_error = str(exc)
+
+    async def run_agent(*args: object, **kwargs: object) -> dict[str, object]:
+        """Fallback agent stub when AI dependencies/env are unavailable at startup.
+
+        Keeps API process healthy for deployment checks while surfacing a clear
+        runtime error only when agent routes are invoked.
+        """
+        return {
+            "success": False,
+            "decision": "ERROR",
+            "evaluation": "Agent unavailable",
+            "payment_status": {},
+            "message": f"Agent initialization failed: {_agent_import_error}",
+        }
 from backend.tools.semantic_search import (
     semantic_search as semantic_search_tool,
     clear_semantic_search_cache,
