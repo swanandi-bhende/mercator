@@ -1928,18 +1928,9 @@ async def create_listing(request: ListingRequest) -> dict[str, int | str]:
         len(request.insight_text),
     )
 
-    configured_signer_address = os.getenv("SELLER_ADDRESS", "").strip() or os.getenv(
-        "DEPLOYER_ADDRESS", ""
-    ).strip()
-
-    wallet_prefix_or_signer_match = request.seller_wallet.startswith("7") or (
-        configured_signer_address and request.seller_wallet == configured_signer_address
-    )
-
     if (
         not request.insight_text.strip()
         or request.price <= 0
-        or not wallet_prefix_or_signer_match
         or len(request.seller_wallet) != 58
         or not encoding.is_valid_address(request.seller_wallet)
     ):
@@ -2026,7 +2017,8 @@ async def create_listing(request: ListingRequest) -> dict[str, int | str]:
         return _error_response(500, ipfs_down(logger, str(err)))
     except ListingStoreError as err:
         logger.error("ASA creation failed | error=%s", err, exc_info=True)
-        return _error_response(500, contract_error(logger, str(err)))
+        # Return specific contract failure detail to make production triage actionable.
+        return _error_response(500, f"Contract error: {err}")
     except HTTPException as err:
         logger.error("Transaction confirmation failed | detail=%s", err.detail, exc_info=True)
         return _error_response(err.status_code, str(err.detail))
