@@ -369,3 +369,102 @@ Exception: x402 atomic payment+redeem failed: Transaction failed at transaction(
 2026-04-15 18:36:48,320 | INFO | demo.flow | Payment approved
 2026-04-15 18:36:48,320 | INFO | backend.agent | Payment triggered: {'success': False, 'decision': 'BUY', 'evaluation': 'Reasoning: Gemini limit reached during evaluation; cannot verify safely.\nDecision: SKIP', 'payment_status': {'success': False, 'approved': True, 'simulation_passed': True, 'error': 'PAYMENT_EXECUTION_FAILED', 'message': 'insufficient balance: Payment was rejected by x402 - please check your wallet balance', 'next_step': 'Verify buyer USDC balance and network connectivity'}, 'message': 'Sorry, I encountered an issue: Payment was rejected by x402 - please check your wallet balance. Would you like to try a different insight or check your wallet balance?'}
 2026-04-15 18:36:48,332 | INFO | mercator.demo | Buyer flow result: {'success': False, 'final_insight_text': '', 'result': {'success': False, 'decision': 'BUY', 'evaluation': 'Reasoning: Gemini limit reached during evaluation; cannot verify safely.\nDecision: SKIP', 'payment_status': {'success': False, 'approved': True, 'simulation_passed': True, 'error': 'PAYMENT_EXECUTION_FAILED', 'message': 'insufficient balance: Payment was rejected by x402 - please check your wallet balance', 'next_step': 'Verify buyer USDC balance and network connectivity'}, 'message': 'Sorry, I encountered an issue: Payment was rejected by x402 - please check your wallet balance. Would you like to try a different insight or check your wallet balance?'}}
+2026-04-16 19:32:56,240 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 19:33:06,315 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-04-16 19:33:07,239 | INFO | demo.flow | Demo servers ready
+2026-04-16 19:33:07,254 | INFO | mercator.demo | Submitting seller listing to /list
+2026-04-16 19:33:07,267 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-04-16 19:33:07,270 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 19:33:07,550 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 19:33:09,718 | INFO | mercator.backend | IPFS upload complete, cid=QmRGRbfgwtaofvyMwwirBPzBcNEsCsp8n2AdFPqW5oLy7c
+2026-04-16 19:33:09,718 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1000000 app_id=758025190
+2026-04-16 19:33:14,014 | INFO | mercator.backend | On-chain listing submitted: listing_id=55 asa_id=758911201
+2026-04-16 19:33:14,014 | INFO | demo.flow | Seller upload complete
+2026-04-16 19:33:14,015 | INFO | demo.flow | On-chain ASA created
+2026-04-16 19:33:14,302 | INFO | mercator.backend | Transaction confirmed: tx_id=ETQKOK22VKW477SCZ27AEMO7CUMOWW5OYFKXBTJNJ5CQPF5WTVIQ
+2026-04-16 19:33:14,309 | INFO | mercator.demo | Seller upload complete
+2026-04-16 19:33:14,309 | INFO | mercator.demo | On-chain ASA created
+2026-04-16 19:33:14,309 | INFO | mercator.demo | Listing response: {'success': 1, 'transaction_id': 'ETQKOK22VKW477SCZ27AEMO7CUMOWW5OYFKXBTJNJ5CQPF5WTVIQ', 'txId': 'ETQKOK22VKW477SCZ27AEMO7CUMOWW5OYFKXBTJNJ5CQPF5WTVIQ', 'explorer_url': 'https://lora.algokit.io/testnet/tx/ETQKOK22VKW477SCZ27AEMO7CUMOWW5OYFKXBTJNJ5CQPF5WTVIQ/', 'message': 'Insight listed on-chain and pinned on IPFS', 'cid': 'QmRGRbfgwtaofvyMwwirBPzBcNEsCsp8n2AdFPqW5oLy7c', 'listing_id': 55, 'asa_id': 758911201}
+2026-04-16 19:33:17,311 | INFO | mercator.demo | Submitting buyer flow to /demo_purchase
+2026-04-16 19:33:17,323 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=approve
+2026-04-16 19:37:26,268 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-16 19:37:28,409 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-16 19:37:30,560 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/embedding-004:batchEmbedContents "HTTP/1.1 404 Not Found"
+2026-04-16 19:37:30,561 | WARNING | backend.tools.semantic_search | Embedding failure during semantic_search: RetryError[<Future at 0x124d079b0 state=finished raised GoogleGenerativeAIError>]
+2026-04-16 19:37:30,563 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-04-16 19:37:30,571 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-04-16 19:37:30,794 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 429 Too Many Requests"
+2026-04-16 19:37:30,796 | WARNING | backend.agent | Evaluation step hit Gemini limit; falling back to SKIP
+2026-04-16 19:37:30,799 | INFO | backend.agent | force_buy_for_test enabled; overriding decision to BUY
+2026-04-16 19:37:30,799 | INFO | backend.agent | Decision is BUY and user approval confirmed ('approve'); triggering x402 payment
+2026-04-16 19:37:30,799 | INFO | backend.agent | Triggering x402 payment: listing 53, price 1.0, buyer MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ
+2026-04-16 19:37:30,807 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-04-16 19:37:30,807 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-04-16 19:37:30,808 | INFO | demo.flow | Payment approved
+2026-04-16 19:37:30,808 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 53
+2026-04-16 19:37:30,808 | INFO | backend.tools.x402_payment | Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 1.0 USDC
+2026-04-16 19:37:30,808 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-04-16 19:37:30,981 | INFO | backend.tools.x402_payment | Listing 53: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-04-16 19:37:30,981 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-04-16 19:37:30,981 | INFO | backend.tools.x402_payment | Simulating payment: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ -> M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, amount=1000000, asset_id=10458941
+2026-04-16 19:37:31,276 | INFO | backend.tools.x402_payment | Simulation successful: fee=False, asset_id=10458941
+2026-04-16 19:37:31,276 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'success': True, 'sender': 'MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ', 'receiver': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount': 1000000, 'asset_id': 10458941, 'estimated_fee': False, 'is_safe': True, 'message': 'Payment simulation passed - safe to broadcast'}
+2026-04-16 19:37:31,276 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-04-16 19:37:32,086 | ERROR | backend.tools.x402_payment | x402 atomic payment+redeem failed: Transaction failed at transaction(s) 0 in the group. transaction BNWK7CEATGPUCCXHLUCOPMR6KG4HULGURGX5UYLR3OLT26LT4GNQ: underflow on subtracting 1000000 from sender amount 115433
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 457, in send_atomic_payment_and_redeem
+    simulation = composer.simulate(skip_signatures=False)
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/contracts/escrow/smart_contracts/artifacts/escrow/escrow_client.py", line 768, in simulate
+    return self._composer.simulate(
+           ~~~~~~~~~~~~~~~~~~~~~~~^
+        allow_more_logs=allow_more_logs,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+        skip_signatures=skip_signatures,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algokit_utils/transactions/transaction_composer.py", line 2017, in simulate
+    self._handle_simulate_error(response)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algokit_utils/transactions/transaction_composer.py", line 1943, in _handle_simulate_error
+    raise self._transform_error(original_error) from original_error
+Exception: Transaction failed at transaction(s) 0 in the group. transaction BNWK7CEATGPUCCXHLUCOPMR6KG4HULGURGX5UYLR3OLT26LT4GNQ: underflow on subtracting 1000000 from sender amount 115433
+2026-04-16 19:37:32,091 | ERROR | backend.tools.x402_payment | x402 micropayment execution failed: x402 atomic payment+redeem failed: Transaction failed at transaction(s) 0 in the group. transaction BNWK7CEATGPUCCXHLUCOPMR6KG4HULGURGX5UYLR3OLT26LT4GNQ: underflow on subtracting 1000000 from sender amount 115433
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 457, in send_atomic_payment_and_redeem
+    simulation = composer.simulate(skip_signatures=False)
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/contracts/escrow/smart_contracts/artifacts/escrow/escrow_client.py", line 768, in simulate
+    return self._composer.simulate(
+           ~~~~~~~~~~~~~~~~~~~~~~~^
+        allow_more_logs=allow_more_logs,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+        skip_signatures=skip_signatures,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algokit_utils/transactions/transaction_composer.py", line 2017, in simulate
+    self._handle_simulate_error(response)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/.venv/lib/python3.14/site-packages/algokit_utils/transactions/transaction_composer.py", line 1943, in _handle_simulate_error
+    raise self._transform_error(original_error) from original_error
+Exception: Transaction failed at transaction(s) 0 in the group. transaction BNWK7CEATGPUCCXHLUCOPMR6KG4HULGURGX5UYLR3OLT26LT4GNQ: underflow on subtracting 1000000 from sender amount 115433
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 684, in trigger_x402_payment
+    payment_txid, redeem_txid = await x402_client.send_atomic_payment_and_redeem(
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 476, in send_atomic_payment_and_redeem
+    raise Exception(error_msg) from e
+Exception: x402 atomic payment+redeem failed: Transaction failed at transaction(s) 0 in the group. transaction BNWK7CEATGPUCCXHLUCOPMR6KG4HULGURGX5UYLR3OLT26LT4GNQ: underflow on subtracting 1000000 from sender amount 115433
+2026-04-16 19:37:32,093 | ERROR | backend.tools.x402_payment | insufficient_balance | details=x402 atomic payment+redeem failed: Transaction failed at transaction(s) 0 in the group. transaction BNWK7CEATGPUCCXHLUCOPMR6KG4HULGURGX5UYLR3OLT26LT4GNQ: underflow on subtracting 1000000 from sender amount 115433
+2026-04-16 19:37:32,093 | ERROR | backend.agent | payment_rejected | details={'success': False, 'approved': True, 'simulation_passed': True, 'error': 'PAYMENT_EXECUTION_FAILED', 'message': 'insufficient balance: Payment was rejected by x402 - please check your wallet balance', 'next_step': 'Verify buyer USDC balance and network connectivity'}
+2026-04-16 19:37:32,094 | INFO | demo.flow | Payment approved
+2026-04-16 19:37:32,094 | INFO | backend.agent | Payment triggered: {'success': False, 'decision': 'BUY', 'evaluation': 'Reasoning: Gemini limit reached during evaluation; cannot verify safely.\nDecision: SKIP', 'payment_status': {'success': False, 'approved': True, 'simulation_passed': True, 'error': 'PAYMENT_EXECUTION_FAILED', 'message': 'insufficient balance: Payment was rejected by x402 - please check your wallet balance', 'next_step': 'Verify buyer USDC balance and network connectivity'}, 'message': 'Sorry, I encountered an issue: Payment was rejected by x402 - please check your wallet balance. Would you like to try a different insight or check your wallet balance?'}
+2026-04-16 19:37:32,105 | INFO | mercator.demo | Buyer flow result: {'success': False, 'final_insight_text': '', 'result': {'success': False, 'decision': 'BUY', 'evaluation': 'Reasoning: Gemini limit reached during evaluation; cannot verify safely.\nDecision: SKIP', 'payment_status': {'success': False, 'approved': True, 'simulation_passed': True, 'error': 'PAYMENT_EXECUTION_FAILED', 'message': 'insufficient balance: Payment was rejected by x402 - please check your wallet balance', 'next_step': 'Verify buyer USDC balance and network connectivity'}, 'message': 'Sorry, I encountered an issue: Payment was rejected by x402 - please check your wallet balance. Would you like to try a different insight or check your wallet balance?'}}
