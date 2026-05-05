@@ -32,7 +32,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from algosdk import mnemonic, transaction
@@ -73,6 +73,7 @@ from backend.tools.semantic_search import (
 from backend.agents import curator_agent
 from backend.tools import staging_seed_wallet
 from backend.utils.db import initialise_curator_schema
+from backend.utils.flow_tracer import export_json
 from backend.utils.runtime_env import configure_demo_logging, normalize_network_env, warn_missing_required_env
 from backend.utils.error_handler import contract_error, ipfs_down
 
@@ -1555,6 +1556,7 @@ async def _run_synthetic_test(payload: OpsSyntheticTestRequest) -> dict[str, obj
             buyer_address=buyer_address,
             user_approval_input="approve",
             force_buy_for_test=True,
+            autonomous_mode=False,
         )
         if not isinstance(purchase_result, dict) or not bool(purchase_result.get("success")):
             raise RuntimeError(str(purchase_result.get("error", "Synthetic purchase failed")) if isinstance(purchase_result, dict) else "Synthetic purchase failed")
@@ -2279,6 +2281,7 @@ async def demo_purchase(request: DemoPurchaseRequest) -> dict[str, object]:
         user_approval_input=request.user_approval_input,
         force_buy_for_test=request.force_buy_for_test,
         target_listing_id=request.target_listing_id,
+        autonomous_mode=False,
     )
 
     final_insight_text = _extract_final_insight_text(result if isinstance(result, dict) else {})
@@ -2287,6 +2290,12 @@ async def demo_purchase(request: DemoPurchaseRequest) -> dict[str, object]:
         "final_insight_text": final_insight_text,
         "result": result,
     }
+
+
+@app.get("/traces/{session_id}/download")
+async def download_trace(session_id: str) -> FileResponse:
+    trace_path = export_json(session_id)
+    return FileResponse(trace_path, media_type="application/json", filename=f"flow_trace_{session_id}.json")
 
 
 @app.post("/discover")

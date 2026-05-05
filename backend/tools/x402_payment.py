@@ -45,6 +45,8 @@ from contracts.insight_listing import InsightListingClient
 from backend.contracts.escrow.smart_contracts.artifacts.escrow.escrow_client import EscrowClient
 from backend.contracts.reputation.smart_contracts.artifacts.reputation.reputation_client import ReputationClient
 from backend.tools.post_payment_flow import complete_purchase_flow
+from backend.utils.auto_approval import check_auto_conditions
+from backend.utils.flow_tracer import record_event
 from backend.utils.runtime_env import configure_demo_logging, normalize_network_env
 from backend.utils.error_handler import contract_error, insufficient_balance, payment_rejected
 
@@ -584,6 +586,10 @@ async def trigger_x402_payment(
     buyer_address: str,
     amount_usdc: float,
     user_approval_input: str = "",
+    autonomous_mode: bool = False,
+    relevance_score: int | None = None,
+    reputation_score: int | None = None,
+    price_usdc: float | None = None,
 ) -> str:
     """
     Trigger an x402 micropayment for a listed insight with simulation + approval gate.
@@ -599,6 +605,11 @@ async def trigger_x402_payment(
         buyer_address (str): The buyer's wallet address (58 chars, checksummed)
         amount_usdc (float): The payment amount in USDC (should match listed price)
         user_approval_input (str): User confirmation - MUST be "approve" to proceed
+        autonomous_mode (bool): Skip the explicit approval gate when trust
+            thresholds have already been validated by the buyer agent.
+        relevance_score (int | None): Relevance score used for autonomous safety checks.
+        reputation_score (int | None): Reputation score used for autonomous safety checks.
+        price_usdc (float | None): Price in USDC used for autonomous safety checks.
     
     Returns:
         str: JSON payload with success/error status, tx id, explorer link, and delivery output
@@ -625,7 +636,7 @@ async def trigger_x402_payment(
         # =========================================================================
         logger.info("Checking user approval...")
         
-        if not user_approval_input or user_approval_input.lower().strip() != "approve":
+        if not autonomous_mode and (not user_approval_input or user_approval_input.lower().strip() != "approve"):
             approval_msg = "Payment requires explicit user approval. Type 'approve' to continue."
             logger.warning(f"User approval gate: {approval_msg}")
             return json.dumps({
@@ -635,7 +646,10 @@ async def trigger_x402_payment(
                 "message": approval_msg,
                 "next_step": "User must type 'approve' to trigger x402 micropayment"
             })
-        
+
+        if autonomous_mode:
+            logger.info("Autonomous mode enabled; skipping explicit approval gate")
+
         logger.info("✓ User approval confirmed: 'approve'")
         demo_logger.info("Payment approved")
         
@@ -709,6 +723,75 @@ async def trigger_x402_payment(
             settlement_asset_id,
             seller_wallet,
         )
+
+        if autonomous_mode:
+            if relevance_score is None:
+                logger.error("[AUTO-REJECTED] Missing relevance score for autonomous payment safety check")
+                return json.dumps({
+                    "success": False,
+                    "approved": False,
+                    "error": "AUTO_REJECTED",
+                    "message": "Autonomous payment rejected: relevance score was not provided",
+                })
+
+            current_price_usdc = float(price_usdc) if price_usdc is not None else float(listed_price)
+            try:
+                reputation_client = get_reputation_client()
+                current_reputation_score = int(reputation_client.state.box.seller_scores.get_value(seller_wallet))
+            except Exception as exc:
+                logger.error("[AUTO-REJECTED] Failed to read current seller reputation: %s", exc, exc_info=True)
+                return json.dumps({
+                    "success": False,
+                    "approved": False,
+                    "error": "AUTO_REJECTED",
+                    "message": f"Autonomous payment rejected: unable to verify current seller reputation ({exc})",
+                })
+
+            auto_approval = check_auto_conditions(
+                relevance_score=int(relevance_score),
+                reputation_score=current_reputation_score,
+                price_usdc=current_price_usdc,
+            )
+            record_event(
+                "autonomous_approval_check",
+                "Autonomous approval threshold check completed",
+                {
+                    "mode": "autonomous",
+                    "listing_id": listing_id,
+                    "relevance_score": int(relevance_score),
+                    "reputation_score": current_reputation_score,
+                    "price_usdc": current_price_usdc,
+                    "auto_min_relevance": auto_approval.thresholds_used["AUTO_MIN_RELEVANCE"],
+                    "auto_min_reputation": auto_approval.thresholds_used["AUTO_MIN_REPUTATION"],
+                    "auto_max_price": auto_approval.thresholds_used["AUTO_MAX_PRICE_USDC"],
+                    "approved": auto_approval.approved,
+                    "rejection_reason": auto_approval.rejection_reason,
+                },
+                autonomous=auto_approval.approved,
+            )
+            if auto_approval.approved:
+                logger.info(
+                    "[AUTO-APPROVED] listing=%s relevance=%s reputation=%s price=%s thresholds=%s",
+                    listing_id,
+                    int(relevance_score),
+                    current_reputation_score,
+                    current_price_usdc,
+                    auto_approval.thresholds_used,
+                )
+            else:
+                logger.info(
+                    "[AUTO-REJECTED] listing=%s reason=%s thresholds=%s",
+                    listing_id,
+                    auto_approval.rejection_reason,
+                    auto_approval.thresholds_used,
+                )
+                return json.dumps({
+                    "success": False,
+                    "approved": False,
+                    "error": "AUTO_REJECTED",
+                    "message": auto_approval.rejection_reason,
+                    "thresholds_used": auto_approval.thresholds_used,
+                })
         
         # Step 3: Validate payment amount
         if amount_usdc <= 0:
@@ -777,6 +860,34 @@ async def trigger_x402_payment(
                 "message": _friendly_payment_error(str(e)),
                 "next_step": "Check buyer balance, receiver address, and asset availability"
             })
+
+        if autonomous_mode:
+            logger.info("Autonomous mode pre-broadcast safety simulation starting")
+            try:
+                pre_broadcast = await x402_client.simulate_payment(
+                    sender=buyer_address,
+                    receiver=seller_wallet,
+                    amount=listed_price_micro,
+                    asset_id=settlement_asset_id,
+                )
+                if not pre_broadcast.get("is_safe"):
+                    logger.error("[AUTO-ABORTED: simulation_failed] %s", pre_broadcast)
+                    return json.dumps({
+                        "success": False,
+                        "approved": False,
+                        "error": "AUTO_ABORTED",
+                        "message": "Autonomous payment aborted: simulation failed before broadcast",
+                        "simulation": pre_broadcast,
+                    })
+                logger.info("[AUTO-APPROVED] Pre-broadcast simulation passed")
+            except Exception as exc:
+                logger.error("[AUTO-ABORTED: simulation_failed] %s", exc, exc_info=True)
+                return json.dumps({
+                    "success": False,
+                    "approved": False,
+                    "error": "AUTO_ABORTED",
+                    "message": f"Autonomous payment aborted: simulation failed before broadcast ({exc})",
+                })
         
         # =========================================================================
         # STEP 4: EXECUTE INSTANT X402 MICROPAYMENT

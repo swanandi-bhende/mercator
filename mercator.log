@@ -2186,3 +2186,113 @@ Exception: x402 atomic payment+redeem failed: Error resolving execution info via
 2026-05-06 00:59:57,438 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
 2026-05-06 00:59:57,443 | INFO | httpx | HTTP Request: GET http://testserver/curator/status "HTTP/1.1 200 OK"
 2026-05-06 00:59:57,445 | INFO | httpx | HTTP Request: POST http://testserver/admin/curator/trigger_now "HTTP/1.1 200 OK"
+2026-05-06 01:16:41,567 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-06 01:25:54,098 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-06 01:25:54,113 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=, autonomous_mode=True, rounds=1, dry_run=False
+2026-05-06 01:25:54,113 | INFO | backend.agent | Autonomous approval check | approved=True | reason=passed | thresholds={'AUTO_MIN_RELEVANCE': 85, 'AUTO_MIN_REPUTATION': 70, 'AUTO_MAX_PRICE_USDC': 0.3}
+2026-05-06 01:25:54,113 | INFO | backend.agent | Decision is BUY and user approval confirmed ('approve'); triggering x402 payment
+2026-05-06 01:25:54,113 | INFO | backend.agent | Triggering x402 payment: listing 7, price 0.2, buyer M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-06 01:25:54,113 | INFO | demo.flow | Payment approved
+2026-05-06 01:25:54,113 | INFO | backend.agent | Payment triggered: {'success': True, 'decision': 'BUY', 'evaluation': 'BUY', 'payment_status': {'success': True, 'decision': 'BUY', 'payment_status': {'payment_details': {'amount_usdc': 0.2}}}, 'message': '✓ x402 micropayment executed successfully'}
+2026-05-06 01:25:54,116 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=, autonomous_mode=True, rounds=1, dry_run=False
+2026-05-06 01:25:54,116 | INFO | backend.agent | Autonomous approval check | approved=False | reason=Relevance 70 below threshold 85 | thresholds={'AUTO_MIN_RELEVANCE': 85, 'AUTO_MIN_REPUTATION': 70, 'AUTO_MAX_PRICE_USDC': 0.3}
+2026-05-06 01:25:54,117 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=, autonomous_mode=True, rounds=1, dry_run=False
+2026-05-06 01:25:54,118 | INFO | backend.agent | Autonomous approval check | approved=False | reason=Reputation 60 below threshold 70 | thresholds={'AUTO_MIN_RELEVANCE': 85, 'AUTO_MIN_REPUTATION': 70, 'AUTO_MAX_PRICE_USDC': 0.3}
+2026-05-06 01:25:54,119 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=, autonomous_mode=True, rounds=1, dry_run=False
+2026-05-06 01:25:54,119 | INFO | backend.agent | Autonomous approval check | approved=False | reason=Price 0.5 USDC exceeds maximum 0.3 USDC | thresholds={'AUTO_MIN_RELEVANCE': 85, 'AUTO_MIN_REPUTATION': 70, 'AUTO_MAX_PRICE_USDC': 0.3}
+2026-05-06 01:25:54,128 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-06 01:25:54,128 | INFO | backend.tools.x402_payment | Autonomous mode enabled; skipping explicit approval gate
+2026-05-06 01:25:54,128 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-06 01:25:54,128 | INFO | demo.flow | Payment approved
+2026-05-06 01:25:54,128 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 7
+2026-05-06 01:25:54,128 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 0.2 USDC
+2026-05-06 01:25:54,129 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-05-06 01:25:54,129 | INFO | backend.tools.x402_payment | Listing 7: Price=0.2, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-06 01:25:54,129 | INFO | backend.tools.x402_payment | [AUTO-APPROVED] listing=7 relevance=90 reputation=80 price=0.2 thresholds={'AUTO_MIN_RELEVANCE': 85, 'AUTO_MIN_REPUTATION': 70, 'AUTO_MAX_PRICE_USDC': 0.3}
+2026-05-06 01:25:54,129 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-05-06 01:25:54,130 | ERROR | backend.tools.x402_payment | Payment simulation unexpected error: simulation failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 826, in trigger_x402_payment
+    simulation_result = await x402_client.simulate_payment(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: simulation failed
+2026-05-06 01:25:54,131 | ERROR | backend.tools.x402_payment | payment_rejected | details=simulation failed
+2026-05-06 01:25:54,133 | INFO | backend.agent | [AUTONOMOUS] Starting session | session_id=session-test | query=test | rounds=3 | round_interval=10.0 | thresholds=(relevance=85, reputation=70, price=0.3)
+2026-05-06 01:25:54,133 | INFO | backend.agent | [AUTONOMOUS] Starting round 1 of 3
+2026-05-06 01:25:54,133 | INFO | backend.agent | [AUTONOMOUS] Round 1 purchase complete | result={'success': True, 'decision': 'BUY', 'payment_status': {'payment_details': {'amount_usdc': 0.1}}}
+2026-05-06 01:25:54,133 | INFO | backend.agent | [AUTONOMOUS] Starting round 2 of 3
+2026-05-06 01:25:54,133 | INFO | backend.agent | [AUTONOMOUS] Round 2 purchase complete | result={'success': True, 'decision': 'BUY', 'payment_status': {'payment_details': {'amount_usdc': 0.1}}}
+2026-05-06 01:25:54,133 | INFO | backend.agent | [AUTONOMOUS] Starting round 3 of 3
+2026-05-06 01:25:54,133 | INFO | backend.agent | [AUTONOMOUS] Round 3 purchase complete | result={'success': True, 'decision': 'BUY', 'payment_status': {'payment_details': {'amount_usdc': 0.1}}}
+2026-05-06 01:25:54,133 | INFO | backend.agent | [AUTONOMOUS] Completed 3 rounds. Total purchased: 3. Total skipped: 0. Total errors: 0.
+2026-05-06 01:29:56,026 | INFO | __main__ | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-06 01:29:56,033 | INFO | __main__ | [AUTONOMOUS] Starting session | session_id=2b0a989621a94f9eaf3e58f066ffd4fd | query=NIFTY support level today | rounds=3 | round_interval=10.0 | thresholds=(relevance=85, reputation=70, price=0.3)
+2026-05-06 01:29:56,033 | INFO | __main__ | [AUTONOMOUS] Starting round 1 of 3
+2026-05-06 01:29:56,033 | INFO | __main__ | Starting agent run with user_approval=False, user_approval_input=, autonomous_mode=True, rounds=1, dry_run=False
+2026-05-06 01:29:57,608 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-06 01:29:58,555 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 429 Too Many Requests"
+2026-05-06 01:29:58,557 | WARNING | __main__ | Evaluation step hit Gemini limit; falling back to SKIP
+2026-05-06 01:29:58,560 | INFO | __main__ | [AUTONOMOUS] Round 1 skipped | reason=Skipped based on evaluation rules (reputation/value-for-price).
+2026-05-06 01:30:08,562 | INFO | __main__ | [AUTONOMOUS] Starting round 2 of 3
+2026-05-06 01:30:08,562 | INFO | __main__ | Starting agent run with user_approval=False, user_approval_input=, autonomous_mode=True, rounds=1, dry_run=False
+2026-05-06 01:30:08,569 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-06 01:30:08,925 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 429 Too Many Requests"
+2026-05-06 01:30:08,928 | WARNING | __main__ | Evaluation step hit Gemini limit; falling back to SKIP
+2026-05-06 01:30:08,930 | INFO | __main__ | [AUTONOMOUS] Round 2 skipped | reason=Skipped based on evaluation rules (reputation/value-for-price).
+2026-05-06 01:30:18,937 | INFO | __main__ | [AUTONOMOUS] Starting round 3 of 3
+2026-05-06 01:30:18,938 | INFO | __main__ | Starting agent run with user_approval=False, user_approval_input=, autonomous_mode=True, rounds=1, dry_run=False
+2026-05-06 01:30:18,941 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-06 01:30:19,339 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 429 Too Many Requests"
+2026-05-06 01:30:19,341 | WARNING | __main__ | Evaluation step hit Gemini limit; falling back to SKIP
+2026-05-06 01:30:19,343 | INFO | __main__ | [AUTONOMOUS] Round 3 skipped | reason=Skipped based on evaluation rules (reputation/value-for-price).
+2026-05-06 01:30:19,343 | INFO | __main__ | [AUTONOMOUS] Completed 3 rounds. Total purchased: 0. Total skipped: 3. Total errors: 0.
+2026-05-06 01:30:45,615 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-06 01:30:46,242 | INFO | httpx | HTTP Request: GET http://testserver/traces/2b0a989621a94f9eaf3e58f066ffd4fd/download "HTTP/1.1 200 OK"
+2026-05-06 01:31:19,672 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-06 01:31:19,685 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=, autonomous_mode=True, rounds=1, dry_run=False
+2026-05-06 01:31:19,686 | INFO | backend.agent | Autonomous approval check | approved=True | reason=passed | thresholds={'AUTO_MIN_RELEVANCE': 85, 'AUTO_MIN_REPUTATION': 70, 'AUTO_MAX_PRICE_USDC': 0.3}
+2026-05-06 01:31:19,686 | INFO | backend.agent | Decision is BUY and user approval confirmed ('approve'); triggering x402 payment
+2026-05-06 01:31:19,686 | INFO | backend.agent | Triggering x402 payment: listing 7, price 0.2, buyer M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-06 01:31:19,686 | INFO | demo.flow | Payment approved
+2026-05-06 01:31:19,686 | INFO | backend.agent | Payment triggered: {'success': True, 'decision': 'BUY', 'evaluation': 'BUY', 'payment_status': {'success': True, 'decision': 'BUY', 'payment_status': {'payment_details': {'amount_usdc': 0.2}}}, 'message': '✓ x402 micropayment executed successfully'}
+2026-05-06 01:31:19,688 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=, autonomous_mode=True, rounds=1, dry_run=False
+2026-05-06 01:31:19,688 | INFO | backend.agent | Autonomous approval check | approved=False | reason=Relevance 70 below threshold 85 | thresholds={'AUTO_MIN_RELEVANCE': 85, 'AUTO_MIN_REPUTATION': 70, 'AUTO_MAX_PRICE_USDC': 0.3}
+2026-05-06 01:31:19,690 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=, autonomous_mode=True, rounds=1, dry_run=False
+2026-05-06 01:31:19,691 | INFO | backend.agent | Autonomous approval check | approved=False | reason=Reputation 60 below threshold 70 | thresholds={'AUTO_MIN_RELEVANCE': 85, 'AUTO_MIN_REPUTATION': 70, 'AUTO_MAX_PRICE_USDC': 0.3}
+2026-05-06 01:31:19,692 | INFO | backend.agent | Starting agent run with user_approval=False, user_approval_input=, autonomous_mode=True, rounds=1, dry_run=False
+2026-05-06 01:31:19,692 | INFO | backend.agent | Autonomous approval check | approved=False | reason=Price 0.5 USDC exceeds maximum 0.3 USDC | thresholds={'AUTO_MIN_RELEVANCE': 85, 'AUTO_MIN_REPUTATION': 70, 'AUTO_MAX_PRICE_USDC': 0.3}
+2026-05-06 01:31:19,701 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-06 01:31:19,701 | INFO | backend.tools.x402_payment | Autonomous mode enabled; skipping explicit approval gate
+2026-05-06 01:31:19,701 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-06 01:31:19,701 | INFO | demo.flow | Payment approved
+2026-05-06 01:31:19,701 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 7
+2026-05-06 01:31:19,701 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 0.2 USDC
+2026-05-06 01:31:19,702 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-05-06 01:31:19,702 | INFO | backend.tools.x402_payment | Listing 7: Price=0.2, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-06 01:31:19,703 | INFO | backend.tools.x402_payment | [AUTO-APPROVED] listing=7 relevance=90 reputation=80 price=0.2 thresholds={'AUTO_MIN_RELEVANCE': 85, 'AUTO_MIN_REPUTATION': 70, 'AUTO_MAX_PRICE_USDC': 0.3}
+2026-05-06 01:31:19,703 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-05-06 01:31:19,703 | ERROR | backend.tools.x402_payment | Payment simulation unexpected error: simulation failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 826, in trigger_x402_payment
+    simulation_result = await x402_client.simulate_payment(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: simulation failed
+2026-05-06 01:31:19,705 | ERROR | backend.tools.x402_payment | payment_rejected | details=simulation failed
+2026-05-06 01:31:19,707 | INFO | backend.agent | [AUTONOMOUS] Starting session | session_id=session-test | query=test | rounds=3 | round_interval=10.0 | thresholds=(relevance=85, reputation=70, price=0.3)
+2026-05-06 01:31:19,707 | INFO | backend.agent | [AUTONOMOUS] Starting round 1 of 3
+2026-05-06 01:31:19,707 | INFO | backend.agent | [AUTONOMOUS] Round 1 purchase complete | result={'success': True, 'decision': 'BUY', 'payment_status': {'payment_details': {'amount_usdc': 0.1}}}
+2026-05-06 01:31:19,707 | INFO | backend.agent | [AUTONOMOUS] Starting round 2 of 3
+2026-05-06 01:31:19,707 | INFO | backend.agent | [AUTONOMOUS] Round 2 purchase complete | result={'success': True, 'decision': 'BUY', 'payment_status': {'payment_details': {'amount_usdc': 0.1}}}
+2026-05-06 01:31:19,707 | INFO | backend.agent | [AUTONOMOUS] Starting round 3 of 3
+2026-05-06 01:31:19,707 | INFO | backend.agent | [AUTONOMOUS] Round 3 purchase complete | result={'success': True, 'decision': 'BUY', 'payment_status': {'payment_details': {'amount_usdc': 0.1}}}
+2026-05-06 01:31:19,707 | INFO | backend.agent | [AUTONOMOUS] Completed 3 rounds. Total purchased: 3. Total skipped: 0. Total errors: 0.

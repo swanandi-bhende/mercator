@@ -331,6 +331,8 @@ async def semantic_search(query: str) -> str:
             "listing_id": item["listing_id"],
             "price_micro_usdc": item["price"],
             "price_usdc": round(float(item["price"]) / 1_000_000, 6),
+            "relevance": round(float(item["relevance"]), 6),
+            "relevance_score": int(round(float(item["relevance"]) * 100)),
             "reputation": item["reputation"],
             "cid": item["cid"],
             "asa_id": item["asa_id"],

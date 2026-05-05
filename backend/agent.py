@@ -13,11 +13,13 @@ Key Components:
 """
 
 from dotenv import load_dotenv
+import argparse
 import asyncio
 import os
 import logging
 import re
 from typing import Any
+from dataclasses import dataclass
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
@@ -40,6 +42,7 @@ from backend.contracts.reputation.smart_contracts.artifacts.reputation.reputatio
 from backend.tools.semantic_search import semantic_search as semantic_search_tool
 from backend.tools.x402_payment import trigger_x402_payment, validate_x402_payment
 from backend.utils.error_handler import low_reputation, payment_rejected
+from backend.utils.flow_tracer import export_json, record_event, start_session
 from backend.utils.runtime_env import configure_demo_logging, normalize_network_env
 
 
@@ -47,6 +50,19 @@ normalize_network_env()
 demo_logger = configure_demo_logging()
 if not os.getenv("GEMINI_API_KEY"):
     load_dotenv(".env.testnet", override=True)
+
+AUTO_MIN_RELEVANCE = int(os.getenv("AUTO_MIN_RELEVANCE", "85"))
+AUTO_MIN_REPUTATION = int(os.getenv("AUTO_MIN_REPUTATION", "70"))
+AUTO_MAX_PRICE_USDC = float(os.getenv("AUTO_MAX_PRICE_USDC", "0.30"))
+
+if not 0 <= AUTO_MIN_RELEVANCE <= 100:
+    raise ValueError("AUTO_MIN_RELEVANCE must be between 0 and 100")
+if not 0 <= AUTO_MIN_REPUTATION <= 100:
+    raise ValueError("AUTO_MIN_REPUTATION must be between 0 and 100")
+if not 0.01 <= AUTO_MAX_PRICE_USDC <= 10.0:
+    raise ValueError("AUTO_MAX_PRICE_USDC must be between 0.01 and 10.0")
+
+from backend.utils.auto_approval import check_auto_conditions
 
 logging.basicConfig(
     level=logging.INFO,
@@ -62,6 +78,7 @@ logger = logging.getLogger(__name__)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 ALGOD_URL = os.getenv("ALGOD_URL")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+ROUND_INTERVAL = float(os.getenv("ROUND_INTERVAL", "10"))
 
 if not GEMINI_API_KEY:
     raise ValueError("GEMINI_API_KEY not found in .env")
@@ -215,6 +232,16 @@ async def evaluate_insights(state: dict) -> dict:
     updated_state["decision"] = decision
     return updated_state
 
+
+@dataclass
+class AutonomousSessionResult:
+    session_id: str
+    rounds_completed: int
+    purchases_made: int
+    skips: int
+    errors: int
+    total_usdc_spent: float
+
 if create_tool_calling_agent and AgentExecutor:
     # Preferred path: explicit tool-calling agent with intermediate steps and parsing safeguards.
     agent = create_tool_calling_agent(llm, tools, prompt)
@@ -240,12 +267,16 @@ else:
 
 
 async def run_agent(
-    user_query: str,
+    user_query: str = "",
     user_approval: bool = False,
     buyer_address: str = "",
     user_approval_input: str = "",
     force_buy_for_test: bool = False,
     target_listing_id: int | None = None,
+    autonomous_mode: bool = False,
+    rounds: int = 1,
+    query: str | None = None,
+    dry_run: bool = False,
 ):
     """Run the Mercator buyer agent with full x402 micropayment flow.
     
@@ -271,7 +302,15 @@ async def run_agent(
     - BUY decision: requires explicit user_approval_input = \"approve\" to execute payment.
     - Error recovery: gracefully falls back to SKIP on network/Gemini issues.
     """
-    logger.info("Starting agent run with user_approval=%s, user_approval_input=%s", user_approval, user_approval_input)
+    effective_query = query if query is not None else user_query
+    logger.info(
+        "Starting agent run with user_approval=%s, user_approval_input=%s, autonomous_mode=%s, rounds=%s, dry_run=%s",
+        user_approval,
+        user_approval_input,
+        autonomous_mode,
+        rounds,
+        dry_run,
+    )
 
     def _agent_error_result(clear_message: str, evaluation: str | None = None) -> dict[str, Any]:
         natural = (
@@ -306,6 +345,90 @@ async def run_agent(
             return None
         return None
 
+    def _extract_top_listing_details(results: Any) -> dict[str, Any] | None:
+        try:
+            parsed = results
+            if isinstance(parsed, str):
+                import json
+                parsed = json.loads(parsed)
+
+            top_listing: dict[str, Any] | None = None
+            if isinstance(parsed, list) and parsed:
+                first = parsed[0]
+                if isinstance(first, dict):
+                    top_listing = first
+            elif isinstance(parsed, dict):
+                matches = parsed.get("matches", [])
+                if isinstance(matches, list) and matches:
+                    first = matches[0]
+                    if isinstance(first, dict):
+                        top_listing = first
+
+            if not top_listing:
+                return None
+
+            listing_id = top_listing.get("listing_id")
+            if listing_id is not None:
+                listing_id = int(listing_id)
+
+            if "price_usdc" in top_listing:
+                price_usdc = float(top_listing.get("price_usdc", 1.0))
+            elif "price_micro_usdc" in top_listing:
+                price_usdc = float(top_listing.get("price_micro_usdc", 1_000_000)) / 1_000_000
+            elif "price" in top_listing:
+                raw_price = float(top_listing.get("price", 1.0))
+                price_usdc = raw_price / 1_000_000 if raw_price > 1000 else raw_price
+            else:
+                price_usdc = 1.0
+
+            if "relevance_score" in top_listing:
+                relevance_score = int(round(float(top_listing.get("relevance_score", 0))))
+            elif "relevance" in top_listing:
+                raw_relevance = float(top_listing.get("relevance", 0.0))
+                relevance_score = int(round(raw_relevance * 100 if raw_relevance <= 1 else raw_relevance))
+            else:
+                relevance_score = 0
+
+            reputation_score = int(round(float(top_listing.get("reputation", 0))))
+
+            return {
+                "listing_id": listing_id,
+                "price_usdc": price_usdc,
+                "relevance_score": relevance_score,
+                "reputation_score": reputation_score,
+                "raw": top_listing,
+            }
+        except Exception:
+            return None
+
+    def _record_autonomous_approval(
+        *,
+        listing_id: int | None,
+        relevance_score: int,
+        reputation_score: int,
+        price_usdc: float,
+        result: object,
+    ) -> None:
+        if not autonomous_mode:
+            return
+        record_event(
+            "autonomous_approval_check",
+            "Autonomous approval threshold check completed",
+            {
+                "mode": "autonomous",
+                "listing_id": listing_id,
+                "relevance_score": relevance_score,
+                "reputation_score": reputation_score,
+                "price_usdc": price_usdc,
+                "auto_min_relevance": AUTO_MIN_RELEVANCE,
+                "auto_min_reputation": AUTO_MIN_REPUTATION,
+                "auto_max_price": AUTO_MAX_PRICE_USDC,
+                "approved": bool(getattr(result, "approved", False)),
+                "rejection_reason": getattr(result, "rejection_reason", ""),
+            },
+            autonomous=bool(getattr(result, "approved", False)),
+        )
+
     if target_listing_id is not None:
         semantic_results = {"matches": [{"listing_id": int(target_listing_id)}]}
         eval_state = {
@@ -321,9 +444,9 @@ async def run_agent(
         )
     else:
         try:
-            semantic_results = await semantic_search_tool.ainvoke({"query": user_query})
+            semantic_results = await semantic_search_tool.ainvoke({"query": effective_query})
             eval_state = await evaluate_insights(
-                {"query": user_query, "semantic_results": semantic_results}
+                {"query": effective_query, "semantic_results": semantic_results}
             )
         except Exception as exc:  # noqa: BLE001
             logger.error("Agent pre-evaluation failed | error=%s", exc, exc_info=True)
@@ -353,19 +476,72 @@ async def run_agent(
             "decision": "SKIP",
             "evaluation": eval_state.get("evaluation"),
             "message": skip_message,
+            "skip_reason": skip_message,
         }
+
+    listing_details = _extract_top_listing_details(semantic_results)
+    autonomous_payment_ready = False
+    auto_approval_result = None
+    if autonomous_mode and eval_state.get("decision") == "BUY" and listing_details is not None:
+        auto_approval_result = check_auto_conditions(
+            relevance_score=int(listing_details["relevance_score"]),
+            reputation_score=int(listing_details["reputation_score"]),
+            price_usdc=float(listing_details["price_usdc"]),
+        )
+        autonomous_payment_ready = bool(auto_approval_result.approved)
+        _record_autonomous_approval(
+            listing_id=int(listing_details["listing_id"]) if listing_details.get("listing_id") is not None else None,
+            relevance_score=int(listing_details["relevance_score"]),
+            reputation_score=int(listing_details["reputation_score"]),
+            price_usdc=float(listing_details["price_usdc"]),
+            result=auto_approval_result,
+        )
+        logger.info(
+            "Autonomous approval check | approved=%s | reason=%s | thresholds=%s",
+            auto_approval_result.approved,
+            auto_approval_result.rejection_reason or "passed",
+            auto_approval_result.thresholds_used,
+        )
+        if not auto_approval_result.approved:
+            return {
+                "success": True,
+                "decision": "SKIP",
+                "evaluation": eval_state.get("evaluation", ""),
+                "message": auto_approval_result.rejection_reason,
+                "skip_reason": auto_approval_result.rejection_reason,
+                "thresholds_used": auto_approval_result.thresholds_used,
+            }
 
     # If decision is BUY, check for user approval
     if eval_state.get("decision") == "BUY":
         # Check if user has provided explicit approval
-        if not user_approval_input or user_approval_input.lower().strip() != "approve":
+        if not autonomous_payment_ready and (not user_approval_input or user_approval_input.lower().strip() != "approve"):
             logger.info("Decision is BUY but user approval is missing; awaiting 'approve'")
+            pending_message = "✓ AI has approved the insight! Type 'approve' to trigger x402 micropayment and purchase."
+            if autonomous_mode and auto_approval_result is not None and not auto_approval_result.approved:
+                pending_message = (
+                    f"Autonomous thresholds not met: {auto_approval_result.rejection_reason}. "
+                    "Type 'approve' to trigger x402 micropayment and purchase."
+                )
             return {
                 "success": True,
                 "decision": "BUY_PENDING_APPROVAL",
                 "evaluation": eval_state.get("evaluation"),
-                "message": "✓ AI has approved the insight! Type 'approve' to trigger x402 micropayment and purchase.",
-                "next_step": "User must type 'approve' to confirm and proceed with payment"
+                "message": pending_message,
+                "next_step": "User must type 'approve' to confirm and proceed with payment",
+            }
+
+        if dry_run:
+            return {
+                "success": True,
+                "decision": "BUY",
+                "evaluation": eval_state.get("evaluation"),
+                "payment_status": {
+                    "dry_run": True,
+                    "autonomous_mode": autonomous_payment_ready,
+                    "thresholds_used": getattr(auto_approval_result, "thresholds_used", {}),
+                },
+                "message": "Dry run complete: evaluation passed; payment broadcast skipped.",
             }
         
         # User has approved - trigger x402 payment
@@ -376,25 +552,10 @@ async def run_agent(
             import json
             listing_id: int | None = int(target_listing_id) if target_listing_id is not None else None
             price = 1.0
-            search_results = json.loads(semantic_results) if isinstance(semantic_results, str) else semantic_results
-            top_listing: dict[str, Any] | None = None
-            if listing_id is None and isinstance(search_results, list) and len(search_results) > 0:
-                top_listing = search_results[0]
-            elif listing_id is None and isinstance(search_results, dict):
-                matches = search_results.get("matches", [])
-                if isinstance(matches, list) and matches:
-                    top_listing = matches[0]
-
-            if isinstance(top_listing, dict):
-                listing_candidate = top_listing.get("listing_id")
-                if listing_candidate is not None:
-                    listing_id = int(listing_candidate)
-                if "price_usdc" in top_listing:
-                    price = float(top_listing.get("price_usdc", 1.0))
-                elif "price" in top_listing:
-                    price = float(top_listing.get("price", 1.0))
-                elif "price_micro_usdc" in top_listing:
-                    price = float(top_listing.get("price_micro_usdc", 1_000_000)) / 1_000_000
+            if listing_details is not None:
+                if listing_details.get("listing_id") is not None:
+                    listing_id = int(listing_details["listing_id"])
+                price = float(listing_details["price_usdc"])
 
             if listing_id is None or listing_id < 0:
                 return _agent_error_result(
@@ -417,7 +578,11 @@ async def run_agent(
                     "listing_id": listing_id,
                     "buyer_address": buyer_address,
                     "amount_usdc": price,
-                    "user_approval_input": user_approval_input
+                    "user_approval_input": user_approval_input,
+                    "autonomous_mode": autonomous_payment_ready,
+                    "relevance_score": int(listing_details["relevance_score"]) if listing_details else None,
+                    "reputation_score": int(listing_details["reputation_score"]) if listing_details else None,
+                    "price_usdc": float(listing_details["price_usdc"]) if listing_details else price,
                 })
 
                 payment_payload = payment_response
@@ -454,11 +619,11 @@ async def run_agent(
     payload: dict[str, Any]
     if create_tool_calling_agent and AgentExecutor:
         payload = {
-            "input": user_query,
+            "input": effective_query,
             "semantic_results": semantic_results,
         }
     else:
-        payload = {"messages": [{"role": "user", "content": user_query}]}
+        payload = {"messages": [{"role": "user", "content": effective_query}]}
 
     max_attempts = 3
     for attempt in range(1, max_attempts + 1):
@@ -518,24 +683,128 @@ async def run_agent(
             raise
 
 
+async def run_autonomous_loop(query: str, rounds: int, dry_run: bool) -> AutonomousSessionResult:
+    session_id = start_session()
+    purchases_made = 0
+    skips = 0
+    errors = 0
+    total_usdc_spent = 0.0
+
+    logger.info(
+        "[AUTONOMOUS] Starting session | session_id=%s | query=%s | rounds=%s | round_interval=%s | thresholds=(relevance=%s, reputation=%s, price=%s)",
+        session_id,
+        query,
+        rounds,
+        ROUND_INTERVAL,
+        AUTO_MIN_RELEVANCE,
+        AUTO_MIN_REPUTATION,
+        AUTO_MAX_PRICE_USDC,
+    )
+
+    for round_num in range(rounds):
+        logger.info("[AUTONOMOUS] Starting round %s of %s", round_num + 1, rounds)
+        try:
+            result = await run_agent(
+                user_query=query,
+                autonomous_mode=True,
+                dry_run=dry_run,
+            )
+            decision = str(result.get("decision", "")) if isinstance(result, dict) else "ERROR"
+            if decision == "BUY" and bool(result.get("success", False)):
+                purchases_made += 1
+                payment_status = result.get("payment_status", {}) if isinstance(result, dict) else {}
+                if isinstance(payment_status, dict):
+                    total_usdc_spent += float(payment_status.get("payment_details", {}).get("amount_usdc", 0.0) or 0.0)
+                logger.info("[AUTONOMOUS] Round %s purchase complete | result=%s", round_num + 1, result)
+            elif decision == "SKIP":
+                skips += 1
+                logger.info("[AUTONOMOUS] Round %s skipped | reason=%s", round_num + 1, result.get("skip_reason") if isinstance(result, dict) else "unknown")
+            else:
+                errors += 1
+                logger.info("[AUTONOMOUS] Round %s error | result=%s", round_num + 1, result)
+        except Exception as exc:  # noqa: BLE001
+            errors += 1
+            logger.error("[AUTONOMOUS] Round %s raised error: %s", round_num + 1, exc, exc_info=True)
+
+        if round_num < rounds - 1:
+            await asyncio.sleep(ROUND_INTERVAL)
+
+    logger.info(
+        "[AUTONOMOUS] Completed %s rounds. Total purchased: %s. Total skipped: %s. Total errors: %s.",
+        rounds,
+        purchases_made,
+        skips,
+        errors,
+    )
+    export_json(session_id)
+    return AutonomousSessionResult(
+        session_id=session_id,
+        rounds_completed=rounds,
+        purchases_made=purchases_made,
+        skips=skips,
+        errors=errors,
+        total_usdc_spent=total_usdc_spent,
+    )
+
+
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Mercator AI Buyer Agent")
+    parser.add_argument(
+        "--autonomous",
+        action="store_true",
+        help="Run without human approval gates when trust thresholds are met",
+    )
+    parser.add_argument(
+        "--rounds",
+        type=int,
+        default=1,
+        help="Number of purchase cycles to run in autonomous mode before exiting",
+    )
+    parser.add_argument(
+        "--query",
+        type=str,
+        default=None,
+        help="Search query to use for insight discovery (uses a default NSE query if not provided)",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Run the full evaluation and decision logic but skip actual x402 payment broadcast",
+    )
+    args = parser.parse_args()
+
     print("\n" + "=" * 80)
     print("MERCATOR AGENT FULL PURCHASE FLOW TEST")
     print("=" * 80 + "\n")
 
-    result = asyncio.run(
-        run_agent(
-            user_query="Show me the best NIFTY 24500 call insight",
-            buyer_address=os.getenv("DEPLOYER_ADDRESS", ""),
-            user_approval_input="approve",
-            force_buy_for_test=True,
-        )
-    )
+    default_query = "Show me the best NSE insight"
 
-    print("Decision:", result.get("decision"))
-    print("Message:", result.get("message"))
-    payment_status = result.get("payment_status", "")
-    if payment_status:
-        print("\nPayment status payload:\n", payment_status)
+    async def _run_cli() -> None:
+        if args.autonomous:
+            result = await run_autonomous_loop(
+                query=args.query or default_query,
+                rounds=args.rounds,
+                dry_run=args.dry_run,
+            )
+            print(result)
+        else:
+            result = await run_agent(
+                user_query=default_query,
+                buyer_address=os.getenv("DEPLOYER_ADDRESS", ""),
+                user_approval_input="approve",
+                force_buy_for_test=True,
+                autonomous_mode=False,
+                rounds=args.rounds,
+                query=args.query,
+                dry_run=args.dry_run,
+            )
+
+            print("Decision:", result.get("decision"))
+            print("Message:", result.get("message"))
+            payment_status = result.get("payment_status", "")
+            if payment_status:
+                print("\nPayment status payload:\n", payment_status)
+
+    asyncio.run(_run_cli())
 
 
