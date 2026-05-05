@@ -22,6 +22,7 @@ import hashlib
 import time
 import warnings
 from uuid import uuid4
+from dataclasses import asdict
 from typing import Any
 import requests
 from datetime import datetime, timezone
@@ -33,6 +34,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from algosdk import mnemonic, transaction
 from algosdk import encoding
 from algosdk import account
@@ -68,6 +70,9 @@ from backend.tools.semantic_search import (
     semantic_search as semantic_search_tool,
     clear_semantic_search_cache,
 )
+from backend.agents import curator_agent
+from backend.tools import staging_seed_wallet
+from backend.utils.db import initialise_curator_schema
 from backend.utils.runtime_env import configure_demo_logging, normalize_network_env, warn_missing_required_env
 from backend.utils.error_handler import contract_error, ipfs_down
 
@@ -101,11 +106,13 @@ demo_logger = configure_demo_logging()
 
 app = FastAPI(title="Mercator Backend")
 logger = logging.getLogger("mercator.backend")
+scheduler = AsyncIOScheduler()
 
 EXPLORER_TX_BASE = os.getenv("EXPLORER_TX_BASE", "https://lora.algokit.io/testnet/tx").rstrip("/")
 
 frontend_origins_raw = os.getenv("FRONTEND_ORIGIN", "").strip()
 frontend_origins = [origin.strip() for origin in frontend_origins_raw.split(",") if origin.strip()]
+frontend_origin_regex = os.getenv("FRONTEND_ORIGIN_REGEX", r"^https://.*\.vercel\.app$").strip()
 
 allowed_origins = [
     "http://localhost:5173",
@@ -404,6 +411,7 @@ def _error_response(status_code: int, message: str) -> JSONResponse:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
+    allow_origin_regex=frontend_origin_regex or None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -414,6 +422,7 @@ class ListingRequest(BaseModel):
     insight_text: str
     price: float
     seller_wallet: str
+    source_type: str | None = None
 
 
 class DemoPurchaseRequest(BaseModel):
@@ -820,6 +829,33 @@ def startup_checks() -> None:
     """
     normalize_network_env()
     warn_missing_required_env(logger)
+    initialise_curator_schema()
+    curator_minutes = int(os.getenv("CURATOR_CYCLE_INTERVAL_MINUTES", "30") or 30)
+    scheduler.add_job(
+        curator_agent.run_full_cycle,
+        "interval",
+        minutes=curator_minutes,
+        id="curator_cycle",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        staging_seed_wallet.check_and_top_up,
+        "interval",
+        hours=6,
+        id="wallet_top_up",
+        replace_existing=True,
+    )
+    if not scheduler.running:
+        try:
+            scheduler.start()
+        except RuntimeError as exc:
+            logger.warning("Scheduler start skipped: %s", exc)
+
+
+@app.on_event("shutdown")
+def shutdown_scheduler() -> None:
+    if scheduler.running:
+        scheduler.shutdown(wait=False)
 
 
 def _extract_final_insight_text(result: dict[str, object]) -> str:
@@ -958,6 +994,22 @@ def health() -> dict[str, object]:
         "timestamp": timestamp,
         "services": services,
     }
+
+
+@app.get("/curator/status")
+def curator_status() -> JSONResponse:
+    return JSONResponse(status_code=200, content=curator_agent.curator_status_snapshot(scheduler))
+
+
+@app.post("/admin/curator/trigger_now")
+async def trigger_curator_now(request: Request) -> JSONResponse:
+    configured_key = os.getenv("ADMIN_KEY", "").strip()
+    provided_key = request.headers.get("x-admin-key", "").strip()
+    if not configured_key or provided_key != configured_key:
+        raise HTTPException(status_code=403, detail="Invalid X-Admin-Key")
+
+    results = await curator_agent.run_full_cycle()
+    return JSONResponse(status_code=200, content=[asdict(result) for result in results])
 
 
 def _collect_request_metrics(now: datetime) -> list[dict[str, object]]:
