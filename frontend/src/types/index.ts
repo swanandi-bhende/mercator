@@ -416,3 +416,12 @@ export interface ContractStatus {
   lastCall?: string
   callCount?: number
 }
+
+// Agent Registry Types
+export interface RegisteredAgent {
+  wallet: string
+  agent_name: string
+  role: string
+  registered_at_round: number
+  total_transactions: number
+}

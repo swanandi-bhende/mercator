@@ -1,0 +1,256 @@
+#pragma version 11
+#pragma typetrack false
+
+// algopy.arc4.ARC4Contract.approval_program() -> uint64:
+main:
+    intcblock 0 1
+    bytecblock "registry_app_id" 0x151f7c75 "next_listing_id"
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:37
+    // class InsightListing(ARC4Contract):
+    txn NumAppArgs
+    bz main___algopy_default_create@7
+    pushbytes 0x35b836d6 // method "create_listing(uint64,address,string)uint64"
+    txna ApplicationArgs 0
+    match main_create_listing_route@5
+    err
+
+main_create_listing_route@5:
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:56
+    // @arc4.abimethod()
+    txn OnCompletion
+    !
+    txn ApplicationID
+    &&
+    assert
+    b create_listing
+
+main___algopy_default_create@7:
+    txn OnCompletion
+    !
+    txn ApplicationID
+    !
+    &&
+    return
+
+
+// smart_contracts.insight_listing.contract.InsightListing.create_listing[routing]() -> void:
+create_listing:
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:56
+    // @arc4.abimethod()
+    txna ApplicationArgs 1
+    dup
+    len
+    pushint 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    txna ApplicationArgs 2
+    dup
+    len
+    pushint 32
+    ==
+    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
+    txna ApplicationArgs 3
+    dupn 2
+    intc_0 // 0
+    extract_uint16 // on error: invalid array length header
+    pushint 2
+    +
+    swap
+    len
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:90-92
+    // # Check seller is registered in AgentRegistry before proceeding (must be first statement)
+    // # This is a best-effort cross-contract call; if registry_app_id is not set, skip the check
+    // if self.registry_app_id.value != UInt64(0):
+    intc_0 // 0
+    bytec_0 // "registry_app_id"
+    app_global_get_ex
+    assert // check self.registry_app_id exists
+    bz create_listing_after_if_else@4
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:93-97
+    // is_registered, txn = arc4.abi_call[arc4.Bool](
+    //     "is_registered(address)bool",
+    //     seller,
+    //     app_id=self.registry_app_id.value,
+    // )
+    itxn_begin
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:96
+    // app_id=self.registry_app_id.value,
+    intc_0 // 0
+    bytec_0 // "registry_app_id"
+    app_global_get_ex
+    assert // check self.registry_app_id exists
+    itxn_field ApplicationID
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:93-97
+    // is_registered, txn = arc4.abi_call[arc4.Bool](
+    //     "is_registered(address)bool",
+    //     seller,
+    //     app_id=self.registry_app_id.value,
+    // )
+    pushbytes 0x919c02df // method "is_registered(address)bool"
+    itxn_field ApplicationArgs
+    dig 1
+    itxn_field ApplicationArgs
+    pushint 6 // appl
+    itxn_field TypeEnum
+    intc_0 // 0
+    itxn_field Fee
+    itxn_submit
+    itxn LastLog
+    dup
+    extract 0 4
+    bytec_1 // 0x151f7c75
+    ==
+    assert // application log value is not the result of an ABI return
+    extract 4 0
+    dup
+    len
+    intc_1 // 1
+    ==
+    assert // invalid number of bytes for arc4.bool
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:98
+    // assert is_registered, "Unregistered agent — call AgentRegistry.register() first"
+    pushbytes 0x00
+    !=
+    assert // Unregistered agent — call AgentRegistry.register() first
+
+create_listing_after_if_else@4:
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:100
+    // listing_id = self.next_listing_id.value
+    intc_0 // 0
+    bytec_2 // "next_listing_id"
+    app_global_get_ex
+    assert // check self.next_listing_id exists
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:102-115
+    // # Mint one ASA for this listing and store its id with listing metadata.
+    // asset_result = itxn.AssetConfig(
+    //     total=UInt64(1),
+    //     decimals=UInt64(0),
+    //     default_frozen=False,
+    //     unit_name="INSIGHT",
+    //     asset_name="Mercator Insight",
+    //     url=ipfs_hash.native,
+    //     manager=seller.native,
+    //     reserve=seller.native,
+    //     freeze=seller.native,
+    //     clawback=seller.native,
+    //     fee=UInt64(1000),
+    // ).submit()
+    itxn_begin
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:109
+    // url=ipfs_hash.native,
+    dig 1
+    dup
+    extract 2 0
+    dig 4
+    dup
+    itxn_field ConfigAssetClawback
+    dup
+    itxn_field ConfigAssetFreeze
+    dup
+    itxn_field ConfigAssetReserve
+    dup
+    itxn_field ConfigAssetManager
+    swap
+    itxn_field ConfigAssetURL
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:108
+    // asset_name="Mercator Insight",
+    pushbytes "Mercator Insight"
+    itxn_field ConfigAssetName
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:107
+    // unit_name="INSIGHT",
+    pushbytes "INSIGHT"
+    itxn_field ConfigAssetUnitName
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:106
+    // default_frozen=False,
+    intc_0 // 0
+    itxn_field ConfigAssetDefaultFrozen
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:105
+    // decimals=UInt64(0),
+    intc_0 // 0
+    itxn_field ConfigAssetDecimals
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:104
+    // total=UInt64(1),
+    intc_1 // 1
+    itxn_field ConfigAssetTotal
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:102-103
+    // # Mint one ASA for this listing and store its id with listing metadata.
+    // asset_result = itxn.AssetConfig(
+    pushint 3 // acfg
+    itxn_field TypeEnum
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:114
+    // fee=UInt64(1000),
+    pushint 1000
+    itxn_field Fee
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:102-115
+    // # Mint one ASA for this listing and store its id with listing metadata.
+    // asset_result = itxn.AssetConfig(
+    //     total=UInt64(1),
+    //     decimals=UInt64(0),
+    //     default_frozen=False,
+    //     unit_name="INSIGHT",
+    //     asset_name="Mercator Insight",
+    //     url=ipfs_hash.native,
+    //     manager=seller.native,
+    //     reserve=seller.native,
+    //     freeze=seller.native,
+    //     clawback=seller.native,
+    //     fee=UInt64(1000),
+    // ).submit()
+    itxn_submit
+    itxn CreatedAssetID
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:122
+    // asa_id=arc4.UInt64(asa_id),
+    itob
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:118-123
+    // self.listings[arc4.UInt64(listing_id)] = Listing(
+    //     price=price,
+    //     seller=seller,
+    //     ipfs_hash=ipfs_hash,
+    //     asa_id=arc4.UInt64(asa_id),
+    // )
+    dig 6
+    uncover 2
+    concat
+    pushbytes 0x0032
+    concat
+    swap
+    concat
+    swap
+    concat
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:118
+    // self.listings[arc4.UInt64(listing_id)] = Listing(
+    dig 1
+    itob
+    pushbytes 0x6c697374696e67
+    dig 1
+    concat
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:118-123
+    // self.listings[arc4.UInt64(listing_id)] = Listing(
+    //     price=price,
+    //     seller=seller,
+    //     ipfs_hash=ipfs_hash,
+    //     asa_id=arc4.UInt64(asa_id),
+    // )
+    dup
+    box_del
+    pop
+    uncover 2
+    box_put
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:124
+    // self.next_listing_id.value = listing_id + UInt64(1)
+    swap
+    intc_1 // 1
+    +
+    bytec_2 // "next_listing_id"
+    swap
+    app_global_put
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:56
+    // @arc4.abimethod()
+    bytec_1 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return

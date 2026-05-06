@@ -20,7 +20,7 @@ Design Notes:
 - If payment x402 fails atomically, buyer cannot call release_after_payment (no recorded tx).
 """
 
-from algopy import ARC4Contract, BoxMap, arc4, op
+from algopy import ARC4Contract, BoxMap, arc4, op, GlobalState, UInt64
 
 
 class UnlockRecord(arc4.Struct):
@@ -38,11 +38,16 @@ class Escrow(ARC4Contract):
     """Escrow settlement tracking for x402 micropayments.
     
     State:
+        registry_app_id: Global reference to AgentRegistry app (UInt64).
         unlocked_listings: BoxMap(listing_id => UnlockRecord) recording buyer access grants.
     
     Purpose: Immutable on-chain proof that buyer paid for and accessed specific listing.
     """
+    registry_app_id: GlobalState[UInt64]
+    unlocked_listings: BoxMap[arc4.UInt64, UnlockRecord]
+
     def __init__(self) -> None:
+        self.registry_app_id = GlobalState(UInt64)
         self.unlocked_listings = BoxMap(arc4.UInt64, UnlockRecord, key_prefix=b"unlock")
 
     @arc4.abimethod()
@@ -77,7 +82,16 @@ class Escrow(ARC4Contract):
         - UnlockRecord is append-only (supports multiple buys of same listing).
         """
         # Post-payment release path: buyer directly calls escrow after payment confirmation.
-        assert op.Txn.sender == buyer.native
+        assert op.Txn.sender == buyer.native, "Only the buyer can release after payment"
+
+        # Optionally check buyer is registered in AgentRegistry (if registry_app_id is set)
+        if self.registry_app_id.value != UInt64(0):
+            is_registered, txn = arc4.abi_call[arc4.Bool](
+                "is_registered(address)bool",
+                buyer,
+                app_id=self.registry_app_id.value,
+            )
+            assert is_registered, "Buyer must be registered in AgentRegistry"
 
         self.unlocked_listings[listing_id] = UnlockRecord(
             buyer=buyer,

@@ -1,0 +1,147 @@
+#pragma version 11
+#pragma typetrack false
+
+// algopy.arc4.ARC4Contract.approval_program() -> uint64:
+main:
+    intcblock 0 1
+    bytecblock "registry_app_id"
+    // backend/contracts/escrow/smart_contracts/escrow/contract.py:37
+    // class Escrow(ARC4Contract):
+    txn NumAppArgs
+    bz main___algopy_default_create@7
+    pushbytes 0xa2631353 // method "release_after_payment(address,uint64)bool"
+    txna ApplicationArgs 0
+    match main_release_after_payment_route@5
+    err
+
+main_release_after_payment_route@5:
+    // backend/contracts/escrow/smart_contracts/escrow/contract.py:53
+    // @arc4.abimethod()
+    txn OnCompletion
+    !
+    txn ApplicationID
+    &&
+    assert
+    b release_after_payment
+
+main___algopy_default_create@7:
+    txn OnCompletion
+    !
+    txn ApplicationID
+    !
+    &&
+    return
+
+
+// smart_contracts.escrow.contract.Escrow.release_after_payment[routing]() -> void:
+release_after_payment:
+    // backend/contracts/escrow/smart_contracts/escrow/contract.py:53
+    // @arc4.abimethod()
+    txna ApplicationArgs 1
+    dupn 2
+    len
+    pushint 32
+    ==
+    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
+    txna ApplicationArgs 2
+    dup
+    cover 2
+    len
+    pushint 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    // backend/contracts/escrow/smart_contracts/escrow/contract.py:84-85
+    // # Post-payment release path: buyer directly calls escrow after payment confirmation.
+    // assert op.Txn.sender == buyer.native, "Only the buyer can release after payment"
+    txn Sender
+    ==
+    assert // Only the buyer can release after payment
+    // backend/contracts/escrow/smart_contracts/escrow/contract.py:87-88
+    // # Optionally check buyer is registered in AgentRegistry (if registry_app_id is set)
+    // if self.registry_app_id.value != UInt64(0):
+    intc_0 // 0
+    bytec_0 // "registry_app_id"
+    app_global_get_ex
+    assert // check self.registry_app_id exists
+    bz release_after_payment_after_if_else@4
+    // backend/contracts/escrow/smart_contracts/escrow/contract.py:89-93
+    // is_registered, txn = arc4.abi_call[arc4.Bool](
+    //     "is_registered(address)bool",
+    //     buyer,
+    //     app_id=self.registry_app_id.value,
+    // )
+    itxn_begin
+    // backend/contracts/escrow/smart_contracts/escrow/contract.py:92
+    // app_id=self.registry_app_id.value,
+    intc_0 // 0
+    bytec_0 // "registry_app_id"
+    app_global_get_ex
+    assert // check self.registry_app_id exists
+    itxn_field ApplicationID
+    // backend/contracts/escrow/smart_contracts/escrow/contract.py:89-93
+    // is_registered, txn = arc4.abi_call[arc4.Bool](
+    //     "is_registered(address)bool",
+    //     buyer,
+    //     app_id=self.registry_app_id.value,
+    // )
+    pushbytes 0x919c02df // method "is_registered(address)bool"
+    itxn_field ApplicationArgs
+    dig 1
+    itxn_field ApplicationArgs
+    pushint 6 // appl
+    itxn_field TypeEnum
+    intc_0 // 0
+    itxn_field Fee
+    itxn_submit
+    itxn LastLog
+    dup
+    extract 0 4
+    pushbytes 0x151f7c75
+    ==
+    assert // application log value is not the result of an ABI return
+    extract 4 0
+    dup
+    len
+    intc_1 // 1
+    ==
+    assert // invalid number of bytes for arc4.bool
+    // backend/contracts/escrow/smart_contracts/escrow/contract.py:94
+    // assert is_registered, "Buyer must be registered in AgentRegistry"
+    pushbytes 0x00
+    !=
+    assert // Buyer must be registered in AgentRegistry
+
+release_after_payment_after_if_else@4:
+    // backend/contracts/escrow/smart_contracts/escrow/contract.py:96-99
+    // self.unlocked_listings[listing_id] = UnlockRecord(
+    //     buyer=buyer,
+    //     unlocked=arc4.Bool(True),
+    // )
+    dig 1
+    // backend/contracts/escrow/smart_contracts/escrow/contract.py:98
+    // unlocked=arc4.Bool(True),
+    pushbytes 0x80
+    // backend/contracts/escrow/smart_contracts/escrow/contract.py:96-99
+    // self.unlocked_listings[listing_id] = UnlockRecord(
+    //     buyer=buyer,
+    //     unlocked=arc4.Bool(True),
+    // )
+    concat
+    // backend/contracts/escrow/smart_contracts/escrow/contract.py:96
+    // self.unlocked_listings[listing_id] = UnlockRecord(
+    pushbytes 0x756e6c6f636b
+    dig 2
+    concat
+    // backend/contracts/escrow/smart_contracts/escrow/contract.py:96-99
+    // self.unlocked_listings[listing_id] = UnlockRecord(
+    //     buyer=buyer,
+    //     unlocked=arc4.Bool(True),
+    // )
+    swap
+    box_put
+    // backend/contracts/escrow/smart_contracts/escrow/contract.py:53
+    // @arc4.abimethod()
+    pushbytes 0x151f7c7580
+    log
+    intc_1 // 1
+    return

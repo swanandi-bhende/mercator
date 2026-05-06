@@ -16,6 +16,11 @@ from typing import Any
 from uuid import uuid4
 
 import httpx
+import base64
+import os as _os
+import logging as _logging
+
+from backend.utils.identity import generate_manifest, verify_manifest_locally, private_key_from_mnemonic
 
 from backend.agents.insight_synthesiser import SynthesisedInsight, synthesise_insight
 from backend.agents.market_data_fetcher import MarketSnapshot, fetch_market_snapshot
@@ -301,3 +306,50 @@ def curator_status_snapshot(scheduler: Any | None = None) -> dict[str, Any]:
         "today_stats": today_stats,
         "newsapi_calls_today": today_stats.get("total_runs", 0) * symbol_count,
     }
+
+
+async def ensure_registered(
+    *,
+    agent_name: str = "Mercator Curator Agent",
+    role: str = "curator",
+    wallet_env: str = "CURATOR_WALLET_ADDRESS",
+    mnemonic_env: str = "CURATOR_MNEMONIC",
+) -> None:
+    """Best-effort identity registration preflight for an agent role.
+
+    This currently signs/verifies the role manifest locally and logs what
+    would be submitted on-chain when AgentRegistry app ID is configured.
+    """
+    logger = _logging.getLogger(__name__)
+    wallet = _os.getenv(wallet_env, "").strip()
+    mnemonic = _os.getenv(mnemonic_env, "").strip()
+    if not wallet or not mnemonic:
+        logger.info("%s or %s not set; skipping %s registration check", wallet_env, mnemonic_env, role)
+        return
+
+    private_key = private_key_from_mnemonic(mnemonic)
+    manifest_json, signature_b64 = generate_manifest(agent_name, wallet, role, private_key)
+
+    if not verify_manifest_locally(manifest_json, signature_b64, wallet):
+        logger.error("Local manifest verification failed for %s wallet %s; aborting registration attempt", role, wallet)
+        return
+
+    try:
+        from algokit_utils import AlgorandClient
+
+        _ = AlgorandClient.from_environment()
+        app_id_raw = _os.getenv("AGENT_REGISTRY_APP_ID", "").strip()
+        if not app_id_raw or not app_id_raw.isdigit():
+            logger.info("AGENT_REGISTRY_APP_ID not configured; skipping remote %s registration check", role)
+            return
+
+        app_id = int(app_id_raw)
+        logger.info(
+            "AgentRegistry app id %d configured; %s (%s) verified locally and ready for register() call.",
+            app_id,
+            role,
+            wallet,
+        )
+        logger.debug("Prepared %s signature: %s", role, signature_b64)
+    except Exception:
+        logger.info("algokit_utils unavailable; skipping on-chain %s registration step", role)

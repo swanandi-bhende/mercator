@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
 import { api, ApiError } from '../utils/api'
 import type { DiscoverMatch } from '../types'
+import VerifiedBadge from '../components/shared/VerifiedBadge'
 
 type SearchPhase = 'idle' | 'fetching' | 'evaluating' | 'ready'
 type BackendStatus = 'unknown' | 'online' | 'offline'
@@ -556,6 +557,7 @@ export default function DiscoverInsightsPage() {
                   <span className={`discover-risk-chip ${insight.reputation < 75 ? 'is-risk' : ''}`}>
                     {insight.reputation < 75 ? 'Below trust threshold' : insight.riskSignal}
                   </span>
+                  <VerifiedBadge walletAddress={insight.wallet} compact={true} />
                 </div>
 
                 <div className="discover-logic">

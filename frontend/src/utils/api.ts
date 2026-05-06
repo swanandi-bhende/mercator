@@ -16,6 +16,7 @@ import type {
   OpsPingResponse,
   OpsDiagnosticsResponse,
 } from '../types'
+import type { RegisteredAgent } from '../types'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL?.trim() || 'http://localhost:8000'
 
@@ -262,6 +263,18 @@ export const api = {
       return response.data
     } catch (error) {
       throw new ApiError('Diagnostics export failed', error)
+    }
+  },
+
+  /**
+   * Fetch the list of verified agents from AgentRegistry
+   */
+  verifiedAgents: async () => {
+    try {
+      const response = await client.get<RegisteredAgent[]>('/agents/registered')
+      return response.data
+    } catch (error) {
+      throw new ApiError('Failed to fetch verified agents', error)
     }
   },
 }

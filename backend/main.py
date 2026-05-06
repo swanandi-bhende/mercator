@@ -35,7 +35,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from algosdk import mnemonic, transaction
+from algosdk import mnemonic, transaction, abi
 from algosdk import encoding
 from algosdk import account
 from algosdk.error import AlgodHTTPError
@@ -823,7 +823,7 @@ def _is_transient_chain_error(err: Exception) -> bool:
 
 
 @app.on_event("startup")
-def startup_checks() -> None:
+async def startup_checks() -> None:
     """Startup hook to normalize env and warn on missing required keys.
 
     Micropayment role: preflight guardrail before serving listing/payment endpoints.
@@ -831,6 +831,23 @@ def startup_checks() -> None:
     normalize_network_env()
     warn_missing_required_env(logger)
     initialise_curator_schema()
+
+    # Ensure role manifests are signed and locally verified before jobs start.
+    try:
+        await curator_agent.ensure_registered()
+    except Exception:
+        logger.exception("Failed to ensure curator registration during startup")
+
+    try:
+        await curator_agent.ensure_registered(
+            agent_name="Mercator Buyer Agent",
+            role="buyer",
+            wallet_env="BUYER_WALLET",
+            mnemonic_env="BUYER_MNEMONIC",
+        )
+    except Exception:
+        logger.exception("Failed to ensure buyer registration during startup")
+
     curator_minutes = int(os.getenv("CURATOR_CYCLE_INTERVAL_MINUTES", "30") or 30)
     scheduler.add_job(
         curator_agent.run_full_cycle,
@@ -2525,6 +2542,100 @@ async def ledger_feed(
             "source": "local-cache",
             "degraded": True,
             "error": str(err),
+        }
+
+
+@app.get("/agents/registered")
+async def list_registered_agents() -> dict[str, object]:
+    """List all registered agents in AgentRegistry with their activity.
+
+    Purpose: Provides frontend with verified agent list for displaying badges and reputation.
+    Queries the AgentRegistry app's Boxes via indexer to fetch active agent records.
+
+    Returns:
+        List of {wallet, agent_name, role, registered_at_round, total_transactions} for active agents.
+    """
+    normalize_network_env()
+    try:
+        registry_app_id_raw = os.getenv("AGENT_REGISTRY_APP_ID", "").strip()
+        if not registry_app_id_raw or not registry_app_id_raw.isdigit():
+            logger.warning("AGENT_REGISTRY_APP_ID not configured; returning empty agents list")
+            return {
+                "success": True,
+                "agents": [],
+                "count": 0,
+                "source": "not-configured",
+            }
+
+        registry_app_id = int(registry_app_id_raw)
+        idx = _get_indexer_client()
+        record_type = abi.ABIType.from_string("(string,string,uint64,bool,string,uint64)")
+
+        boxes_response = idx.application_boxes(registry_app_id, limit=1000)
+        boxes = boxes_response.get("boxes", [])
+        if not boxes:
+            return {
+                "success": True,
+                "agents": [],
+                "count": 0,
+                "source": "indexer",
+            }
+
+        agents: list[dict[str, object]] = []
+        for box in boxes:
+            try:
+                name_b64 = box.get("name", "")
+                if not isinstance(name_b64, str) or not name_b64:
+                    continue
+
+                box_name = base64.b64decode(name_b64)
+                if not box_name.startswith(b"reg_"):
+                    continue
+
+                wallet_bytes = box_name[4:]
+                if len(wallet_bytes) != 32:
+                    continue
+                wallet = encoding.encode_address(wallet_bytes)
+
+                box_value = idx.application_box_by_name(registry_app_id, box_name)
+                raw_value = box_value.get("value", "")
+                value_bytes = base64.b64decode(raw_value) if isinstance(raw_value, str) else bytes(raw_value)
+                decoded = record_type.decode(value_bytes)
+
+                is_active = bool(decoded[3])
+                if not is_active:
+                    continue
+
+                agents.append(
+                    {
+                        "wallet": wallet,
+                        "agent_name": str(decoded[0]),
+                        "role": str(decoded[1]),
+                        "registered_at_round": int(decoded[2]),
+                        "total_transactions": int(decoded[5]),
+                    }
+                )
+            except Exception as decode_err:
+                logger.debug("Failed to decode agent registry box | err=%s", decode_err)
+                continue
+
+        return {
+            "success": True,
+            "agents": agents,
+            "count": len(agents),
+            "source": "indexer",
+        }
+    except HTTPException:
+        raise
+    except Exception as err:
+        logger.error("Failed to list registered agents | error=%s", err, exc_info=True)
+        return {
+            "success": False,
+            "agents": [],
+            "count": 0,
+            "source": "indexer",
+            "error": str(err),
+            "degraded": True,
         }
 
 
