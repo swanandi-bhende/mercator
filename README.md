@@ -114,6 +114,19 @@ See [x402_Implementation.md](docs/x402_Implementation.md) for detailed request/r
 
 ---
 
+## Deployed Contracts
+
+| Contract | App ID | Network | Notes |
+|--------|----------|---------|---------|
+| InsightListing | 758025190 | TestNet | Existing listing registry |
+| Escrow | 761839258 | TestNet | Fee-aware settlement contract |
+| Reputation | 758022459 | TestNet | Existing reputation contract |
+| FeeConfig | 761839101 | TestNet | Fee configuration and revenue tracking |
+
+Treasury wallet address: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+
+---
+
 ## Latest Proof Artifacts
 
 **Latest Successful Purchase** (2026-04-13):

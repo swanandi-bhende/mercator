@@ -187,6 +187,95 @@ def _safe_int(value: object, default: int = 0) -> int:
         return default
 
 
+def _calculate_fee_preview(amount_micro_usdc: int, fee_rate_bps: int) -> int:
+    """Mirror on-chain fee math for frontend preview fields.
+
+    Micropayment role: allows seller studio to render split immediately before settlement.
+    """
+    if amount_micro_usdc <= 0:
+        return 0
+    calculated_fee = (amount_micro_usdc * fee_rate_bps) // 10000
+    if calculated_fee == 0 and fee_rate_bps > 0:
+        return 1
+    return calculated_fee
+
+
+def _decode_global_state_entry(entry: dict[str, object]) -> tuple[str, object | None]:
+    """Decode one Algorand global-state key/value entry.
+
+    Micropayment role: translates on-chain fee config state into dashboard-consumable fields.
+    """
+    key_b64 = str(entry.get("key", ""))
+    key = ""
+    if key_b64:
+        try:
+            key = base64.b64decode(key_b64).decode("utf-8", errors="ignore")
+        except Exception:
+            key = ""
+
+    value_obj = entry.get("value", {})
+    if not isinstance(value_obj, dict):
+        return key, None
+
+    value_type = value_obj.get("type")
+    if value_type == 2:
+        return key, _safe_int(value_obj.get("uint", 0), 0)
+    if value_type == 1:
+        raw = str(value_obj.get("bytes", ""))
+        try:
+            decoded = base64.b64decode(raw) if raw else b""
+        except Exception:
+            decoded = b""
+        if len(decoded) == 32:
+            try:
+                return key, encoding.encode_address(decoded)
+            except Exception:
+                return key, raw
+        return key, raw
+    return key, None
+
+
+def _fetch_fee_config_state() -> dict[str, object]:
+    """Fetch fee config fields from on-chain global state.
+
+    Micropayment role: powers the operations panel and listing split previews.
+    """
+    fee_config_app_raw = os.getenv("FEE_CONFIG_APP_ID", "").strip()
+    if not fee_config_app_raw or not fee_config_app_raw.isdigit():
+        return {
+            "configured": False,
+            "error": "FEE_CONFIG_APP_ID missing or invalid",
+            "fee_rate_bps": 250,
+            "treasury_address": os.getenv("TREASURY_ADDRESS", "").strip(),
+            "total_fees_collected": 0,
+            "usdc_asset_id": _safe_int(os.getenv("USDC_ASSET_ID", "10458941"), 10458941),
+        }
+
+    app_id = int(fee_config_app_raw)
+    client = _get_algod_client()
+    app_payload = client.application_info(app_id)
+    app_obj = app_payload.get("params", {}) if isinstance(app_payload, dict) else {}
+    global_state = app_obj.get("global-state", []) if isinstance(app_obj, dict) else []
+
+    decoded: dict[str, object] = {}
+    if isinstance(global_state, list):
+        for entry in global_state:
+            if not isinstance(entry, dict):
+                continue
+            key, value = _decode_global_state_entry(entry)
+            if key:
+                decoded[key] = value
+
+    return {
+        "configured": True,
+        "app_id": app_id,
+        "fee_rate_bps": _safe_int(decoded.get("fee_rate_bps", 250), 250),
+        "treasury_address": str(decoded.get("treasury_address", os.getenv("TREASURY_ADDRESS", "").strip())),
+        "total_fees_collected": _safe_int(decoded.get("total_fees_collected", 0), 0),
+        "usdc_asset_id": _safe_int(decoded.get("usdc_asset_id", _safe_int(os.getenv("USDC_ASSET_ID", "10458941"), 10458941)), 10458941),
+    }
+
+
 def _service_tone(status: str) -> str:
     """Map status labels to normalized health tone.
 
@@ -2266,6 +2355,11 @@ async def create_listing(request: ListingRequest) -> dict[str, int | str]:
         logger.error("Unexpected /list failure | error=%s", err, exc_info=True)
         return _error_response(500, f"Transaction failed: {err}")
 
+    fee_state = _fetch_fee_config_state()
+    fee_rate_bps = _safe_int(fee_state.get("fee_rate_bps", 250), 250)
+    platform_fee_micro = _calculate_fee_preview(micro_price, fee_rate_bps)
+    seller_net_micro = max(0, micro_price - platform_fee_micro)
+
     return {
         "success": True,
         "transaction_id": tx_id,
@@ -2275,6 +2369,49 @@ async def create_listing(request: ListingRequest) -> dict[str, int | str]:
         "cid": cid,
         "listing_id": listing_id,
         "asa_id": asa_id,
+        "fee_config_details": {
+            "fee_rate_bps": fee_rate_bps,
+            "fee_rate_display": f"{fee_rate_bps / 100:.1f}%",
+            "platform_fee_usdc": round(platform_fee_micro / 1_000_000, 6),
+            "seller_net_usdc": round(seller_net_micro / 1_000_000, 6),
+        },
+    }
+
+
+@app.get("/fee_config")
+async def get_fee_config() -> dict[str, object]:
+    """Return current fee configuration and accrued platform revenue.
+
+    Micropayment role: Operations dashboard poll target for fee rate + treasury + revenue.
+    """
+    try:
+        state = _fetch_fee_config_state()
+    except Exception as err:
+        logger.error("Failed to fetch fee config state | error=%s", err, exc_info=True)
+        return {
+            "success": False,
+            "error": f"Failed to fetch fee config: {err}",
+        }
+
+    if not bool(state.get("configured", False)):
+        return {
+            "success": False,
+            "error": str(state.get("error", "FeeConfig is not configured")),
+            "fee_rate_bps": _safe_int(state.get("fee_rate_bps", 250), 250),
+            "treasury_address": str(state.get("treasury_address", "")),
+            "total_fees_collected": _safe_int(state.get("total_fees_collected", 0), 0),
+            "usdc_asset_id": _safe_int(state.get("usdc_asset_id", 10458941), 10458941),
+        }
+
+    fee_rate_bps = _safe_int(state.get("fee_rate_bps", 250), 250)
+    return {
+        "success": True,
+        "app_id": _safe_int(state.get("app_id", 0), 0),
+        "fee_rate_bps": fee_rate_bps,
+        "fee_rate_display": f"{fee_rate_bps / 100:.1f}%",
+        "treasury_address": str(state.get("treasury_address", "")),
+        "total_fees_collected": _safe_int(state.get("total_fees_collected", 0), 0),
+        "usdc_asset_id": _safe_int(state.get("usdc_asset_id", 10458941), 10458941),
     }
 
 

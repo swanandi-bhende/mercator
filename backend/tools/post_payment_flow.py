@@ -49,8 +49,11 @@ logger = logging.getLogger(__name__)
 INDEXER_URL = os.getenv("INDEXER_URL") or os.getenv("INDEXER_SERVER", "")
 INDEXER_TOKEN = os.getenv("INDEXER_TOKEN") or os.getenv("ALGOD_TOKEN", "")
 ESCROW_APP_ID = int(os.getenv("ESCROW_APP_ID", "0"))
+FEE_CONFIG_APP_ID = int(os.getenv("FEE_CONFIG_APP_ID", "0"))
 INSIGHT_LISTING_APP_ID = int(os.getenv("INSIGHT_LISTING_APP_ID", "0"))
 REPUTATION_APP_ID = int(os.getenv("REPUTATION_APP_ID", "0"))
+USDC_ASSET_ID = int(os.getenv("USDC_ASSET_ID", "10458941"))  # TestNet default
+TREASURY_ADDRESS = os.getenv("TREASURY_ADDRESS", "")
 REPUTATION_INCREMENT = int(os.getenv("REPUTATION_INCREMENT", "10"))
 BUYER_WALLET = os.getenv("BUYER_WALLET", "")
 BUYER_MNEMONIC = os.getenv("BUYER_MNEMONIC", "")
@@ -59,8 +62,12 @@ if not INDEXER_URL:
     raise ValueError("INDEXER_URL or INDEXER_SERVER not found in environment")
 if ESCROW_APP_ID <= 0:
     raise ValueError("ESCROW_APP_ID not found or invalid in environment")
+if FEE_CONFIG_APP_ID <= 0:
+    raise ValueError("FEE_CONFIG_APP_ID not found or invalid in environment")
 if INSIGHT_LISTING_APP_ID <= 0:
     raise ValueError("INSIGHT_LISTING_APP_ID not found or invalid in environment")
+if not TREASURY_ADDRESS.strip():
+    raise ValueError("TREASURY_ADDRESS not found in environment")
 
 indexer_client = indexer.IndexerClient(INDEXER_TOKEN, INDEXER_URL)
 
@@ -265,12 +272,36 @@ async def complete_purchase_flow(
             return ""
 
     async def _release_escrow_with_retry() -> tuple[str, int | None]:
-        """Try escrow release a few times to avoid stale round failures."""
+        """Try escrow release a few times to avoid stale round failures.
+        
+        Calls Escrow.release_after_payment with fee-split parameters:
+        - Calculates fee using FeeConfig
+        - Passes seller, amount, and treasury details
+        - Sets outer transaction fee to 5000 microALGO to cover inner transactions
+        """
         last_error: Exception | None = None
         for attempt in range(1, 4):
             try:
+                # Set outer transaction fee: 1000 base + 1000 per inner tx (4 inner txs = 5000 total)
                 active_escrow_client = escrow_client or get_escrow_client()
-                redeem_result = active_escrow_client.send.release_after_payment((buyer_wallet, listing_id))
+                
+                # Get suggested params and set proper fee for inner transactions
+                sp = active_escrow_client.client.algod_client.suggested_params()
+                sp.fee = 5000  # 1000 base + 4 inner txs * 1000 each
+                sp.flat_fee = True
+                
+                # Call release_after_payment with all required parameters
+                redeem_result = active_escrow_client.send.release_after_payment(
+                    (
+                        buyer_wallet,          # buyer address
+                        str(listing.seller),   # seller address
+                        listing_id,            # listing ID
+                        int(listing.price),    # payment amount (in microUSDC)
+                        USDC_ASSET_ID,         # USDC asset ID
+                        TREASURY_ADDRESS,      # treasury address
+                    ),
+                    sp=sp,
+                )
                 tx = _extract_tx_id(redeem_result)
                 round_no = await _wait_for_confirmation(tx_id=tx, timeout_seconds=20)
                 return tx, round_no

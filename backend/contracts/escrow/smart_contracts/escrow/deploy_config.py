@@ -11,14 +11,18 @@ from dotenv import load_dotenv
 from algosdk import mnemonic, transaction
 from algosdk.logic import get_application_address
 
-from smart_contracts.artifacts.escrow.escrow_client import EscrowFactory
+from smart_contracts.artifacts.escrow.escrow_client import (
+    EscrowFactory,
+    CreateArgs,
+    EscrowMethodCallCreateParams,
+)
 
 
 def _normalize_network_env() -> None:
     """Populate AlgoKit env vars from the repo's current env files."""
     repo_root = Path(__file__).resolve().parents[5]
     load_dotenv(repo_root / ".env", override=False)
-    load_dotenv(repo_root / ".env.testnet", override=False)
+    load_dotenv(repo_root / ".env.testnet", override=True)
 
     if not os.getenv("ALGOD_SERVER") and os.getenv("ALGOD_URL"):
         os.environ["ALGOD_SERVER"] = os.getenv("ALGOD_URL", "")
@@ -50,9 +54,22 @@ def deploy() -> None:
         app_name="Escrow",
         default_sender=deployer.address,
     )
+    fee_config_app_id = int(os.getenv("FEE_CONFIG_APP_ID", "0") or 0)
+    insight_listing_app_id = int(os.getenv("INSIGHT_LISTING_APP_ID", "0") or 0)
+    registry_app_id = int(os.getenv("AGENT_REGISTRY_APP_ID", "0") or 0)
+    create_args = CreateArgs(
+        fee_config_app_id=fee_config_app_id,
+        insight_listing_app_id=insight_listing_app_id,
+        registry_app_id=registry_app_id,
+    )
+    create_params = EscrowMethodCallCreateParams(
+        sender=deployer.address,
+        args=create_args,
+    )
     _, result = factory.deploy(
         on_schema_break=OnSchemaBreak.AppendApp,
         on_update=OnUpdate.AppendApp,
+        create_params=create_params,
     )
 
     app_address = result.app.app_address or get_application_address(result.app.app_id)

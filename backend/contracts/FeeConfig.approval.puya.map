@@ -1,0 +1,3441 @@
+{
+  "version": 3,
+  "sources": [
+    "fee_config.py"
+  ],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AA8CQ;AAAgC;;AAAhC;AACA;AAA0B;;;;;;;;;;AAA1B;AACA;AAA2C;;AAA3C;AACA;;AAA2B;;AAA3B;AACA;AAAkC;;AAAlC;AACA;;AAA2B;AAA3B;AAhDR;;AAAA;AAAA;AAAA;;AAAA;;;AAAA;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAAA;;;AAAA;;;;;;;;;;;;;;;;AAAA;AAAA;;;;;;AAAA;;;AAAA;;;;AAAA;AAkDK;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AASO;;AAAA;AAAoC;;;AAApC;AADJ;AAKA;AAAgC;;AAAhC;AAGA;AAAA;;AAAA;AACA;AAAA;;AAAA;AACA;;AAAA;;AAAA;AACA;AAAkC;;AAAlC;AACA;;AAA2B;AAA3B;AAKiB;;AAFjB;;AAAA;AAAA;;AAAA;AAAA;AAAA;AAAA;;;;;;AAAA;AAAA;AAAA;AAvBH;AAAA;AA+BA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;;;AAAA;;AAAA;AAAA;AAAA;AAAA;AAAA;AA+CA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAcY;AAAA;AACH;AAAA;;;AAAA;AACa;AAAZ;AAhBV;;AAAA;AAAA;AAAA;AAAA;AAAA;AAkBA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAgBO;;AAAc;AAAA;AAAA;AAAA;AAAd;AADJ;AAMI;AAAA;AAA4B;;;AAA5B;AADJ;AAIW;AAAA;AAAA;AAAA;AACX;AAAA;;AAAA;AAGA;AAAA;AAAA;;;;;;AAAA;AAAA;AAAA;AA5BH;AAAA;AA8BA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAeO;;AAAc;AAAA;AAAA;AAAA;AAAd;AADJ;AAIe;AAAA;AAAA;AAAA;AACf;AAAA;;AAAA;AAGA;AAAA;AAAA;;;;;;AAAA;AAAA;AAAA;AAtBH;AAAA;AAwBA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA;AAaO;;AAAc;AAAA;AAAA;AAAA;AAAd;AADJ;AAIA;;AAAA;AAAA;AAGA;;;;;;AAAA;AAAA;AAAA;AAnBH;AAAA;AAqBA;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAkBe;AAAA;;AAAA;AAAA;AAAA;AAAA;;AAAA;AACI;;AAAA;AAGD;;AAAc;;AAAd;AAAA;AACE;;;AAA2B;;AAAA;;AAAA;AAA3B;;;;AAGb;;AAAA;AADJ;AAKa;;AAAA;AAAA;AACG;AAAA;AAAA;AAAA;AAAA;AACG;AACZ;AAAA;AAAP;AAEkC;AAAlC;AAAA;;AAAA;AAGA;AAAA;;;;;;AAAA;AAAA;AAAA;AAtCH;AAAA;;;;;AA0DW;AAAA;AAAA;AAAA;AACA;AAAA;AAAA;AAAA;AACA;AAAA;AAAA;AAAA;AACA;AAAA;;AAAA;AAAA;AALD;;AAAA;;AAAA;AAAA;;AAAA;AAAA;AAAA;AAhBV;;AAAA;AAAA;AAAA;AAAA;AAAA;AApLA;;;;;AA0BY;;AAAA;AAAA;AACF;AAAA;AAAA;AAAA;AAAA;AAAA;AAEf;;;AACmB;;AAAP;;AAAA;AAGwB;;AAAA;;AAAA;AAEG;AAAW;;;AADqB;AAAA;;AAAA;AAAA;;AAAA;;AAAA;AAQ5D;;;AAAA;;AAAA;;;AACQ;;;;;;;;;;AAAP;;AAAA;AAEG;;AAAA;AAAP;;AAAA",
+  "op_pc_offset": 0,
+  "pc_events": {
+    "1": {
+      "subroutine": "algopy.arc4.ARC4Contract.approval_program",
+      "params": {},
+      "block": "main",
+      "stack_in": [],
+      "op": "intcblock 0 1 8 32"
+    },
+    "7": {
+      "op": "bytecblock \"fee_rate_bps\" \"owner\" \"treasury_address\" \"total_fees_collected\" 0x0000000000000000 \"escrow_app_id\" \"usdc_asset_id\" 0x151f7c75"
+    },
+    "108": {
+      "op": "txn ApplicationID",
+      "defined_out": [
+        "tmp%0#0"
+      ],
+      "stack_out": [
+        "tmp%0#0"
+      ]
+    },
+    "110": {
+      "op": "bnz main_after_if_else@2",
+      "stack_out": []
+    },
+    "113": {
+      "op": "bytec_1 // \"owner\"",
+      "defined_out": [
+        "\"owner\""
+      ],
+      "stack_out": [
+        "\"owner\""
+      ]
+    },
+    "114": {
+      "op": "txn Sender",
+      "defined_out": [
+        "\"owner\"",
+        "reinterpret_Encoded(uint8[32])%0#0"
+      ],
+      "stack_out": [
+        "\"owner\"",
+        "reinterpret_Encoded(uint8[32])%0#0"
+      ]
+    },
+    "116": {
+      "op": "app_global_put",
+      "stack_out": []
+    },
+    "117": {
+      "op": "bytec_0 // \"fee_rate_bps\"",
+      "defined_out": [
+        "\"fee_rate_bps\""
+      ],
+      "stack_out": [
+        "\"fee_rate_bps\""
+      ]
+    },
+    "118": {
+      "op": "pushbytes 0x00000000000000fa",
+      "defined_out": [
+        "\"fee_rate_bps\"",
+        "0x00000000000000fa"
+      ],
+      "stack_out": [
+        "\"fee_rate_bps\"",
+        "0x00000000000000fa"
+      ]
+    },
+    "128": {
+      "op": "app_global_put",
+      "stack_out": []
+    },
+    "129": {
+      "op": "bytec_2 // \"treasury_address\"",
+      "defined_out": [
+        "\"treasury_address\""
+      ],
+      "stack_out": [
+        "\"treasury_address\""
+      ]
+    },
+    "130": {
+      "op": "txn Sender",
+      "defined_out": [
+        "\"treasury_address\"",
+        "reinterpret_Encoded(uint8[32])%1#0"
+      ],
+      "stack_out": [
+        "\"treasury_address\"",
+        "reinterpret_Encoded(uint8[32])%1#0"
+      ]
+    },
+    "132": {
+      "op": "app_global_put",
+      "stack_out": []
+    },
+    "133": {
+      "op": "bytec 6 // \"usdc_asset_id\"",
+      "defined_out": [
+        "\"usdc_asset_id\""
+      ],
+      "stack_out": [
+        "\"usdc_asset_id\""
+      ]
+    },
+    "135": {
+      "op": "bytec 4 // 0x0000000000000000",
+      "defined_out": [
+        "\"usdc_asset_id\"",
+        "0x0000000000000000"
+      ],
+      "stack_out": [
+        "\"usdc_asset_id\"",
+        "0x0000000000000000"
+      ]
+    },
+    "137": {
+      "op": "app_global_put",
+      "stack_out": []
+    },
+    "138": {
+      "op": "bytec_3 // \"total_fees_collected\"",
+      "defined_out": [
+        "\"total_fees_collected\""
+      ],
+      "stack_out": [
+        "\"total_fees_collected\""
+      ]
+    },
+    "139": {
+      "op": "bytec 4 // 0x0000000000000000",
+      "stack_out": [
+        "\"total_fees_collected\"",
+        "0x0000000000000000"
+      ]
+    },
+    "141": {
+      "op": "app_global_put",
+      "stack_out": []
+    },
+    "142": {
+      "op": "bytec 5 // \"escrow_app_id\"",
+      "defined_out": [
+        "\"escrow_app_id\""
+      ],
+      "stack_out": [
+        "\"escrow_app_id\""
+      ]
+    },
+    "144": {
+      "op": "intc_0 // 0",
+      "defined_out": [
+        "\"escrow_app_id\"",
+        "0"
+      ],
+      "stack_out": [
+        "\"escrow_app_id\"",
+        "0"
+      ]
+    },
+    "145": {
+      "op": "app_global_put",
+      "stack_out": []
+    },
+    "146": {
+      "block": "main_after_if_else@2",
+      "stack_in": [],
+      "op": "txn OnCompletion",
+      "defined_out": [
+        "tmp%0#1"
+      ],
+      "stack_out": [
+        "tmp%0#1"
+      ]
+    },
+    "148": {
+      "op": "!",
+      "defined_out": [
+        "tmp%1#1"
+      ],
+      "stack_out": [
+        "tmp%1#1"
+      ]
+    },
+    "149": {
+      "op": "assert",
+      "stack_out": []
+    },
+    "150": {
+      "op": "txn ApplicationID",
+      "defined_out": [
+        "tmp%2#0"
+      ],
+      "stack_out": [
+        "tmp%2#0"
+      ]
+    },
+    "152": {
+      "op": "bz main_create_NoOp@13",
+      "stack_out": []
+    },
+    "155": {
+      "op": "pushbytess 0x14d72562 0x57cbfd62 0xc0509d1c 0xfcd8caaf 0x4e081eba 0x7c7cc572 0xa8a8f366 // method \"calculate_fee(uint64)uint64\", method \"calculate_seller_payout(uint64)uint64\", method \"set_fee_rate(uint64)void\", method \"set_treasury(address)void\", method \"set_escrow_app(uint64)void\", method \"record_fee_collected(uint64)void\", method \"get_config()(uint64,address,uint64,uint64)\"",
+      "defined_out": [
+        "Method(calculate_fee(uint64)uint64)",
+        "Method(calculate_seller_payout(uint64)uint64)",
+        "Method(get_config()(uint64,address,uint64,uint64))",
+        "Method(record_fee_collected(uint64)void)",
+        "Method(set_escrow_app(uint64)void)",
+        "Method(set_fee_rate(uint64)void)",
+        "Method(set_treasury(address)void)"
+      ],
+      "stack_out": [
+        "Method(calculate_fee(uint64)uint64)",
+        "Method(calculate_seller_payout(uint64)uint64)",
+        "Method(set_fee_rate(uint64)void)",
+        "Method(set_treasury(address)void)",
+        "Method(set_escrow_app(uint64)void)",
+        "Method(record_fee_collected(uint64)void)",
+        "Method(get_config()(uint64,address,uint64,uint64))"
+      ]
+    },
+    "192": {
+      "op": "txna ApplicationArgs 0",
+      "defined_out": [
+        "Method(calculate_fee(uint64)uint64)",
+        "Method(calculate_seller_payout(uint64)uint64)",
+        "Method(get_config()(uint64,address,uint64,uint64))",
+        "Method(record_fee_collected(uint64)void)",
+        "Method(set_escrow_app(uint64)void)",
+        "Method(set_fee_rate(uint64)void)",
+        "Method(set_treasury(address)void)",
+        "tmp%4#0"
+      ],
+      "stack_out": [
+        "Method(calculate_fee(uint64)uint64)",
+        "Method(calculate_seller_payout(uint64)uint64)",
+        "Method(set_fee_rate(uint64)void)",
+        "Method(set_treasury(address)void)",
+        "Method(set_escrow_app(uint64)void)",
+        "Method(record_fee_collected(uint64)void)",
+        "Method(get_config()(uint64,address,uint64,uint64))",
+        "tmp%4#0"
+      ]
+    },
+    "195": {
+      "op": "match calculate_fee calculate_seller_payout set_fee_rate set_treasury set_escrow_app record_fee_collected get_config",
+      "stack_out": []
+    },
+    "211": {
+      "op": "err"
+    },
+    "212": {
+      "block": "main_create_NoOp@13",
+      "stack_in": [],
+      "op": "pushbytes 0x4d5b62f8 // method \"create(uint64,address,uint64)void\"",
+      "defined_out": [
+        "Method(create(uint64,address,uint64)void)"
+      ],
+      "stack_out": [
+        "Method(create(uint64,address,uint64)void)"
+      ]
+    },
+    "218": {
+      "op": "txna ApplicationArgs 0",
+      "defined_out": [
+        "Method(create(uint64,address,uint64)void)",
+        "tmp%5#0"
+      ],
+      "stack_out": [
+        "Method(create(uint64,address,uint64)void)",
+        "tmp%5#0"
+      ]
+    },
+    "221": {
+      "op": "match create",
+      "stack_out": []
+    },
+    "225": {
+      "op": "err"
+    },
+    "226": {
+      "subroutine": "fee_config.FeeConfig.create[routing]",
+      "params": {},
+      "block": "create",
+      "stack_in": [],
+      "op": "txna ApplicationArgs 1",
+      "defined_out": [
+        "initial_fee_rate_bps#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0"
+      ]
+    },
+    "229": {
+      "op": "dup",
+      "defined_out": [
+        "initial_fee_rate_bps#0",
+        "initial_fee_rate_bps#0 (copy)"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "initial_fee_rate_bps#0 (copy)"
+      ]
+    },
+    "230": {
+      "op": "len",
+      "defined_out": [
+        "initial_fee_rate_bps#0",
+        "len%0#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "len%0#0"
+      ]
+    },
+    "231": {
+      "op": "intc_2 // 8",
+      "defined_out": [
+        "8",
+        "initial_fee_rate_bps#0",
+        "len%0#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "len%0#0",
+        "8"
+      ]
+    },
+    "232": {
+      "op": "==",
+      "defined_out": [
+        "eq%0#0",
+        "initial_fee_rate_bps#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "eq%0#0"
+      ]
+    },
+    "233": {
+      "error": "invalid number of bytes for arc4.uint64",
+      "op": "assert // invalid number of bytes for arc4.uint64",
+      "stack_out": [
+        "initial_fee_rate_bps#0"
+      ]
+    },
+    "234": {
+      "op": "txna ApplicationArgs 2",
+      "defined_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0"
+      ]
+    },
+    "237": {
+      "op": "dup",
+      "defined_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "treasury#0 (copy)"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "treasury#0 (copy)"
+      ]
+    },
+    "238": {
+      "op": "len",
+      "defined_out": [
+        "initial_fee_rate_bps#0",
+        "len%1#0",
+        "treasury#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "len%1#0"
+      ]
+    },
+    "239": {
+      "op": "intc_3 // 32",
+      "defined_out": [
+        "32",
+        "initial_fee_rate_bps#0",
+        "len%1#0",
+        "treasury#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "len%1#0",
+        "32"
+      ]
+    },
+    "240": {
+      "op": "==",
+      "defined_out": [
+        "eq%1#0",
+        "initial_fee_rate_bps#0",
+        "treasury#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "eq%1#0"
+      ]
+    },
+    "241": {
+      "error": "invalid number of bytes for arc4.static_array<arc4.uint8, 32>",
+      "op": "assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>",
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0"
+      ]
+    },
+    "242": {
+      "op": "txna ApplicationArgs 3",
+      "defined_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0"
+      ]
+    },
+    "245": {
+      "op": "dup",
+      "defined_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0",
+        "usdc_id#0 (copy)"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0",
+        "usdc_id#0 (copy)"
+      ]
+    },
+    "246": {
+      "op": "len",
+      "defined_out": [
+        "initial_fee_rate_bps#0",
+        "len%2#0",
+        "treasury#0",
+        "usdc_id#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0",
+        "len%2#0"
+      ]
+    },
+    "247": {
+      "op": "intc_2 // 8",
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0",
+        "len%2#0",
+        "8"
+      ]
+    },
+    "248": {
+      "op": "==",
+      "defined_out": [
+        "eq%2#0",
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0",
+        "eq%2#0"
+      ]
+    },
+    "249": {
+      "error": "invalid number of bytes for arc4.uint64",
+      "op": "assert // invalid number of bytes for arc4.uint64",
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0"
+      ]
+    },
+    "250": {
+      "op": "dig 2",
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0",
+        "initial_fee_rate_bps#0 (copy)"
+      ]
+    },
+    "252": {
+      "op": "btoi",
+      "defined_out": [
+        "initial_fee_rate_bps#0",
+        "tmp%0#1",
+        "treasury#0",
+        "usdc_id#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0",
+        "tmp%0#1"
+      ]
+    },
+    "253": {
+      "op": "pushint 1000",
+      "defined_out": [
+        "1000",
+        "initial_fee_rate_bps#0",
+        "tmp%0#1",
+        "treasury#0",
+        "usdc_id#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0",
+        "tmp%0#1",
+        "1000"
+      ]
+    },
+    "256": {
+      "op": "<=",
+      "defined_out": [
+        "initial_fee_rate_bps#0",
+        "tmp%1#1",
+        "treasury#0",
+        "usdc_id#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0",
+        "tmp%1#1"
+      ]
+    },
+    "257": {
+      "error": "Fee rate cannot exceed 10% (1000 basis points)",
+      "op": "assert // Fee rate cannot exceed 10% (1000 basis points)",
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0"
+      ]
+    },
+    "258": {
+      "op": "bytec_1 // \"owner\"",
+      "defined_out": [
+        "\"owner\"",
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0",
+        "\"owner\""
+      ]
+    },
+    "259": {
+      "op": "txn Sender",
+      "defined_out": [
+        "\"owner\"",
+        "initial_fee_rate_bps#0",
+        "reinterpret_Encoded(uint8[32])%0#0",
+        "treasury#0",
+        "usdc_id#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0",
+        "\"owner\"",
+        "reinterpret_Encoded(uint8[32])%0#0"
+      ]
+    },
+    "261": {
+      "op": "app_global_put",
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0"
+      ]
+    },
+    "262": {
+      "op": "bytec_0 // \"fee_rate_bps\"",
+      "defined_out": [
+        "\"fee_rate_bps\"",
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0",
+        "\"fee_rate_bps\""
+      ]
+    },
+    "263": {
+      "op": "dig 3",
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0",
+        "\"fee_rate_bps\"",
+        "initial_fee_rate_bps#0 (copy)"
+      ]
+    },
+    "265": {
+      "op": "app_global_put",
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0"
+      ]
+    },
+    "266": {
+      "op": "bytec_2 // \"treasury_address\"",
+      "defined_out": [
+        "\"treasury_address\"",
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0",
+        "\"treasury_address\""
+      ]
+    },
+    "267": {
+      "op": "dig 2",
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0",
+        "\"treasury_address\"",
+        "treasury#0 (copy)"
+      ]
+    },
+    "269": {
+      "op": "app_global_put",
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0"
+      ]
+    },
+    "270": {
+      "op": "bytec 6 // \"usdc_asset_id\"",
+      "defined_out": [
+        "\"usdc_asset_id\"",
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0",
+        "\"usdc_asset_id\""
+      ]
+    },
+    "272": {
+      "op": "dig 1",
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0",
+        "\"usdc_asset_id\"",
+        "usdc_id#0 (copy)"
+      ]
+    },
+    "274": {
+      "op": "app_global_put",
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0"
+      ]
+    },
+    "275": {
+      "op": "bytec_3 // \"total_fees_collected\"",
+      "defined_out": [
+        "\"total_fees_collected\"",
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0",
+        "\"total_fees_collected\""
+      ]
+    },
+    "276": {
+      "op": "bytec 4 // 0x0000000000000000",
+      "defined_out": [
+        "\"total_fees_collected\"",
+        "0x0000000000000000",
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0",
+        "\"total_fees_collected\"",
+        "0x0000000000000000"
+      ]
+    },
+    "278": {
+      "op": "app_global_put",
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0"
+      ]
+    },
+    "279": {
+      "op": "bytec 5 // \"escrow_app_id\"",
+      "defined_out": [
+        "\"escrow_app_id\"",
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0",
+        "\"escrow_app_id\""
+      ]
+    },
+    "281": {
+      "op": "intc_0 // 0",
+      "defined_out": [
+        "\"escrow_app_id\"",
+        "0",
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0",
+        "\"escrow_app_id\"",
+        "0"
+      ]
+    },
+    "282": {
+      "op": "app_global_put",
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0"
+      ]
+    },
+    "283": {
+      "op": "txn Sender",
+      "defined_out": [
+        "initial_fee_rate_bps#0",
+        "reinterpret_Encoded(uint8[32])%1#0",
+        "treasury#0",
+        "usdc_id#0"
+      ],
+      "stack_out": [
+        "initial_fee_rate_bps#0",
+        "treasury#0",
+        "usdc_id#0",
+        "reinterpret_Encoded(uint8[32])%1#0"
+      ]
+    },
+    "285": {
+      "op": "uncover 3",
+      "stack_out": [
+        "treasury#0",
+        "usdc_id#0",
+        "reinterpret_Encoded(uint8[32])%1#0",
+        "initial_fee_rate_bps#0"
+      ]
+    },
+    "287": {
+      "op": "concat",
+      "defined_out": [
+        "aggregate%head%1#0",
+        "treasury#0",
+        "usdc_id#0"
+      ],
+      "stack_out": [
+        "treasury#0",
+        "usdc_id#0",
+        "aggregate%head%1#0"
+      ]
+    },
+    "288": {
+      "op": "uncover 2",
+      "stack_out": [
+        "usdc_id#0",
+        "aggregate%head%1#0",
+        "treasury#0"
+      ]
+    },
+    "290": {
+      "op": "concat",
+      "defined_out": [
+        "aggregate%head%2#0",
+        "usdc_id#0"
+      ],
+      "stack_out": [
+        "usdc_id#0",
+        "aggregate%head%2#0"
+      ]
+    },
+    "291": {
+      "op": "swap",
+      "stack_out": [
+        "aggregate%head%2#0",
+        "usdc_id#0"
+      ]
+    },
+    "292": {
+      "op": "concat",
+      "defined_out": [
+        "aggregate%head%3#0"
+      ],
+      "stack_out": [
+        "aggregate%head%3#0"
+      ]
+    },
+    "293": {
+      "op": "pushbytes 0x6b0cef88 // method \"FeeConfigCreated(address,uint64,address,uint64)\"",
+      "defined_out": [
+        "Method(FeeConfigCreated(address,uint64,address,uint64))",
+        "aggregate%head%3#0"
+      ],
+      "stack_out": [
+        "aggregate%head%3#0",
+        "Method(FeeConfigCreated(address,uint64,address,uint64))"
+      ]
+    },
+    "299": {
+      "op": "swap",
+      "stack_out": [
+        "Method(FeeConfigCreated(address,uint64,address,uint64))",
+        "aggregate%head%3#0"
+      ]
+    },
+    "300": {
+      "op": "concat",
+      "defined_out": [
+        "event%0#0"
+      ],
+      "stack_out": [
+        "event%0#0"
+      ]
+    },
+    "301": {
+      "op": "log",
+      "stack_out": []
+    },
+    "302": {
+      "op": "intc_1 // 1",
+      "defined_out": [
+        "1"
+      ],
+      "stack_out": [
+        "1"
+      ]
+    },
+    "303": {
+      "op": "return",
+      "stack_out": []
+    },
+    "304": {
+      "subroutine": "fee_config.FeeConfig.calculate_fee[routing]",
+      "params": {},
+      "block": "calculate_fee",
+      "stack_in": [],
+      "op": "txna ApplicationArgs 1",
+      "defined_out": [
+        "tmp%0#0"
+      ],
+      "stack_out": [
+        "tmp%0#0"
+      ]
+    },
+    "307": {
+      "op": "dup",
+      "defined_out": [
+        "tmp%0#0",
+        "tmp%0#0 (copy)"
+      ],
+      "stack_out": [
+        "tmp%0#0",
+        "tmp%0#0 (copy)"
+      ]
+    },
+    "308": {
+      "op": "len",
+      "defined_out": [
+        "len%0#0",
+        "tmp%0#0"
+      ],
+      "stack_out": [
+        "tmp%0#0",
+        "len%0#0"
+      ]
+    },
+    "309": {
+      "op": "intc_2 // 8",
+      "defined_out": [
+        "8",
+        "len%0#0",
+        "tmp%0#0"
+      ],
+      "stack_out": [
+        "tmp%0#0",
+        "len%0#0",
+        "8"
+      ]
+    },
+    "310": {
+      "op": "==",
+      "defined_out": [
+        "eq%0#0",
+        "tmp%0#0"
+      ],
+      "stack_out": [
+        "tmp%0#0",
+        "eq%0#0"
+      ]
+    },
+    "311": {
+      "error": "invalid number of bytes for arc4.uint64",
+      "op": "assert // invalid number of bytes for arc4.uint64",
+      "stack_out": [
+        "tmp%0#0"
+      ]
+    },
+    "312": {
+      "callsub": "fee_config.FeeConfig.calculate_fee",
+      "op": "callsub fee_config.FeeConfig.calculate_fee",
+      "defined_out": [
+        "tmp%1#0"
+      ],
+      "stack_out": [
+        "tmp%1#0"
+      ]
+    },
+    "315": {
+      "op": "bytec 7 // 0x151f7c75",
+      "defined_out": [
+        "0x151f7c75",
+        "tmp%1#0"
+      ],
+      "stack_out": [
+        "tmp%1#0",
+        "0x151f7c75"
+      ]
+    },
+    "317": {
+      "op": "swap",
+      "stack_out": [
+        "0x151f7c75",
+        "tmp%1#0"
+      ]
+    },
+    "318": {
+      "op": "concat",
+      "defined_out": [
+        "tmp%2#0"
+      ],
+      "stack_out": [
+        "tmp%2#0"
+      ]
+    },
+    "319": {
+      "op": "log",
+      "stack_out": []
+    },
+    "320": {
+      "op": "intc_1 // 1",
+      "defined_out": [
+        "1"
+      ],
+      "stack_out": [
+        "1"
+      ]
+    },
+    "321": {
+      "op": "return",
+      "stack_out": []
+    },
+    "322": {
+      "subroutine": "fee_config.FeeConfig.calculate_seller_payout[routing]",
+      "params": {},
+      "block": "calculate_seller_payout",
+      "stack_in": [],
+      "op": "txna ApplicationArgs 1",
+      "defined_out": [
+        "amount_micro_usdc#0"
+      ],
+      "stack_out": [
+        "amount_micro_usdc#0"
+      ]
+    },
+    "325": {
+      "op": "dup",
+      "defined_out": [
+        "amount_micro_usdc#0",
+        "amount_micro_usdc#0 (copy)"
+      ],
+      "stack_out": [
+        "amount_micro_usdc#0",
+        "amount_micro_usdc#0 (copy)"
+      ]
+    },
+    "326": {
+      "op": "len",
+      "defined_out": [
+        "amount_micro_usdc#0",
+        "len%0#0"
+      ],
+      "stack_out": [
+        "amount_micro_usdc#0",
+        "len%0#0"
+      ]
+    },
+    "327": {
+      "op": "intc_2 // 8",
+      "defined_out": [
+        "8",
+        "amount_micro_usdc#0",
+        "len%0#0"
+      ],
+      "stack_out": [
+        "amount_micro_usdc#0",
+        "len%0#0",
+        "8"
+      ]
+    },
+    "328": {
+      "op": "==",
+      "defined_out": [
+        "amount_micro_usdc#0",
+        "eq%0#0"
+      ],
+      "stack_out": [
+        "amount_micro_usdc#0",
+        "eq%0#0"
+      ]
+    },
+    "329": {
+      "error": "invalid number of bytes for arc4.uint64",
+      "op": "assert // invalid number of bytes for arc4.uint64",
+      "stack_out": [
+        "amount_micro_usdc#0"
+      ]
+    },
+    "330": {
+      "op": "dup",
+      "stack_out": [
+        "amount_micro_usdc#0",
+        "amount_micro_usdc#0 (copy)"
+      ]
+    },
+    "331": {
+      "op": "btoi",
+      "defined_out": [
+        "amount#0",
+        "amount_micro_usdc#0"
+      ],
+      "stack_out": [
+        "amount_micro_usdc#0",
+        "amount#0"
+      ]
+    },
+    "332": {
+      "op": "swap",
+      "stack_out": [
+        "amount#0",
+        "amount_micro_usdc#0"
+      ]
+    },
+    "333": {
+      "callsub": "fee_config.FeeConfig.calculate_fee",
+      "op": "callsub fee_config.FeeConfig.calculate_fee",
+      "defined_out": [
+        "amount#0",
+        "tmp%1#1"
+      ],
+      "stack_out": [
+        "amount#0",
+        "tmp%1#1"
+      ]
+    },
+    "336": {
+      "op": "btoi",
+      "defined_out": [
+        "amount#0",
+        "fee#0"
+      ],
+      "stack_out": [
+        "amount#0",
+        "fee#0"
+      ]
+    },
+    "337": {
+      "op": "-",
+      "defined_out": [
+        "tmp%3#0"
+      ],
+      "stack_out": [
+        "tmp%3#0"
+      ]
+    },
+    "338": {
+      "op": "itob",
+      "defined_out": [
+        "aggregate%val_as_bytes%0#0"
+      ],
+      "stack_out": [
+        "aggregate%val_as_bytes%0#0"
+      ]
+    },
+    "339": {
+      "op": "bytec 7 // 0x151f7c75",
+      "defined_out": [
+        "0x151f7c75",
+        "aggregate%val_as_bytes%0#0"
+      ],
+      "stack_out": [
+        "aggregate%val_as_bytes%0#0",
+        "0x151f7c75"
+      ]
+    },
+    "341": {
+      "op": "swap",
+      "stack_out": [
+        "0x151f7c75",
+        "aggregate%val_as_bytes%0#0"
+      ]
+    },
+    "342": {
+      "op": "concat",
+      "defined_out": [
+        "tmp%2#0"
+      ],
+      "stack_out": [
+        "tmp%2#0"
+      ]
+    },
+    "343": {
+      "op": "log",
+      "stack_out": []
+    },
+    "344": {
+      "op": "intc_1 // 1",
+      "defined_out": [
+        "1"
+      ],
+      "stack_out": [
+        "1"
+      ]
+    },
+    "345": {
+      "op": "return",
+      "stack_out": []
+    },
+    "346": {
+      "subroutine": "fee_config.FeeConfig.set_fee_rate[routing]",
+      "params": {},
+      "block": "set_fee_rate",
+      "stack_in": [],
+      "op": "txna ApplicationArgs 1",
+      "defined_out": [
+        "new_rate_bps#0"
+      ],
+      "stack_out": [
+        "new_rate_bps#0"
+      ]
+    },
+    "349": {
+      "op": "dup",
+      "defined_out": [
+        "new_rate_bps#0",
+        "new_rate_bps#0 (copy)"
+      ],
+      "stack_out": [
+        "new_rate_bps#0",
+        "new_rate_bps#0 (copy)"
+      ]
+    },
+    "350": {
+      "op": "len",
+      "defined_out": [
+        "len%0#0",
+        "new_rate_bps#0"
+      ],
+      "stack_out": [
+        "new_rate_bps#0",
+        "len%0#0"
+      ]
+    },
+    "351": {
+      "op": "intc_2 // 8",
+      "defined_out": [
+        "8",
+        "len%0#0",
+        "new_rate_bps#0"
+      ],
+      "stack_out": [
+        "new_rate_bps#0",
+        "len%0#0",
+        "8"
+      ]
+    },
+    "352": {
+      "op": "==",
+      "defined_out": [
+        "eq%0#0",
+        "new_rate_bps#0"
+      ],
+      "stack_out": [
+        "new_rate_bps#0",
+        "eq%0#0"
+      ]
+    },
+    "353": {
+      "error": "invalid number of bytes for arc4.uint64",
+      "op": "assert // invalid number of bytes for arc4.uint64",
+      "stack_out": [
+        "new_rate_bps#0"
+      ]
+    },
+    "354": {
+      "op": "txn Sender",
+      "defined_out": [
+        "new_rate_bps#0",
+        "tmp%0#1"
+      ],
+      "stack_out": [
+        "new_rate_bps#0",
+        "tmp%0#1"
+      ]
+    },
+    "356": {
+      "op": "intc_0 // 0",
+      "defined_out": [
+        "0",
+        "new_rate_bps#0",
+        "tmp%0#1"
+      ],
+      "stack_out": [
+        "new_rate_bps#0",
+        "tmp%0#1",
+        "0"
+      ]
+    },
+    "357": {
+      "op": "bytec_1 // \"owner\"",
+      "defined_out": [
+        "\"owner\"",
+        "0",
+        "new_rate_bps#0",
+        "tmp%0#1"
+      ],
+      "stack_out": [
+        "new_rate_bps#0",
+        "tmp%0#1",
+        "0",
+        "\"owner\""
+      ]
+    },
+    "358": {
+      "op": "app_global_get_ex",
+      "defined_out": [
+        "maybe_exists%0#0",
+        "maybe_value%0#0",
+        "new_rate_bps#0",
+        "tmp%0#1"
+      ],
+      "stack_out": [
+        "new_rate_bps#0",
+        "tmp%0#1",
+        "maybe_value%0#0",
+        "maybe_exists%0#0"
+      ]
+    },
+    "359": {
+      "error": "check self.owner exists",
+      "op": "assert // check self.owner exists",
+      "stack_out": [
+        "new_rate_bps#0",
+        "tmp%0#1",
+        "maybe_value%0#0"
+      ]
+    },
+    "360": {
+      "op": "==",
+      "defined_out": [
+        "new_rate_bps#0",
+        "tmp%1#0"
+      ],
+      "stack_out": [
+        "new_rate_bps#0",
+        "tmp%1#0"
+      ]
+    },
+    "361": {
+      "error": "Only the contract owner can update the fee rate",
+      "op": "assert // Only the contract owner can update the fee rate",
+      "stack_out": [
+        "new_rate_bps#0"
+      ]
+    },
+    "362": {
+      "op": "dup",
+      "stack_out": [
+        "new_rate_bps#0",
+        "new_rate_bps#0 (copy)"
+      ]
+    },
+    "363": {
+      "op": "btoi",
+      "defined_out": [
+        "new_rate_bps#0",
+        "tmp%2#0"
+      ],
+      "stack_out": [
+        "new_rate_bps#0",
+        "tmp%2#0"
+      ]
+    },
+    "364": {
+      "op": "pushint 1000",
+      "defined_out": [
+        "1000",
+        "new_rate_bps#0",
+        "tmp%2#0"
+      ],
+      "stack_out": [
+        "new_rate_bps#0",
+        "tmp%2#0",
+        "1000"
+      ]
+    },
+    "367": {
+      "op": "<=",
+      "defined_out": [
+        "new_rate_bps#0",
+        "tmp%3#0"
+      ],
+      "stack_out": [
+        "new_rate_bps#0",
+        "tmp%3#0"
+      ]
+    },
+    "368": {
+      "error": "Fee rate cannot exceed 10% (1000 basis points)",
+      "op": "assert // Fee rate cannot exceed 10% (1000 basis points)",
+      "stack_out": [
+        "new_rate_bps#0"
+      ]
+    },
+    "369": {
+      "op": "intc_0 // 0",
+      "stack_out": [
+        "new_rate_bps#0",
+        "0"
+      ]
+    },
+    "370": {
+      "op": "bytec_0 // \"fee_rate_bps\"",
+      "defined_out": [
+        "\"fee_rate_bps\"",
+        "0",
+        "new_rate_bps#0"
+      ],
+      "stack_out": [
+        "new_rate_bps#0",
+        "0",
+        "\"fee_rate_bps\""
+      ]
+    },
+    "371": {
+      "op": "app_global_get_ex",
+      "defined_out": [
+        "maybe_exists%1#0",
+        "new_rate_bps#0",
+        "old_rate#0"
+      ],
+      "stack_out": [
+        "new_rate_bps#0",
+        "old_rate#0",
+        "maybe_exists%1#0"
+      ]
+    },
+    "372": {
+      "error": "check self.fee_rate_bps exists",
+      "op": "assert // check self.fee_rate_bps exists",
+      "stack_out": [
+        "new_rate_bps#0",
+        "old_rate#0"
+      ]
+    },
+    "373": {
+      "op": "bytec_0 // \"fee_rate_bps\"",
+      "stack_out": [
+        "new_rate_bps#0",
+        "old_rate#0",
+        "\"fee_rate_bps\""
+      ]
+    },
+    "374": {
+      "op": "dig 2",
+      "stack_out": [
+        "new_rate_bps#0",
+        "old_rate#0",
+        "\"fee_rate_bps\"",
+        "new_rate_bps#0 (copy)"
+      ]
+    },
+    "376": {
+      "op": "app_global_put",
+      "stack_out": [
+        "new_rate_bps#0",
+        "old_rate#0"
+      ]
+    },
+    "377": {
+      "op": "swap",
+      "stack_out": [
+        "old_rate#0",
+        "new_rate_bps#0"
+      ]
+    },
+    "378": {
+      "op": "concat",
+      "defined_out": [
+        "aggregate%head%1#0"
+      ],
+      "stack_out": [
+        "aggregate%head%1#0"
+      ]
+    },
+    "379": {
+      "op": "pushbytes 0xd8f7a6c8 // method \"FeeRateUpdated(uint64,uint64)\"",
+      "defined_out": [
+        "Method(FeeRateUpdated(uint64,uint64))",
+        "aggregate%head%1#0"
+      ],
+      "stack_out": [
+        "aggregate%head%1#0",
+        "Method(FeeRateUpdated(uint64,uint64))"
+      ]
+    },
+    "385": {
+      "op": "swap",
+      "stack_out": [
+        "Method(FeeRateUpdated(uint64,uint64))",
+        "aggregate%head%1#0"
+      ]
+    },
+    "386": {
+      "op": "concat",
+      "defined_out": [
+        "event%0#0"
+      ],
+      "stack_out": [
+        "event%0#0"
+      ]
+    },
+    "387": {
+      "op": "log",
+      "stack_out": []
+    },
+    "388": {
+      "op": "intc_1 // 1",
+      "defined_out": [
+        "1"
+      ],
+      "stack_out": [
+        "1"
+      ]
+    },
+    "389": {
+      "op": "return",
+      "stack_out": []
+    },
+    "390": {
+      "subroutine": "fee_config.FeeConfig.set_treasury[routing]",
+      "params": {},
+      "block": "set_treasury",
+      "stack_in": [],
+      "op": "txna ApplicationArgs 1",
+      "defined_out": [
+        "new_treasury#0"
+      ],
+      "stack_out": [
+        "new_treasury#0"
+      ]
+    },
+    "393": {
+      "op": "dup",
+      "defined_out": [
+        "new_treasury#0",
+        "new_treasury#0 (copy)"
+      ],
+      "stack_out": [
+        "new_treasury#0",
+        "new_treasury#0 (copy)"
+      ]
+    },
+    "394": {
+      "op": "len",
+      "defined_out": [
+        "len%0#0",
+        "new_treasury#0"
+      ],
+      "stack_out": [
+        "new_treasury#0",
+        "len%0#0"
+      ]
+    },
+    "395": {
+      "op": "intc_3 // 32",
+      "defined_out": [
+        "32",
+        "len%0#0",
+        "new_treasury#0"
+      ],
+      "stack_out": [
+        "new_treasury#0",
+        "len%0#0",
+        "32"
+      ]
+    },
+    "396": {
+      "op": "==",
+      "defined_out": [
+        "eq%0#0",
+        "new_treasury#0"
+      ],
+      "stack_out": [
+        "new_treasury#0",
+        "eq%0#0"
+      ]
+    },
+    "397": {
+      "error": "invalid number of bytes for arc4.static_array<arc4.uint8, 32>",
+      "op": "assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>",
+      "stack_out": [
+        "new_treasury#0"
+      ]
+    },
+    "398": {
+      "op": "txn Sender",
+      "defined_out": [
+        "new_treasury#0",
+        "tmp%0#1"
+      ],
+      "stack_out": [
+        "new_treasury#0",
+        "tmp%0#1"
+      ]
+    },
+    "400": {
+      "op": "intc_0 // 0",
+      "defined_out": [
+        "0",
+        "new_treasury#0",
+        "tmp%0#1"
+      ],
+      "stack_out": [
+        "new_treasury#0",
+        "tmp%0#1",
+        "0"
+      ]
+    },
+    "401": {
+      "op": "bytec_1 // \"owner\"",
+      "defined_out": [
+        "\"owner\"",
+        "0",
+        "new_treasury#0",
+        "tmp%0#1"
+      ],
+      "stack_out": [
+        "new_treasury#0",
+        "tmp%0#1",
+        "0",
+        "\"owner\""
+      ]
+    },
+    "402": {
+      "op": "app_global_get_ex",
+      "defined_out": [
+        "maybe_exists%0#0",
+        "maybe_value%0#0",
+        "new_treasury#0",
+        "tmp%0#1"
+      ],
+      "stack_out": [
+        "new_treasury#0",
+        "tmp%0#1",
+        "maybe_value%0#0",
+        "maybe_exists%0#0"
+      ]
+    },
+    "403": {
+      "error": "check self.owner exists",
+      "op": "assert // check self.owner exists",
+      "stack_out": [
+        "new_treasury#0",
+        "tmp%0#1",
+        "maybe_value%0#0"
+      ]
+    },
+    "404": {
+      "op": "==",
+      "defined_out": [
+        "new_treasury#0",
+        "tmp%1#0"
+      ],
+      "stack_out": [
+        "new_treasury#0",
+        "tmp%1#0"
+      ]
+    },
+    "405": {
+      "error": "Only the contract owner can update the treasury address",
+      "op": "assert // Only the contract owner can update the treasury address",
+      "stack_out": [
+        "new_treasury#0"
+      ]
+    },
+    "406": {
+      "op": "intc_0 // 0",
+      "stack_out": [
+        "new_treasury#0",
+        "0"
+      ]
+    },
+    "407": {
+      "op": "bytec_2 // \"treasury_address\"",
+      "defined_out": [
+        "\"treasury_address\"",
+        "0",
+        "new_treasury#0"
+      ],
+      "stack_out": [
+        "new_treasury#0",
+        "0",
+        "\"treasury_address\""
+      ]
+    },
+    "408": {
+      "op": "app_global_get_ex",
+      "defined_out": [
+        "maybe_exists%1#0",
+        "new_treasury#0",
+        "old_treasury#0"
+      ],
+      "stack_out": [
+        "new_treasury#0",
+        "old_treasury#0",
+        "maybe_exists%1#0"
+      ]
+    },
+    "409": {
+      "error": "check self.treasury_address exists",
+      "op": "assert // check self.treasury_address exists",
+      "stack_out": [
+        "new_treasury#0",
+        "old_treasury#0"
+      ]
+    },
+    "410": {
+      "op": "bytec_2 // \"treasury_address\"",
+      "stack_out": [
+        "new_treasury#0",
+        "old_treasury#0",
+        "\"treasury_address\""
+      ]
+    },
+    "411": {
+      "op": "dig 2",
+      "stack_out": [
+        "new_treasury#0",
+        "old_treasury#0",
+        "\"treasury_address\"",
+        "new_treasury#0 (copy)"
+      ]
+    },
+    "413": {
+      "op": "app_global_put",
+      "stack_out": [
+        "new_treasury#0",
+        "old_treasury#0"
+      ]
+    },
+    "414": {
+      "op": "swap",
+      "stack_out": [
+        "old_treasury#0",
+        "new_treasury#0"
+      ]
+    },
+    "415": {
+      "op": "concat",
+      "defined_out": [
+        "aggregate%head%1#0"
+      ],
+      "stack_out": [
+        "aggregate%head%1#0"
+      ]
+    },
+    "416": {
+      "op": "pushbytes 0x14e8e681 // method \"TreasuryUpdated(address,address)\"",
+      "defined_out": [
+        "Method(TreasuryUpdated(address,address))",
+        "aggregate%head%1#0"
+      ],
+      "stack_out": [
+        "aggregate%head%1#0",
+        "Method(TreasuryUpdated(address,address))"
+      ]
+    },
+    "422": {
+      "op": "swap",
+      "stack_out": [
+        "Method(TreasuryUpdated(address,address))",
+        "aggregate%head%1#0"
+      ]
+    },
+    "423": {
+      "op": "concat",
+      "defined_out": [
+        "event%0#0"
+      ],
+      "stack_out": [
+        "event%0#0"
+      ]
+    },
+    "424": {
+      "op": "log",
+      "stack_out": []
+    },
+    "425": {
+      "op": "intc_1 // 1",
+      "defined_out": [
+        "1"
+      ],
+      "stack_out": [
+        "1"
+      ]
+    },
+    "426": {
+      "op": "return",
+      "stack_out": []
+    },
+    "427": {
+      "subroutine": "fee_config.FeeConfig.set_escrow_app[routing]",
+      "params": {},
+      "block": "set_escrow_app",
+      "stack_in": [],
+      "op": "txna ApplicationArgs 1",
+      "defined_out": [
+        "tmp%0#0"
+      ],
+      "stack_out": [
+        "tmp%0#0"
+      ]
+    },
+    "430": {
+      "op": "dup",
+      "defined_out": [
+        "tmp%0#0",
+        "tmp%0#0 (copy)"
+      ],
+      "stack_out": [
+        "tmp%0#0",
+        "tmp%0#0 (copy)"
+      ]
+    },
+    "431": {
+      "op": "len",
+      "defined_out": [
+        "len%0#0",
+        "tmp%0#0"
+      ],
+      "stack_out": [
+        "tmp%0#0",
+        "len%0#0"
+      ]
+    },
+    "432": {
+      "op": "intc_2 // 8",
+      "defined_out": [
+        "8",
+        "len%0#0",
+        "tmp%0#0"
+      ],
+      "stack_out": [
+        "tmp%0#0",
+        "len%0#0",
+        "8"
+      ]
+    },
+    "433": {
+      "op": "==",
+      "defined_out": [
+        "eq%0#0",
+        "tmp%0#0"
+      ],
+      "stack_out": [
+        "tmp%0#0",
+        "eq%0#0"
+      ]
+    },
+    "434": {
+      "error": "invalid number of bytes for arc4.uint64",
+      "op": "assert // invalid number of bytes for arc4.uint64",
+      "stack_out": [
+        "tmp%0#0"
+      ]
+    },
+    "435": {
+      "op": "dup",
+      "stack_out": [
+        "tmp%0#0",
+        "tmp%0#0 (copy)"
+      ]
+    },
+    "436": {
+      "op": "btoi",
+      "defined_out": [
+        "escrow_app_id#0",
+        "tmp%0#0"
+      ],
+      "stack_out": [
+        "tmp%0#0",
+        "escrow_app_id#0"
+      ]
+    },
+    "437": {
+      "op": "txn Sender",
+      "defined_out": [
+        "escrow_app_id#0",
+        "tmp%0#0",
+        "tmp%0#1"
+      ],
+      "stack_out": [
+        "tmp%0#0",
+        "escrow_app_id#0",
+        "tmp%0#1"
+      ]
+    },
+    "439": {
+      "op": "intc_0 // 0",
+      "defined_out": [
+        "0",
+        "escrow_app_id#0",
+        "tmp%0#0",
+        "tmp%0#1"
+      ],
+      "stack_out": [
+        "tmp%0#0",
+        "escrow_app_id#0",
+        "tmp%0#1",
+        "0"
+      ]
+    },
+    "440": {
+      "op": "bytec_1 // \"owner\"",
+      "defined_out": [
+        "\"owner\"",
+        "0",
+        "escrow_app_id#0",
+        "tmp%0#0",
+        "tmp%0#1"
+      ],
+      "stack_out": [
+        "tmp%0#0",
+        "escrow_app_id#0",
+        "tmp%0#1",
+        "0",
+        "\"owner\""
+      ]
+    },
+    "441": {
+      "op": "app_global_get_ex",
+      "defined_out": [
+        "escrow_app_id#0",
+        "maybe_exists%0#0",
+        "maybe_value%0#0",
+        "tmp%0#0",
+        "tmp%0#1"
+      ],
+      "stack_out": [
+        "tmp%0#0",
+        "escrow_app_id#0",
+        "tmp%0#1",
+        "maybe_value%0#0",
+        "maybe_exists%0#0"
+      ]
+    },
+    "442": {
+      "error": "check self.owner exists",
+      "op": "assert // check self.owner exists",
+      "stack_out": [
+        "tmp%0#0",
+        "escrow_app_id#0",
+        "tmp%0#1",
+        "maybe_value%0#0"
+      ]
+    },
+    "443": {
+      "op": "==",
+      "defined_out": [
+        "escrow_app_id#0",
+        "tmp%0#0",
+        "tmp%1#1"
+      ],
+      "stack_out": [
+        "tmp%0#0",
+        "escrow_app_id#0",
+        "tmp%1#1"
+      ]
+    },
+    "444": {
+      "error": "Only the contract owner can set the Escrow app ID",
+      "op": "assert // Only the contract owner can set the Escrow app ID",
+      "stack_out": [
+        "tmp%0#0",
+        "escrow_app_id#0"
+      ]
+    },
+    "445": {
+      "op": "bytec 5 // \"escrow_app_id\"",
+      "defined_out": [
+        "\"escrow_app_id\"",
+        "escrow_app_id#0",
+        "tmp%0#0"
+      ],
+      "stack_out": [
+        "tmp%0#0",
+        "escrow_app_id#0",
+        "\"escrow_app_id\""
+      ]
+    },
+    "447": {
+      "op": "swap",
+      "stack_out": [
+        "tmp%0#0",
+        "\"escrow_app_id\"",
+        "escrow_app_id#0"
+      ]
+    },
+    "448": {
+      "op": "app_global_put",
+      "stack_out": [
+        "tmp%0#0"
+      ]
+    },
+    "449": {
+      "op": "pushbytes 0x965bfffb // method \"EscrowAppSet(uint64)\"",
+      "defined_out": [
+        "Method(EscrowAppSet(uint64))",
+        "tmp%0#0"
+      ],
+      "stack_out": [
+        "tmp%0#0",
+        "Method(EscrowAppSet(uint64))"
+      ]
+    },
+    "455": {
+      "op": "swap",
+      "stack_out": [
+        "Method(EscrowAppSet(uint64))",
+        "tmp%0#0"
+      ]
+    },
+    "456": {
+      "op": "concat",
+      "defined_out": [
+        "event%0#0"
+      ],
+      "stack_out": [
+        "event%0#0"
+      ]
+    },
+    "457": {
+      "op": "log",
+      "stack_out": []
+    },
+    "458": {
+      "op": "intc_1 // 1",
+      "defined_out": [
+        "1"
+      ],
+      "stack_out": [
+        "1"
+      ]
+    },
+    "459": {
+      "op": "return",
+      "stack_out": []
+    },
+    "460": {
+      "subroutine": "fee_config.FeeConfig.record_fee_collected[routing]",
+      "params": {},
+      "block": "record_fee_collected",
+      "stack_in": [],
+      "op": "txna ApplicationArgs 1"
+    },
+    "463": {
+      "op": "dup",
+      "defined_out": [
+        "fee_amount_micro_usdc#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "fee_amount_micro_usdc#0"
+      ]
+    },
+    "464": {
+      "op": "len",
+      "defined_out": [
+        "fee_amount_micro_usdc#0",
+        "len%0#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "len%0#0"
+      ]
+    },
+    "465": {
+      "op": "intc_2 // 8",
+      "defined_out": [
+        "8",
+        "fee_amount_micro_usdc#0",
+        "len%0#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "len%0#0",
+        "8"
+      ]
+    },
+    "466": {
+      "op": "==",
+      "defined_out": [
+        "eq%0#0",
+        "fee_amount_micro_usdc#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "eq%0#0"
+      ]
+    },
+    "467": {
+      "error": "invalid number of bytes for arc4.uint64",
+      "op": "assert // invalid number of bytes for arc4.uint64",
+      "stack_out": [
+        "fee_amount_micro_usdc#0"
+      ]
+    },
+    "468": {
+      "op": "intc_0 // 0",
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "0"
+      ]
+    },
+    "469": {
+      "op": "bytec 5 // \"escrow_app_id\"",
+      "defined_out": [
+        "\"escrow_app_id\"",
+        "0",
+        "fee_amount_micro_usdc#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "0",
+        "\"escrow_app_id\""
+      ]
+    },
+    "471": {
+      "op": "app_global_get_ex",
+      "defined_out": [
+        "escrow_id#0",
+        "fee_amount_micro_usdc#0",
+        "maybe_exists%0#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "maybe_exists%0#0"
+      ]
+    },
+    "472": {
+      "op": "swap",
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "maybe_exists%0#0",
+        "escrow_id#0"
+      ]
+    },
+    "473": {
+      "op": "dup",
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "maybe_exists%0#0",
+        "escrow_id#0",
+        "escrow_id#0 (copy)"
+      ]
+    },
+    "474": {
+      "op": "uncover 2",
+      "defined_out": [
+        "escrow_id#0",
+        "fee_amount_micro_usdc#0",
+        "maybe_exists%0#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "escrow_id#0",
+        "maybe_exists%0#0"
+      ]
+    },
+    "476": {
+      "error": "check self.escrow_app_id exists",
+      "op": "assert // check self.escrow_app_id exists",
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "escrow_id#0"
+      ]
+    },
+    "477": {
+      "op": "global CallerApplicationID",
+      "defined_out": [
+        "caller_app_id#0",
+        "escrow_id#0",
+        "fee_amount_micro_usdc#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "escrow_id#0",
+        "caller_app_id#0"
+      ]
+    },
+    "479": {
+      "op": "swap",
+      "defined_out": [
+        "caller_app_id#0",
+        "escrow_id#0",
+        "fee_amount_micro_usdc#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "escrow_id#0"
+      ]
+    },
+    "480": {
+      "op": "txn Sender",
+      "defined_out": [
+        "caller_app_id#0",
+        "escrow_id#0",
+        "fee_amount_micro_usdc#0",
+        "tmp%1#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "escrow_id#0",
+        "tmp%1#0"
+      ]
+    },
+    "482": {
+      "op": "global CurrentApplicationAddress",
+      "defined_out": [
+        "caller_app_id#0",
+        "escrow_id#0",
+        "fee_amount_micro_usdc#0",
+        "tmp%1#0",
+        "tmp%2#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "escrow_id#0",
+        "tmp%1#0",
+        "tmp%2#0"
+      ]
+    },
+    "484": {
+      "op": "==",
+      "defined_out": [
+        "caller_app_id#0",
+        "escrow_id#0",
+        "fee_amount_micro_usdc#0",
+        "is_self_call#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "escrow_id#0",
+        "is_self_call#0"
+      ]
+    },
+    "485": {
+      "op": "swap",
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "escrow_id#0"
+      ]
+    },
+    "486": {
+      "op": "bz record_fee_collected_bool_false@4",
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0"
+      ]
+    },
+    "489": {
+      "op": "dig 1",
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "caller_app_id#0"
+      ]
+    },
+    "491": {
+      "op": "dig 3",
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "caller_app_id#0",
+        "escrow_id#0"
+      ]
+    },
+    "493": {
+      "op": "==",
+      "defined_out": [
+        "caller_app_id#0",
+        "escrow_id#0",
+        "fee_amount_micro_usdc#0",
+        "is_self_call#0",
+        "tmp%5#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "tmp%5#0"
+      ]
+    },
+    "494": {
+      "op": "bz record_fee_collected_bool_false@4",
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0"
+      ]
+    },
+    "497": {
+      "op": "intc_1 // 1",
+      "defined_out": [
+        "caller_app_id#0",
+        "escrow_id#0",
+        "fee_amount_micro_usdc#0",
+        "is_escrow_call#0",
+        "is_self_call#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "is_escrow_call#0"
+      ]
+    },
+    "498": {
+      "block": "record_fee_collected_bool_merge@5",
+      "stack_in": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "is_escrow_call#0"
+      ],
+      "op": "dig 1",
+      "defined_out": [
+        "is_self_call#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "is_escrow_call#0",
+        "is_self_call#0"
+      ]
+    },
+    "500": {
+      "op": "||",
+      "defined_out": [
+        "is_self_call#0",
+        "tmp%6#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "tmp%6#0"
+      ]
+    },
+    "501": {
+      "error": "Only the Escrow contract can record fees",
+      "op": "assert // Only the Escrow contract can record fees",
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0"
+      ]
+    },
+    "502": {
+      "op": "dig 3",
+      "defined_out": [
+        "fee_amount_micro_usdc#0",
+        "is_self_call#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "fee_amount_micro_usdc#0"
+      ]
+    },
+    "504": {
+      "op": "dup",
+      "defined_out": [
+        "fee_amount_micro_usdc#0",
+        "fee_amount_micro_usdc#0 (copy)",
+        "is_self_call#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "fee_amount_micro_usdc#0",
+        "fee_amount_micro_usdc#0 (copy)"
+      ]
+    },
+    "505": {
+      "op": "btoi",
+      "defined_out": [
+        "fee_amount#0",
+        "fee_amount_micro_usdc#0",
+        "is_self_call#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "fee_amount_micro_usdc#0",
+        "fee_amount#0"
+      ]
+    },
+    "506": {
+      "op": "intc_0 // 0",
+      "defined_out": [
+        "0",
+        "fee_amount#0",
+        "fee_amount_micro_usdc#0",
+        "is_self_call#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "fee_amount_micro_usdc#0",
+        "fee_amount#0",
+        "0"
+      ]
+    },
+    "507": {
+      "op": "bytec_3 // \"total_fees_collected\"",
+      "defined_out": [
+        "\"total_fees_collected\"",
+        "0",
+        "fee_amount#0",
+        "fee_amount_micro_usdc#0",
+        "is_self_call#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "fee_amount_micro_usdc#0",
+        "fee_amount#0",
+        "0",
+        "\"total_fees_collected\""
+      ]
+    },
+    "508": {
+      "op": "app_global_get_ex",
+      "defined_out": [
+        "fee_amount#0",
+        "fee_amount_micro_usdc#0",
+        "is_self_call#0",
+        "maybe_exists%1#0",
+        "maybe_value%1#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "fee_amount_micro_usdc#0",
+        "fee_amount#0",
+        "maybe_value%1#0",
+        "maybe_exists%1#0"
+      ]
+    },
+    "509": {
+      "error": "check self.total_fees_collected exists",
+      "op": "assert // check self.total_fees_collected exists",
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "fee_amount_micro_usdc#0",
+        "fee_amount#0",
+        "maybe_value%1#0"
+      ]
+    },
+    "510": {
+      "op": "btoi",
+      "defined_out": [
+        "current_total#0",
+        "fee_amount#0",
+        "fee_amount_micro_usdc#0",
+        "is_self_call#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "fee_amount_micro_usdc#0",
+        "fee_amount#0",
+        "current_total#0"
+      ]
+    },
+    "511": {
+      "op": "addw",
+      "defined_out": [
+        "carry#0",
+        "fee_amount_micro_usdc#0",
+        "is_self_call#0",
+        "new_total#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "fee_amount_micro_usdc#0",
+        "carry#0",
+        "new_total#0"
+      ]
+    },
+    "512": {
+      "op": "swap",
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "fee_amount_micro_usdc#0",
+        "new_total#0",
+        "carry#0"
+      ]
+    },
+    "513": {
+      "op": "!",
+      "defined_out": [
+        "fee_amount_micro_usdc#0",
+        "is_self_call#0",
+        "new_total#0",
+        "tmp%11#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "fee_amount_micro_usdc#0",
+        "new_total#0",
+        "tmp%11#0"
+      ]
+    },
+    "514": {
+      "error": "Fee accumulator overflow",
+      "op": "assert // Fee accumulator overflow",
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "fee_amount_micro_usdc#0",
+        "new_total#0"
+      ]
+    },
+    "515": {
+      "op": "itob",
+      "defined_out": [
+        "aggregate%val_as_bytes%0#0",
+        "fee_amount_micro_usdc#0",
+        "is_self_call#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "fee_amount_micro_usdc#0",
+        "aggregate%val_as_bytes%0#0"
+      ]
+    },
+    "516": {
+      "op": "bytec_3 // \"total_fees_collected\"",
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "fee_amount_micro_usdc#0",
+        "aggregate%val_as_bytes%0#0",
+        "\"total_fees_collected\""
+      ]
+    },
+    "517": {
+      "op": "dig 1",
+      "defined_out": [
+        "\"total_fees_collected\"",
+        "aggregate%val_as_bytes%0#0",
+        "aggregate%val_as_bytes%0#0 (copy)",
+        "fee_amount_micro_usdc#0",
+        "is_self_call#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "fee_amount_micro_usdc#0",
+        "aggregate%val_as_bytes%0#0",
+        "\"total_fees_collected\"",
+        "aggregate%val_as_bytes%0#0 (copy)"
+      ]
+    },
+    "519": {
+      "op": "app_global_put",
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "fee_amount_micro_usdc#0",
+        "aggregate%val_as_bytes%0#0"
+      ]
+    },
+    "520": {
+      "op": "concat",
+      "defined_out": [
+        "aggregate%head%1#0",
+        "fee_amount_micro_usdc#0",
+        "is_self_call#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "aggregate%head%1#0"
+      ]
+    },
+    "521": {
+      "op": "pushbytes 0x6367bc93 // method \"FeeCollected(uint64,uint64)\"",
+      "defined_out": [
+        "Method(FeeCollected(uint64,uint64))",
+        "aggregate%head%1#0",
+        "fee_amount_micro_usdc#0",
+        "is_self_call#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "aggregate%head%1#0",
+        "Method(FeeCollected(uint64,uint64))"
+      ]
+    },
+    "527": {
+      "op": "swap",
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "Method(FeeCollected(uint64,uint64))",
+        "aggregate%head%1#0"
+      ]
+    },
+    "528": {
+      "op": "concat",
+      "defined_out": [
+        "event%0#0",
+        "fee_amount_micro_usdc#0",
+        "is_self_call#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "event%0#0"
+      ]
+    },
+    "529": {
+      "op": "log",
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0"
+      ]
+    },
+    "530": {
+      "op": "intc_1 // 1",
+      "defined_out": [
+        "1",
+        "fee_amount_micro_usdc#0",
+        "is_self_call#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "1"
+      ]
+    },
+    "531": {
+      "op": "return",
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0"
+      ]
+    },
+    "532": {
+      "block": "record_fee_collected_bool_false@4",
+      "stack_in": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0"
+      ],
+      "op": "intc_0 // 0",
+      "defined_out": [
+        "is_escrow_call#0"
+      ],
+      "stack_out": [
+        "fee_amount_micro_usdc#0",
+        "escrow_id#0",
+        "caller_app_id#0",
+        "is_self_call#0",
+        "is_escrow_call#0"
+      ]
+    },
+    "533": {
+      "op": "b record_fee_collected_bool_merge@5"
+    },
+    "536": {
+      "subroutine": "fee_config.FeeConfig.get_config[routing]",
+      "params": {},
+      "block": "get_config",
+      "stack_in": [],
+      "op": "intc_0 // 0",
+      "defined_out": [
+        "0"
+      ],
+      "stack_out": [
+        "0"
+      ]
+    },
+    "537": {
+      "op": "bytec_0 // \"fee_rate_bps\"",
+      "defined_out": [
+        "\"fee_rate_bps\"",
+        "0"
+      ],
+      "stack_out": [
+        "0",
+        "\"fee_rate_bps\""
+      ]
+    },
+    "538": {
+      "op": "app_global_get_ex",
+      "defined_out": [
+        "maybe_exists%0#0",
+        "maybe_value%0#0"
+      ],
+      "stack_out": [
+        "maybe_value%0#0",
+        "maybe_exists%0#0"
+      ]
+    },
+    "539": {
+      "error": "check self.fee_rate_bps exists",
+      "op": "assert // check self.fee_rate_bps exists",
+      "stack_out": [
+        "maybe_value%0#0"
+      ]
+    },
+    "540": {
+      "op": "intc_0 // 0",
+      "stack_out": [
+        "maybe_value%0#0",
+        "0"
+      ]
+    },
+    "541": {
+      "op": "bytec_2 // \"treasury_address\"",
+      "defined_out": [
+        "\"treasury_address\"",
+        "0",
+        "maybe_value%0#0"
+      ],
+      "stack_out": [
+        "maybe_value%0#0",
+        "0",
+        "\"treasury_address\""
+      ]
+    },
+    "542": {
+      "op": "app_global_get_ex",
+      "defined_out": [
+        "maybe_exists%1#0",
+        "maybe_value%0#0",
+        "maybe_value%1#0"
+      ],
+      "stack_out": [
+        "maybe_value%0#0",
+        "maybe_value%1#0",
+        "maybe_exists%1#0"
+      ]
+    },
+    "543": {
+      "error": "check self.treasury_address exists",
+      "op": "assert // check self.treasury_address exists",
+      "stack_out": [
+        "maybe_value%0#0",
+        "maybe_value%1#0"
+      ]
+    },
+    "544": {
+      "op": "intc_0 // 0",
+      "stack_out": [
+        "maybe_value%0#0",
+        "maybe_value%1#0",
+        "0"
+      ]
+    },
+    "545": {
+      "op": "bytec_3 // \"total_fees_collected\"",
+      "defined_out": [
+        "\"total_fees_collected\"",
+        "0",
+        "maybe_value%0#0",
+        "maybe_value%1#0"
+      ],
+      "stack_out": [
+        "maybe_value%0#0",
+        "maybe_value%1#0",
+        "0",
+        "\"total_fees_collected\""
+      ]
+    },
+    "546": {
+      "op": "app_global_get_ex",
+      "defined_out": [
+        "maybe_exists%2#0",
+        "maybe_value%0#0",
+        "maybe_value%1#0",
+        "maybe_value%2#0"
+      ],
+      "stack_out": [
+        "maybe_value%0#0",
+        "maybe_value%1#0",
+        "maybe_value%2#0",
+        "maybe_exists%2#0"
+      ]
+    },
+    "547": {
+      "error": "check self.total_fees_collected exists",
+      "op": "assert // check self.total_fees_collected exists",
+      "stack_out": [
+        "maybe_value%0#0",
+        "maybe_value%1#0",
+        "maybe_value%2#0"
+      ]
+    },
+    "548": {
+      "op": "intc_0 // 0",
+      "stack_out": [
+        "maybe_value%0#0",
+        "maybe_value%1#0",
+        "maybe_value%2#0",
+        "0"
+      ]
+    },
+    "549": {
+      "op": "bytec 6 // \"usdc_asset_id\"",
+      "defined_out": [
+        "\"usdc_asset_id\"",
+        "0",
+        "maybe_value%0#0",
+        "maybe_value%1#0",
+        "maybe_value%2#0"
+      ],
+      "stack_out": [
+        "maybe_value%0#0",
+        "maybe_value%1#0",
+        "maybe_value%2#0",
+        "0",
+        "\"usdc_asset_id\""
+      ]
+    },
+    "551": {
+      "op": "app_global_get_ex",
+      "defined_out": [
+        "maybe_exists%3#0",
+        "maybe_value%0#0",
+        "maybe_value%1#0",
+        "maybe_value%2#0",
+        "maybe_value%3#0"
+      ],
+      "stack_out": [
+        "maybe_value%0#0",
+        "maybe_value%1#0",
+        "maybe_value%2#0",
+        "maybe_value%3#0",
+        "maybe_exists%3#0"
+      ]
+    },
+    "552": {
+      "error": "check self.usdc_asset_id exists",
+      "op": "assert // check self.usdc_asset_id exists",
+      "stack_out": [
+        "maybe_value%0#0",
+        "maybe_value%1#0",
+        "maybe_value%2#0",
+        "maybe_value%3#0"
+      ]
+    },
+    "553": {
+      "op": "uncover 3",
+      "stack_out": [
+        "maybe_value%1#0",
+        "maybe_value%2#0",
+        "maybe_value%3#0",
+        "maybe_value%0#0"
+      ]
+    },
+    "555": {
+      "op": "uncover 3",
+      "stack_out": [
+        "maybe_value%2#0",
+        "maybe_value%3#0",
+        "maybe_value%0#0",
+        "maybe_value%1#0"
+      ]
+    },
+    "557": {
+      "op": "concat",
+      "defined_out": [
+        "aggregate%head%1#0",
+        "maybe_value%2#0",
+        "maybe_value%3#0"
+      ],
+      "stack_out": [
+        "maybe_value%2#0",
+        "maybe_value%3#0",
+        "aggregate%head%1#0"
+      ]
+    },
+    "558": {
+      "op": "uncover 2",
+      "stack_out": [
+        "maybe_value%3#0",
+        "aggregate%head%1#0",
+        "maybe_value%2#0"
+      ]
+    },
+    "560": {
+      "op": "concat",
+      "defined_out": [
+        "aggregate%head%2#0",
+        "maybe_value%3#0"
+      ],
+      "stack_out": [
+        "maybe_value%3#0",
+        "aggregate%head%2#0"
+      ]
+    },
+    "561": {
+      "op": "swap",
+      "stack_out": [
+        "aggregate%head%2#0",
+        "maybe_value%3#0"
+      ]
+    },
+    "562": {
+      "op": "concat",
+      "defined_out": [
+        "aggregate%head%3#0"
+      ],
+      "stack_out": [
+        "aggregate%head%3#0"
+      ]
+    },
+    "563": {
+      "op": "bytec 7 // 0x151f7c75",
+      "defined_out": [
+        "0x151f7c75",
+        "aggregate%head%3#0"
+      ],
+      "stack_out": [
+        "aggregate%head%3#0",
+        "0x151f7c75"
+      ]
+    },
+    "565": {
+      "op": "swap",
+      "stack_out": [
+        "0x151f7c75",
+        "aggregate%head%3#0"
+      ]
+    },
+    "566": {
+      "op": "concat",
+      "defined_out": [
+        "tmp%1#0"
+      ],
+      "stack_out": [
+        "tmp%1#0"
+      ]
+    },
+    "567": {
+      "op": "log",
+      "stack_out": []
+    },
+    "568": {
+      "op": "intc_1 // 1",
+      "defined_out": [
+        "1"
+      ],
+      "stack_out": [
+        "1"
+      ]
+    },
+    "569": {
+      "op": "return",
+      "stack_out": []
+    },
+    "570": {
+      "subroutine": "fee_config.FeeConfig.calculate_fee",
+      "params": {
+        "amount_micro_usdc#0": "bytes"
+      },
+      "block": "fee_config.FeeConfig.calculate_fee",
+      "stack_in": [],
+      "op": "proto 1 1"
+    },
+    "573": {
+      "op": "pushbytes \"\"",
+      "stack_out": [
+        "calculated_fee#0"
+      ]
+    },
+    "575": {
+      "op": "frame_dig -1",
+      "defined_out": [
+        "amount_micro_usdc#0 (copy)"
+      ],
+      "stack_out": [
+        "calculated_fee#0",
+        "amount_micro_usdc#0 (copy)"
+      ]
+    },
+    "577": {
+      "op": "btoi",
+      "defined_out": [
+        "amount#0"
+      ],
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0"
+      ]
+    },
+    "578": {
+      "op": "dup",
+      "defined_out": [
+        "amount#0"
+      ],
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "amount#0"
+      ]
+    },
+    "579": {
+      "op": "intc_0 // 0",
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "amount#0",
+        "0"
+      ]
+    },
+    "580": {
+      "op": "bytec_0 // \"fee_rate_bps\"",
+      "defined_out": [
+        "\"fee_rate_bps\"",
+        "0",
+        "amount#0"
+      ],
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "amount#0",
+        "0",
+        "\"fee_rate_bps\""
+      ]
+    },
+    "581": {
+      "op": "app_global_get_ex",
+      "defined_out": [
+        "amount#0",
+        "maybe_exists%0#0",
+        "maybe_value%0#0"
+      ],
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "amount#0",
+        "maybe_value%0#0",
+        "maybe_exists%0#0"
+      ]
+    },
+    "582": {
+      "error": "check self.fee_rate_bps exists",
+      "op": "assert // check self.fee_rate_bps exists",
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "amount#0",
+        "maybe_value%0#0"
+      ]
+    },
+    "583": {
+      "op": "btoi",
+      "defined_out": [
+        "amount#0",
+        "rate#0"
+      ],
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "amount#0",
+        "rate#0"
+      ]
+    },
+    "584": {
+      "op": "swap",
+      "defined_out": [
+        "amount#0",
+        "rate#0"
+      ],
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "rate#0",
+        "amount#0"
+      ]
+    },
+    "585": {
+      "op": "bnz fee_config.FeeConfig.calculate_fee_after_if_else@2",
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "rate#0"
+      ]
+    },
+    "588": {
+      "op": "bytec 4 // 0x0000000000000000",
+      "defined_out": [
+        "0x0000000000000000",
+        "amount#0",
+        "rate#0"
+      ],
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "rate#0",
+        "0x0000000000000000"
+      ]
+    },
+    "590": {
+      "op": "frame_bury 0"
+    },
+    "592": {
+      "retsub": true,
+      "op": "retsub"
+    },
+    "593": {
+      "block": "fee_config.FeeConfig.calculate_fee_after_if_else@2",
+      "stack_in": [
+        "calculated_fee#0",
+        "amount#0",
+        "rate#0"
+      ],
+      "op": "frame_dig 1",
+      "defined_out": [
+        "amount#0"
+      ],
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "rate#0",
+        "amount#0"
+      ]
+    },
+    "595": {
+      "op": "frame_dig 2",
+      "defined_out": [
+        "amount#0",
+        "rate#0"
+      ],
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "rate#0",
+        "amount#0",
+        "rate#0"
+      ]
+    },
+    "597": {
+      "op": "mulw",
+      "defined_out": [
+        "amount#0",
+        "product_high#0",
+        "product_low#0",
+        "rate#0"
+      ],
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "rate#0",
+        "product_high#0",
+        "product_low#0"
+      ]
+    },
+    "598": {
+      "op": "intc_0 // 0",
+      "defined_out": [
+        "0",
+        "amount#0",
+        "product_high#0",
+        "product_low#0",
+        "rate#0"
+      ],
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "rate#0",
+        "product_high#0",
+        "product_low#0",
+        "0"
+      ]
+    },
+    "599": {
+      "op": "pushint 10000",
+      "defined_out": [
+        "0",
+        "10000",
+        "amount#0",
+        "product_high#0",
+        "product_low#0",
+        "rate#0"
+      ],
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "rate#0",
+        "product_high#0",
+        "product_low#0",
+        "0",
+        "10000"
+      ]
+    },
+    "602": {
+      "op": "divmodw",
+      "defined_out": [
+        "amount#0",
+        "calculated_fee#0",
+        "quotient_high#0",
+        "rate#0",
+        "remainder_high#0",
+        "remainder_low#0"
+      ],
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "rate#0",
+        "quotient_high#0",
+        "calculated_fee#0",
+        "remainder_high#0",
+        "remainder_low#0"
+      ]
+    },
+    "603": {
+      "op": "popn 2",
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "rate#0",
+        "quotient_high#0",
+        "calculated_fee#0"
+      ]
+    },
+    "605": {
+      "op": "dup",
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "rate#0",
+        "quotient_high#0",
+        "calculated_fee#0",
+        "calculated_fee#0 (copy)"
+      ]
+    },
+    "606": {
+      "op": "cover 2",
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "rate#0",
+        "calculated_fee#0",
+        "quotient_high#0",
+        "calculated_fee#0"
+      ]
+    },
+    "608": {
+      "op": "frame_bury 0",
+      "defined_out": [
+        "amount#0",
+        "calculated_fee#0",
+        "quotient_high#0",
+        "rate#0"
+      ],
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "rate#0",
+        "calculated_fee#0",
+        "quotient_high#0"
+      ]
+    },
+    "610": {
+      "op": "pop",
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "rate#0",
+        "calculated_fee#0"
+      ]
+    },
+    "611": {
+      "op": "bnz fee_config.FeeConfig.calculate_fee_after_if_else@5",
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "rate#0"
+      ]
+    },
+    "614": {
+      "op": "frame_dig 2",
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "rate#0",
+        "rate#0"
+      ]
+    },
+    "616": {
+      "op": "bz fee_config.FeeConfig.calculate_fee_after_if_else@5",
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "rate#0"
+      ]
+    },
+    "619": {
+      "op": "pushbytes 0x0000000000000001",
+      "defined_out": [
+        "0x0000000000000001",
+        "amount#0",
+        "calculated_fee#0",
+        "rate#0"
+      ],
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "rate#0",
+        "0x0000000000000001"
+      ]
+    },
+    "629": {
+      "op": "frame_bury 0"
+    },
+    "631": {
+      "retsub": true,
+      "op": "retsub"
+    },
+    "632": {
+      "block": "fee_config.FeeConfig.calculate_fee_after_if_else@5",
+      "stack_in": [
+        "calculated_fee#0",
+        "amount#0",
+        "rate#0"
+      ],
+      "op": "frame_dig 0",
+      "defined_out": [
+        "calculated_fee#0"
+      ],
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "rate#0",
+        "calculated_fee#0"
+      ]
+    },
+    "634": {
+      "op": "itob",
+      "defined_out": [
+        "aggregate%val_as_bytes%0#0",
+        "calculated_fee#0"
+      ],
+      "stack_out": [
+        "calculated_fee#0",
+        "amount#0",
+        "rate#0",
+        "aggregate%val_as_bytes%0#0"
+      ]
+    },
+    "635": {
+      "op": "frame_bury 0"
+    },
+    "637": {
+      "retsub": true,
+      "op": "retsub"
+    }
+  }
+}

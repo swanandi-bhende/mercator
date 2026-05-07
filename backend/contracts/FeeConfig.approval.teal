@@ -1,0 +1,583 @@
+#pragma version 11
+#pragma typetrack false
+
+// algopy.arc4.ARC4Contract.approval_program() -> uint64:
+main:
+    intcblock 0 1 8 32
+    bytecblock "fee_rate_bps" "owner" "treasury_address" "total_fees_collected" 0x0000000000000000 "escrow_app_id" "usdc_asset_id" 0x151f7c75
+    txn ApplicationID
+    bnz main_after_if_else@2
+    // fee_config.py:47
+    // self.owner.value = arc4.Address(Txn.sender)
+    bytec_1 // "owner"
+    txn Sender
+    app_global_put
+    // fee_config.py:48
+    // self.fee_rate_bps.value = arc4.UInt64(250)
+    bytec_0 // "fee_rate_bps"
+    pushbytes 0x00000000000000fa
+    app_global_put
+    // fee_config.py:49
+    // self.treasury_address.value = arc4.Address(Txn.sender)
+    bytec_2 // "treasury_address"
+    txn Sender
+    app_global_put
+    // fee_config.py:50
+    // self.usdc_asset_id.value = arc4.UInt64(0)
+    bytec 6 // "usdc_asset_id"
+    bytec 4 // 0x0000000000000000
+    app_global_put
+    // fee_config.py:51
+    // self.total_fees_collected.value = arc4.UInt64(0)
+    bytec_3 // "total_fees_collected"
+    bytec 4 // 0x0000000000000000
+    app_global_put
+    // fee_config.py:52
+    // self.escrow_app_id.value = UInt64(0)
+    bytec 5 // "escrow_app_id"
+    intc_0 // 0
+    app_global_put
+
+main_after_if_else@2:
+    // fee_config.py:4
+    // class FeeConfig(ARC4Contract):
+    txn OnCompletion
+    !
+    assert
+    txn ApplicationID
+    bz main_create_NoOp@13
+    pushbytess 0x14d72562 0x57cbfd62 0xc0509d1c 0xfcd8caaf 0x4e081eba 0x7c7cc572 0xa8a8f366 // method "calculate_fee(uint64)uint64", method "calculate_seller_payout(uint64)uint64", method "set_fee_rate(uint64)void", method "set_treasury(address)void", method "set_escrow_app(uint64)void", method "record_fee_collected(uint64)void", method "get_config()(uint64,address,uint64,uint64)"
+    txna ApplicationArgs 0
+    match calculate_fee calculate_seller_payout set_fee_rate set_treasury set_escrow_app record_fee_collected get_config
+    err
+
+main_create_NoOp@13:
+    // fee_config.py:4
+    // class FeeConfig(ARC4Contract):
+    pushbytes 0x4d5b62f8 // method "create(uint64,address,uint64)void"
+    txna ApplicationArgs 0
+    match create
+    err
+
+
+// fee_config.FeeConfig.create[routing]() -> void:
+create:
+    // fee_config.py:54
+    // @arc4.abimethod(create="require", allow_actions=["NoOp"])
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    txna ApplicationArgs 2
+    dup
+    len
+    intc_3 // 32
+    ==
+    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
+    txna ApplicationArgs 3
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    // fee_config.py:63
+    // initial_fee_rate_bps.as_uint64() <= 1000
+    dig 2
+    btoi
+    pushint 1000
+    <=
+    // fee_config.py:61-64
+    // # Validate initial fee rate: must be between 0% and 10% (1000 bps)
+    // assert (
+    //     initial_fee_rate_bps.as_uint64() <= 1000
+    // ), "Fee rate cannot exceed 10% (1000 basis points)"
+    assert // Fee rate cannot exceed 10% (1000 basis points)
+    // fee_config.py:66-67
+    // # Set deployer as owner
+    // self.owner.value = arc4.Address(Txn.sender)
+    bytec_1 // "owner"
+    txn Sender
+    app_global_put
+    // fee_config.py:69-70
+    // # Initialize global state
+    // self.fee_rate_bps.value = initial_fee_rate_bps
+    bytec_0 // "fee_rate_bps"
+    dig 3
+    app_global_put
+    // fee_config.py:71
+    // self.treasury_address.value = treasury
+    bytec_2 // "treasury_address"
+    dig 2
+    app_global_put
+    // fee_config.py:72
+    // self.usdc_asset_id.value = usdc_id
+    bytec 6 // "usdc_asset_id"
+    dig 1
+    app_global_put
+    // fee_config.py:73
+    // self.total_fees_collected.value = arc4.UInt64(0)
+    bytec_3 // "total_fees_collected"
+    bytec 4 // 0x0000000000000000
+    app_global_put
+    // fee_config.py:74
+    // self.escrow_app_id.value = UInt64(0)  # Set to 0 until Escrow is deployed
+    bytec 5 // "escrow_app_id"
+    intc_0 // 0
+    app_global_put
+    // fee_config.py:79
+    // arc4.Address(Txn.sender),
+    txn Sender
+    // fee_config.py:76-83
+    // # Emit creation event for indexers
+    // arc4.emit(
+    //     "FeeConfigCreated",
+    //     arc4.Address(Txn.sender),
+    //     initial_fee_rate_bps,
+    //     treasury,
+    //     usdc_id,
+    // )
+    uncover 3
+    concat
+    uncover 2
+    concat
+    swap
+    concat
+    pushbytes 0x6b0cef88 // method "FeeConfigCreated(address,uint64,address,uint64)"
+    swap
+    concat
+    log
+    // fee_config.py:54
+    // @arc4.abimethod(create="require", allow_actions=["NoOp"])
+    intc_1 // 1
+    return
+
+
+// fee_config.FeeConfig.calculate_fee[routing]() -> void:
+calculate_fee:
+    // fee_config.py:85
+    // @arc4.abimethod(readonly=True, allow_actions=["NoOp"])
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    callsub fee_config.FeeConfig.calculate_fee
+    bytec 7 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return
+
+
+// fee_config.FeeConfig.calculate_seller_payout[routing]() -> void:
+calculate_seller_payout:
+    // fee_config.py:132
+    // @arc4.abimethod(readonly=True, allow_actions=["NoOp"])
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    // fee_config.py:146
+    // amount = amount_micro_usdc.as_uint64()
+    dup
+    btoi
+    // fee_config.py:147
+    // fee = self.calculate_fee(amount_micro_usdc).as_uint64()
+    swap
+    callsub fee_config.FeeConfig.calculate_fee
+    btoi
+    // fee_config.py:148
+    // return arc4.UInt64(amount - fee)
+    -
+    itob
+    // fee_config.py:132
+    // @arc4.abimethod(readonly=True, allow_actions=["NoOp"])
+    bytec 7 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return
+
+
+// fee_config.FeeConfig.set_fee_rate[routing]() -> void:
+set_fee_rate:
+    // fee_config.py:150
+    // @arc4.abimethod(allow_actions=["NoOp"])
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    // fee_config.py:166
+    // Txn.sender == self.owner.value.native
+    txn Sender
+    intc_0 // 0
+    bytec_1 // "owner"
+    app_global_get_ex
+    assert // check self.owner exists
+    ==
+    // fee_config.py:164-167
+    // # Owner check FIRST: must fail immediately for unauthorized callers
+    // assert (
+    //     Txn.sender == self.owner.value.native
+    // ), "Only the contract owner can update the fee rate"
+    assert // Only the contract owner can update the fee rate
+    // fee_config.py:171
+    // new_rate_bps.as_uint64() <= 1000
+    dup
+    btoi
+    pushint 1000
+    <=
+    // fee_config.py:169-172
+    // # Range check: hard cap at 10% (1000 bps) enforced on-chain
+    // assert (
+    //     new_rate_bps.as_uint64() <= 1000
+    // ), "Fee rate cannot exceed 10% (1000 basis points)"
+    assert // Fee rate cannot exceed 10% (1000 basis points)
+    // fee_config.py:174
+    // old_rate = self.fee_rate_bps.value
+    intc_0 // 0
+    bytec_0 // "fee_rate_bps"
+    app_global_get_ex
+    assert // check self.fee_rate_bps exists
+    // fee_config.py:175
+    // self.fee_rate_bps.value = new_rate_bps
+    bytec_0 // "fee_rate_bps"
+    dig 2
+    app_global_put
+    // fee_config.py:177-178
+    // # Emit event for Operations dashboard / indexers
+    // arc4.emit("FeeRateUpdated", old_rate, new_rate_bps)
+    swap
+    concat
+    pushbytes 0xd8f7a6c8 // method "FeeRateUpdated(uint64,uint64)"
+    swap
+    concat
+    log
+    // fee_config.py:150
+    // @arc4.abimethod(allow_actions=["NoOp"])
+    intc_1 // 1
+    return
+
+
+// fee_config.FeeConfig.set_treasury[routing]() -> void:
+set_treasury:
+    // fee_config.py:180
+    // @arc4.abimethod(allow_actions=["NoOp"])
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_3 // 32
+    ==
+    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
+    // fee_config.py:195
+    // Txn.sender == self.owner.value.native
+    txn Sender
+    intc_0 // 0
+    bytec_1 // "owner"
+    app_global_get_ex
+    assert // check self.owner exists
+    ==
+    // fee_config.py:193-196
+    // # Owner check FIRST
+    // assert (
+    //     Txn.sender == self.owner.value.native
+    // ), "Only the contract owner can update the treasury address"
+    assert // Only the contract owner can update the treasury address
+    // fee_config.py:198
+    // old_treasury = self.treasury_address.value
+    intc_0 // 0
+    bytec_2 // "treasury_address"
+    app_global_get_ex
+    assert // check self.treasury_address exists
+    // fee_config.py:199
+    // self.treasury_address.value = new_treasury
+    bytec_2 // "treasury_address"
+    dig 2
+    app_global_put
+    // fee_config.py:201-202
+    // # Emit event for indexers
+    // arc4.emit("TreasuryUpdated", old_treasury, new_treasury)
+    swap
+    concat
+    pushbytes 0x14e8e681 // method "TreasuryUpdated(address,address)"
+    swap
+    concat
+    log
+    // fee_config.py:180
+    // @arc4.abimethod(allow_actions=["NoOp"])
+    intc_1 // 1
+    return
+
+
+// fee_config.FeeConfig.set_escrow_app[routing]() -> void:
+set_escrow_app:
+    // fee_config.py:204
+    // @arc4.abimethod(allow_actions=["NoOp"])
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    dup
+    btoi
+    // fee_config.py:217
+    // Txn.sender == self.owner.value.native
+    txn Sender
+    intc_0 // 0
+    bytec_1 // "owner"
+    app_global_get_ex
+    assert // check self.owner exists
+    ==
+    // fee_config.py:215-218
+    // # Owner check FIRST
+    // assert (
+    //     Txn.sender == self.owner.value.native
+    // ), "Only the contract owner can set the Escrow app ID"
+    assert // Only the contract owner can set the Escrow app ID
+    // fee_config.py:220
+    // self.escrow_app_id.value = escrow_app_id
+    bytec 5 // "escrow_app_id"
+    swap
+    app_global_put
+    // fee_config.py:222-223
+    // # Emit event for indexers
+    // arc4.emit("EscrowAppSet", escrow_app_id)
+    pushbytes 0x965bfffb // method "EscrowAppSet(uint64)"
+    swap
+    concat
+    log
+    // fee_config.py:204
+    // @arc4.abimethod(allow_actions=["NoOp"])
+    intc_1 // 1
+    return
+
+
+// fee_config.FeeConfig.record_fee_collected[routing]() -> void:
+record_fee_collected:
+    // fee_config.py:225
+    // @arc4.abimethod(allow_actions=["NoOp"])
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    // fee_config.py:242-243
+    // # Caller verification: only Escrow contract can record fees
+    // escrow_id = self.escrow_app_id.value
+    intc_0 // 0
+    bytec 5 // "escrow_app_id"
+    app_global_get_ex
+    swap
+    dup
+    uncover 2
+    assert // check self.escrow_app_id exists
+    // fee_config.py:244
+    // caller_app_id = Global.caller_application_id
+    global CallerApplicationID
+    swap
+    // fee_config.py:246-247
+    // # Allow self-calls or calls from registered Escrow app
+    // is_self_call = Txn.sender == Global.current_application_address
+    txn Sender
+    global CurrentApplicationAddress
+    ==
+    swap
+    // fee_config.py:248
+    // is_escrow_call = escrow_id != UInt64(0) and caller_app_id == escrow_id
+    bz record_fee_collected_bool_false@4
+    dig 1
+    dig 3
+    ==
+    bz record_fee_collected_bool_false@4
+    intc_1 // 1
+
+record_fee_collected_bool_merge@5:
+    // fee_config.py:251
+    // is_self_call or is_escrow_call
+    dig 1
+    ||
+    // fee_config.py:250-252
+    // assert (
+    //     is_self_call or is_escrow_call
+    // ), "Only the Escrow contract can record fees"
+    assert // Only the Escrow contract can record fees
+    // fee_config.py:254-255
+    // # Add fee to running total using checked addw semantics.
+    // fee_amount = fee_amount_micro_usdc.as_uint64()
+    dig 3
+    dup
+    btoi
+    // fee_config.py:256
+    // current_total = self.total_fees_collected.value.as_uint64()
+    intc_0 // 0
+    bytec_3 // "total_fees_collected"
+    app_global_get_ex
+    assert // check self.total_fees_collected exists
+    btoi
+    // fee_config.py:257
+    // carry, new_total = op.addw(current_total, fee_amount)
+    addw
+    // fee_config.py:258
+    // assert carry == UInt64(0), "Fee accumulator overflow"
+    swap
+    !
+    assert // Fee accumulator overflow
+    // fee_config.py:260
+    // self.total_fees_collected.value = arc4.UInt64(new_total)
+    itob
+    bytec_3 // "total_fees_collected"
+    dig 1
+    app_global_put
+    // fee_config.py:262-263
+    // # Emit event with fee amount and new total for indexers
+    // arc4.emit("FeeCollected", fee_amount_micro_usdc, arc4.UInt64(new_total))
+    concat
+    pushbytes 0x6367bc93 // method "FeeCollected(uint64,uint64)"
+    swap
+    concat
+    log
+    // fee_config.py:225
+    // @arc4.abimethod(allow_actions=["NoOp"])
+    intc_1 // 1
+    return
+
+record_fee_collected_bool_false@4:
+    intc_0 // 0
+    b record_fee_collected_bool_merge@5
+
+
+// fee_config.FeeConfig.get_config[routing]() -> void:
+get_config:
+    // fee_config.py:283
+    // self.fee_rate_bps.value,
+    intc_0 // 0
+    bytec_0 // "fee_rate_bps"
+    app_global_get_ex
+    assert // check self.fee_rate_bps exists
+    // fee_config.py:284
+    // self.treasury_address.value,
+    intc_0 // 0
+    bytec_2 // "treasury_address"
+    app_global_get_ex
+    assert // check self.treasury_address exists
+    // fee_config.py:285
+    // self.total_fees_collected.value,
+    intc_0 // 0
+    bytec_3 // "total_fees_collected"
+    app_global_get_ex
+    assert // check self.total_fees_collected exists
+    // fee_config.py:286
+    // self.usdc_asset_id.value,
+    intc_0 // 0
+    bytec 6 // "usdc_asset_id"
+    app_global_get_ex
+    assert // check self.usdc_asset_id exists
+    // fee_config.py:281-288
+    // return arc4.Tuple(
+    //     (
+    //         self.fee_rate_bps.value,
+    //         self.treasury_address.value,
+    //         self.total_fees_collected.value,
+    //         self.usdc_asset_id.value,
+    //     )
+    // )
+    uncover 3
+    uncover 3
+    concat
+    uncover 2
+    concat
+    swap
+    concat
+    // fee_config.py:265
+    // @arc4.abimethod(readonly=True, allow_actions=["NoOp"])
+    bytec 7 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return
+
+
+// fee_config.FeeConfig.calculate_fee(amount_micro_usdc: bytes) -> bytes:
+fee_config.FeeConfig.calculate_fee:
+    // fee_config.py:85-86
+    // @arc4.abimethod(readonly=True, allow_actions=["NoOp"])
+    // def calculate_fee(self, amount_micro_usdc: arc4.UInt64) -> arc4.UInt64:
+    proto 1 1
+    pushbytes ""
+    // fee_config.py:111
+    // amount = amount_micro_usdc.as_uint64()
+    frame_dig -1
+    btoi
+    dup
+    // fee_config.py:112
+    // rate = self.fee_rate_bps.value.as_uint64()
+    intc_0 // 0
+    bytec_0 // "fee_rate_bps"
+    app_global_get_ex
+    assert // check self.fee_rate_bps exists
+    btoi
+    swap
+    // fee_config.py:114
+    // if amount == 0:
+    bnz fee_config.FeeConfig.calculate_fee_after_if_else@2
+    // fee_config.py:115
+    // return arc4.UInt64(0)
+    bytec 4 // 0x0000000000000000
+    frame_bury 0
+    retsub
+
+fee_config.FeeConfig.calculate_fee_after_if_else@2:
+    // fee_config.py:117-118
+    // # Use wide math for audit-safe 128-bit multiplication and division.
+    // product_high, product_low = op.mulw(amount, rate)
+    frame_dig 1
+    frame_dig 2
+    mulw
+    // fee_config.py:120
+    // product_high, product_low, UInt64(0), UInt64(10000)
+    intc_0 // 0
+    pushint 10000
+    // fee_config.py:119-121
+    // quotient_high, calculated_fee, remainder_high, remainder_low = op.divmodw(
+    //     product_high, product_low, UInt64(0), UInt64(10000)
+    // )
+    divmodw
+    popn 2
+    dup
+    cover 2
+    frame_bury 0
+    pop
+    // fee_config.py:123-127
+    // # Apply minimum fee floor ONLY when rate > 0:
+    // # Dust amounts at non-zero rates produce 0 fee due to integer division,
+    // # but zero-value USDC transfers are rejected by some nodes, so enforce minimum 1.
+    // # When rate is 0%, allow legitimate zero fee.
+    // if calculated_fee == 0 and rate > 0:
+    bnz fee_config.FeeConfig.calculate_fee_after_if_else@5
+    frame_dig 2
+    bz fee_config.FeeConfig.calculate_fee_after_if_else@5
+    // fee_config.py:128
+    // return arc4.UInt64(1)
+    pushbytes 0x0000000000000001
+    frame_bury 0
+    retsub
+
+fee_config.FeeConfig.calculate_fee_after_if_else@5:
+    // fee_config.py:130
+    // return arc4.UInt64(calculated_fee)
+    frame_dig 0
+    itob
+    frame_bury 0
+    retsub
