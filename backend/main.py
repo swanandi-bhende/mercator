@@ -25,7 +25,7 @@ from uuid import uuid4
 from dataclasses import asdict
 from typing import Any
 import requests
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from collections import deque
 from pathlib import Path
 
@@ -40,6 +40,7 @@ from algosdk import encoding
 from algosdk import account
 from algosdk.error import AlgodHTTPError
 from algosdk.logic import get_application_address
+from algosdk.atomic_transaction_composer import AtomicTransactionComposer, AccountTransactionSigner, TransactionWithSigner
 from algosdk.v2client import algod, indexer
 
 warnings.filterwarnings(
@@ -380,6 +381,113 @@ def _recent_listing_matches(query: str, limit: int = 8) -> list[dict[str, object
         scored = scored[:3]
 
     matches: list[dict[str, object]] = []
+
+
+    def _get_subscription_manager_app_id() -> int:
+        raw = os.getenv("SUBSCRIPTION_MANAGER_APP_ID", "").strip()
+        if not raw or not raw.isdigit():
+            raise HTTPException(status_code=500, detail="SUBSCRIPTION_MANAGER_APP_ID is not configured")
+        return int(raw)
+
+
+    def _get_subscription_signer() -> tuple[str, AccountTransactionSigner]:
+        signer_mnemonic = os.getenv("BUYER_MNEMONIC", "").strip() or os.getenv("DEPLOYER_MNEMONIC", "").strip()
+        if not signer_mnemonic:
+            raise HTTPException(status_code=500, detail="BUYER_MNEMONIC or DEPLOYER_MNEMONIC is required")
+        private_key = mnemonic.to_private_key(signer_mnemonic)
+        sender = account.address_from_private_key(private_key)
+        return sender, AccountTransactionSigner(private_key)
+
+
+    def _execute_abi_call(
+        app_id: int,
+        method_signature: str,
+        method_args: list[object],
+        *,
+        sender: str | None = None,
+        signer: AccountTransactionSigner | None = None,
+        payment_txn: transaction.Transaction | None = None,
+    ) -> tuple[object | None, list[str]]:
+        client = _get_algod_client()
+        if sender is None or signer is None:
+            sender, signer = _get_subscription_signer()
+
+        composer = AtomicTransactionComposer()
+        params = client.suggested_params()
+        method = abi.Method.from_signature(method_signature)
+
+        if payment_txn is not None:
+            composer.add_transaction(TransactionWithSigner(payment_txn, signer))
+
+        composer.add_method_call(
+            app_id=app_id,
+            method=method,
+            sender=sender,
+            sp=params,
+            signer=signer,
+            method_args=method_args,
+        )
+        result = composer.execute(client, 4)
+        return_value = None
+        if getattr(result, "abi_results", None):
+            first_result = result.abi_results[0]
+            return_value = getattr(first_result, "return_value", None)
+        tx_ids = [str(tx_id) for tx_id in getattr(result, "tx_ids", [])]
+        return return_value, tx_ids
+
+
+    def _current_round() -> int:
+        client = _get_algod_client()
+        return _safe_int(client.status().get("last-round", 0), 0)
+
+
+    def _subscription_status_payload(wallet: str) -> dict[str, object]:
+        subscription_app_id = _get_subscription_manager_app_id()
+        active_value, _ = _execute_abi_call(
+            subscription_app_id,
+            "is_active(address)bool",
+            [wallet],
+        )
+        subscription_record, _ = _execute_abi_call(
+            subscription_app_id,
+            "get_subscription(address)(uint64,uint64,uint64,uint64,uint64,string)",
+            [wallet],
+        )
+
+        current_round = _current_round()
+        rounds_per_month = _safe_int(os.getenv("SUBSCRIPTION_ROUNDS_PER_MONTH", "17280"), 17280)
+
+        if isinstance(subscription_record, (tuple, list)) and len(subscription_record) >= 6:
+            subscribed_at_round = _safe_int(subscription_record[0], current_round)
+            expiry_round = _safe_int(subscription_record[1], 0)
+            total_months_paid = _safe_int(subscription_record[2], 0)
+            total_usdc_paid_micro = _safe_int(subscription_record[3], 0)
+            last_payment_round = _safe_int(subscription_record[4], 0)
+            source_type = str(subscription_record[5])
+        else:
+            subscribed_at_round = 0
+            expiry_round = 0
+            total_months_paid = 0
+            total_usdc_paid_micro = 0
+            last_payment_round = 0
+            source_type = ""
+
+        active = bool(active_value)
+        rounds_remaining = max(0, expiry_round - current_round)
+        months_remaining = round(rounds_remaining / max(rounds_per_month, 1), 6)
+        expiry_approx = datetime.now(timezone.utc) + timedelta(seconds=max(0, rounds_remaining) * 4.5)
+
+        return {
+            "active": active,
+            "expiry_round": expiry_round,
+            "expiry_approx_date": expiry_approx.isoformat(),
+            "months_remaining": months_remaining,
+            "total_months_paid": total_months_paid,
+            "total_usdc_paid_micro": total_usdc_paid_micro,
+            "subscribed_at_round": subscribed_at_round,
+            "last_payment_round": last_payment_round,
+            "source_type": source_type,
+        }
     for score, entry in scored[:limit]:
         listing_id = entry.get("listing_id", "")
         try:
@@ -541,6 +649,16 @@ class OpsSyntheticTestRequest(BaseModel):
 class OpsIpfsUploadRequest(BaseModel):
     content: str | None = None
     filename: str = "ops-healthcheck.txt"
+
+
+class SubscriptionRequest(BaseModel):
+    buyer_wallet: str
+    months: int
+
+
+class SubscriptionReleaseRequest(BaseModel):
+    buyer_wallet: str
+    listing_id: int
 
 
 def _safe_iso_from_round_time(round_time: object) -> str:
@@ -2413,6 +2531,142 @@ async def get_fee_config() -> dict[str, object]:
         "total_fees_collected": _safe_int(state.get("total_fees_collected", 0), 0),
         "usdc_asset_id": _safe_int(state.get("usdc_asset_id", 10458941), 10458941),
     }
+
+
+@app.get("/subscription/status")
+async def get_subscription_status(wallet: str) -> dict[str, object]:
+    """Return the on-chain subscription status for a buyer wallet."""
+    normalize_network_env()
+    if not wallet or not encoding.is_valid_address(wallet):
+        raise HTTPException(status_code=400, detail="wallet must be a valid Algorand address")
+
+    try:
+        payload = _subscription_status_payload(wallet)
+        return {
+            "success": True,
+            **payload,
+        }
+    except HTTPException:
+        raise
+    except Exception as err:
+        logger.error("Failed to fetch subscription status | wallet=%s error=%s", wallet, err, exc_info=True)
+        return {
+            "success": False,
+            "active": False,
+            "expiry_round": 0,
+            "expiry_approx_date": datetime.now(timezone.utc).isoformat(),
+            "months_remaining": 0.0,
+            "total_months_paid": 0,
+            "total_usdc_paid_micro": 0,
+            "error": str(err),
+        }
+
+
+@app.post("/subscribe")
+async def subscribe(request: SubscriptionRequest) -> dict[str, object]:
+    """Submit a grouped USDC payment plus SubscriptionManager.subscribe() call."""
+    normalize_network_env()
+    if request.months < 1 or request.months > 12:
+        raise HTTPException(status_code=400, detail="months must be between 1 and 12")
+    if not encoding.is_valid_address(request.buyer_wallet):
+        raise HTTPException(status_code=400, detail="buyer_wallet must be a valid Algorand address")
+
+    subscription_app_id = _get_subscription_manager_app_id()
+    buyer_sender, buyer_signer = _get_subscription_signer()
+    if buyer_sender != request.buyer_wallet:
+        raise HTTPException(
+            status_code=400,
+            detail="Configured buyer signer does not match buyer_wallet",
+        )
+
+    monthly_rate_micro_usdc = _safe_int(os.getenv("SUBSCRIPTION_MONTHLY_RATE_MICRO_USDC", "50000000"), 50000000)
+    usdc_asset_id = _safe_int(os.getenv("USDC_ASSET_ID", "10458941"), 10458941)
+    amount_micro = monthly_rate_micro_usdc * request.months
+    app_address = get_application_address(subscription_app_id)
+
+    algod_client = _get_algod_client()
+    params = algod_client.suggested_params()
+    payment_txn = transaction.AssetTransferTxn(
+        sender=request.buyer_wallet,
+        sp=params,
+        index=usdc_asset_id,
+        amt=amount_micro,
+        receiver=app_address,
+    )
+
+    try:
+        _, tx_ids = _execute_abi_call(
+            subscription_app_id,
+            "subscribe(uint64)void",
+            [request.months],
+            sender=request.buyer_wallet,
+            signer=buyer_signer,
+            payment_txn=payment_txn,
+        )
+        payload = _subscription_status_payload(request.buyer_wallet)
+        return {
+            "success": True,
+            "tx_id": tx_ids[-1] if tx_ids else "",
+            "expiry_round": payload.get("expiry_round", 0),
+            "months_paid": request.months,
+            "subscription_tx_id": tx_ids[-1] if tx_ids else "",
+            "payment_tx_id": tx_ids[0] if len(tx_ids) > 1 else (tx_ids[-1] if tx_ids else ""),
+            "expiry_approx_date": payload.get("expiry_approx_date"),
+        }
+    except HTTPException:
+        raise
+    except Exception as err:
+        logger.error("Subscription purchase failed | wallet=%s months=%s error=%s", request.buyer_wallet, request.months, err, exc_info=True)
+        raise HTTPException(status_code=500, detail=str(err))
+
+
+@app.post("/escrow/release_for_subscriber")
+async def release_for_subscriber(request: SubscriptionReleaseRequest) -> dict[str, object]:
+    """Invoke Escrow.release_for_subscriber for a subscribed buyer."""
+    normalize_network_env()
+    if not encoding.is_valid_address(request.buyer_wallet):
+        raise HTTPException(status_code=400, detail="buyer_wallet must be a valid Algorand address")
+    if request.listing_id < 0:
+        raise HTTPException(status_code=400, detail="listing_id must be non-negative")
+
+    escrow_app_id_raw = os.getenv("ESCROW_APP_ID", "").strip()
+    if not escrow_app_id_raw.isdigit():
+        raise HTTPException(status_code=500, detail="ESCROW_APP_ID is not configured")
+
+    buyer_sender, buyer_signer = _get_subscription_signer()
+    if buyer_sender != request.buyer_wallet:
+        raise HTTPException(
+            status_code=400,
+            detail="Configured buyer signer does not match buyer_wallet",
+        )
+
+    try:
+        _, tx_ids = _execute_abi_call(
+            int(escrow_app_id_raw),
+            "release_for_subscriber(address,uint64)bool",
+            [request.buyer_wallet, request.listing_id],
+            sender=request.buyer_wallet,
+            signer=buyer_signer,
+        )
+        return {
+            "success": True,
+            "tx_id": tx_ids[-1] if tx_ids else "",
+            "buyer_wallet": request.buyer_wallet,
+            "listing_id": request.listing_id,
+            "payment_method": "subscription",
+            "subscription_access_granted": True,
+        }
+    except HTTPException:
+        raise
+    except Exception as err:
+        logger.error(
+            "Subscriber release failed | wallet=%s listing_id=%s error=%s",
+            request.buyer_wallet,
+            request.listing_id,
+            err,
+            exc_info=True,
+        )
+        raise HTTPException(status_code=500, detail=str(err))
 
 
 @app.post("/demo_purchase")

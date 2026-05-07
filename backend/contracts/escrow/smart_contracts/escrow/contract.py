@@ -59,6 +59,7 @@ class Escrow(ARC4Contract):
     registry_app_id: GlobalState[UInt64]
     fee_config_app_id: GlobalState[UInt64]
     insight_listing_app_id: GlobalState[UInt64]
+    subscription_manager_app_id: GlobalState[UInt64]
     owner: GlobalState[arc4.Address]
     unlocked_listings: BoxMap[arc4.UInt64, UnlockRecord]
 
@@ -66,6 +67,7 @@ class Escrow(ARC4Contract):
         self.registry_app_id = GlobalState(UInt64)
         self.fee_config_app_id = GlobalState(UInt64)
         self.insight_listing_app_id = GlobalState(UInt64)
+        self.subscription_manager_app_id = GlobalState(UInt64)
         self.owner = GlobalState(arc4.Address)
         self.unlocked_listings = BoxMap(arc4.UInt64, UnlockRecord, key_prefix=b"unlock")
 
@@ -73,6 +75,7 @@ class Escrow(ARC4Contract):
         self.fee_config_app_id.value = UInt64(0)
         self.insight_listing_app_id.value = UInt64(0)
         self.registry_app_id.value = UInt64(0)
+        self.subscription_manager_app_id.value = UInt64(0)
 
     @arc4.abimethod(create="require", allow_actions=["NoOp"])
     def create(
@@ -80,11 +83,13 @@ class Escrow(ARC4Contract):
         fee_config_app_id: arc4.UInt64,
         insight_listing_app_id: arc4.UInt64,
         registry_app_id: arc4.UInt64,
+        subscription_manager_app_id: arc4.UInt64,
     ) -> None:
         self.owner.value = arc4.Address(Txn.sender)
         self.fee_config_app_id.value = fee_config_app_id.as_uint64()
         self.insight_listing_app_id.value = insight_listing_app_id.as_uint64()
         self.registry_app_id.value = registry_app_id.as_uint64()
+        self.subscription_manager_app_id.value = subscription_manager_app_id.as_uint64()
 
     @arc4.abimethod()
     def set_app_ids(
@@ -92,11 +97,13 @@ class Escrow(ARC4Contract):
         fee_config_app_id: arc4.UInt64,
         insight_listing_app_id: arc4.UInt64,
         registry_app_id: arc4.UInt64,
+        subscription_manager_app_id: arc4.UInt64,
     ) -> None:
         assert Txn.sender == self.owner.value.native, "Only owner can update app ids"
         self.fee_config_app_id.value = fee_config_app_id.as_uint64()
         self.insight_listing_app_id.value = insight_listing_app_id.as_uint64()
         self.registry_app_id.value = registry_app_id.as_uint64()
+        self.subscription_manager_app_id.value = subscription_manager_app_id.as_uint64()
 
     @arc4.abimethod()
     def release_after_payment(
@@ -206,4 +213,47 @@ class Escrow(ARC4Contract):
             payment_amount_micro_usdc=amount_micro_usdc,
         )
         
+        return arc4.Bool(True)
+
+    @arc4.abimethod()
+    def release_for_subscriber(self, buyer: arc4.Address, listing_id: arc4.UInt64) -> arc4.Bool:
+        assert Txn.sender == buyer.native, "Only the buyer can release subscriber access"
+
+        if self.registry_app_id.value != UInt64(0):
+            is_registered, registration_check_txn = arc4.abi_call[arc4.Bool](
+                "is_registered(address)bool",
+                buyer,
+                app_id=self.registry_app_id.value,
+            )
+            assert is_registered, "Buyer must be registered in AgentRegistry"
+
+        listing_state, listing_state_txn = arc4.abi_call[arc4.String](
+            "get_listing_state(uint64)string",
+            listing_id,
+            app_id=self.insight_listing_app_id.value,
+        )
+        assert listing_state == arc4.String("active"), "Listing is not active"
+
+        subscription_valid, subscription_txn = arc4.abi_call[arc4.Bool](
+            "release_for_subscriber(address,uint64)bool",
+            buyer,
+            listing_id,
+            app_id=self.subscription_manager_app_id.value,
+        )
+        assert subscription_valid, "Subscription entitlement could not be confirmed"
+
+        arc4.abi_call(
+            "mark_sold_to_subscriber(uint64,address)",
+            listing_id,
+            buyer,
+            app_id=self.insight_listing_app_id.value,
+        )
+
+        if self.registry_app_id.value != UInt64(0):
+            arc4.abi_call(
+                "increment_transaction_count(address)void",
+                buyer,
+                app_id=self.registry_app_id.value,
+            )
+
         return arc4.Bool(True)

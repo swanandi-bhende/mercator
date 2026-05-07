@@ -1,0 +1,1071 @@
+#pragma version 11
+#pragma typetrack false
+
+// algopy.arc4.ARC4Contract.approval_program() -> uint64:
+main:
+    intcblock 0 1 8 32 1000000 1000000000
+    bytecblock "owner" 0x0000000000000000 "usdc_asset_id" "total_revenue_micro_usdc" "monthly_rate_micro_usdc" "rounds_per_month" 0x7375625f "total_subscribers" 0x151f7c75 "treasury_address" "escrow_app_id"
+    txn ApplicationID
+    bnz main_after_if_else@2
+    // backend/contracts/subscription_manager.py:35
+    // self.owner.value = arc4.Address(Txn.sender)
+    bytec_0 // "owner"
+    txn Sender
+    app_global_put
+    // backend/contracts/subscription_manager.py:36
+    // self.treasury_address.value = arc4.Address(Txn.sender)
+    bytec 9 // "treasury_address"
+    txn Sender
+    app_global_put
+    // backend/contracts/subscription_manager.py:37
+    // self.escrow_app_id.value = UInt64(0)
+    bytec 10 // "escrow_app_id"
+    intc_0 // 0
+    app_global_put
+    // backend/contracts/subscription_manager.py:38
+    // self.monthly_rate_micro_usdc.value = arc4.UInt64(0)
+    bytec 4 // "monthly_rate_micro_usdc"
+    bytec_1 // 0x0000000000000000
+    app_global_put
+    // backend/contracts/subscription_manager.py:39
+    // self.rounds_per_month.value = arc4.UInt64(0)
+    bytec 5 // "rounds_per_month"
+    bytec_1 // 0x0000000000000000
+    app_global_put
+    // backend/contracts/subscription_manager.py:40
+    // self.usdc_asset_id.value = arc4.UInt64(0)
+    bytec_2 // "usdc_asset_id"
+    bytec_1 // 0x0000000000000000
+    app_global_put
+    // backend/contracts/subscription_manager.py:41
+    // self.total_subscribers.value = arc4.UInt64(0)
+    bytec 7 // "total_subscribers"
+    bytec_1 // 0x0000000000000000
+    app_global_put
+    // backend/contracts/subscription_manager.py:42
+    // self.total_revenue_micro_usdc.value = arc4.UInt64(0)
+    bytec_3 // "total_revenue_micro_usdc"
+    bytec_1 // 0x0000000000000000
+    app_global_put
+
+main_after_if_else@2:
+    // backend/contracts/subscription_manager.py:13
+    // class SubscriptionManager(ARC4Contract):
+    txn OnCompletion
+    !
+    assert
+    txn ApplicationID
+    bz main_create_NoOp@17
+    pushbytess 0x4e081eba 0x0def37cd 0xc67f736f 0xb734d5d6 0x1c3bc417 0x8704253a 0xcb5b73b7 0x2630db73 0x984e6e82 0x0c3c5e07 0x9cc58aac // method "set_escrow_app(uint64)void", method "set_monthly_rate(uint64)void", method "set_rounds_per_month(uint64)void", method "opt_in_usdc()void", method "subscribe(uint64)void", method "is_active(address)bool", method "get_subscription(address)(uint64,uint64,uint64,uint64,uint64,string)", method "get_expiry_round(address)uint64", method "get_config()(uint64,uint64,uint64,uint64,uint64)", method "release_for_subscriber(address,uint64)bool", method "withdraw_subscription_revenue()void"
+    txna ApplicationArgs 0
+    match set_escrow_app set_monthly_rate set_rounds_per_month opt_in_usdc subscribe is_active get_subscription get_expiry_round get_config release_for_subscriber withdraw_subscription_revenue
+    err
+
+main_create_NoOp@17:
+    // backend/contracts/subscription_manager.py:13
+    // class SubscriptionManager(ARC4Contract):
+    pushbytes 0x7efda4d2 // method "create(uint64,uint64,uint64)void"
+    txna ApplicationArgs 0
+    match create
+    err
+
+
+// subscription_manager.SubscriptionManager.create[routing]() -> void:
+create:
+    // backend/contracts/subscription_manager.py:44
+    // @arc4.abimethod(create="require", allow_actions=["NoOp"])
+    txna ApplicationArgs 1
+    dupn 2
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    txna ApplicationArgs 2
+    dup
+    cover 2
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    txna ApplicationArgs 3
+    dup
+    cover 2
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    // backend/contracts/subscription_manager.py:46
+    // monthly_rate_native = monthly_rate.native
+    btoi
+    dup
+    // backend/contracts/subscription_manager.py:47
+    // assert 1000000 <= monthly_rate_native <= 1000000000, (
+    intc 4 // 1000000
+    >=
+    bz create_bool_false@4
+    dup
+    intc 5 // 1000000000
+    <=
+    bz create_bool_false@4
+    intc_1 // 1
+
+create_bool_merge@5:
+    // backend/contracts/subscription_manager.py:47-49
+    // assert 1000000 <= monthly_rate_native <= 1000000000, (
+    //     "monthly_rate must be between 1,000,000 and 1,000,000,000 microUSDC"
+    // )
+    assert // monthly_rate must be between 1,000,000 and 1,000,000,000 microUSDC
+    // backend/contracts/subscription_manager.py:50
+    // self.owner.value = arc4.Address(Txn.sender)
+    bytec_0 // "owner"
+    txn Sender
+    app_global_put
+    // backend/contracts/subscription_manager.py:51
+    // self.treasury_address.value = arc4.Address(Txn.sender)
+    bytec 9 // "treasury_address"
+    txn Sender
+    app_global_put
+    // backend/contracts/subscription_manager.py:52
+    // self.monthly_rate_micro_usdc.value = monthly_rate
+    bytec 4 // "monthly_rate_micro_usdc"
+    dig 4
+    dup
+    cover 2
+    app_global_put
+    // backend/contracts/subscription_manager.py:53
+    // self.rounds_per_month.value = rounds_per_month
+    bytec 5 // "rounds_per_month"
+    dig 4
+    dup
+    cover 3
+    app_global_put
+    // backend/contracts/subscription_manager.py:54
+    // self.usdc_asset_id.value = usdc_id
+    bytec_2 // "usdc_asset_id"
+    dig 4
+    dup
+    cover 4
+    app_global_put
+    // backend/contracts/subscription_manager.py:58
+    // arc4.Address(Txn.sender),
+    txn Sender
+    // backend/contracts/subscription_manager.py:56-62
+    // arc4.emit(
+    //     "SubscriptionManagerCreated",
+    //     arc4.Address(Txn.sender),
+    //     monthly_rate,
+    //     rounds_per_month,
+    //     usdc_id,
+    // )
+    swap
+    concat
+    swap
+    concat
+    swap
+    concat
+    pushbytes 0x91b90eb4 // method "SubscriptionManagerCreated(address,uint64,uint64,uint64)"
+    swap
+    concat
+    log
+    // backend/contracts/subscription_manager.py:44
+    // @arc4.abimethod(create="require", allow_actions=["NoOp"])
+    intc_1 // 1
+    return
+
+create_bool_false@4:
+    intc_0 // 0
+    b create_bool_merge@5
+
+
+// subscription_manager.SubscriptionManager.set_escrow_app[routing]() -> void:
+set_escrow_app:
+    // backend/contracts/subscription_manager.py:64
+    // @arc4.abimethod(allow_actions=["NoOp"])
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    // backend/contracts/subscription_manager.py:66
+    // assert Txn.sender == self.owner.value.native, "Only the contract owner can set the Escrow app ID"
+    txn Sender
+    intc_0 // 0
+    bytec_0 // "owner"
+    app_global_get_ex
+    assert // check self.owner exists
+    ==
+    assert // Only the contract owner can set the Escrow app ID
+    // backend/contracts/subscription_manager.py:67
+    // self.escrow_app_id.value = escrow_app_id.as_uint64()
+    dup
+    btoi
+    bytec 10 // "escrow_app_id"
+    swap
+    app_global_put
+    // backend/contracts/subscription_manager.py:68
+    // arc4.emit("SubscriptionEscrowAppSet", escrow_app_id)
+    pushbytes 0xb7c025e4 // method "SubscriptionEscrowAppSet(uint64)"
+    swap
+    concat
+    log
+    // backend/contracts/subscription_manager.py:64
+    // @arc4.abimethod(allow_actions=["NoOp"])
+    intc_1 // 1
+    return
+
+
+// subscription_manager.SubscriptionManager.set_monthly_rate[routing]() -> void:
+set_monthly_rate:
+    // backend/contracts/subscription_manager.py:70
+    // @arc4.abimethod(allow_actions=["NoOp"])
+    txna ApplicationArgs 1
+    dupn 2
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    // backend/contracts/subscription_manager.py:72
+    // assert Txn.sender == self.owner.value.native, "Only the contract owner can update the monthly rate"
+    txn Sender
+    intc_0 // 0
+    bytec_0 // "owner"
+    app_global_get_ex
+    assert // check self.owner exists
+    ==
+    assert // Only the contract owner can update the monthly rate
+    // backend/contracts/subscription_manager.py:73
+    // monthly_rate_native = monthly_rate.native
+    btoi
+    dup
+    // backend/contracts/subscription_manager.py:74
+    // assert 1000000 <= monthly_rate_native <= 1000000000, (
+    intc 4 // 1000000
+    >=
+    bz set_monthly_rate_bool_false@4
+    dup
+    intc 5 // 1000000000
+    <=
+    bz set_monthly_rate_bool_false@4
+    intc_1 // 1
+
+set_monthly_rate_bool_merge@5:
+    // backend/contracts/subscription_manager.py:74-76
+    // assert 1000000 <= monthly_rate_native <= 1000000000, (
+    //     "monthly_rate must be between 1,000,000 and 1,000,000,000 microUSDC"
+    // )
+    assert // monthly_rate must be between 1,000,000 and 1,000,000,000 microUSDC
+    // backend/contracts/subscription_manager.py:77
+    // self.monthly_rate_micro_usdc.value = monthly_rate
+    bytec 4 // "monthly_rate_micro_usdc"
+    dig 2
+    dup
+    cover 2
+    app_global_put
+    // backend/contracts/subscription_manager.py:78
+    // arc4.emit("SubscriptionMonthlyRateUpdated", monthly_rate)
+    pushbytes 0x2b8fe7d5 // method "SubscriptionMonthlyRateUpdated(uint64)"
+    swap
+    concat
+    log
+    // backend/contracts/subscription_manager.py:70
+    // @arc4.abimethod(allow_actions=["NoOp"])
+    intc_1 // 1
+    return
+
+set_monthly_rate_bool_false@4:
+    intc_0 // 0
+    b set_monthly_rate_bool_merge@5
+
+
+// subscription_manager.SubscriptionManager.set_rounds_per_month[routing]() -> void:
+set_rounds_per_month:
+    // backend/contracts/subscription_manager.py:80
+    // @arc4.abimethod(allow_actions=["NoOp"])
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    // backend/contracts/subscription_manager.py:82
+    // assert Txn.sender == self.owner.value.native, "Only the contract owner can update rounds_per_month"
+    txn Sender
+    intc_0 // 0
+    bytec_0 // "owner"
+    app_global_get_ex
+    assert // check self.owner exists
+    ==
+    assert // Only the contract owner can update rounds_per_month
+    // backend/contracts/subscription_manager.py:83
+    // assert rounds_per_month.native > 0, "rounds_per_month must be greater than 0"
+    dup
+    btoi
+    assert // rounds_per_month must be greater than 0
+    // backend/contracts/subscription_manager.py:84
+    // self.rounds_per_month.value = rounds_per_month
+    bytec 5 // "rounds_per_month"
+    dig 1
+    app_global_put
+    // backend/contracts/subscription_manager.py:85
+    // arc4.emit("SubscriptionRoundsPerMonthUpdated", rounds_per_month)
+    pushbytes 0x33e1d2ef // method "SubscriptionRoundsPerMonthUpdated(uint64)"
+    swap
+    concat
+    log
+    // backend/contracts/subscription_manager.py:80
+    // @arc4.abimethod(allow_actions=["NoOp"])
+    intc_1 // 1
+    return
+
+
+// subscription_manager.SubscriptionManager.opt_in_usdc[routing]() -> void:
+opt_in_usdc:
+    // backend/contracts/subscription_manager.py:89
+    // assert Txn.sender == self.owner.value.native, "Only the contract owner can opt the app into USDC"
+    txn Sender
+    intc_0 // 0
+    bytec_0 // "owner"
+    app_global_get_ex
+    assert // check self.owner exists
+    ==
+    assert // Only the contract owner can opt the app into USDC
+    // backend/contracts/subscription_manager.py:91-96
+    // itxn.AssetTransfer(
+    //     xfer_asset=self.usdc_asset_id.value.native,
+    //     asset_receiver=Global.current_application_address,
+    //     asset_amount=0,
+    //     fee=UInt64(1000),
+    // ).submit()
+    itxn_begin
+    // backend/contracts/subscription_manager.py:92
+    // xfer_asset=self.usdc_asset_id.value.native,
+    intc_0 // 0
+    bytec_2 // "usdc_asset_id"
+    app_global_get_ex
+    assert // check self.usdc_asset_id exists
+    btoi
+    // backend/contracts/subscription_manager.py:93
+    // asset_receiver=Global.current_application_address,
+    global CurrentApplicationAddress
+    // backend/contracts/subscription_manager.py:94
+    // asset_amount=0,
+    intc_0 // 0
+    itxn_field AssetAmount
+    itxn_field AssetReceiver
+    itxn_field XferAsset
+    // backend/contracts/subscription_manager.py:91
+    // itxn.AssetTransfer(
+    pushint 4 // axfer
+    itxn_field TypeEnum
+    // backend/contracts/subscription_manager.py:95
+    // fee=UInt64(1000),
+    pushint 1000
+    itxn_field Fee
+    // backend/contracts/subscription_manager.py:91-96
+    // itxn.AssetTransfer(
+    //     xfer_asset=self.usdc_asset_id.value.native,
+    //     asset_receiver=Global.current_application_address,
+    //     asset_amount=0,
+    //     fee=UInt64(1000),
+    // ).submit()
+    itxn_submit
+    // backend/contracts/subscription_manager.py:87
+    // @arc4.abimethod(allow_actions=["NoOp"])
+    intc_1 // 1
+    return
+
+
+// subscription_manager.SubscriptionManager.subscribe[routing]() -> void:
+subscribe:
+    intc_0 // 0
+    dupn 2
+    pushbytes ""
+    dupn 7
+    // backend/contracts/subscription_manager.py:98
+    // @arc4.abimethod(allow_actions=["NoOp"])
+    txna ApplicationArgs 1
+    dupn 2
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    // backend/contracts/subscription_manager.py:100
+    // months_native = months.native
+    btoi
+    dup
+    // backend/contracts/subscription_manager.py:101
+    // assert 1 <= months_native <= 12, "months must be between 1 and 12"
+    bz subscribe_bool_false@4
+    dup
+    pushint 12
+    <=
+    bz subscribe_bool_false@4
+    intc_1 // 1
+
+subscribe_bool_merge@5:
+    // backend/contracts/subscription_manager.py:101
+    // assert 1 <= months_native <= 12, "months must be between 1 and 12"
+    assert // months must be between 1 and 12
+    // backend/contracts/subscription_manager.py:102
+    // caller = arc4.Address(Txn.sender)
+    txn Sender
+    dup
+    bury 14
+    // backend/contracts/subscription_manager.py:104
+    // payment_tx = gtxn.AssetTransferTransaction(0)
+    intc_0 // 0
+    gtxns TypeEnum
+    pushint 4 // axfer
+    ==
+    assert // transaction type is axfer
+    // backend/contracts/subscription_manager.py:105
+    // required_payment = months_native * self.monthly_rate_micro_usdc.value.native
+    intc_0 // 0
+    bytec 4 // "monthly_rate_micro_usdc"
+    app_global_get_ex
+    assert // check self.monthly_rate_micro_usdc exists
+    btoi
+    dig 2
+    *
+    // backend/contracts/subscription_manager.py:107
+    // assert payment_tx.xfer_asset.id == self.usdc_asset_id.value, "Payment must use the configured USDC asset"
+    intc_0 // 0
+    bytec_2 // "usdc_asset_id"
+    app_global_get_ex
+    assert // check self.usdc_asset_id exists
+    // backend/contracts/subscription_manager.py:104
+    // payment_tx = gtxn.AssetTransferTransaction(0)
+    intc_0 // 0
+    // backend/contracts/subscription_manager.py:107
+    // assert payment_tx.xfer_asset.id == self.usdc_asset_id.value, "Payment must use the configured USDC asset"
+    gtxns XferAsset
+    itob
+    b==
+    assert // Payment must use the configured USDC asset
+    // backend/contracts/subscription_manager.py:104
+    // payment_tx = gtxn.AssetTransferTransaction(0)
+    intc_0 // 0
+    // backend/contracts/subscription_manager.py:108
+    // assert payment_tx.asset_amount >= required_payment, "Payment amount is below the required subscription price"
+    gtxns AssetAmount
+    dup
+    bury 7
+    <=
+    assert // Payment amount is below the required subscription price
+    // backend/contracts/subscription_manager.py:104
+    // payment_tx = gtxn.AssetTransferTransaction(0)
+    intc_0 // 0
+    // backend/contracts/subscription_manager.py:109
+    // assert payment_tx.asset_receiver == Global.current_application_address, (
+    gtxns AssetReceiver
+    global CurrentApplicationAddress
+    ==
+    // backend/contracts/subscription_manager.py:109-111
+    // assert payment_tx.asset_receiver == Global.current_application_address, (
+    //     "Payment must be sent to this contract"
+    // )
+    assert // Payment must be sent to this contract
+    // backend/contracts/subscription_manager.py:104
+    // payment_tx = gtxn.AssetTransferTransaction(0)
+    intc_0 // 0
+    // backend/contracts/subscription_manager.py:112
+    // assert payment_tx.sender == Txn.sender, "Payment sender must match the subscribing wallet"
+    gtxns Sender
+    txn Sender
+    ==
+    assert // Payment sender must match the subscribing wallet
+    // backend/contracts/subscription_manager.py:114
+    // current_round = Global.round
+    global Round
+    bury 10
+    // backend/contracts/subscription_manager.py:116
+    // exists = self.subscriptions.maybe(caller)[1]
+    bytec 6 // 0x7375625f
+    swap
+    concat
+    dup
+    bury 13
+    box_len
+    bury 1
+    // backend/contracts/subscription_manager.py:118
+    // if exists:
+    bz subscribe_else_body@10
+    // backend/contracts/subscription_manager.py:119
+    // current_expiry_round = self.subscriptions[caller].expiry_round.native
+    dig 11
+    intc_2 // 8
+    dup
+    box_extract // on error: index out of bounds
+    btoi
+    dup
+    bury 11
+    // backend/contracts/subscription_manager.py:120
+    // if current_expiry_round > current_round:
+    dig 9
+    >
+    bz subscribe_else_body@8
+    // backend/contracts/subscription_manager.py:122
+    // subscribed_at_round = self.subscriptions[caller].subscribed_at_round
+    dig 11
+    intc_0 // 0
+    intc_2 // 8
+    box_extract // on error: index out of bounds
+    bury 11
+    dig 9
+    bury 8
+
+subscribe_after_if_else@9:
+    // backend/contracts/subscription_manager.py:126
+    // is_new_subscriber = False
+    intc_0 // 0
+    // backend/contracts/subscription_manager.py:127
+    // total_months_paid = self.subscriptions[caller].total_months_paid.native
+    dig 12
+    dup
+    pushint 16
+    intc_2 // 8
+    box_extract // on error: index out of bounds
+    btoi
+    bury 5
+    // backend/contracts/subscription_manager.py:128
+    // total_usdc_paid = self.subscriptions[caller].total_usdc_paid.native
+    pushint 24
+    intc_2 // 8
+    box_extract // on error: index out of bounds
+    btoi
+    swap
+
+subscribe_after_if_else@11:
+    // backend/contracts/subscription_manager.py:136
+    // extension_rounds_high, extension_rounds_low = op.mulw(months_native, self.rounds_per_month.value.native)
+    intc_0 // 0
+    bytec 5 // "rounds_per_month"
+    app_global_get_ex
+    assert // check self.rounds_per_month exists
+    btoi
+    dig 3
+    dup
+    uncover 2
+    mulw
+    // backend/contracts/subscription_manager.py:137
+    // assert extension_rounds_high == UInt64(0), "Subscription length overflow"
+    swap
+    !
+    assert // Subscription length overflow
+    // backend/contracts/subscription_manager.py:139
+    // expiry_high, new_expiry_round = op.addw(expiry_base, extension_rounds_low)
+    dig 11
+    addw
+    bury 11
+    // backend/contracts/subscription_manager.py:140
+    // assert expiry_high == UInt64(0), "Expiry round overflow"
+    !
+    assert // Expiry round overflow
+    // backend/contracts/subscription_manager.py:142
+    // months_high, new_total_months_paid = op.addw(total_months_paid, months_native)
+    dig 5
+    addw
+    bury 9
+    // backend/contracts/subscription_manager.py:143
+    // assert months_high == UInt64(0), "Month counter overflow"
+    !
+    assert // Month counter overflow
+    // backend/contracts/subscription_manager.py:145
+    // revenue_high, new_total_usdc_paid = op.addw(total_usdc_paid, payment_amount)
+    swap
+    dig 5
+    addw
+    bury 7
+    // backend/contracts/subscription_manager.py:146
+    // assert revenue_high == UInt64(0), "Subscriber payment counter overflow"
+    !
+    assert // Subscriber payment counter overflow
+    // backend/contracts/subscription_manager.py:148
+    // if is_new_subscriber:
+    bz subscribe_after_if_else@13
+    // backend/contracts/subscription_manager.py:149
+    // subscribers_high, new_total_subscribers = op.addw(self.total_subscribers.value.native, 1)
+    intc_0 // 0
+    bytec 7 // "total_subscribers"
+    app_global_get_ex
+    assert // check self.total_subscribers exists
+    btoi
+    intc_1 // 1
+    addw
+    // backend/contracts/subscription_manager.py:150
+    // assert subscribers_high == UInt64(0), "Subscriber counter overflow"
+    swap
+    !
+    assert // Subscriber counter overflow
+    // backend/contracts/subscription_manager.py:151
+    // self.total_subscribers.value = arc4.UInt64(new_total_subscribers)
+    itob
+    bytec 7 // "total_subscribers"
+    swap
+    app_global_put
+
+subscribe_after_if_else@13:
+    // backend/contracts/subscription_manager.py:153
+    // revenue_total_high, new_total_revenue = op.addw(self.total_revenue_micro_usdc.value.native, payment_amount)
+    intc_0 // 0
+    bytec_3 // "total_revenue_micro_usdc"
+    app_global_get_ex
+    assert // check self.total_revenue_micro_usdc exists
+    btoi
+    dig 4
+    dup
+    cover 2
+    addw
+    // backend/contracts/subscription_manager.py:154
+    // assert revenue_total_high == UInt64(0), "Revenue counter overflow"
+    swap
+    !
+    assert // Revenue counter overflow
+    // backend/contracts/subscription_manager.py:155
+    // self.total_revenue_micro_usdc.value = arc4.UInt64(new_total_revenue)
+    itob
+    bytec_3 // "total_revenue_micro_usdc"
+    swap
+    app_global_put
+    // backend/contracts/subscription_manager.py:159
+    // expiry_round=arc4.UInt64(new_expiry_round),
+    dig 7
+    itob
+    // backend/contracts/subscription_manager.py:160
+    // total_months_paid=arc4.UInt64(new_total_months_paid),
+    dig 7
+    itob
+    // backend/contracts/subscription_manager.py:161
+    // total_usdc_paid=arc4.UInt64(new_total_usdc_paid),
+    dig 7
+    itob
+    // backend/contracts/subscription_manager.py:162
+    // last_payment_round=arc4.UInt64(current_round),
+    dig 12
+    itob
+    // backend/contracts/subscription_manager.py:157-164
+    // self.subscriptions[caller] = SubscriptionRecord(
+    //     subscribed_at_round=subscribed_at_round,
+    //     expiry_round=arc4.UInt64(new_expiry_round),
+    //     total_months_paid=arc4.UInt64(new_total_months_paid),
+    //     total_usdc_paid=arc4.UInt64(new_total_usdc_paid),
+    //     last_payment_round=arc4.UInt64(current_round),
+    //     source_type=arc4.String("subscription"),
+    // )
+    dig 15
+    dig 4
+    concat
+    uncover 3
+    concat
+    uncover 2
+    concat
+    swap
+    concat
+    pushbytes 0x002a000c737562736372697074696f6e
+    concat
+    dig 14
+    dup
+    box_del
+    pop
+    swap
+    box_put
+    // backend/contracts/subscription_manager.py:171
+    // arc4.UInt64(payment_amount),
+    swap
+    itob
+    // backend/contracts/subscription_manager.py:166-172
+    // arc4.emit(
+    //     "SubscriptionRecorded",
+    //     caller,
+    //     months,
+    //     arc4.UInt64(new_expiry_round),
+    //     arc4.UInt64(payment_amount),
+    // )
+    dig 14
+    dig 4
+    concat
+    uncover 2
+    concat
+    swap
+    concat
+    pushbytes 0xc0002b17 // method "SubscriptionRecorded(address,uint64,uint64,uint64)"
+    swap
+    concat
+    log
+    // backend/contracts/subscription_manager.py:98
+    // @arc4.abimethod(allow_actions=["NoOp"])
+    intc_1 // 1
+    return
+
+subscribe_else_body@8:
+    // backend/contracts/subscription_manager.py:125
+    // subscribed_at_round = arc4.UInt64(current_round)
+    dig 8
+    dup
+    itob
+    bury 12
+    bury 8
+    b subscribe_after_if_else@9
+
+subscribe_else_body@10:
+    // backend/contracts/subscription_manager.py:131
+    // subscribed_at_round = arc4.UInt64(current_round)
+    dig 8
+    dup
+    itob
+    bury 12
+    // backend/contracts/subscription_manager.py:132
+    // is_new_subscriber = True
+    intc_1 // 1
+    swap
+    // backend/contracts/subscription_manager.py:133
+    // total_months_paid = UInt64(0)
+    intc_0 // 0
+    bury 5
+    // backend/contracts/subscription_manager.py:134
+    // total_usdc_paid = UInt64(0)
+    intc_0 // 0
+    cover 2
+    bury 10
+    b subscribe_after_if_else@11
+
+subscribe_bool_false@4:
+    intc_0 // 0
+    b subscribe_bool_merge@5
+
+
+// subscription_manager.SubscriptionManager.is_active[routing]() -> void:
+is_active:
+    // backend/contracts/subscription_manager.py:174
+    // @arc4.abimethod(readonly=True, allow_actions=["NoOp"])
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_3 // 32
+    ==
+    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
+    callsub subscription_manager.SubscriptionManager.is_active
+    bytec 8 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return
+
+
+// subscription_manager.SubscriptionManager.get_subscription[routing]() -> void:
+get_subscription:
+    // backend/contracts/subscription_manager.py:181
+    // @arc4.abimethod(readonly=True, allow_actions=["NoOp"])
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_3 // 32
+    ==
+    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
+    // backend/contracts/subscription_manager.py:183
+    // exists = self.subscriptions.maybe(wallet)[1]
+    bytec 6 // 0x7375625f
+    swap
+    concat
+    dup
+    box_len
+    bury 1
+    // backend/contracts/subscription_manager.py:184
+    // assert exists, "No subscription record found for this wallet"
+    assert // No subscription record found for this wallet
+    // backend/contracts/subscription_manager.py:185
+    // return self.subscriptions[wallet]
+    box_get
+    pop
+    // backend/contracts/subscription_manager.py:181
+    // @arc4.abimethod(readonly=True, allow_actions=["NoOp"])
+    bytec 8 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return
+
+
+// subscription_manager.SubscriptionManager.get_expiry_round[routing]() -> void:
+get_expiry_round:
+    // backend/contracts/subscription_manager.py:187
+    // @arc4.abimethod(readonly=True, allow_actions=["NoOp"])
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_3 // 32
+    ==
+    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
+    // backend/contracts/subscription_manager.py:189
+    // exists = self.subscriptions.maybe(wallet)[1]
+    bytec 6 // 0x7375625f
+    swap
+    concat
+    dup
+    box_len
+    bury 1
+    // backend/contracts/subscription_manager.py:190
+    // assert exists, "No subscription record found for this wallet"
+    assert // No subscription record found for this wallet
+    // backend/contracts/subscription_manager.py:191
+    // return self.subscriptions[wallet].expiry_round
+    intc_2 // 8
+    dup
+    box_extract // on error: index out of bounds
+    // backend/contracts/subscription_manager.py:187
+    // @arc4.abimethod(readonly=True, allow_actions=["NoOp"])
+    bytec 8 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return
+
+
+// subscription_manager.SubscriptionManager.get_config[routing]() -> void:
+get_config:
+    // backend/contracts/subscription_manager.py:197
+    // self.monthly_rate_micro_usdc.value,
+    intc_0 // 0
+    bytec 4 // "monthly_rate_micro_usdc"
+    app_global_get_ex
+    assert // check self.monthly_rate_micro_usdc exists
+    // backend/contracts/subscription_manager.py:198
+    // self.rounds_per_month.value,
+    intc_0 // 0
+    bytec 5 // "rounds_per_month"
+    app_global_get_ex
+    assert // check self.rounds_per_month exists
+    // backend/contracts/subscription_manager.py:199
+    // self.total_subscribers.value,
+    intc_0 // 0
+    bytec 7 // "total_subscribers"
+    app_global_get_ex
+    assert // check self.total_subscribers exists
+    // backend/contracts/subscription_manager.py:200
+    // self.total_revenue_micro_usdc.value,
+    intc_0 // 0
+    bytec_3 // "total_revenue_micro_usdc"
+    app_global_get_ex
+    assert // check self.total_revenue_micro_usdc exists
+    // backend/contracts/subscription_manager.py:201
+    // self.usdc_asset_id.value,
+    intc_0 // 0
+    bytec_2 // "usdc_asset_id"
+    app_global_get_ex
+    assert // check self.usdc_asset_id exists
+    // backend/contracts/subscription_manager.py:195-203
+    // return arc4.Tuple(
+    //     (
+    //         self.monthly_rate_micro_usdc.value,
+    //         self.rounds_per_month.value,
+    //         self.total_subscribers.value,
+    //         self.total_revenue_micro_usdc.value,
+    //         self.usdc_asset_id.value,
+    //     )
+    // )
+    uncover 4
+    uncover 4
+    concat
+    uncover 3
+    concat
+    uncover 2
+    concat
+    swap
+    concat
+    // backend/contracts/subscription_manager.py:193
+    // @arc4.abimethod(readonly=True, allow_actions=["NoOp"])
+    bytec 8 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return
+
+
+// subscription_manager.SubscriptionManager.release_for_subscriber[routing]() -> void:
+release_for_subscriber:
+    // backend/contracts/subscription_manager.py:205
+    // @arc4.abimethod(allow_actions=["NoOp"])
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_3 // 32
+    ==
+    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
+    txna ApplicationArgs 2
+    len
+    intc_2 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    // backend/contracts/subscription_manager.py:207
+    // assert Global.caller_application_id == self.escrow_app_id.value, (
+    global CallerApplicationID
+    intc_0 // 0
+    bytec 10 // "escrow_app_id"
+    app_global_get_ex
+    assert // check self.escrow_app_id exists
+    ==
+    // backend/contracts/subscription_manager.py:207-209
+    // assert Global.caller_application_id == self.escrow_app_id.value, (
+    //     "release_for_subscriber can only be called by the Escrow contract"
+    // )
+    assert // release_for_subscriber can only be called by the Escrow contract
+    // backend/contracts/subscription_manager.py:211
+    // assert self.is_active(buyer).native, "Subscription is not active or has expired"
+    dup
+    callsub subscription_manager.SubscriptionManager.is_active
+    intc_0 // 0
+    getbit
+    assert // Subscription is not active or has expired
+    // backend/contracts/subscription_manager.py:212
+    // exists = self.subscriptions.maybe(buyer)[1]
+    bytec 6 // 0x7375625f
+    swap
+    concat
+    dup
+    box_len
+    bury 1
+    // backend/contracts/subscription_manager.py:213
+    // assert exists, "No subscription record found for this wallet"
+    assert // No subscription record found for this wallet
+    // backend/contracts/subscription_manager.py:214
+    // assert self.subscriptions[buyer].source_type == arc4.String("subscription"), "Invalid subscription source type"
+    dup
+    pushints 42 2
+    box_extract
+    btoi
+    pushint 2
+    +
+    pushint 42
+    swap
+    box_extract
+    pushbytes 0x000c737562736372697074696f6e
+    ==
+    assert // Invalid subscription source type
+    // backend/contracts/subscription_manager.py:205
+    // @arc4.abimethod(allow_actions=["NoOp"])
+    pushbytes 0x151f7c7580
+    log
+    intc_1 // 1
+    return
+
+
+// subscription_manager.SubscriptionManager.withdraw_subscription_revenue[routing]() -> void:
+withdraw_subscription_revenue:
+    // backend/contracts/subscription_manager.py:220
+    // assert Txn.sender == self.owner.value.native, "Only the contract owner can withdraw subscription revenue"
+    txn Sender
+    intc_0 // 0
+    bytec_0 // "owner"
+    app_global_get_ex
+    assert // check self.owner exists
+    ==
+    assert // Only the contract owner can withdraw subscription revenue
+    // backend/contracts/subscription_manager.py:222
+    // revenue = self.total_revenue_micro_usdc.value.native
+    intc_0 // 0
+    bytec_3 // "total_revenue_micro_usdc"
+    app_global_get_ex
+    assert // check self.total_revenue_micro_usdc exists
+    btoi
+    dup
+    // backend/contracts/subscription_manager.py:223
+    // if revenue == 0:
+    bz withdraw_subscription_revenue_after_inlined_subscription_manager.SubscriptionManager.withdraw_subscription_revenue@5
+    // backend/contracts/subscription_manager.py:226-231
+    // itxn.AssetTransfer(
+    //     xfer_asset=self.usdc_asset_id.value.native,
+    //     asset_receiver=self.treasury_address.value.native,
+    //     asset_amount=revenue,
+    //     fee=UInt64(1000),
+    // ).submit()
+    itxn_begin
+    // backend/contracts/subscription_manager.py:227
+    // xfer_asset=self.usdc_asset_id.value.native,
+    intc_0 // 0
+    bytec_2 // "usdc_asset_id"
+    app_global_get_ex
+    assert // check self.usdc_asset_id exists
+    btoi
+    // backend/contracts/subscription_manager.py:228
+    // asset_receiver=self.treasury_address.value.native,
+    intc_0 // 0
+    bytec 9 // "treasury_address"
+    app_global_get_ex
+    assert // check self.treasury_address exists
+    dig 2
+    itxn_field AssetAmount
+    itxn_field AssetReceiver
+    itxn_field XferAsset
+    // backend/contracts/subscription_manager.py:226
+    // itxn.AssetTransfer(
+    pushint 4 // axfer
+    itxn_field TypeEnum
+    // backend/contracts/subscription_manager.py:230
+    // fee=UInt64(1000),
+    pushint 1000
+    itxn_field Fee
+    // backend/contracts/subscription_manager.py:226-231
+    // itxn.AssetTransfer(
+    //     xfer_asset=self.usdc_asset_id.value.native,
+    //     asset_receiver=self.treasury_address.value.native,
+    //     asset_amount=revenue,
+    //     fee=UInt64(1000),
+    // ).submit()
+    itxn_submit
+    // backend/contracts/subscription_manager.py:233
+    // self.total_revenue_micro_usdc.value = arc4.UInt64(0)
+    bytec_3 // "total_revenue_micro_usdc"
+    bytec_1 // 0x0000000000000000
+    app_global_put
+
+withdraw_subscription_revenue_after_inlined_subscription_manager.SubscriptionManager.withdraw_subscription_revenue@5:
+    // backend/contracts/subscription_manager.py:218
+    // @arc4.abimethod(allow_actions=["NoOp"])
+    intc_1 // 1
+    return
+
+
+// subscription_manager.SubscriptionManager.is_active(wallet: bytes) -> bytes:
+subscription_manager.SubscriptionManager.is_active:
+    // backend/contracts/subscription_manager.py:174-175
+    // @arc4.abimethod(readonly=True, allow_actions=["NoOp"])
+    // def is_active(self, wallet: arc4.Address) -> arc4.Bool:
+    proto 1 1
+    // backend/contracts/subscription_manager.py:176
+    // exists = self.subscriptions.maybe(wallet)[1]
+    bytec 6 // 0x7375625f
+    frame_dig -1
+    concat
+    dup
+    box_len
+    bury 1
+    // backend/contracts/subscription_manager.py:177
+    // if not exists:
+    bnz subscription_manager.SubscriptionManager.is_active_after_if_else@2
+    // backend/contracts/subscription_manager.py:178
+    // return arc4.Bool(False)
+    pushbytes 0x00
+    swap
+    retsub
+
+subscription_manager.SubscriptionManager.is_active_after_if_else@2:
+    // backend/contracts/subscription_manager.py:179
+    // return arc4.Bool(self.subscriptions[wallet].expiry_round.native > Global.round)
+    frame_dig 0
+    intc_2 // 8
+    dup
+    box_extract // on error: index out of bounds
+    btoi
+    global Round
+    >
+    pushbytes 0x00
+    intc_0 // 0
+    uncover 2
+    setbit
+    swap
+    retsub

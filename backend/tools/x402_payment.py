@@ -39,6 +39,9 @@ import json
 from typing import Dict, Tuple, Optional
 import logging
 from functools import lru_cache
+from urllib.error import URLError, HTTPError
+from urllib.parse import urlencode
+from urllib.request import Request as UrlRequest, urlopen
 
 # Import contract clients
 from contracts.insight_listing import InsightListingClient
@@ -618,6 +621,42 @@ async def trigger_x402_payment(
         Core payment execution stage called by the agent when BUY decision is approved.
     """
     try:
+        backend_base_url = os.getenv("BACKEND_URL", "http://127.0.0.1:8000").rstrip("/")
+
+        def _fetch_subscription_status() -> dict[str, object] | None:
+            try:
+                query_string = urlencode({"wallet": buyer_address})
+                request = UrlRequest(f"{backend_base_url}/subscription/status?{query_string}", method="GET")
+                with urlopen(request, timeout=12) as response:
+                    payload = response.read().decode("utf-8")
+                parsed = json.loads(payload)
+                if isinstance(parsed, dict):
+                    return parsed
+            except (HTTPError, URLError, TimeoutError, ValueError, json.JSONDecodeError) as exc:
+                logger.warning("Subscription status check failed for %s: %s", buyer_address, exc)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("Unexpected subscription status failure for %s: %s", buyer_address, exc)
+            return None
+
+        def _grant_subscription_access() -> dict[str, object]:
+            try:
+                request_payload = json.dumps({"buyer_wallet": buyer_address, "listing_id": listing_id}).encode("utf-8")
+                request = UrlRequest(
+                    f"{backend_base_url}/escrow/release_for_subscriber",
+                    data=request_payload,
+                    method="POST",
+                    headers={"Content-Type": "application/json"},
+                )
+                with urlopen(request, timeout=30) as response:
+                    payload = response.read().decode("utf-8")
+                parsed = json.loads(payload)
+                if isinstance(parsed, dict):
+                    return parsed
+            except Exception as exc:  # noqa: BLE001
+                logger.error("Subscription release request failed for listing %s: %s", listing_id, exc, exc_info=True)
+                raise
+            raise RuntimeError("Subscription release endpoint returned an invalid response")
+
         def _friendly_payment_error(raw: str) -> str:
             low = raw.lower()
             if "underflow" in low or "insufficient" in low or "overspend" in low:
@@ -631,6 +670,26 @@ async def trigger_x402_payment(
             return payment_rejected(logger, raw)
 
         normalize_network_env()
+
+        subscription_status = _fetch_subscription_status()
+        if subscription_status and bool(subscription_status.get("active", False)):
+            expiry_round = int(subscription_status.get("expiry_round", 0) or 0)
+            logger.info(
+                f"[SUBSCRIPTION] Active until round {expiry_round}. Skipping x402 payment for listing {listing_id}."
+            )
+            subscription_result = _grant_subscription_access()
+            return json.dumps(
+                {
+                    "success": True,
+                    "approved": True,
+                    "payment_method": "subscription",
+                    "x402_skipped": True,
+                    "subscription_expiry_round": expiry_round,
+                    "listing_id": listing_id,
+                    "subscription_release": subscription_result,
+                }
+            )
+
         # =========================================================================
         # STEP 1: USER APPROVAL GATE
         # =========================================================================

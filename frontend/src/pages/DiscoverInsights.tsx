@@ -139,7 +139,7 @@ function buildFeaturedListingInsight(listingInsight: ReturnType<typeof useAppCon
 
 export default function DiscoverInsightsPage() {
   const navigate = useNavigate()
-  const { listingInsight, setSelectedInsight, setSellerMetadata } = useAppContext()
+  const { listingInsight, setSelectedInsight, setSellerMetadata, buyerWallet, setBuyerWallet } = useAppContext()
 
   const [query, setQuery] = useState(() => {
     if (typeof window === 'undefined') return ''
@@ -172,6 +172,17 @@ export default function DiscoverInsightsPage() {
   })
   const [weakOnly, setWeakOnly] = useState(false)
   const [searchFeedback, setSearchFeedback] = useState<string | null>(null)
+  const [subscriptionStatus, setSubscriptionStatus] = useState<{
+    active: boolean
+    expiry_round: number
+    expiry_approx_date: string
+    months_remaining: number
+    total_months_paid: number
+    total_usdc_paid_micro: number
+  } | null>(null)
+  const [subscriptionMonths, setSubscriptionMonths] = useState(1)
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false)
+  const [subscriptionError, setSubscriptionError] = useState<string | null>(null)
 
   const queryTokens = useMemo(() => tokenize(query), [query])
   const featuredListing = useMemo(() => buildFeaturedListingInsight(listingInsight), [listingInsight])
@@ -232,6 +243,72 @@ export default function DiscoverInsightsPage() {
     if (typeof window === 'undefined') return
     sessionStorage.setItem('discover:lastQuery', query)
   }, [query])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const refreshSubscriptionStatus = async () => {
+      if (!buyerWallet) {
+        setSubscriptionStatus(null)
+        setSubscriptionError(null)
+        return
+      }
+
+      try {
+        const status = await api.subscriptionStatus(buyerWallet)
+        if (cancelled) return
+        setSubscriptionStatus({
+          active: Boolean(status.active),
+          expiry_round: Number(status.expiry_round || 0),
+          expiry_approx_date: String(status.expiry_approx_date || ''),
+          months_remaining: Number(status.months_remaining || 0),
+          total_months_paid: Number(status.total_months_paid || 0),
+          total_usdc_paid_micro: Number(status.total_usdc_paid_micro || 0),
+        })
+        setSubscriptionError(null)
+      } catch (error) {
+        if (cancelled) return
+        setSubscriptionStatus(null)
+        setSubscriptionError(error instanceof Error ? error.message : 'Unable to load subscription status')
+      }
+    }
+
+    void refreshSubscriptionStatus()
+
+    return () => {
+      cancelled = true
+    }
+  }, [buyerWallet])
+
+  const handleSubscribe = async () => {
+    if (!buyerWallet) {
+      setSubscriptionError('Enter a buyer wallet before subscribing.')
+      return
+    }
+
+    setSubscriptionLoading(true)
+    setSubscriptionError(null)
+    try {
+      const response = await api.subscribe(buyerWallet, subscriptionMonths)
+      setSubscriptionStatus({
+        active: true,
+        expiry_round: Number(response.expiry_round || 0),
+        expiry_approx_date: String(response.expiry_approx_date || ''),
+        months_remaining: Number(subscriptionMonths),
+        total_months_paid: Number(response.months_paid || subscriptionMonths),
+        total_usdc_paid_micro: Number(subscriptionMonths) * 50000000,
+      })
+      setSubscriptionMonths(1)
+    } catch (error) {
+      setSubscriptionError(error instanceof Error ? error.message : 'Subscription failed')
+    } finally {
+      setSubscriptionLoading(false)
+    }
+  }
+
+  const renewSubscription = () => {
+    setSubscriptionMonths(1)
+  }
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -379,6 +456,67 @@ export default function DiscoverInsightsPage() {
               Enter a natural-language query and Mercator will search, rank, and justify insights
               using relevance, reputation, and value.
             </p>
+
+            <div className={`discover-subscription-panel ${subscriptionStatus?.active ? 'is-active' : ''}`}>
+              <div className="discover-subscription-panel__heading">
+                <div>
+                  <p className="home-kicker">Subscription</p>
+                  <h2>{subscriptionStatus?.active ? 'Subscribed' : 'Unlimited Curator Insights'}</h2>
+                  <p>
+                    {subscriptionStatus?.active
+                      ? `Expires approximately ${subscriptionStatus.expiry_approx_date} (round ${subscriptionStatus.expiry_round})`
+                      : '50 USDC / month — all Curator Agent listings included, no per-insight fees'}
+                  </p>
+                </div>
+                {subscriptionStatus?.active && <span className="discover-subscription-badge">✓ Active</span>}
+              </div>
+
+              <label className="discover-input-group">
+                <span>Buyer wallet</span>
+                <input
+                  type="text"
+                  placeholder="Enter your Algorand wallet"
+                  value={buyerWallet ?? ''}
+                  onChange={(event) => setBuyerWallet(event.target.value)}
+                />
+              </label>
+
+              <div className="discover-subscription-panel__controls">
+                <label className="discover-input-group">
+                  <span>Months</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={12}
+                    value={subscriptionMonths}
+                    onChange={(event) => setSubscriptionMonths(Number(event.target.value) || 1)}
+                  />
+                </label>
+
+                <button
+                  type="button"
+                  className="discover-submit-btn discover-subscription-btn"
+                  onClick={handleSubscribe}
+                  disabled={subscriptionLoading}
+                >
+                  {subscriptionLoading ? 'Processing...' : subscriptionStatus?.active ? 'Renew' : 'Subscribe Now'}
+                </button>
+              </div>
+
+              {subscriptionStatus?.active && (
+                <p className="discover-subscription-meta">
+                  {subscriptionStatus.total_months_paid} month(s) paid · {subscriptionStatus.total_usdc_paid_micro / 1_000_000} USDC total · {subscriptionStatus.months_remaining.toFixed(2)} months remaining
+                </p>
+              )}
+
+              {subscriptionError && <p className="discover-subscription-error">{subscriptionError}</p>}
+
+              {subscriptionStatus?.active && (
+                <button type="button" className="discover-side-link" onClick={renewSubscription}>
+                  Renew
+                </button>
+              )}
+            </div>
 
             <div className="discover-search-console">
               <label className="discover-input-group">

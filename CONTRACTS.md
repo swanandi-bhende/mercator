@@ -66,6 +66,84 @@ The fee system operates on **basis points** where 1 basis point = 0.01%, so:
 - **`record_fee_collected(fee_amount_micro_usdc)`**: Called by Escrow contract after payment split; increments total_fees_collected; validates caller is registered Escrow app
 - **`get_config() → (fee_rate_bps, treasury_address, total_fees_collected, usdc_asset_id)`**: Read-only; returns current configuration for Operations dashboard
 
+## SubscriptionManager
+
+Subscription timing and pricing are round-based, not wall-clock based.
+
+### Algorand round timing
+
+- `Global.round` inside a contract call returns the confirmation round for the transaction currently being processed, not the round when the transaction was first built.
+- Subscription expiry must always be calculated from the actual confirmation round.
+- Algorand rounds are a time proxy, so the same round count represents different wall-clock durations on MainNet and TestNet.
+
+### Network-specific month constants
+
+- `MAINNET_ROUNDS_PER_MONTH = 172800`
+- `TESTNET_ROUNDS_PER_MONTH = 17280`
+- The contract does not hardcode either value at runtime; it accepts `rounds_per_month` during deployment so the same code can be used on MainNet or TestNet demo deployments.
+
+### Data model
+
+- `owner`: arc4.Address — deployer wallet; only the owner may update configuration or register the Escrow app ID.
+- `escrow_app_id`: arc4.UInt64 — Escrow application ID, set after Escrow deployment.
+- `monthly_rate_micro_usdc`: arc4.UInt64 — current monthly price in microUSDC; default deployment value is 50,000,000.
+- `rounds_per_month`: arc4.UInt64 — deployment-time month length in rounds.
+- `usdc_asset_id`: arc4.UInt64 — USDC ASA ID for the target network.
+- `total_subscribers`: arc4.UInt64 — count of genuinely new subscribers only.
+- `total_revenue_micro_usdc`: arc4.UInt64 — running total of all microUSDC collected from subscriptions and renewals.
+- `subscriptions`: BoxMap keyed by arc4.Address with key prefix `b"sub_"`.
+
+**SubscriptionRecord struct:**
+- `subscribed_at_round`: arc4.UInt64 — round the subscription was first created for the current active cycle.
+- `expiry_round`: arc4.UInt64 — round after which `is_active` returns false.
+- `total_months_paid`: arc4.UInt64 — cumulative months paid by this subscriber.
+- `total_usdc_paid`: arc4.UInt64 — cumulative microUSDC paid by this subscriber.
+- `last_payment_round`: arc4.UInt64 — confirmation round of the most recent payment.
+- `source_type`: arc4.String — must always be exactly `"subscription"`.
+
+### Pricing math
+
+- USDC has 6 decimals.
+- 50 USDC = 50,000,000 microUSDC.
+- Formula: `price_micro_usdc = months * MONTHLY_RATE_MICRO_USDC`
+- `MONTHLY_RATE_MICRO_USDC` is stored in global state so the owner can change pricing without redeploying.
+
+Example prices:
+- 1 month = 50,000,000 microUSDC
+- 2 months = 100,000,000 microUSDC
+- 12 months = 600,000,000 microUSDC
+
+### Expiry formulas
+
+- New subscriber: `expiry_round = Global.round + (months * ROUNDS_PER_MONTH)`
+- Active renewal: `new_expiry_round = current_expiry_round + (months * ROUNDS_PER_MONTH)`
+- Lapsed renewal: `new_expiry_round = Global.round + (months * ROUNDS_PER_MONTH)`
+
+### Payment-in-group verification
+
+- `subscribe()` receives USDC as an `AssetTransfer` in the same atomic group as the app call.
+- The USDC transfer is at group index 0 and the contract call is at group index 1.
+- The contract verifies the payment by inspecting `gtxn.AssetTransferTransaction(0)` and checking the asset id, amount, receiver, and sender.
+- This is the subscription payment path; the contract does not rely on inner transactions for the incoming USDC.
+
+### Methods
+
+- `__init__(monthly_rate, rounds_per_month, usdc_id)`: validates the monthly rate is between 1,000,000 and 1,000,000,000 microUSDC, sets all global state, and emits a creation event.
+- `subscribe(months)`: validates months are between 1 and 12, verifies the grouped USDC payment, and writes or renews the caller’s subscription box record.
+- `is_active(wallet) → Bool`: fast read-only check used by Escrow before free purchases.
+- `get_subscription(wallet) → SubscriptionRecord`: returns the full subscription record.
+- `get_expiry_round(wallet) → UInt64`: returns only the expiry round for frontend display.
+- `get_config() → (monthly_rate_micro_usdc, rounds_per_month, total_subscribers, total_revenue_micro_usdc, usdc_asset_id)`: returns the current pricing and usage counters.
+
+### Operational notes
+
+- `total_subscribers` increases only when a brand-new wallet subscribes.
+- Renewals never increment `total_subscribers`.
+- Active renewals stack on top of the existing expiry.
+- Lapsed renewals start fresh from the confirmation round.
+- `source_type` must always be `"subscription"` so Escrow can reject manually crafted Box entries.
+- `is_active` treats a subscription expiring on the current round as expired because the comparison is strictly greater-than.
+
 ## Escrow
 
 Schema for Escrow contract (payment settlement and buyer access unlock):

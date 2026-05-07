@@ -47,11 +47,13 @@ class InsightListing(ARC4Contract):
     registry_app_id: GlobalState[UInt64]
     next_listing_id: GlobalState[UInt64]
     listings: BoxMap[arc4.UInt64, Listing]
+    subscriber_access: BoxMap[arc4.String, arc4.Bool]
 
     def __init__(self) -> None:
         self.registry_app_id = GlobalState(UInt64)
         self.next_listing_id = GlobalState(UInt64)
         self.listings = BoxMap(arc4.UInt64, Listing, key_prefix=b"listing")
+        self.subscriber_access = BoxMap(arc4.String, arc4.Bool, key_prefix=b"subaccess")
 
     @arc4.abimethod()
     def create_listing(
@@ -123,3 +125,17 @@ class InsightListing(ARC4Contract):
         )
         self.next_listing_id.value = listing_id + UInt64(1)
         return arc4.UInt64(listing_id)
+
+    @arc4.abimethod(readonly=True)
+    def get_listing_state(self, listing_id: arc4.UInt64) -> arc4.String:
+        exists = self.listings.maybe(listing_id)[1]
+        if not exists:
+            return arc4.String("missing")
+        return arc4.String("active")
+
+    @arc4.abimethod()
+    def mark_sold_to_subscriber(self, listing_id: arc4.UInt64, buyer: arc4.Address) -> None:
+        exists = self.listings.maybe(listing_id)[1]
+        assert exists, "Listing not found"
+        access_key = arc4.String(buyer.native + "|" + str(listing_id.native))
+        self.subscriber_access[access_key] = arc4.Bool(True)

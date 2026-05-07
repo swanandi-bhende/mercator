@@ -18,6 +18,27 @@ import type {
 } from '../types'
 import type { RegisteredAgent } from '../types'
 
+type SubscriptionStatusResponse = {
+  success: boolean
+  active: boolean
+  expiry_round: number
+  expiry_approx_date: string
+  months_remaining: number
+  total_months_paid: number
+  total_usdc_paid_micro: number
+  source_type?: string
+}
+
+type SubscribeResponse = {
+  success: boolean
+  tx_id: string
+  subscription_tx_id?: string
+  payment_tx_id?: string
+  expiry_round: number
+  expiry_approx_date?: string
+  months_paid: number
+}
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL?.trim() || 'http://localhost:8000'
 
 const client = axios.create({
@@ -94,6 +115,41 @@ export const api = {
       return response.data
     } catch (error) {
       throw new ApiError('Failed to discover insights', error)
+    }
+  },
+
+  subscriptionStatus: async (wallet: string) => {
+    try {
+      const response = await client.get<SubscriptionStatusResponse>('/subscription/status', {
+        params: { wallet: wallet.trim() },
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('Failed to fetch subscription status', error)
+    }
+  },
+
+  subscribe: async (buyerWallet: string, months: number) => {
+    try {
+      const response = await client.post<SubscribeResponse>('/subscribe', {
+        buyer_wallet: buyerWallet.trim(),
+        months,
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('Subscription purchase failed', error)
+    }
+  },
+
+  releaseForSubscriber: async (buyerWallet: string, listingId: number) => {
+    try {
+      const response = await client.post('/escrow/release_for_subscriber', {
+        buyer_wallet: buyerWallet.trim(),
+        listing_id: listingId,
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('Subscriber content release failed', error)
     }
   },
 
