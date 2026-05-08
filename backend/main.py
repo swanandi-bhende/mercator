@@ -88,6 +88,10 @@ from backend.utils.flow_tracer import tracer
 from backend.utils.runtime_env import configure_demo_logging, normalize_network_env, warn_missing_required_env
 from backend.utils.error_handler import contract_error, ipfs_down
 from backend.utils.ws_manager import ws_manager
+from backend.api.v1.router import router as api_v1_router
+from backend.api.v1.auth import seed_demo_key
+from backend.api.v1.responses import error_response
+import uuid as _uuid
 
 try:
     from contracts.insight_listing import InsightListingClient  # noqa: F401
@@ -120,6 +124,52 @@ demo_logger = configure_demo_logging()
 app = FastAPI(title="Mercator Backend")
 logger = logging.getLogger("mercator.backend")
 scheduler = AsyncIOScheduler()
+
+# Mount API v1 router (protected routes)
+app.include_router(api_v1_router)
+
+
+@app.on_event("startup")
+async def _ensure_demo_key():
+    try:
+        seed_demo_key()
+    except Exception:
+        pass
+
+
+@app.get("/api/v1/health")
+async def api_v1_health():
+    from datetime import datetime
+
+    return {
+        "status": "ok",
+        "version": "1.0",
+        "network": "algorand_testnet",
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+    }
+
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    request_id = getattr(request.state, "request_id", None) or str(_uuid.uuid4())
+    # If the detail already contains structured error info, adapt it; otherwise wrap generically
+    detail = exc.detail
+    headers = getattr(exc, "headers", None) or {}
+    try:
+        # If the detail is already a full envelope, return it as-is
+        if isinstance(detail, dict) and detail.get("success") is not None and detail.get("error") is not None:
+            body = detail
+        elif isinstance(detail, dict) and detail.get("error") and isinstance(detail.get("error"), dict) and detail.get("error").get("code"):
+            err = detail.get("error")
+            body = error_response(err.get("code"), err.get("message", ""), request_id, err.get("details", {}))
+        elif isinstance(detail, dict) and detail.get("code"):
+            body = error_response(detail.get("code"), detail.get("message", ""), request_id, detail.get("details", {}))
+        else:
+            body = error_response("ERROR", str(detail), request_id, {})
+    except Exception:
+        body = error_response("ERROR", str(detail), request_id, {})
+    return JSONResponse(status_code=exc.status_code, content=body, headers=headers)
 
 EXPLORER_TX_BASE = os.getenv("EXPLORER_TX_BASE", "https://lora.algokit.io/testnet/tx").rstrip("/")
 

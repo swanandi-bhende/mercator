@@ -83,6 +83,37 @@ def initialise_curator_schema() -> None:
             )
             """
         )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS api_keys (
+                key_id TEXT PRIMARY KEY,
+                key_hash TEXT UNIQUE NOT NULL,
+                owner_name TEXT NOT NULL,
+                owner_email TEXT NOT NULL,
+                tier TEXT NOT NULL DEFAULT 'developer',
+                rate_limit_per_minute INTEGER NOT NULL DEFAULT 60,
+                created_at TEXT NOT NULL,
+                last_used_at TEXT,
+                total_requests INTEGER DEFAULT 0,
+                is_active INTEGER DEFAULT 1
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS api_request_log (
+                request_id TEXT PRIMARY KEY,
+                key_id TEXT NOT NULL,
+                endpoint TEXT NOT NULL,
+                method TEXT NOT NULL,
+                request_body_summary TEXT,
+                response_status INTEGER,
+                response_time_ms INTEGER,
+                requested_at TEXT NOT NULL,
+                ip_address TEXT
+            )
+            """
+        )
         conn.commit()
 
 
