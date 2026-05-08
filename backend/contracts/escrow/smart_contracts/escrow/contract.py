@@ -59,6 +59,7 @@ class Escrow(ARC4Contract):
     registry_app_id: GlobalState[UInt64]
     fee_config_app_id: GlobalState[UInt64]
     insight_listing_app_id: GlobalState[UInt64]
+    reputation_app_id: GlobalState[UInt64]
     subscription_manager_app_id: GlobalState[UInt64]
     owner: GlobalState[arc4.Address]
     unlocked_listings: BoxMap[arc4.UInt64, UnlockRecord]
@@ -67,6 +68,7 @@ class Escrow(ARC4Contract):
         self.registry_app_id = GlobalState(UInt64)
         self.fee_config_app_id = GlobalState(UInt64)
         self.insight_listing_app_id = GlobalState(UInt64)
+        self.reputation_app_id = GlobalState(UInt64)
         self.subscription_manager_app_id = GlobalState(UInt64)
         self.owner = GlobalState(arc4.Address)
         self.unlocked_listings = BoxMap(arc4.UInt64, UnlockRecord, key_prefix=b"unlock")
@@ -75,6 +77,7 @@ class Escrow(ARC4Contract):
         self.fee_config_app_id.value = UInt64(0)
         self.insight_listing_app_id.value = UInt64(0)
         self.registry_app_id.value = UInt64(0)
+        self.reputation_app_id.value = UInt64(0)
         self.subscription_manager_app_id.value = UInt64(0)
 
     @arc4.abimethod(create="require", allow_actions=["NoOp"])
@@ -83,12 +86,14 @@ class Escrow(ARC4Contract):
         fee_config_app_id: arc4.UInt64,
         insight_listing_app_id: arc4.UInt64,
         registry_app_id: arc4.UInt64,
+        reputation_app_id: arc4.UInt64,
         subscription_manager_app_id: arc4.UInt64,
     ) -> None:
         self.owner.value = arc4.Address(Txn.sender)
         self.fee_config_app_id.value = fee_config_app_id.as_uint64()
         self.insight_listing_app_id.value = insight_listing_app_id.as_uint64()
         self.registry_app_id.value = registry_app_id.as_uint64()
+        self.reputation_app_id.value = reputation_app_id.as_uint64()
         self.subscription_manager_app_id.value = subscription_manager_app_id.as_uint64()
 
     @arc4.abimethod()
@@ -97,12 +102,14 @@ class Escrow(ARC4Contract):
         fee_config_app_id: arc4.UInt64,
         insight_listing_app_id: arc4.UInt64,
         registry_app_id: arc4.UInt64,
+        reputation_app_id: arc4.UInt64,
         subscription_manager_app_id: arc4.UInt64,
     ) -> None:
         assert Txn.sender == self.owner.value.native, "Only owner can update app ids"
         self.fee_config_app_id.value = fee_config_app_id.as_uint64()
         self.insight_listing_app_id.value = insight_listing_app_id.as_uint64()
         self.registry_app_id.value = registry_app_id.as_uint64()
+        self.reputation_app_id.value = reputation_app_id.as_uint64()
         self.subscription_manager_app_id.value = subscription_manager_app_id.as_uint64()
 
     @arc4.abimethod()
@@ -202,6 +209,23 @@ class Escrow(ARC4Contract):
             app_id=self.fee_config_app_id.value,
         )
 
+        # Important ordering: move money first, then update reputation. If reputation
+        # update runs before transfers and transfers later fail, the seller would be
+        # incorrectly credited on-chain. Doing reputation after transfers avoids that.
+        if self.reputation_app_id.value != UInt64(0):
+            try:
+                # Call the Reputation contract to record the purchase (seller, buyer, listing)
+                arc4.abi_call(
+                    "record_purchase(address,address,uint64)void",
+                    seller,
+                    buyer,
+                    listing_id,
+                    app_id=self.reputation_app_id.value,
+                )
+            except Exception:
+                # Reputation update failure should not prevent payout; log silently on-chain.
+                pass
+
         # Update buyer access in InsightListing contract.
         # Disabled pending method availability in InsightListing ABI.
 
@@ -216,7 +240,7 @@ class Escrow(ARC4Contract):
         return arc4.Bool(True)
 
     @arc4.abimethod()
-    def release_for_subscriber(self, buyer: arc4.Address, listing_id: arc4.UInt64) -> arc4.Bool:
+    def release_for_subscriber(self, buyer: arc4.Address, listing_id: arc4.UInt64, seller: arc4.Address) -> arc4.Bool:
         assert Txn.sender == buyer.native, "Only the buyer can release subscriber access"
 
         if self.registry_app_id.value != UInt64(0):
@@ -255,5 +279,19 @@ class Escrow(ARC4Contract):
                 buyer,
                 app_id=self.registry_app_id.value,
             )
+
+        # Update reputation for subscriber purchases as well. Ordering: mark sold first,
+        # then call reputation to credit the seller. If reputation call fails, don't revert.
+        if self.reputation_app_id.value != UInt64(0):
+            try:
+                arc4.abi_call(
+                    "record_purchase(address,address,uint64)void",
+                    seller,
+                    buyer,
+                    listing_id,
+                    app_id=self.reputation_app_id.value,
+                )
+            except Exception:
+                pass
 
         return arc4.Bool(True)

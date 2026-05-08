@@ -311,7 +311,7 @@ async def complete_purchase_flow(
                 
                 # Get suggested params and set proper fee for inner transactions
                 sp = active_escrow_client.client.algod_client.suggested_params()
-                sp.fee = 5000  # 1000 base + 4 inner txs * 1000 each
+                sp.fee = 6000  # 1000 base + 5 inner txs * 1000 each (added reputation inner call)
                 sp.flat_fee = True
                 
                 # Call release_after_payment with all required parameters

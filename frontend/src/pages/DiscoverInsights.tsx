@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
 import { api, ApiError } from '../utils/api'
@@ -235,6 +235,11 @@ export default function DiscoverInsightsPage() {
   const [listings, setListings] = useState<LiveListing[]>([])
   const [newListingIds, setNewListingIds] = useState<string[]>([])
   const [agentBadges, setAgentBadges] = useState<Record<string, string>>({})
+  const [reputationOverrides, setReputationOverrides] = useState<Record<string, number>>({})
+
+  const reputationCacheRef = useRef<
+    Map<string, { score: number; fetchedAt: number }>
+  >(new Map())
 
   const queryTokens = useMemo(() => tokenize(query), [query])
   const featuredListing = useMemo(() => buildFeaturedListingInsight(listingInsight), [listingInsight])
@@ -298,6 +303,16 @@ export default function DiscoverInsightsPage() {
         : DEMO_INSIGHTS
   const visibleInsights = baseInsights.filter((insight) => applyFilters(insight) && matchesSearchQuery(insight))
 
+  // Apply reputation overrides from cache/WebSocket updates
+  const insightsWithLiveReputation = useMemo(
+    () =>
+      visibleInsights.map((insight) => ({
+        ...insight,
+        reputation: reputationOverrides[insight.wallet] ?? insight.reputation,
+      })),
+    [visibleInsights, reputationOverrides],
+  )
+
   useEffect(() => {
     if (typeof window === 'undefined') return
     sessionStorage.setItem('discover:lastQuery', query)
@@ -360,6 +375,53 @@ export default function DiscoverInsightsPage() {
   }, [])
 
   useEffect(() => {
+    let cancelled = false
+
+    const fetchSellerReputation = async (wallet: string) => {
+      if (!wallet || cancelled) return
+
+      const cached = reputationCacheRef.current.get(wallet)
+      if (cached && Date.now() - cached.fetchedAt < 60000) {
+        setReputationOverrides((prev) => ({
+          ...prev,
+          [wallet]: cached.score,
+        }))
+        return
+      }
+
+      try {
+        const data = await api.get<{ effective_score: number }>(
+          `/sellers/${wallet}/reputation`,
+        )
+        if (cancelled) return
+        if (data && typeof data.effective_score === 'number') {
+          reputationCacheRef.current.set(wallet, {
+            score: data.effective_score,
+            fetchedAt: Date.now(),
+          })
+          setReputationOverrides((prev) => ({
+            ...prev,
+            [wallet]: data.effective_score,
+          }))
+        }
+      } catch {
+        // Best-effort; use existing reputation from listing
+      }
+    }
+
+    const uniqueSellers = new Set(visibleInsights.map((i) => i.wallet))
+    Promise.all(
+      Array.from(uniqueSellers).map((wallet) => fetchSellerReputation(wallet)),
+    ).catch(() => {
+      // Ignore errors; reputation is optional
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [visibleInsights])
+
+  useEffect(() => {
     if (!latestWsEvent) return
 
     if (latestWsEvent.event_type === 'new_listing') {
@@ -406,6 +468,19 @@ export default function DiscoverInsightsPage() {
           return next
         })
       }, 5000)
+    }
+
+    if (latestWsEvent.event_type === 'reputation_updated') {
+      const payload = latestWsEvent.payload as Record<string, unknown>
+      const sellerWallet = String(payload.wallet || '')
+      if (!sellerWallet) return
+
+      const effectiveScore = Number(payload.effective_score || 0)
+      reputationCacheRef.current.delete(sellerWallet)
+      setReputationOverrides((prev) => ({
+        ...prev,
+        [sellerWallet]: effectiveScore,
+      }))
     }
   }, [latestWsEvent])
 
@@ -790,7 +865,7 @@ export default function DiscoverInsightsPage() {
           )}
 
           <div className="discover-results-grid">
-            {visibleInsights.map((insight, index) => (
+            {insightsWithLiveReputation.map((insight, index) => (
               <article
                 key={insight.id}
                 className={`discover-result-card ${newListingIds.includes(insight.listingId) ? 'listing-card-new' : ''}`}

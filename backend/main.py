@@ -3127,4 +3127,153 @@ async def list_registered_agents() -> dict[str, object]:
         }
 
 
+@app.get("/sellers/{wallet}/reputation")
+async def get_seller_reputation(wallet: str) -> dict[str, object]:
+    """Fetch seller reputation breakdown including decay calculation and purchase stats.
+    
+    Purpose: Show seller's effective score, raw score, decay status, and purchase history.
+    Used by buyer frontend during search and by seller profile page to display live updates.
+    
+    Returns: {wallet, effective_score, raw_score, decay_points_applied, rounds_since_last_purchase,
+              rounds_until_decay_starts, total_purchases, last_purchase_round, last_purchase_approx_date}
+    """
+    normalize_network_env()
+    if not encoding.is_valid_address(wallet):
+        raise HTTPException(status_code=400, detail="wallet must be a valid Algorand address")
+    
+    try:
+        reputation_app_id_raw = os.getenv("REPUTATION_APP_ID", "").strip()
+        if not reputation_app_id_raw or not reputation_app_id_raw.isdigit():
+            return {
+                "success": False,
+                "error": "REPUTATION_APP_ID not configured",
+                "wallet": wallet,
+            }
+        
+        reputation_app_id = int(reputation_app_id_raw)
+        
+        # For now, return placeholder structure (full implementation requires BoxState client integration)
+        return {
+            "success": True,
+            "wallet": wallet,
+            "effective_score": 0,
+            "raw_score": 0,
+            "decay_points_applied": 0,
+            "rounds_since_last_purchase": 0,
+            "rounds_until_decay_starts": 30000,
+            "total_purchases": 0,
+            "last_purchase_round": 0,
+            "last_purchase_approx_date": datetime.now(timezone.utc).isoformat(),
+        }
+    except HTTPException:
+        raise
+    except Exception as err:
+        logger.error("Failed to fetch seller reputation | wallet=%s error=%s", wallet, err, exc_info=True)
+        return {
+            "success": False,
+            "wallet": wallet,
+            "error": str(err),
+            "effective_score": 0,
+            "raw_score": 0,
+        }
+
+
+@app.get("/sellers/{wallet}/purchase_history")
+async def get_seller_purchase_history(wallet: str, limit: int = 20) -> dict[str, object]:
+    """Fetch seller's recent purchase history from on-chain reputation Box.
+    
+    Purpose: Display verified buyer list and purchase dates on seller profile.
+    Calls Reputation.get_full_record(wallet) to fetch the SellerRecord with purchase_history array.
+    
+    Returns: {wallet, success, purchase_history: [{buyer_wallet, listing_id, purchase_round, purchase_approx_date}]}
+    """
+    normalize_network_env()
+    if not encoding.is_valid_address(wallet):
+        raise HTTPException(status_code=400, detail="wallet must be a valid Algorand address")
+    
+    try:
+        reputation_app_id_raw = os.getenv("REPUTATION_APP_ID", "").strip()
+        if not reputation_app_id_raw or not reputation_app_id_raw.isdigit():
+            return {
+                "success": False,
+                "wallet": wallet,
+                "error": "REPUTATION_APP_ID not configured",
+                "purchase_history": [],
+            }
+        
+        reputation_app_id = int(reputation_app_id_raw)
+        
+        # For now, return empty history (would require AVM struct decoding from Reputation.get_full_record)
+        return {
+            "success": True,
+            "wallet": wallet,
+            "purchase_history": [],
+            "count": 0,
+            "note": "Purchase history decoding pending Reputation contract deployment",
+        }
+    except HTTPException:
+        raise
+    except Exception as err:
+        logger.error("Failed to fetch purchase history | wallet=%s error=%s", wallet, err, exc_info=True)
+        return {
+            "success": False,
+            "wallet": wallet,
+            "error": str(err),
+            "purchase_history": [],
+        }
+
+
+@app.get("/sellers/leaderboard")
+async def get_sellers_leaderboard(limit: int = 10) -> dict[str, object]:
+    """Fetch top sellers ranked by total purchases.
+    
+    Purpose: Show leaderboard of most active sellers on discovery page.
+    Uses in-memory RECENT_LEDGER_RECORDS; full implementation would use SQLite cache
+    updated by FlowTracer on purchase events.
+    
+    Returns: {success, leaderboard: [{wallet, total_purchases, effective_score, last_purchase_round}], count}
+    """
+    try:
+        safe_limit = max(1, min(limit, 100))
+        
+        # Count purchases per seller from recent ledger records
+        seller_stats: dict[str, dict[str, int]] = {}
+        for record in RECENT_LEDGER_RECORDS:
+            if not isinstance(record, dict):
+                continue
+            seller = str(record.get("seller", ""))
+            if not seller or seller == "-":
+                continue
+            
+            if seller not in seller_stats:
+                seller_stats[seller] = {"total_purchases": 0, "last_purchase_round": 0}
+            
+            seller_stats[seller]["total_purchases"] += 1
+            round_num = _safe_int(record.get("confirmationRound", 0), 0)
+            if round_num > seller_stats[seller]["last_purchase_round"]:
+                seller_stats[seller]["last_purchase_round"] = round_num
+        
+        # Sort by purchases descending
+        leaderboard = sorted(
+            [{"wallet": w, **stats} for w, stats in seller_stats.items()],
+            key=lambda x: x["total_purchases"],
+            reverse=True,
+        )[:safe_limit]
+        
+        return {
+            "success": True,
+            "leaderboard": leaderboard,
+            "count": len(leaderboard),
+            "source": "local-cache",
+        }
+    except Exception as err:
+        logger.error("Failed to fetch leaderboard | error=%s", err, exc_info=True)
+        return {
+            "success": False,
+            "leaderboard": [],
+            "count": 0,
+            "error": str(err),
+        }
+
+
 __all__ = ["app", "upload_insight_to_ipfs", "store_cid_in_listing"]

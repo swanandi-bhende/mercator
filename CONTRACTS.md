@@ -219,3 +219,61 @@ For 4 inner transactions: **sp.fee = 5000 microALGO** (must be set explicitly, n
 - Escrow App ID (fee-aware build): 761839258
 - InsightListing App ID: 758025190
 - Treasury Address: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+
+## Reputation (Seller) — Design Decisions and Data Model
+
+Important preface:
+- Algorand Boxes store opaque byte blobs. Variable-length arrays inside a single Box are not appendable in place — you must read the full Box, deserialize, mutate the in-memory array, then reserialize and write the Box. This read-modify-write pattern makes unbounded arrays expensive in opcode budget and in Box size.
+- To bound cost and keep opcode usage predictable, the on-chain purchase history stored per-seller will be capped at the most recent 20 purchases. Older entries are discarded using a sliding-window approach. This decision limits Box size and amortises the cost of writes while still providing useful recent-history to frontends.
+
+Boxes & Opcode budget notes:
+- The default single-call opcode budget is 700. When using pooled fees (inner transactions called from another app), the available budget scales with the number of transactions in the group. The `record_purchase` method is invoked as an inner transaction from `Escrow.release_after_payment`, so its budget is pooled with the outer group — design accordingly.
+- Because exact opcode costs for `box_get`, `box_put`, `box_len`, and `ed25519verify_bare` can vary across AVM versions, implementations SHOULD consult the Algorand AVM opcode cost table before optimizing further. The cap of 20 entries is chosen to keep Box read/serialise/write operations bounded and predictable.
+
+Data model (per-seller Box entry)
+- `SellerRecord` (arc4.Struct):
+  - `raw_score`: arc4.UInt64 — cumulative points assigned at purchase time (no decay applied)
+  - `last_purchase_round`: arc4.UInt64 — round of the most recent completed purchase
+  - `total_purchases`: arc4.UInt64 — all-time purchase counter (not limited by history cap)
+  - `history_count`: arc4.UInt64 — number of valid entries in `purchase_history` (0..20)
+  - `purchase_history`: StaticArray[PurchaseRecord, 20] — sliding window of most recent 20 purchases
+
+`PurchaseRecord` (arc4.Struct):
+- `buyer_address`: arc4.Address
+- `listing_id`: arc4.UInt64
+- `purchase_round`: arc4.UInt64
+
+Global state (contract-level)
+- `owner`: GlobalState(arc4.Address)
+- `escrow_app_id`: GlobalState(arc4.UInt64) — only this app may call `record_purchase`
+- `points_per_purchase`: GlobalState(arc4.UInt64) — default 5 (must be 1..50)
+- `decay_threshold_rounds`: GlobalState(arc4.UInt64) — default 30000 (no decay before this)
+- `decay_rate_rounds`: GlobalState(arc4.UInt64) — default 10000 (1 point per 10000 rounds)
+- `min_score`: GlobalState(arc4.UInt64) — floor for effective score (default 0)
+- `total_sellers_tracked`: GlobalState(arc4.UInt64) — incremented on first-box creation
+
+Decisions & simplifications
+- Tracking unique buyers on-chain is expensive (would require a per-seller set). To keep storage/opcode costs reasonable, the contract records `total_purchases` as a transaction count rather than unique buyers. This is documented and accepted as a simplification for on-chain storage limits.
+- Purchase history is a fixed-size sliding window (20 most recent entries). `history_count` indicates how many entries are valid (0..20). When `history_count` == 20, new entries shift the array left and insert the new record at index 19.
+
+Decay formula (precise)
+- Parameters: `decay_threshold_rounds = 30000`, `decay_rate_rounds = 10000` (defaults shown, configurable by owner)
+- Compute `rounds_since_purchase = Global.round() - last_purchase_round`.
+- If `rounds_since_purchase <= decay_threshold_rounds` → `decay_points = 0`.
+- Else `decay_points = (rounds_since_purchase - decay_threshold_rounds) // decay_rate_rounds` using integer division.
+- `effective_score = max(min_score, raw_score - decay_points)` (floor at `min_score` to avoid underflow).
+
+Concrete examples (for CONTRACTS.md):
+- Example A: `raw_score = 5`, `rounds_since_purchase = 70000` → `decay_points = (70000 - 30000) // 10000 = 4` → `effective_score = max(0, 5 - 4) = 1`.
+- Example B: `raw_score = 3`, `rounds_since_purchase = 100000` → `decay_points = (100000 - 30000) // 10000 = 7` → `effective_score = max(0, 3 - 7) = 0`.
+- Edge-case: If `Global.round() < last_purchase_round` (possible in testing environments where ledger state was reset), treat as no-decay and return `raw_score` unchanged; this avoids unsigned underflow on subtraction.
+
+API surface (methods to implement in contract)
+- `record_purchase(seller, buyer, listing_id)`: inner-call only (guarded by `Global.caller_app_id == escrow_app_id`). Creates or updates `SellerRecord`, increments `raw_score` by `points_per_purchase`, updates `last_purchase_round`, updates `total_purchases`, and updates sliding-window `purchase_history`. Emits a concise log with seller, new raw score, and total purchases.
+- `get_score(seller) -> arc4.UInt64 (readonly)`: returns `effective_score` after applying decay formula; returns 0 if no Box exists.
+- `get_full_record(seller) -> SellerRecord (readonly)`: returns full seller record including `purchase_history` for frontend display.
+- `get_effective_score_with_breakdown(seller) -> (effective_score, raw_score, decay_points_applied, rounds_since_last_purchase, rounds_until_decay_starts) (readonly)`: returns breakdown used by frontend seller profile.
+
+Operational note
+- Because `record_purchase` runs as an inner transaction from `Escrow.release_after_payment`, gas/opcode budget must be considered. Keep Box read/serialise/write minimal and bounded by the 20-entry cap. If additional analytics are required (e.g., unique buyer counts), prefer off-chain indexing or secondary contracts with richer storage paid by operators.
+

@@ -1,79 +1,186 @@
 """Reputation contract: On-chain seller reputation scoring system.
 
-Purpose: Stores and retrieves seller trust scores (0-100 scale) used by buyer agent for purchase decisions.
-Acts as oracle for: reputation_score in semantic ranking + BUY threshold gate (score >= 50).
+This implementation follows the repository CONTRACTS.md design:
+- Capped per-seller purchase history (sliding window of 20 entries) stored in a Box
+- Raw scores are accumulated at purchase time and decay is applied dynamically
+  in read-only getters to avoid constant writes.
 
-Key Responsibilities:
-1. update_score(seller, new_score): Record or update seller's on-chain reputation.
-2. get_score(seller): Read seller's current score (returns 0 if not found).
-3. seller_scores: BoxMap (seller_address => reputation_score) storing all scores.
-
-Contract Flow in Micropayment Cycle:
-1. Agent calls semantic_search \u2192 fetches listing + calls get_score(seller).
-2. Agent's evaluation function checks: if score < 50 \u2192 SKIP (no purchase).
-3. If score >= 50 + value_for_price > 8.0 \u2192 BUY decision.
-4. After successful x402 payment, reputation system can auto-update scores (future extension).
-
-Design Notes:
-- Read-only get_score is viewable by anyone (transparency).
-- update_score is currently permissionless (admin contract call will gate this in production).
-- Scores are 0-indexed (missing sellers default to score 0, auto-SKIP).
-- No score decay or time-based expiration (permanent record).
+Notes:
+- `record_purchase` is intended to be invoked only as an inner call from the
+  Escrow contract; it checks `Global.caller_app_id` against the configured
+  `escrow_app_id` to enforce this.
+- Purchase history is stored as a fixed-size StaticArray[20] and a `history_count`
+  tracks how many entries are valid (0..20). When full, older entries are
+  shifted left to make room for the newest purchase.
 """
 
-from algopy import ARC4Contract, BoxMap, arc4
+from typing import Literal
+
+from algopy import ARC4Contract, arc4, GlobalState, BoxMap, Global, Txn, op
+
+
+class PurchaseRecord(arc4.Struct):
+    buyer_address: arc4.Address
+    listing_id: arc4.UInt64
+    purchase_round: arc4.UInt64
+
+
+class SellerRecord(arc4.Struct):
+    raw_score: arc4.UInt64
+    last_purchase_round: arc4.UInt64
+    total_purchases: arc4.UInt64
+    history_count: arc4.UInt64
+    purchase_history: arc4.StaticArray[PurchaseRecord, Literal[20]]
 
 
 class Reputation(ARC4Contract):
-    """On-chain seller reputation scoring system.
-    
-    State:
-        seller_scores: BoxMap(seller_address => score) storing seller trust scores (uint64).
-    
-    Purpose: Decentralized oracle for buyer purchase decisions + seller track record.
-    """
-    def __init__(self) -> None:
-        self.seller_scores = BoxMap(arc4.Address, arc4.UInt64, key_prefix=b"rep")
+    owner = GlobalState(arc4.Address)
+    escrow_app_id = GlobalState(arc4.UInt64)
+    points_per_purchase = GlobalState(arc4.UInt64, default=arc4.UInt64(5))
+    decay_threshold_rounds = GlobalState(arc4.UInt64, default=arc4.UInt64(30000))
+    decay_rate_rounds = GlobalState(arc4.UInt64, default=arc4.UInt64(10000))
+    min_score = GlobalState(arc4.UInt64, default=arc4.UInt64(0))
+    total_sellers_tracked = GlobalState(arc4.UInt64, default=arc4.UInt64(0))
+
+    seller_records = BoxMap(arc4.Address, SellerRecord, key_prefix=b"rep_")
+
+    def __init__(self, escrow_id: arc4.UInt64, points: arc4.UInt64) -> None:
+        # Basic constructor validation
+        assert 1 <= points.native <= 50, "points_per_purchase must be 1..50"
+        # Set deployer as owner
+        self.owner.value = Txn.sender
+        self.escrow_app_id.value = escrow_id
+        self.points_per_purchase.value = points
 
     @arc4.abimethod()
-    def update_score(self, seller: arc4.Address, new_score: arc4.UInt64) -> None:
-        """Update or create a seller reputation score on-chain.
-        
-        Purpose: Record seller's current reputation (0-100 scale).
-        Called during seller verification flow or post-purchase reputation updates.
-        
-        Actions:
-        1. Store new_score in boxes under seller's address.
-        2. Overwrites any previous score (last-write-wins).
-        3. Emit event log for audit trail.
-        
-        Args:
-            seller: Algorand wallet address to score.
-            new_score: New reputation score (0-100 typically, no hard limit in contract).
-        
-        Notes:
-        - Currently permissionless (admin contract call will gate in production).
-        - No validation on score range (contract assumes valid input).
-        - Box storage cost paid by caller (typical ~ 2500 micro-Algo for new entry).
-        """
-        self.seller_scores[seller] = new_score
+    def record_purchase(self, seller: arc4.Address, buyer: arc4.Address, listing_id: arc4.UInt64) -> None:
+        # Guard: only the configured Escrow app may record purchases (inner call)
+        assert Global.caller_app_id == self.escrow_app_id.value.native, "Only the Escrow contract can record purchases"
+
+        now_round = Global.round()
+
+        # Check if SellerRecord exists
+        exists = False
+        try:
+            exists = self.seller_records[seller].exists
+        except Exception:
+            exists = False
+
+        points = self.points_per_purchase.value
+
+        if not exists:
+            # Create new SellerRecord with one history entry
+            pr = PurchaseRecord(buyer_address=buyer, listing_id=listing_id, purchase_round=arc4.UInt64(now_round))
+            history = [arc4.StaticDefault(PurchaseRecord) for _ in range(20)]
+            history[0] = pr
+            rec = SellerRecord(
+                raw_score=points,
+                last_purchase_round=arc4.UInt64(now_round),
+                total_purchases=arc4.UInt64(1),
+                history_count=arc4.UInt64(1),
+                purchase_history=arc4.StaticArray(history),
+            )
+            self.seller_records[seller] = rec
+            # Increment total sellers tracked
+            self.total_sellers_tracked.value = arc4.UInt64(self.total_sellers_tracked.value.native + 1)
+        else:
+            # Read, update, and write back (sliding window)
+            rec = self.seller_records.get(seller)
+            # Update numeric fields
+            rec.raw_score = arc4.UInt64(rec.raw_score.native + points.native)
+            rec.last_purchase_round = arc4.UInt64(now_round)
+            rec.total_purchases = arc4.UInt64(rec.total_purchases.native + 1)
+
+            hc = rec.history_count.native
+            if hc < 20:
+                # place at index hc
+                rec.purchase_history[hc] = PurchaseRecord(buyer_address=buyer, listing_id=listing_id, purchase_round=arc4.UInt64(now_round))
+                rec.history_count = arc4.UInt64(hc + 1)
+            else:
+                # shift left and append at index 19
+                for i in range(19):
+                    rec.purchase_history[i] = rec.purchase_history[i + 1]
+                rec.purchase_history[19] = PurchaseRecord(buyer_address=buyer, listing_id=listing_id, purchase_round=arc4.UInt64(now_round))
+
+            # Write back
+            self.seller_records[seller] = rec
+
+        # Emit compact log: seller, new_raw_score, total_purchases
+        try:
+            raw = rec.raw_score.native
+            tp = rec.total_purchases.native
+            op.log(f"record_purchase|{seller}|{raw}|{tp}".encode())
+        except Exception:
+            op.log(b"record_purchase|log_failed")
 
     @arc4.abimethod(readonly=True)
     def get_score(self, seller: arc4.Address) -> arc4.UInt64:
-        """Read a seller's current reputation score on-chain.
-        
-        Purpose: Public query for seller trust score. Called by buyer agent during evaluation.
-        Readonly method (no state mutations, viewable via any algod node).
-        
-        Args:
-            seller: Algorand wallet address to look up.
-        
-        Returns:
-            Seller's reputation score (uint64). Returns 0 if seller not found (default: untrusted).
-        
-        Notes:
-        - Default score for missing sellers is 0 (fails reputation gate in agent).
-        - No caching on contract (each call does box lookup).
-        - Transparent: external tools can audit all scores via algod API.
-        """
-        return self.seller_scores.get(seller, default=arc4.UInt64(0))
+        # Return 0 for unknown sellers
+        try:
+            exists = self.seller_records[seller].exists
+        except Exception:
+            exists = False
+        if not exists:
+            return arc4.UInt64(0)
+
+        rec = self.seller_records.get(seller)
+        raw_score = rec.raw_score.native
+        last_round = rec.last_purchase_round.native
+
+        current_round = Global.round()
+        # Handle test/reset environments where current_round < last_round
+        if current_round < last_round:
+            return arc4.UInt64(raw_score)
+
+        rounds_since = current_round - last_round
+        threshold = self.decay_threshold_rounds.value.native
+        if rounds_since <= threshold:
+            return arc4.UInt64(raw_score)
+
+        decay_rate = self.decay_rate_rounds.value.native
+        decay_points = (rounds_since - threshold) // decay_rate
+
+        if decay_points >= raw_score:
+            return arc4.UInt64(self.min_score.value.native)
+        return arc4.UInt64(raw_score - decay_points)
+
+    @arc4.abimethod(readonly=True)
+    def get_full_record(self, seller: arc4.Address) -> SellerRecord:
+        try:
+            exists = self.seller_records[seller].exists
+        except Exception:
+            exists = False
+        if not exists:
+            # zeroed SellerRecord
+            history = [arc4.StaticDefault(PurchaseRecord) for _ in range(20)]
+            return SellerRecord(raw_score=arc4.UInt64(0), last_purchase_round=arc4.UInt64(0), total_purchases=arc4.UInt64(0), history_count=arc4.UInt64(0), purchase_history=arc4.StaticArray(history))
+        return self.seller_records.get(seller)
+
+    @arc4.abimethod(readonly=True)
+    def get_effective_score_with_breakdown(self, seller: arc4.Address) -> tuple:
+        # returns (effective_score, raw_score, decay_points_applied, rounds_since_last_purchase, rounds_until_decay_starts)
+        try:
+            exists = self.seller_records[seller].exists
+        except Exception:
+            exists = False
+        if not exists:
+            return (arc4.UInt64(0), arc4.UInt64(0), arc4.UInt64(0), arc4.UInt64(0), arc4.UInt64(self.decay_threshold_rounds.value.native))
+
+        rec = self.seller_records.get(seller)
+        raw = rec.raw_score.native
+        last_round = rec.last_purchase_round.native
+        current_round = Global.round()
+        if current_round < last_round:
+            return (arc4.UInt64(raw), arc4.UInt64(raw), arc4.UInt64(0), arc4.UInt64(0), arc4.UInt64(self.decay_threshold_rounds.value.native))
+
+        rounds_since = current_round - last_round
+        threshold = self.decay_threshold_rounds.value.native
+        if rounds_since <= threshold:
+            return (arc4.UInt64(raw), arc4.UInt64(raw), arc4.UInt64(0), arc4.UInt64(rounds_since), arc4.UInt64(threshold - rounds_since))
+
+        decay_rate = self.decay_rate_rounds.value.native
+        decay_points = (rounds_since - threshold) // decay_rate
+        effective = raw - decay_points if decay_points < raw else self.min_score.value.native
+        rounds_until_decay_starts = 0
+        return (arc4.UInt64(effective), arc4.UInt64(raw), arc4.UInt64(decay_points), arc4.UInt64(rounds_since), arc4.UInt64(rounds_until_decay_starts))
+
