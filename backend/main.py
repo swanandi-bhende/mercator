@@ -74,7 +74,7 @@ from backend.tools.semantic_search import (
 from backend.agents import curator_agent
 from backend.tools import staging_seed_wallet
 from backend.utils.db import initialise_curator_schema
-from backend.utils.flow_tracer import export_json
+from backend.utils.flow_tracer import tracer
 from backend.utils.runtime_env import configure_demo_logging, normalize_network_env, warn_missing_required_env
 from backend.utils.error_handler import contract_error, ipfs_down
 from backend.utils.ws_manager import ws_manager
@@ -2432,7 +2432,7 @@ async def create_listing(request: ListingRequest) -> dict[str, int | str]:
             )
 
         logger.info("IPFS upload started | seller=%s", effective_seller_wallet)
-        cid = await upload_insight_to_ipfs(request.insight_text)
+        cid = await upload_insight_to_ipfs(request.insight_text, seller_wallet=effective_seller_wallet)
         logger.info("IPFS upload complete, cid=%s", cid)
 
         micro_price = int(request.price * 1_000_000)
@@ -2761,22 +2761,26 @@ async def demo_purchase(request: DemoPurchaseRequest) -> dict[str, object]:
     Returns: {success, decision, evaluation, payment_status, message}.
     """
     normalize_network_env()
+    tracer.start_session("buyer_purchase")
     buyer_address = (request.buyer_address or os.getenv("BUYER_WALLET", "").strip() or os.getenv("BUYER_ADDRESS", "").strip() or os.getenv("DEPLOYER_ADDRESS", "").strip())
-    result = await run_agent(
-        user_query=request.user_query,
-        buyer_address=buyer_address,
-        user_approval_input=request.user_approval_input,
-        force_buy_for_test=request.force_buy_for_test,
-        target_listing_id=request.target_listing_id,
-        autonomous_mode=False,
-    )
+    try:
+        result = await run_agent(
+            user_query=request.user_query,
+            buyer_address=buyer_address,
+            user_approval_input=request.user_approval_input,
+            force_buy_for_test=request.force_buy_for_test,
+            target_listing_id=request.target_listing_id,
+            autonomous_mode=False,
+        )
 
-    final_insight_text = _extract_final_insight_text(result if isinstance(result, dict) else {})
-    return {
-        "success": bool(result.get("success", False)) if isinstance(result, dict) else False,
-        "final_insight_text": final_insight_text,
-        "result": result,
-    }
+        final_insight_text = _extract_final_insight_text(result if isinstance(result, dict) else {})
+        return {
+            "success": bool(result.get("success", False)) if isinstance(result, dict) else False,
+            "final_insight_text": final_insight_text,
+            "result": result,
+        }
+    finally:
+        tracer.export_json()
 
 
 @app.get("/api/v1/listings")
@@ -2793,14 +2797,48 @@ async def get_recent_listings(limit: int = 50) -> dict[str, object]:
 async def traces_latest(limit: int = 20) -> dict[str, object]:
     return {
         "success": True,
-        "events": ws_manager.get_recent_events(limit),
+        "sessions": tracer.get_recent_sessions(limit),
+    }
+
+
+@app.get("/traces/{session_id}")
+async def get_trace(
+    session_id: str,
+    status: str | None = Query(default=None),
+    event_name: str | None = Query(default=None),
+) -> dict[str, object]:
+    events = tracer.get_events(session_id=session_id, status=status, event_name=event_name)
+    return {
+        "success": True,
+        "session_id": session_id,
+        "count": len(events),
+        "events": events,
     }
 
 
 @app.get("/traces/{session_id}/download")
 async def download_trace(session_id: str) -> FileResponse:
-    trace_path = export_json(session_id)
-    return FileResponse(trace_path, media_type="application/json", filename=f"flow_trace_{session_id}.json")
+    trace_path = tracer.traces_dir / f"flow_trace_{session_id}.json"
+    if not trace_path.exists():
+        trace_path = tracer.export_json(session_id)
+
+    return FileResponse(
+        str(trace_path),
+        media_type="application/json",
+        filename=f"flow_trace_{session_id}.json",
+        headers={
+            "Content-Disposition": f"attachment; filename=flow_trace_{session_id}.json",
+            "Content-Type": "application/json",
+        },
+    )
+
+
+@app.get("/traces/{session_id}/summary")
+async def trace_summary(session_id: str) -> dict[str, object]:
+    return {
+        "success": True,
+        "summary": tracer.get_session_summary(session_id),
+    }
 
 
 @app.post("/discover")

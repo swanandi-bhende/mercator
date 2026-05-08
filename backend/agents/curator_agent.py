@@ -33,6 +33,7 @@ from backend.utils.db import (
 )
 from backend.utils.runtime_env import load_repo_env_files, normalize_network_env
 from backend.utils.ws_manager import ws_manager
+from backend.utils.flow_tracer import tracer
 
 logger = logging.getLogger(__name__)
 
@@ -272,6 +273,12 @@ async def run_cycle_for_symbol(symbol: str) -> CuratorRunResult:
 
 
 async def run_full_cycle() -> list[CuratorRunResult]:
+    tracer.start_session("curator_cycle")
+    tracer.record(
+        "curator.cycle_started",
+        "success",
+        plain_english_description="Curator cycle started",
+    )
     results: list[CuratorRunResult] = []
     symbols = _symbols_from_env()
     for index, symbol in enumerate(symbols):
@@ -301,6 +308,7 @@ async def run_full_cycle() -> list[CuratorRunResult]:
             "next_run_at": next_run_at,
         },
     )
+    tracer.export_json()
     return results
 
 

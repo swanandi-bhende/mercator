@@ -26,6 +26,7 @@ import algosdk
 import requests
 from algokit_utils import AlgorandClient
 from backend.utils.error_handler import ipfs_down
+from backend.utils.flow_tracer import tracer
 
 
 PINATA_BASE_URL = "https://api.pinata.cloud"
@@ -112,7 +113,11 @@ def unpin_cid(cid: str) -> None:
     response.raise_for_status()
 
 
-async def upload_insight_to_ipfs(text: str, filename: str = "insight.txt") -> str:
+async def upload_insight_to_ipfs(
+    text: str,
+    filename: str = "insight.txt",
+    seller_wallet: str | None = None,
+) -> str:
     """Upload insight text to Pinata and return the pinned CID.
     
     Purpose: Top-level API for seller insight uploads. Runs HTTP POST in thread pool.
@@ -126,6 +131,15 @@ async def upload_insight_to_ipfs(text: str, filename: str = "insight.txt") -> st
     data = {
         "pinataOptions": json.dumps({"cidVersion": 0}),
     }
+    wallet_label = (seller_wallet or "unknown_seller").strip()
+    event_id = tracer.start_event(
+        "ipfs.upload_started",
+        wallet_involved=seller_wallet,
+        plain_english_description=(
+            f"Uploading trading insight to IPFS for seller {wallet_label[:8]}..."
+        ),
+        metadata={"filename": filename},
+    )
 
     try:
         last_error: Exception | None = None
@@ -155,6 +169,14 @@ async def upload_insight_to_ipfs(text: str, filename: str = "insight.txt") -> st
                 if not cid.startswith("Qm"):
                     raise RuntimeError(f"Expected CID starting with 'Qm', got: {cid}")
                 _CID_TEXT_CACHE[cid] = text
+                if event_id:
+                    tracer.resolve_event(
+                        event_id,
+                        "success",
+                        ipfs_cid=cid,
+                        plain_english_description=f"Insight uploaded to IPFS with CID {cid}",
+                        metadata={"filename": filename},
+                    )
                 return cid
             except requests.exceptions.Timeout as err:
                 logger.error("IPFS upload timeout | attempt=%s error=%s", attempt + 1, err)
@@ -185,15 +207,52 @@ async def upload_insight_to_ipfs(text: str, filename: str = "insight.txt") -> st
                 last_error = err
                 break
 
-        raise IPFSUploadError(ipfs_down(logger, str(last_error) if last_error else None)) from last_error
+        final_error = IPFSUploadError(ipfs_down(logger, str(last_error) if last_error else None))
+        if event_id:
+            tracer.resolve_event(
+                event_id,
+                "failure",
+                error_code="IPFS_UPLOAD_FAILED",
+                error_message=str(final_error),
+                plain_english_description=f"IPFS upload failed: {final_error}",
+                metadata={"filename": filename},
+            )
+        raise final_error from last_error
     except requests.exceptions.RequestException as err:
         logger.error("IPFS upload request exception | error=%s", err)
+        if event_id:
+            tracer.resolve_event(
+                event_id,
+                "failure",
+                error_code="IPFS_UPLOAD_FAILED",
+                error_message=str(err),
+                plain_english_description=f"IPFS upload failed: {str(err)}",
+                metadata={"filename": filename},
+            )
         raise IPFSUploadError(ipfs_down(logger, str(err))) from err
     except TimeoutError as err:
         logger.error("IPFS upload timeout exception | error=%s", err)
+        if event_id:
+            tracer.resolve_event(
+                event_id,
+                "failure",
+                error_code="IPFS_UPLOAD_FAILED",
+                error_message=str(err),
+                plain_english_description=f"IPFS upload failed: {str(err)}",
+                metadata={"filename": filename},
+            )
         raise IPFSUploadError(ipfs_down(logger, str(err))) from err
     except IPFSUploadError as err:
         logger.error("IPFS upload failed | error=%s", err)
+        if event_id:
+            tracer.resolve_event(
+                event_id,
+                "failure",
+                error_code="IPFS_UPLOAD_FAILED",
+                error_message=str(err),
+                plain_english_description=f"IPFS upload failed: {str(err)}",
+                metadata={"filename": filename},
+            )
         raise
 
 
@@ -225,6 +284,11 @@ async def fetch_insight_from_ipfs(cid: str) -> str:
         f"https://gateway.pinata.cloud/ipfs/{cid}",
         f"https://ipfs.io/ipfs/{cid}",
     ]
+    event_id = tracer.start_event(
+        "ipfs.fetch_started",
+        plain_english_description=f"Fetching insight content from IPFS CID {cid}",
+        metadata={"cid": cid},
+    )
 
     try:
         last_error: Exception | None = None
@@ -239,6 +303,14 @@ async def fetch_insight_from_ipfs(cid: str) -> str:
                 response.raise_for_status()
                 text = response.text
                 _CID_TEXT_CACHE[cid] = text
+                if event_id:
+                    tracer.resolve_event(
+                        event_id,
+                        "success",
+                        ipfs_cid=cid,
+                        plain_english_description=f"Insight content fetched from IPFS CID {cid}",
+                        metadata={"gateway": url},
+                    )
                 return text
             except requests.exceptions.RequestException as err:
                 logger.error("IPFS fetch request error | url=%s error=%s", url, err)
@@ -250,15 +322,56 @@ async def fetch_insight_from_ipfs(cid: str) -> str:
                 logger.error("IPFS fetch unexpected error | url=%s error=%s", url, err)
                 last_error = err
 
-        raise IPFSUploadError(ipfs_down(logger, str(last_error) if last_error else None)) from last_error
+        final_error = IPFSUploadError(ipfs_down(logger, str(last_error) if last_error else None))
+        if event_id:
+            tracer.resolve_event(
+                event_id,
+                "failure",
+                ipfs_cid=cid,
+                error_code="IPFS_FETCH_FAILED",
+                error_message=str(final_error),
+                plain_english_description=f"IPFS fetch failed: {final_error}",
+                metadata={"cid": cid},
+            )
+        raise final_error from last_error
     except requests.exceptions.RequestException as err:
         logger.error("IPFS fetch request exception | cid=%s error=%s", cid, err)
+        if event_id:
+            tracer.resolve_event(
+                event_id,
+                "failure",
+                ipfs_cid=cid,
+                error_code="IPFS_FETCH_FAILED",
+                error_message=str(err),
+                plain_english_description=f"IPFS fetch failed: {str(err)}",
+                metadata={"cid": cid},
+            )
         raise IPFSUploadError(ipfs_down(logger, str(err))) from err
     except TimeoutError as err:
         logger.error("IPFS fetch timeout exception | cid=%s error=%s", cid, err)
+        if event_id:
+            tracer.resolve_event(
+                event_id,
+                "failure",
+                ipfs_cid=cid,
+                error_code="IPFS_FETCH_FAILED",
+                error_message=str(err),
+                plain_english_description=f"IPFS fetch failed: {str(err)}",
+                metadata={"cid": cid},
+            )
         raise IPFSUploadError(ipfs_down(logger, str(err))) from err
     except IPFSUploadError as err:
         logger.error("IPFS fetch failed | cid=%s error=%s", cid, err)
+        if event_id:
+            tracer.resolve_event(
+                event_id,
+                "failure",
+                ipfs_cid=cid,
+                error_code="IPFS_FETCH_FAILED",
+                error_message=str(err),
+                plain_english_description=f"IPFS fetch failed: {str(err)}",
+                metadata={"cid": cid},
+            )
         raise
 
 

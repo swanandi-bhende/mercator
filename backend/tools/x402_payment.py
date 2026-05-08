@@ -49,7 +49,7 @@ from backend.contracts.escrow.smart_contracts.artifacts.escrow.escrow_client imp
 from backend.contracts.reputation.smart_contracts.artifacts.reputation.reputation_client import ReputationClient
 from backend.tools.post_payment_flow import complete_purchase_flow
 from backend.utils.auto_approval import check_auto_conditions
-from backend.utils.flow_tracer import record_event
+from backend.utils.flow_tracer import record_event, tracer
 from backend.utils.runtime_env import configure_demo_logging, normalize_network_env
 from backend.utils.error_handler import contract_error, insufficient_balance, payment_rejected
 from backend.utils.ws_manager import ws_manager
@@ -887,6 +887,20 @@ async def trigger_x402_payment(
         # STEP 3: SIMULATE PAYMENT BEFORE BROADCASTING
         # =========================================================================
         logger.info("Simulating x402 payment transaction...")
+        simulation_event_id = tracer.start_event(
+            "payment.simulation_started",
+            wallet_involved=buyer_address,
+            plain_english_description=(
+                f"Simulating payment from buyer {buyer_address[:8]}... to seller {seller_wallet[:8]}..."
+            ),
+            metadata={
+                "listing_id": listing_id,
+                "buyer_address": buyer_address,
+                "seller_wallet": seller_wallet,
+                "amount_usdc": amount_usdc,
+                "asset_id": settlement_asset_id,
+            },
+        )
 
         x402_client = X402Client(
             algorand,
@@ -905,6 +919,15 @@ async def trigger_x402_payment(
             if not simulation_result.get("is_safe"):
                 error_msg = f"Payment simulation failed safety check: {simulation_result}"
                 logger.error(error_msg)
+                if simulation_event_id:
+                    tracer.resolve_event(
+                        simulation_event_id,
+                        "failure",
+                        error_code="PAYMENT_SIMULATION_FAILED",
+                        error_message=error_msg,
+                        plain_english_description="Payment simulation failed safety checks",
+                        metadata={"listing_id": listing_id},
+                    )
                 return json.dumps({
                     "success": False,
                     "error": "SIMULATION_FAILED",
@@ -913,10 +936,26 @@ async def trigger_x402_payment(
                 })
             
             logger.info(f"✓ Payment simulation passed: {simulation_result}")
+            if simulation_event_id:
+                tracer.resolve_event(
+                    simulation_event_id,
+                    "success",
+                    plain_english_description="Payment simulation passed and was safe to broadcast",
+                    metadata={"listing_id": listing_id, "estimated_fee": simulation_result.get("estimated_fee")},
+                )
         
         except (ValueError, AlgodHTTPError, TimeoutError, ConnectionError) as e:
             error_msg = f"Payment simulation error: {str(e)}"
             logger.error(error_msg)
+            if simulation_event_id:
+                tracer.resolve_event(
+                    simulation_event_id,
+                    "failure",
+                    error_code="PAYMENT_SIMULATION_FAILED",
+                    error_message=str(e),
+                    plain_english_description=f"Payment simulation failed: {str(e)}",
+                    metadata={"listing_id": listing_id},
+                )
             return json.dumps({
                 "success": False,
                 "error": "SIMULATION_ERROR",
@@ -926,6 +965,15 @@ async def trigger_x402_payment(
         except Exception as e:
             error_msg = f"Payment simulation unexpected error: {str(e)}"
             logger.error(error_msg, exc_info=True)
+            if simulation_event_id:
+                tracer.resolve_event(
+                    simulation_event_id,
+                    "failure",
+                    error_code="PAYMENT_SIMULATION_FAILED",
+                    error_message=str(e),
+                    plain_english_description=f"Payment simulation failed: {str(e)}",
+                    metadata={"listing_id": listing_id},
+                )
             return json.dumps({
                 "success": False,
                 "error": "SIMULATION_ERROR",
@@ -965,6 +1013,14 @@ async def trigger_x402_payment(
         # STEP 4: EXECUTE INSTANT X402 MICROPAYMENT
         # =========================================================================
         logger.info("Executing x402 micropayment transaction group...")
+        broadcast_event_id = tracer.start_event(
+            "payment.broadcast_started",
+            wallet_involved=buyer_address,
+            plain_english_description=(
+                f"Broadcasting atomic payment group for listing {listing_id}"
+            ),
+            metadata={"listing_id": listing_id, "buyer_address": buyer_address, "seller_wallet": seller_wallet},
+        )
         
         try:
             x402_client.ensure_asset_opt_in(buyer_address, settlement_asset_id)
@@ -983,6 +1039,16 @@ async def trigger_x402_payment(
                 payment_txid,
                 redeem_txid,
             )
+            if broadcast_event_id:
+                tracer.resolve_event(
+                    broadcast_event_id,
+                    "success",
+                    tx_id=payment_txid,
+                    plain_english_description=(
+                        f"Payment broadcast confirmed on-chain with transaction {payment_txid}"
+                    ),
+                    metadata={"listing_id": listing_id, "redeem_tx_id": redeem_txid},
+                )
 
             post_payment_output = await complete_purchase_flow(
                 tx_id=payment_txid,
@@ -1032,6 +1098,15 @@ async def trigger_x402_payment(
         except AlgodHTTPError as e:
             error_msg = f"x402 micropayment execution failed: {str(e)}"
             logger.error(error_msg, exc_info=True)
+            if broadcast_event_id:
+                tracer.resolve_event(
+                    broadcast_event_id,
+                    "failure",
+                    error_code="PAYMENT_BROADCAST_FAILED",
+                    error_message=str(e),
+                    plain_english_description=f"Payment broadcast failed: {str(e)}",
+                    metadata={"listing_id": listing_id},
+                )
             return json.dumps({
                 "success": False,
                 "approved": True,
@@ -1043,6 +1118,15 @@ async def trigger_x402_payment(
         except (TimeoutError, ConnectionError) as e:
             error_msg = f"x402 micropayment network failure: {str(e)}"
             logger.error(error_msg, exc_info=True)
+            if broadcast_event_id:
+                tracer.resolve_event(
+                    broadcast_event_id,
+                    "failure",
+                    error_code="PAYMENT_BROADCAST_FAILED",
+                    error_message=str(e),
+                    plain_english_description=f"Payment broadcast failed: {str(e)}",
+                    metadata={"listing_id": listing_id},
+                )
             return json.dumps({
                 "success": False,
                 "approved": True,
@@ -1054,6 +1138,15 @@ async def trigger_x402_payment(
         except Exception as e:
             error_msg = f"x402 micropayment execution failed: {str(e)}"
             logger.error(error_msg, exc_info=True)
+            if broadcast_event_id:
+                tracer.resolve_event(
+                    broadcast_event_id,
+                    "failure",
+                    error_code="PAYMENT_BROADCAST_FAILED",
+                    error_message=str(e),
+                    plain_english_description=f"Payment broadcast failed: {str(e)}",
+                    metadata={"listing_id": listing_id},
+                )
             return json.dumps({
                 "success": False,
                 "approved": True,
