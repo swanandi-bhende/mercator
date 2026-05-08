@@ -2296,3 +2296,341 @@ RuntimeError: simulation failed
 2026-05-06 01:31:19,707 | INFO | backend.agent | [AUTONOMOUS] Starting round 3 of 3
 2026-05-06 01:31:19,707 | INFO | backend.agent | [AUTONOMOUS] Round 3 purchase complete | result={'success': True, 'decision': 'BUY', 'payment_status': {'payment_details': {'amount_usdc': 0.1}}}
 2026-05-06 01:31:19,707 | INFO | backend.agent | [AUTONOMOUS] Completed 3 rounds. Total purchased: 3. Total skipped: 0. Total errors: 0.
+2026-05-08 01:22:45,262 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-08 01:22:47,247 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote curator registration check
+2026-05-08 01:22:47,249 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote buyer registration check
+2026-05-08 01:22:47,250 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 01:22:47,250 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 01:22:47,250 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 01:22:47,250 | INFO | apscheduler.scheduler | Added job "run_full_cycle" to job store "default"
+2026-05-08 01:22:47,250 | INFO | apscheduler.scheduler | Added job "check_and_top_up" to job store "default"
+2026-05-08 01:22:47,251 | INFO | apscheduler.scheduler | Added job "_send_heartbeat" to job store "default"
+2026-05-08 01:22:47,251 | INFO | apscheduler.scheduler | Scheduler started
+2026-05-08 01:22:47,252 | INFO | mercator.websocket | [WS] Client 151dbf27-c91b-494c-97bf-7ac35c24c15a connected. Total connections: 1
+2026-05-08 01:22:47,252 | INFO | mercator.backend | [WS] Connected client_id=151dbf27-c91b-494c-97bf-7ac35c24c15a token_present=True
+2026-05-08 01:22:59,816 | INFO | mercator.websocket | [WS] Client 151dbf27-c91b-494c-97bf-7ac35c24c15a disconnected. Total connections: 0
+2026-05-08 01:22:59,821 | INFO | apscheduler.scheduler | Scheduler has been shut down
+2026-05-08 01:22:59,839 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote curator registration check
+2026-05-08 01:22:59,841 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote buyer registration check
+2026-05-08 01:22:59,841 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 01:22:59,842 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 01:22:59,842 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 01:22:59,842 | INFO | apscheduler.scheduler | Added job "run_full_cycle" to job store "default"
+2026-05-08 01:22:59,842 | INFO | apscheduler.scheduler | Added job "check_and_top_up" to job store "default"
+2026-05-08 01:22:59,842 | INFO | apscheduler.scheduler | Added job "_send_heartbeat" to job store "default"
+2026-05-08 01:22:59,842 | INFO | apscheduler.scheduler | Scheduler started
+2026-05-08 01:22:59,843 | INFO | mercator.websocket | [WS] Client 17efebf1-c6a4-4d37-ae35-5751fbf47a0a connected. Total connections: 1
+2026-05-08 01:22:59,843 | INFO | mercator.backend | [WS] Connected client_id=17efebf1-c6a4-4d37-ae35-5751fbf47a0a token_present=True
+2026-05-08 01:22:59,844 | INFO | mercator.websocket | [WS] Client b58e93bb-163d-4786-b3ba-b1bb539d59d9 connected. Total connections: 2
+2026-05-08 01:22:59,844 | INFO | mercator.backend | [WS] Connected client_id=b58e93bb-163d-4786-b3ba-b1bb539d59d9 token_present=True
+2026-05-08 01:22:59,845 | INFO | mercator.websocket | [WS] Client a9297119-ff6a-42c0-a39b-9096aa7cf807 connected. Total connections: 3
+2026-05-08 01:22:59,845 | INFO | mercator.backend | [WS] Connected client_id=a9297119-ff6a-42c0-a39b-9096aa7cf807 token_present=True
+2026-05-08 01:22:59,846 | INFO | mercator.websocket | [WS] Client a9297119-ff6a-42c0-a39b-9096aa7cf807 disconnected. Total connections: 2
+2026-05-08 01:22:59,847 | INFO | mercator.websocket | [WS] Client b58e93bb-163d-4786-b3ba-b1bb539d59d9 disconnected. Total connections: 1
+2026-05-08 01:22:59,847 | INFO | mercator.websocket | [WS] Client 17efebf1-c6a4-4d37-ae35-5751fbf47a0a disconnected. Total connections: 0
+2026-05-08 01:22:59,847 | INFO | apscheduler.scheduler | Scheduler has been shut down
+2026-05-08 01:22:59,860 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote curator registration check
+2026-05-08 01:22:59,862 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote buyer registration check
+2026-05-08 01:22:59,862 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 01:22:59,862 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 01:22:59,862 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 01:22:59,862 | INFO | apscheduler.scheduler | Added job "run_full_cycle" to job store "default"
+2026-05-08 01:22:59,862 | INFO | apscheduler.scheduler | Added job "check_and_top_up" to job store "default"
+2026-05-08 01:22:59,863 | INFO | apscheduler.scheduler | Added job "_send_heartbeat" to job store "default"
+2026-05-08 01:22:59,863 | INFO | apscheduler.scheduler | Scheduler started
+2026-05-08 01:22:59,864 | INFO | mercator.websocket | [WS] Client bd518ff6-faeb-423d-a917-9da4ff5be5ac connected. Total connections: 1
+2026-05-08 01:22:59,864 | INFO | mercator.backend | [WS] Connected client_id=bd518ff6-faeb-423d-a917-9da4ff5be5ac token_present=True
+2026-05-08 01:22:59,864 | INFO | mercator.websocket | [WS] Client bd518ff6-faeb-423d-a917-9da4ff5be5ac disconnected. Total connections: 0
+2026-05-08 01:22:59,865 | INFO | apscheduler.scheduler | Scheduler has been shut down
+2026-05-08 01:22:59,877 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote curator registration check
+2026-05-08 01:22:59,879 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote buyer registration check
+2026-05-08 01:22:59,880 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 01:22:59,880 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 01:22:59,880 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 01:22:59,880 | INFO | apscheduler.scheduler | Added job "run_full_cycle" to job store "default"
+2026-05-08 01:22:59,880 | INFO | apscheduler.scheduler | Added job "check_and_top_up" to job store "default"
+2026-05-08 01:22:59,880 | INFO | apscheduler.scheduler | Added job "_send_heartbeat" to job store "default"
+2026-05-08 01:22:59,880 | INFO | apscheduler.scheduler | Scheduler started
+2026-05-08 01:22:59,891 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.25, insight_len=66
+2026-05-08 01:22:59,892 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM (effective signer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM exact_match=True)
+2026-05-08 01:22:59,892 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-08 01:22:59,892 | INFO | mercator.backend | IPFS upload complete, cid=CID123
+2026-05-08 01:22:59,892 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1250000 app_id=758025190 attempt=1/3
+2026-05-08 01:22:59,892 | INFO | mercator.backend | On-chain listing submitted: listing_id=101 asa_id=202
+2026-05-08 01:22:59,892 | INFO | demo.flow | Seller upload complete
+2026-05-08 01:22:59,892 | INFO | demo.flow | On-chain ASA created
+2026-05-08 01:22:59,892 | INFO | mercator.backend | Transaction confirmed: tx_id=TX123
+2026-05-08 01:22:59,894 | INFO | apscheduler.scheduler | Scheduler has been shut down
+2026-05-08 01:23:00,366 | WARNING | backend.tools.x402_payment | Subscription status check failed for MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ: <urlopen error [Errno 61] Connection refused>
+2026-05-08 01:23:00,366 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-08 01:23:00,366 | INFO | backend.tools.x402_payment | Autonomous mode enabled; skipping explicit approval gate
+2026-05-08 01:23:00,366 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-08 01:23:00,366 | INFO | demo.flow | Payment approved
+2026-05-08 01:23:00,366 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 77
+2026-05-08 01:23:00,366 | INFO | backend.tools.x402_payment | Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 1.0 USDC
+2026-05-08 01:23:00,367 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-05-08 01:23:00,367 | INFO | backend.tools.x402_payment | Listing 77: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-08 01:23:00,367 | INFO | backend.tools.x402_payment | [AUTO-REJECTED] listing=77 reason=relevance below threshold thresholds={'AUTO_MIN_RELEVANCE': 80, 'AUTO_MIN_REPUTATION': 70, 'AUTO_MAX_PRICE_USDC': 3.0}
+2026-05-08 01:40:21,329 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-08 01:40:21,867 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote curator registration check
+2026-05-08 01:40:21,869 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote buyer registration check
+2026-05-08 01:40:21,870 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 01:40:21,870 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 01:40:21,870 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 01:40:21,870 | INFO | apscheduler.scheduler | Added job "run_full_cycle" to job store "default"
+2026-05-08 01:40:21,870 | INFO | apscheduler.scheduler | Added job "check_and_top_up" to job store "default"
+2026-05-08 01:40:21,870 | INFO | apscheduler.scheduler | Added job "_send_heartbeat" to job store "default"
+2026-05-08 01:40:21,870 | INFO | apscheduler.scheduler | Scheduler started
+2026-05-08 01:40:21,872 | INFO | mercator.websocket | [WS] Client 27da688f-a54c-4a1c-a04b-0b241b08873d connected. Total connections: 1
+2026-05-08 01:40:21,872 | INFO | mercator.backend | [WS] Connected client_id=27da688f-a54c-4a1c-a04b-0b241b08873d token_present=True
+2026-05-08 02:07:08,929 | INFO | mercator.websocket | [WS] Client 27da688f-a54c-4a1c-a04b-0b241b08873d disconnected. Total connections: 0
+2026-05-08 02:07:08,931 | INFO | apscheduler.scheduler | Scheduler has been shut down
+2026-05-08 02:07:08,950 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote curator registration check
+2026-05-08 02:07:08,953 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote buyer registration check
+2026-05-08 02:07:08,953 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 02:07:08,953 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 02:07:08,953 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 02:07:08,953 | INFO | apscheduler.scheduler | Added job "run_full_cycle" to job store "default"
+2026-05-08 02:07:08,953 | INFO | apscheduler.scheduler | Added job "check_and_top_up" to job store "default"
+2026-05-08 02:07:08,953 | INFO | apscheduler.scheduler | Added job "_send_heartbeat" to job store "default"
+2026-05-08 02:07:08,953 | INFO | apscheduler.scheduler | Scheduler started
+2026-05-08 02:07:08,955 | INFO | mercator.websocket | [WS] Client 65af52f6-0a7b-429f-a2b8-c50b4ac15de5 connected. Total connections: 1
+2026-05-08 02:07:08,955 | INFO | mercator.backend | [WS] Connected client_id=65af52f6-0a7b-429f-a2b8-c50b4ac15de5 token_present=True
+2026-05-08 02:07:08,956 | INFO | mercator.websocket | [WS] Client 9ed69e7b-f464-4cd4-a572-eeeeca02cd72 connected. Total connections: 2
+2026-05-08 02:07:08,956 | INFO | mercator.backend | [WS] Connected client_id=9ed69e7b-f464-4cd4-a572-eeeeca02cd72 token_present=True
+2026-05-08 02:07:08,956 | INFO | mercator.websocket | [WS] Client cbbd9a1e-3f5e-47cd-894f-8b35b3c32d74 connected. Total connections: 3
+2026-05-08 02:07:08,956 | INFO | mercator.backend | [WS] Connected client_id=cbbd9a1e-3f5e-47cd-894f-8b35b3c32d74 token_present=True
+2026-05-08 02:07:08,957 | INFO | mercator.websocket | [WS] Client cbbd9a1e-3f5e-47cd-894f-8b35b3c32d74 disconnected. Total connections: 2
+2026-05-08 02:07:08,958 | INFO | mercator.websocket | [WS] Client 9ed69e7b-f464-4cd4-a572-eeeeca02cd72 disconnected. Total connections: 1
+2026-05-08 02:07:08,958 | INFO | mercator.websocket | [WS] Client 65af52f6-0a7b-429f-a2b8-c50b4ac15de5 disconnected. Total connections: 0
+2026-05-08 02:07:08,958 | INFO | apscheduler.scheduler | Scheduler has been shut down
+2026-05-08 02:07:08,968 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote curator registration check
+2026-05-08 02:07:08,970 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote buyer registration check
+2026-05-08 02:07:08,970 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 02:07:08,970 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 02:07:08,970 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 02:07:08,970 | INFO | apscheduler.scheduler | Added job "run_full_cycle" to job store "default"
+2026-05-08 02:07:08,970 | INFO | apscheduler.scheduler | Added job "check_and_top_up" to job store "default"
+2026-05-08 02:07:08,970 | INFO | apscheduler.scheduler | Added job "_send_heartbeat" to job store "default"
+2026-05-08 02:07:08,970 | INFO | apscheduler.scheduler | Scheduler started
+2026-05-08 02:07:08,972 | INFO | mercator.websocket | [WS] Client 4746bccf-243f-4f63-84bd-21eb0b8799ff connected. Total connections: 1
+2026-05-08 02:07:08,972 | INFO | mercator.backend | [WS] Connected client_id=4746bccf-243f-4f63-84bd-21eb0b8799ff token_present=True
+2026-05-08 02:07:08,972 | INFO | mercator.websocket | [WS] Client 4746bccf-243f-4f63-84bd-21eb0b8799ff disconnected. Total connections: 0
+2026-05-08 02:07:08,973 | INFO | apscheduler.scheduler | Scheduler has been shut down
+2026-05-08 02:07:08,980 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.25, insight_len=66
+2026-05-08 02:07:08,980 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM (effective signer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM exact_match=True)
+2026-05-08 02:07:08,980 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-08 02:07:08,980 | INFO | mercator.backend | IPFS upload complete, cid=CID123
+2026-05-08 02:07:08,980 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1250000 app_id=758025190 attempt=1/3
+2026-05-08 02:07:08,980 | INFO | mercator.backend | On-chain listing submitted: listing_id=101 asa_id=202
+2026-05-08 02:07:08,980 | INFO | demo.flow | Seller upload complete
+2026-05-08 02:07:08,980 | INFO | demo.flow | On-chain ASA created
+2026-05-08 02:07:08,980 | INFO | mercator.backend | Transaction confirmed: tx_id=TX123
+2026-05-08 02:07:08,991 | WARNING | backend.tools.x402_payment | Subscription status check failed for MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ: <urlopen error [Errno 61] Connection refused>
+2026-05-08 02:07:08,991 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-08 02:07:08,991 | INFO | backend.tools.x402_payment | Autonomous mode enabled; skipping explicit approval gate
+2026-05-08 02:07:08,991 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-08 02:07:08,991 | INFO | demo.flow | Payment approved
+2026-05-08 02:07:08,991 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 77
+2026-05-08 02:07:08,991 | INFO | backend.tools.x402_payment | Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 1.0 USDC
+2026-05-08 02:07:08,991 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-05-08 02:07:08,991 | INFO | backend.tools.x402_payment | Listing 77: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-08 02:07:08,991 | INFO | backend.tools.x402_payment | [AUTO-REJECTED] listing=77 reason=relevance below threshold thresholds={'AUTO_MIN_RELEVANCE': 80, 'AUTO_MIN_REPUTATION': 70, 'AUTO_MAX_PRICE_USDC': 3.0}
+2026-05-08 09:59:22,217 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-08 09:59:22,779 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote curator registration check
+2026-05-08 09:59:22,781 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote buyer registration check
+2026-05-08 09:59:22,782 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 09:59:22,782 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 09:59:22,782 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 09:59:22,783 | INFO | apscheduler.scheduler | Added job "run_full_cycle" to job store "default"
+2026-05-08 09:59:22,783 | INFO | apscheduler.scheduler | Added job "check_and_top_up" to job store "default"
+2026-05-08 09:59:22,783 | INFO | apscheduler.scheduler | Added job "_send_heartbeat" to job store "default"
+2026-05-08 09:59:22,783 | INFO | apscheduler.scheduler | Scheduler started
+2026-05-08 09:59:22,784 | INFO | mercator.websocket | [WS] Client d0d22e3a-89c4-4fbf-a75c-2a0f44a894ec connected. Total connections: 1
+2026-05-08 09:59:22,784 | INFO | mercator.backend | [WS] Connected client_id=d0d22e3a-89c4-4fbf-a75c-2a0f44a894ec token_present=True
+2026-05-08 09:59:32,882 | INFO | mercator.websocket | [WS] Client d0d22e3a-89c4-4fbf-a75c-2a0f44a894ec disconnected. Total connections: 0
+2026-05-08 09:59:32,884 | INFO | apscheduler.scheduler | Scheduler has been shut down
+2026-05-08 09:59:32,904 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote curator registration check
+2026-05-08 09:59:32,907 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote buyer registration check
+2026-05-08 09:59:32,907 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 09:59:32,907 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 09:59:32,907 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 09:59:32,907 | INFO | apscheduler.scheduler | Added job "run_full_cycle" to job store "default"
+2026-05-08 09:59:32,907 | INFO | apscheduler.scheduler | Added job "check_and_top_up" to job store "default"
+2026-05-08 09:59:32,907 | INFO | apscheduler.scheduler | Added job "_send_heartbeat" to job store "default"
+2026-05-08 09:59:32,907 | INFO | apscheduler.scheduler | Scheduler started
+2026-05-08 09:59:32,909 | INFO | mercator.websocket | [WS] Client 47ddcb55-1b88-439a-8282-ef6927dd3616 connected. Total connections: 1
+2026-05-08 09:59:32,909 | INFO | mercator.backend | [WS] Connected client_id=47ddcb55-1b88-439a-8282-ef6927dd3616 token_present=True
+2026-05-08 09:59:32,910 | INFO | mercator.websocket | [WS] Client 539f275a-84e3-4b70-9da2-7805a108cdc0 connected. Total connections: 2
+2026-05-08 09:59:32,910 | INFO | mercator.backend | [WS] Connected client_id=539f275a-84e3-4b70-9da2-7805a108cdc0 token_present=True
+2026-05-08 09:59:32,911 | INFO | mercator.websocket | [WS] Client dabbf80e-5e79-4178-90cd-35731ae6e53c connected. Total connections: 3
+2026-05-08 09:59:32,911 | INFO | mercator.backend | [WS] Connected client_id=dabbf80e-5e79-4178-90cd-35731ae6e53c token_present=True
+2026-05-08 09:59:32,912 | INFO | mercator.websocket | [WS] Client dabbf80e-5e79-4178-90cd-35731ae6e53c disconnected. Total connections: 2
+2026-05-08 09:59:32,912 | INFO | mercator.websocket | [WS] Client 539f275a-84e3-4b70-9da2-7805a108cdc0 disconnected. Total connections: 1
+2026-05-08 09:59:32,912 | INFO | mercator.websocket | [WS] Client 47ddcb55-1b88-439a-8282-ef6927dd3616 disconnected. Total connections: 0
+2026-05-08 09:59:32,913 | INFO | apscheduler.scheduler | Scheduler has been shut down
+2026-05-08 09:59:32,922 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote curator registration check
+2026-05-08 09:59:32,924 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote buyer registration check
+2026-05-08 09:59:32,925 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 09:59:32,925 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 09:59:32,925 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 09:59:32,925 | INFO | apscheduler.scheduler | Added job "run_full_cycle" to job store "default"
+2026-05-08 09:59:32,925 | INFO | apscheduler.scheduler | Added job "check_and_top_up" to job store "default"
+2026-05-08 09:59:32,925 | INFO | apscheduler.scheduler | Added job "_send_heartbeat" to job store "default"
+2026-05-08 09:59:32,925 | INFO | apscheduler.scheduler | Scheduler started
+2026-05-08 09:59:32,926 | INFO | mercator.websocket | [WS] Client a7d1e07c-1f64-43ae-a06f-a79d8853fddf connected. Total connections: 1
+2026-05-08 09:59:32,926 | INFO | mercator.backend | [WS] Connected client_id=a7d1e07c-1f64-43ae-a06f-a79d8853fddf token_present=True
+2026-05-08 09:59:32,926 | INFO | mercator.websocket | [WS] Client a7d1e07c-1f64-43ae-a06f-a79d8853fddf disconnected. Total connections: 0
+2026-05-08 09:59:32,927 | INFO | apscheduler.scheduler | Scheduler has been shut down
+2026-05-08 09:59:32,935 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.25, insight_len=66
+2026-05-08 09:59:32,935 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM (effective signer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM exact_match=True)
+2026-05-08 09:59:32,935 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-08 09:59:32,935 | INFO | mercator.backend | IPFS upload complete, cid=CID123
+2026-05-08 09:59:32,935 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1250000 app_id=758025190 attempt=1/3
+2026-05-08 09:59:32,935 | INFO | mercator.backend | On-chain listing submitted: listing_id=101 asa_id=202
+2026-05-08 09:59:32,935 | INFO | demo.flow | Seller upload complete
+2026-05-08 09:59:32,935 | INFO | demo.flow | On-chain ASA created
+2026-05-08 09:59:32,935 | INFO | mercator.backend | Transaction confirmed: tx_id=TX123
+2026-05-08 09:59:32,947 | WARNING | backend.tools.x402_payment | Subscription status check failed for MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ: <urlopen error [Errno 61] Connection refused>
+2026-05-08 09:59:32,947 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-08 09:59:32,947 | INFO | backend.tools.x402_payment | Autonomous mode enabled; skipping explicit approval gate
+2026-05-08 09:59:32,947 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-08 09:59:32,947 | INFO | demo.flow | Payment approved
+2026-05-08 09:59:32,947 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 77
+2026-05-08 09:59:32,947 | INFO | backend.tools.x402_payment | Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 1.0 USDC
+2026-05-08 09:59:32,947 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-05-08 09:59:32,947 | INFO | backend.tools.x402_payment | Listing 77: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-08 09:59:32,947 | INFO | backend.tools.x402_payment | [AUTO-REJECTED] listing=77 reason=relevance below threshold thresholds={'AUTO_MIN_RELEVANCE': 80, 'AUTO_MIN_REPUTATION': 70, 'AUTO_MAX_PRICE_USDC': 3.0}
+2026-05-08 10:00:04,325 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-08 10:00:04,915 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote curator registration check
+2026-05-08 10:00:04,917 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote buyer registration check
+2026-05-08 10:00:04,918 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 10:00:04,918 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 10:00:04,918 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 10:00:04,919 | INFO | apscheduler.scheduler | Added job "run_full_cycle" to job store "default"
+2026-05-08 10:00:04,919 | INFO | apscheduler.scheduler | Added job "check_and_top_up" to job store "default"
+2026-05-08 10:00:04,919 | INFO | apscheduler.scheduler | Added job "_send_heartbeat" to job store "default"
+2026-05-08 10:00:04,919 | INFO | apscheduler.scheduler | Scheduler started
+2026-05-08 10:00:04,920 | INFO | mercator.websocket | [WS] Client d37cb6ac-0b0f-43b3-8920-7d69bb711733 connected. Total connections: 1
+2026-05-08 10:00:04,920 | INFO | mercator.backend | [WS] Connected client_id=d37cb6ac-0b0f-43b3-8920-7d69bb711733 token_present=True
+2026-05-08 10:00:13,418 | INFO | mercator.websocket | [WS] Client d37cb6ac-0b0f-43b3-8920-7d69bb711733 disconnected. Total connections: 0
+2026-05-08 10:00:13,420 | INFO | apscheduler.scheduler | Scheduler has been shut down
+2026-05-08 10:00:13,437 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote curator registration check
+2026-05-08 10:00:13,439 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote buyer registration check
+2026-05-08 10:00:13,440 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 10:00:13,440 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 10:00:13,440 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 10:00:13,440 | INFO | apscheduler.scheduler | Added job "run_full_cycle" to job store "default"
+2026-05-08 10:00:13,440 | INFO | apscheduler.scheduler | Added job "check_and_top_up" to job store "default"
+2026-05-08 10:00:13,440 | INFO | apscheduler.scheduler | Added job "_send_heartbeat" to job store "default"
+2026-05-08 10:00:13,440 | INFO | apscheduler.scheduler | Scheduler started
+2026-05-08 10:00:13,441 | INFO | mercator.websocket | [WS] Client 00276daa-32c8-40b3-bef0-c9b6efc35384 connected. Total connections: 1
+2026-05-08 10:00:13,442 | INFO | mercator.backend | [WS] Connected client_id=00276daa-32c8-40b3-bef0-c9b6efc35384 token_present=True
+2026-05-08 10:00:13,442 | INFO | mercator.websocket | [WS] Client ad1efac0-fb3c-4b00-94f4-16793cfeb921 connected. Total connections: 2
+2026-05-08 10:00:13,443 | INFO | mercator.backend | [WS] Connected client_id=ad1efac0-fb3c-4b00-94f4-16793cfeb921 token_present=True
+2026-05-08 10:00:13,443 | INFO | mercator.websocket | [WS] Client 0710767c-8905-4361-9f9e-1867f9d152b8 connected. Total connections: 3
+2026-05-08 10:00:13,443 | INFO | mercator.backend | [WS] Connected client_id=0710767c-8905-4361-9f9e-1867f9d152b8 token_present=True
+2026-05-08 10:00:13,444 | INFO | mercator.websocket | [WS] Client 0710767c-8905-4361-9f9e-1867f9d152b8 disconnected. Total connections: 2
+2026-05-08 10:00:13,444 | INFO | mercator.websocket | [WS] Client ad1efac0-fb3c-4b00-94f4-16793cfeb921 disconnected. Total connections: 1
+2026-05-08 10:00:13,445 | INFO | mercator.websocket | [WS] Client 00276daa-32c8-40b3-bef0-c9b6efc35384 disconnected. Total connections: 0
+2026-05-08 10:00:13,445 | INFO | apscheduler.scheduler | Scheduler has been shut down
+2026-05-08 10:00:13,455 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote curator registration check
+2026-05-08 10:00:13,457 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote buyer registration check
+2026-05-08 10:00:13,457 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 10:00:13,457 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 10:00:13,457 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 10:00:13,457 | INFO | apscheduler.scheduler | Added job "run_full_cycle" to job store "default"
+2026-05-08 10:00:13,457 | INFO | apscheduler.scheduler | Added job "check_and_top_up" to job store "default"
+2026-05-08 10:00:13,457 | INFO | apscheduler.scheduler | Added job "_send_heartbeat" to job store "default"
+2026-05-08 10:00:13,457 | INFO | apscheduler.scheduler | Scheduler started
+2026-05-08 10:00:13,458 | INFO | mercator.websocket | [WS] Client c9d6b02e-6fb3-479d-a2fb-2f923a388546 connected. Total connections: 1
+2026-05-08 10:00:13,458 | INFO | mercator.backend | [WS] Connected client_id=c9d6b02e-6fb3-479d-a2fb-2f923a388546 token_present=True
+2026-05-08 10:00:13,459 | INFO | mercator.websocket | [WS] Client c9d6b02e-6fb3-479d-a2fb-2f923a388546 disconnected. Total connections: 0
+2026-05-08 10:00:13,459 | INFO | apscheduler.scheduler | Scheduler has been shut down
+2026-05-08 10:00:13,467 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.25, insight_len=66
+2026-05-08 10:00:13,467 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM (effective signer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM exact_match=True)
+2026-05-08 10:00:13,467 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-08 10:00:13,467 | INFO | mercator.backend | IPFS upload complete, cid=CID123
+2026-05-08 10:00:13,467 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1250000 app_id=758025190 attempt=1/3
+2026-05-08 10:00:13,467 | INFO | mercator.backend | On-chain listing submitted: listing_id=101 asa_id=202
+2026-05-08 10:00:13,467 | INFO | demo.flow | Seller upload complete
+2026-05-08 10:00:13,467 | INFO | demo.flow | On-chain ASA created
+2026-05-08 10:00:13,467 | INFO | mercator.backend | Transaction confirmed: tx_id=TX123
+2026-05-08 10:00:13,478 | WARNING | backend.tools.x402_payment | Subscription status check failed for MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ: <urlopen error [Errno 61] Connection refused>
+2026-05-08 10:00:13,478 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-08 10:00:13,478 | INFO | backend.tools.x402_payment | Autonomous mode enabled; skipping explicit approval gate
+2026-05-08 10:00:13,478 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-08 10:00:13,478 | INFO | demo.flow | Payment approved
+2026-05-08 10:00:13,478 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 77
+2026-05-08 10:00:13,479 | INFO | backend.tools.x402_payment | Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 1.0 USDC
+2026-05-08 10:00:13,479 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-05-08 10:00:13,479 | INFO | backend.tools.x402_payment | Listing 77: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-08 10:00:13,479 | INFO | backend.tools.x402_payment | [AUTO-REJECTED] listing=77 reason=relevance below threshold thresholds={'AUTO_MIN_RELEVANCE': 80, 'AUTO_MIN_REPUTATION': 70, 'AUTO_MAX_PRICE_USDC': 3.0}
+2026-05-08 10:00:23,085 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-08 10:00:31,235 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-08 10:01:04,096 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-08 10:03:20,954 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-08 10:03:21,538 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote curator registration check
+2026-05-08 10:03:21,541 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote buyer registration check
+2026-05-08 10:03:21,541 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 10:03:21,542 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 10:03:21,542 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 10:03:21,543 | INFO | apscheduler.scheduler | Added job "run_full_cycle" to job store "default"
+2026-05-08 10:03:21,543 | INFO | apscheduler.scheduler | Added job "check_and_top_up" to job store "default"
+2026-05-08 10:03:21,543 | INFO | apscheduler.scheduler | Added job "_send_heartbeat" to job store "default"
+2026-05-08 10:03:21,543 | INFO | apscheduler.scheduler | Scheduler started
+2026-05-08 10:03:21,545 | INFO | mercator.websocket | [WS] Client 855f2eec-533b-46eb-87d9-89cc035d9016 connected. Total connections: 1
+2026-05-08 10:03:21,545 | INFO | mercator.backend | [WS] Connected client_id=855f2eec-533b-46eb-87d9-89cc035d9016 token_present=True
+2026-05-08 10:03:24,018 | INFO | mercator.websocket | [WS] Client 855f2eec-533b-46eb-87d9-89cc035d9016 disconnected. Total connections: 0
+2026-05-08 10:03:24,020 | INFO | apscheduler.scheduler | Scheduler has been shut down
+2026-05-08 10:03:24,036 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote curator registration check
+2026-05-08 10:03:24,039 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote buyer registration check
+2026-05-08 10:03:24,039 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 10:03:24,039 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 10:03:24,039 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 10:03:24,039 | INFO | apscheduler.scheduler | Added job "run_full_cycle" to job store "default"
+2026-05-08 10:03:24,039 | INFO | apscheduler.scheduler | Added job "check_and_top_up" to job store "default"
+2026-05-08 10:03:24,039 | INFO | apscheduler.scheduler | Added job "_send_heartbeat" to job store "default"
+2026-05-08 10:03:24,040 | INFO | apscheduler.scheduler | Scheduler started
+2026-05-08 10:03:24,041 | INFO | mercator.websocket | [WS] Client 3f5c3760-70dc-4963-a2ca-d25c6b914d5b connected. Total connections: 1
+2026-05-08 10:03:24,041 | INFO | mercator.backend | [WS] Connected client_id=3f5c3760-70dc-4963-a2ca-d25c6b914d5b token_present=True
+2026-05-08 10:03:24,042 | INFO | mercator.websocket | [WS] Client 3f4e8b4c-a279-41bb-bf8d-789d46138819 connected. Total connections: 2
+2026-05-08 10:03:24,042 | INFO | mercator.backend | [WS] Connected client_id=3f4e8b4c-a279-41bb-bf8d-789d46138819 token_present=True
+2026-05-08 10:03:24,043 | INFO | mercator.websocket | [WS] Client 45b2623c-9767-4ab0-9bed-e50b560990f1 connected. Total connections: 3
+2026-05-08 10:03:24,043 | INFO | mercator.backend | [WS] Connected client_id=45b2623c-9767-4ab0-9bed-e50b560990f1 token_present=True
+2026-05-08 10:03:24,044 | INFO | mercator.websocket | [WS] Client 45b2623c-9767-4ab0-9bed-e50b560990f1 disconnected. Total connections: 2
+2026-05-08 10:03:24,044 | INFO | mercator.websocket | [WS] Client 3f4e8b4c-a279-41bb-bf8d-789d46138819 disconnected. Total connections: 1
+2026-05-08 10:03:24,044 | INFO | mercator.websocket | [WS] Client 3f5c3760-70dc-4963-a2ca-d25c6b914d5b disconnected. Total connections: 0
+2026-05-08 10:03:24,045 | INFO | apscheduler.scheduler | Scheduler has been shut down
+2026-05-08 10:03:24,054 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote curator registration check
+2026-05-08 10:03:24,056 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote buyer registration check
+2026-05-08 10:03:24,057 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 10:03:24,057 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 10:03:24,057 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 10:03:24,057 | INFO | apscheduler.scheduler | Added job "run_full_cycle" to job store "default"
+2026-05-08 10:03:24,057 | INFO | apscheduler.scheduler | Added job "check_and_top_up" to job store "default"
+2026-05-08 10:03:24,057 | INFO | apscheduler.scheduler | Added job "_send_heartbeat" to job store "default"
+2026-05-08 10:03:24,057 | INFO | apscheduler.scheduler | Scheduler started
+2026-05-08 10:03:24,058 | INFO | mercator.websocket | [WS] Client 5d1f2072-bc32-4429-b2ef-bfb4511fe7b7 connected. Total connections: 1
+2026-05-08 10:03:24,058 | INFO | mercator.backend | [WS] Connected client_id=5d1f2072-bc32-4429-b2ef-bfb4511fe7b7 token_present=True
+2026-05-08 10:03:24,058 | INFO | mercator.websocket | [WS] Client 5d1f2072-bc32-4429-b2ef-bfb4511fe7b7 disconnected. Total connections: 0
+2026-05-08 10:03:24,059 | INFO | apscheduler.scheduler | Scheduler has been shut down
+2026-05-08 10:03:24,066 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.25, insight_len=66
+2026-05-08 10:03:24,066 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM (effective signer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM exact_match=True)
+2026-05-08 10:03:24,066 | INFO | mercator.backend | IPFS upload started | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-08 10:03:24,067 | INFO | mercator.backend | IPFS upload complete, cid=CID123
+2026-05-08 10:03:24,067 | INFO | mercator.backend | ASA creation attempted | seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM price_micro=1250000 app_id=758025190 attempt=1/3
+2026-05-08 10:03:24,067 | INFO | mercator.backend | On-chain listing submitted: listing_id=101 asa_id=202
+2026-05-08 10:03:24,067 | INFO | demo.flow | Seller upload complete
+2026-05-08 10:03:24,067 | INFO | demo.flow | On-chain ASA created
+2026-05-08 10:03:24,067 | INFO | mercator.backend | Transaction confirmed: tx_id=TX123
+2026-05-08 10:03:24,077 | WARNING | backend.tools.x402_payment | Subscription status check failed for MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ: <urlopen error [Errno 61] Connection refused>
+2026-05-08 10:03:24,077 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-08 10:03:24,077 | INFO | backend.tools.x402_payment | Autonomous mode enabled; skipping explicit approval gate
+2026-05-08 10:03:24,077 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-08 10:03:24,077 | INFO | demo.flow | Payment approved
+2026-05-08 10:03:24,077 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 77
+2026-05-08 10:03:24,077 | INFO | backend.tools.x402_payment | Buyer: MJ43TC6S6UKGLCR2PG4V7A76FNKRT7TWOVTP4X2ENTNBTNCCGN734RUSAQ, Amount: 1.0 USDC
+2026-05-08 10:03:24,078 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-05-08 10:03:24,078 | INFO | backend.tools.x402_payment | Listing 77: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-08 10:03:24,078 | INFO | backend.tools.x402_payment | [AUTO-REJECTED] listing=77 reason=relevance below threshold thresholds={'AUTO_MIN_RELEVANCE': 80, 'AUTO_MIN_REPUTATION': 70, 'AUTO_MAX_PRICE_USDC': 3.0}

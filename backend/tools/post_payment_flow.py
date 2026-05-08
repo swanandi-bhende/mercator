@@ -34,6 +34,7 @@ from functools import lru_cache
 from algokit_utils import AlgorandClient
 from backend.utils.runtime_env import configure_demo_logging, normalize_network_env
 from backend.utils.error_handler import contract_error, ipfs_down
+from backend.utils.ws_manager import ws_manager
 
 try:
     from utils.ipfs import fetch_insight_from_ipfs
@@ -249,6 +250,19 @@ async def complete_purchase_flow(
     cid = str(listing.ipfs_hash)
     seller_wallet = str(listing.seller)
 
+    await ws_manager.broadcast(
+        "payment_confirmed",
+        {
+            "listing_id": str(listing_id),
+            "buyer_wallet": buyer_wallet,
+            "seller_wallet": seller_wallet,
+            "amount_usdc": round(float(listing.price) / 1_000_000, 6),
+            "payment_method": "x402",
+            "tx_id": tx_id,
+            "escrow_tx_id": escrow_tx_id,
+        },
+    )
+
     async def _update_reputation_line() -> str:
         """Update seller reputation and return a user-facing summary line."""
         try:
@@ -264,6 +278,16 @@ async def complete_purchase_flow(
             line = (
                 f"Reputation update: seller={seller_wallet} | before={score_before} "
                 f"| after={score_after} | delta=+{score_after - score_before} | tx={reputation_tx_id}"
+            )
+            await ws_manager.broadcast(
+                "reputation_updated",
+                {
+                    "wallet": seller_wallet,
+                    "old_score": score_before,
+                    "new_score": score_after,
+                    "change": score_after - score_before,
+                    "triggered_by_listing_id": str(listing_id),
+                },
             )
             logger.info(line)
             return line
@@ -346,6 +370,18 @@ async def complete_purchase_flow(
             escrow_tx_id, escrow_round = await escrow_task
             logger.info("Escrow redeem confirmed | tx_id=%s round=%s", escrow_tx_id, escrow_round)
             demo_logger.info("Escrow released")
+            await ws_manager.broadcast(
+                "escrow_released",
+                {
+                    "listing_id": str(listing_id),
+                    "buyer_wallet": buyer_wallet,
+                    "seller_wallet": seller_wallet,
+                    "seller_net_usdc": round(float(listing.price) / 1_000_000, 6),
+                    "platform_fee_usdc": 0.0,
+                    "fee_tx_id": "",
+                    "escrow_tx_id": escrow_tx_id,
+                },
+            )
         except Exception as exc:  # noqa: BLE001
             logger.warning("Escrow redeem unavailable; continuing with paid content delivery | error=%s", exc)
             escrow_hint = "Escrow release skipped. Your payment is confirmed; please retry in a few seconds."

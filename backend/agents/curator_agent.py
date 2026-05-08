@@ -32,6 +32,7 @@ from backend.utils.db import (
     record_curator_run,
 )
 from backend.utils.runtime_env import load_repo_env_files, normalize_network_env
+from backend.utils.ws_manager import ws_manager
 
 logger = logging.getLogger(__name__)
 
@@ -278,6 +279,28 @@ async def run_full_cycle() -> list[CuratorRunResult]:
         results.append(result)
         if index < len(symbols) - 1:
             await asyncio.sleep(DEFAULT_CYCLE_PAUSE_SECONDS)
+
+    published_count = len([item for item in results if item.published])
+    skipped_count = len([item for item in results if not item.published])
+    next_run_at = ""
+    try:
+        from backend.main import scheduler  # Local import avoids module import cycles.
+
+        job = scheduler.get_job("curator_cycle")
+        if job is not None and getattr(job, "next_run_time", None) is not None:
+            next_run_at = job.next_run_time.isoformat()
+    except Exception:
+        next_run_at = ""
+
+    await ws_manager.broadcast(
+        "curator_cycle_complete",
+        {
+            "symbols_processed": len(symbols),
+            "insights_published": published_count,
+            "insights_skipped": skipped_count,
+            "next_run_at": next_run_at,
+        },
+    )
     return results
 
 

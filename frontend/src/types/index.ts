@@ -97,6 +97,35 @@ export interface DiscoverResponse {
   }
 }
 
+export interface ListingsFeedItem {
+  timestamp: string
+  tx_id: string
+  cid: string
+  listing_id: string | number
+  asa_id: string | number
+  seller_wallet: string
+  price_usdc: number
+  insight_text: string
+  seller_reputation?: number
+}
+
+export interface ListingsFeedResponse {
+  success: boolean
+  count: number
+  listings: ListingsFeedItem[]
+}
+
+export interface TraceEvent {
+  event_type: string
+  timestamp: string
+  payload: Record<string, unknown>
+}
+
+export interface TracesLatestResponse {
+  success: boolean
+  events: TraceEvent[]
+}
+
 export interface HealthResponse {
   status: 'ok' | 'error' | 'degraded'
   version?: string

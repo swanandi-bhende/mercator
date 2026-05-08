@@ -52,6 +52,7 @@ from backend.utils.auto_approval import check_auto_conditions
 from backend.utils.flow_tracer import record_event
 from backend.utils.runtime_env import configure_demo_logging, normalize_network_env
 from backend.utils.error_handler import contract_error, insufficient_balance, payment_rejected
+from backend.utils.ws_manager import ws_manager
 
 logger = logging.getLogger(__name__)
 normalize_network_env()
@@ -827,6 +828,18 @@ async def trigger_x402_payment(
                     "rejection_reason": auto_approval.rejection_reason,
                 },
                 autonomous=auto_approval.approved,
+            )
+            await ws_manager.broadcast(
+                "autonomous_decision",
+                {
+                    "round_num": 0,
+                    "listing_id": str(listing_id),
+                    "decision": "BUY" if auto_approval.approved else "SKIP",
+                    "relevance_score": int(relevance_score),
+                    "reputation_score": current_reputation_score,
+                    "price_usdc": current_price_usdc,
+                    "rejection_reason": "" if auto_approval.approved else auto_approval.rejection_reason,
+                },
             )
             if auto_approval.approved:
                 logger.info(

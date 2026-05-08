@@ -15,6 +15,8 @@ import type {
   OpsAlgorandStatusResponse,
   OpsPingResponse,
   OpsDiagnosticsResponse,
+  ListingsFeedResponse,
+  TracesLatestResponse,
 } from '../types'
 import type { RegisteredAgent } from '../types'
 
@@ -115,6 +117,28 @@ export const api = {
       return response.data
     } catch (error) {
       throw new ApiError('Failed to discover insights', error)
+    }
+  },
+
+  listingsFeed: async (limit = 50) => {
+    try {
+      const response = await client.get<ListingsFeedResponse>('/api/v1/listings', {
+        params: { limit },
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('Failed to fetch listings feed', error)
+    }
+  },
+
+  tracesLatest: async (limit = 20) => {
+    try {
+      const response = await client.get<TracesLatestResponse>('/traces/latest', {
+        params: { limit },
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('Failed to fetch trace history', error)
     }
   },
 

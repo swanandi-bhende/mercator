@@ -2,7 +2,15 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAppContext } from '../../context/AppContext'
 import { useEffect, useState } from 'react'
 
-export default function TopNav() {
+type ConnectionStatus = 'connecting' | 'connected' | 'disconnected'
+
+function connectionLabel(status: ConnectionStatus) {
+  if (status === 'connected') return 'Live'
+  if (status === 'connecting') return 'Connecting...'
+  return 'Reconnecting...'
+}
+
+export default function TopNav({ connectionStatus }: { connectionStatus: ConnectionStatus }) {
   const location = useLocation()
   const navigate = useNavigate()
   const { currentJourney, setCurrentJourney } = useAppContext()
@@ -42,6 +50,13 @@ export default function TopNav() {
     seller: '📤 Seller Mode',
     buyer: '📥 Buyer Mode',
   }
+
+  const indicatorClass =
+    connectionStatus === 'connected'
+      ? 'ws-dot ws-dot--connected'
+      : connectionStatus === 'connecting'
+        ? 'ws-dot ws-dot--connecting'
+        : 'ws-dot ws-dot--disconnected'
 
   return (
     <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white bg-opacity-95 backdrop-blur">
@@ -87,6 +102,11 @@ export default function TopNav() {
 
           {/* Right Actions */}
           <div className="flex items-center gap-3">
+            <div className="ws-status-indicator" aria-live="polite">
+              <span className={indicatorClass} />
+              <span className="ws-status-text">{connectionLabel(connectionStatus)}</span>
+            </div>
+
             {/* Flow Switcher - Visible on all sizes */}
             <div className="hidden md:flex items-center gap-1 border-l border-gray-200 pl-3">
               <button

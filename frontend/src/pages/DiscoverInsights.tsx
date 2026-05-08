@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useOutletContext } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
 import { api, ApiError } from '../utils/api'
-import type { DiscoverMatch } from '../types'
+import type { DiscoverMatch, ListingsFeedItem } from '../types'
 import VerifiedBadge from '../components/shared/VerifiedBadge'
+import type { LayoutOutletContext } from '../components/Layout'
 
 type SearchPhase = 'idle' | 'fetching' | 'evaluating' | 'ready'
 type BackendStatus = 'unknown' | 'online' | 'offline'
@@ -25,6 +26,18 @@ type RankedInsight = {
   cid: string
   listingId: string
   asaId: string
+}
+
+type LiveListing = {
+  listing_id: string
+  seller_wallet: string
+  seller_name: string
+  price_usdc: number
+  insight_preview: string
+  source_type: string
+  ipfs_cid: string
+  listing_tx_id: string
+  reputation_score: number
 }
 
 const DEMO_INSIGHTS: RankedInsight[] = [
@@ -137,8 +150,44 @@ function buildFeaturedListingInsight(listingInsight: ReturnType<typeof useAppCon
   } satisfies RankedInsight
 }
 
+function toLiveListing(item: ListingsFeedItem): LiveListing {
+  return {
+    listing_id: String(item.listing_id),
+    seller_wallet: item.seller_wallet,
+    seller_name: item.seller_wallet.slice(0, 8),
+    price_usdc: Number(item.price_usdc || 0),
+    insight_preview: item.insight_text,
+    source_type: 'listing',
+    ipfs_cid: item.cid,
+    listing_tx_id: item.tx_id,
+    reputation_score: Number(item.seller_reputation || 0),
+  }
+}
+
+function mapLiveListingToRankedInsight(item: LiveListing): RankedInsight {
+  return {
+    id: `live-${item.listing_id}`,
+    title: item.insight_preview,
+    seller: item.seller_name,
+    wallet: item.seller_wallet,
+    price: Number(item.price_usdc || 0),
+    reputation: Number(item.reputation_score || 0),
+    relevance: 99,
+    reason: `Live ${item.source_type} listing received over WebSocket.`,
+    category: deriveCategory(item.insight_preview, ''),
+    recency: 'Live',
+    listingStatus: 'Live',
+    riskSignal: item.reputation_score < 75 ? 'Below trust threshold' : 'Low risk',
+    txId: item.listing_tx_id,
+    cid: item.ipfs_cid,
+    listingId: String(item.listing_id),
+    asaId: '0',
+  }
+}
+
 export default function DiscoverInsightsPage() {
   const navigate = useNavigate()
+  const { latestWsEvent } = useOutletContext<LayoutOutletContext>()
   const { listingInsight, setSelectedInsight, setSellerMetadata, buyerWallet, setBuyerWallet } = useAppContext()
 
   const [query, setQuery] = useState(() => {
@@ -183,9 +232,13 @@ export default function DiscoverInsightsPage() {
   const [subscriptionMonths, setSubscriptionMonths] = useState(1)
   const [subscriptionLoading, setSubscriptionLoading] = useState(false)
   const [subscriptionError, setSubscriptionError] = useState<string | null>(null)
+  const [listings, setListings] = useState<LiveListing[]>([])
+  const [newListingIds, setNewListingIds] = useState<string[]>([])
+  const [agentBadges, setAgentBadges] = useState<Record<string, string>>({})
 
   const queryTokens = useMemo(() => tokenize(query), [query])
   const featuredListing = useMemo(() => buildFeaturedListingInsight(listingInsight), [listingInsight])
+  const liveInsights = useMemo(() => listings.map(mapLiveListingToRankedInsight), [listings])
 
   const recencyInHours = (recency: string) => {
     if (recency.includes('h')) return Number.parseInt(recency, 10)
@@ -236,7 +289,13 @@ export default function DiscoverInsightsPage() {
     return matchesCategory && matchesPrice && matchesReputation && matchesRecency
   }
 
-  const baseInsights = hasSearched ? rawInsights : featuredListing ? [featuredListing, ...DEMO_INSIGHTS] : DEMO_INSIGHTS
+  const baseInsights = hasSearched
+    ? rawInsights
+    : liveInsights.length > 0
+      ? liveInsights
+      : featuredListing
+        ? [featuredListing, ...DEMO_INSIGHTS]
+        : DEMO_INSIGHTS
   const visibleInsights = baseInsights.filter((insight) => applyFilters(insight) && matchesSearchQuery(insight))
 
   useEffect(() => {
@@ -279,6 +338,76 @@ export default function DiscoverInsightsPage() {
       cancelled = true
     }
   }, [buyerWallet])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const loadListings = async () => {
+      try {
+        const response = await api.listingsFeed(50)
+        if (cancelled || !response.success) return
+        const mapped = (response.listings || []).map(toLiveListing)
+        setListings(mapped)
+      } catch {
+        // Best-effort preload only.
+      }
+    }
+
+    void loadListings()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!latestWsEvent) return
+
+    if (latestWsEvent.event_type === 'new_listing') {
+      const payload = latestWsEvent.payload
+      const listing: LiveListing = {
+        listing_id: String(payload.listing_id || ''),
+        seller_wallet: String(payload.seller_wallet || ''),
+        seller_name: String(payload.seller_name || 'seller'),
+        price_usdc: Number(payload.price_usdc || 0),
+        insight_preview: String(payload.insight_preview || ''),
+        source_type: String(payload.source_type || 'listing'),
+        ipfs_cid: String(payload.ipfs_cid || ''),
+        listing_tx_id: String(payload.listing_tx_id || ''),
+        reputation_score: Number(payload.reputation_score || 0),
+      }
+
+      if (!listing.listing_id) return
+
+      setListings((prev) => {
+        const deduped = prev.filter((item) => item.listing_id !== listing.listing_id)
+        return [listing, ...deduped.slice(0, 49)]
+      })
+
+      setNewListingIds((prev) => (prev.includes(listing.listing_id) ? prev : [...prev, listing.listing_id]))
+      window.setTimeout(() => {
+        setNewListingIds((prev) => prev.filter((id) => id !== listing.listing_id))
+      }, 2000)
+    }
+
+    if (latestWsEvent.event_type === 'autonomous_decision') {
+      const payload = latestWsEvent.payload
+      const listingId = String(payload.listing_id || '')
+      if (!listingId) return
+
+      const decision = String(payload.decision || 'SKIP').toUpperCase()
+      const rejectionReason = String(payload.rejection_reason || '').trim()
+      const label = decision === 'BUY' ? '🤖 Agent BUY' : `🤖 Agent SKIP${rejectionReason ? `: ${rejectionReason}` : ''}`
+
+      setAgentBadges((prev) => ({ ...prev, [listingId]: label }))
+      window.setTimeout(() => {
+        setAgentBadges((prev) => {
+          const next = { ...prev }
+          delete next[listingId]
+          return next
+        })
+      }, 5000)
+    }
+  }, [latestWsEvent])
 
   const handleSubscribe = async () => {
     if (!buyerWallet) {
@@ -662,7 +791,15 @@ export default function DiscoverInsightsPage() {
 
           <div className="discover-results-grid">
             {visibleInsights.map((insight, index) => (
-              <article key={insight.id} className="discover-result-card">
+              <article
+                key={insight.id}
+                className={`discover-result-card ${newListingIds.includes(insight.listingId) ? 'listing-card-new' : ''}`}
+              >
+                {agentBadges[insight.listingId] && (
+                  <div className="discover-agent-badge" role="status" aria-live="polite">
+                    {agentBadges[insight.listingId]}
+                  </div>
+                )}
                 <div className="discover-result-topline">
                   <span className="discover-rank">#{index + 1}</span>
                   <span className="discover-category">{insight.category}</span>

@@ -30,7 +30,7 @@ from collections import deque
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Query, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
@@ -77,6 +77,7 @@ from backend.utils.db import initialise_curator_schema
 from backend.utils.flow_tracer import export_json
 from backend.utils.runtime_env import configure_demo_logging, normalize_network_env, warn_missing_required_env
 from backend.utils.error_handler import contract_error, ipfs_down
+from backend.utils.ws_manager import ws_manager
 
 try:
     from contracts.insight_listing import InsightListingClient  # noqa: F401
@@ -1029,6 +1030,52 @@ def _is_transient_chain_error(err: Exception) -> bool:
     return any(token in message for token in transient_tokens)
 
 
+def _build_health_update_payload() -> dict[str, object]:
+    now = datetime.now(timezone.utc)
+    started = time.perf_counter()
+    algorand = _collect_algorand_status(now)
+    ipfs = _collect_ipfs_health(now)
+    backend_latency_ms = round((time.perf_counter() - started) * 1000, 2)
+
+    return {
+        "algorand_status": str(algorand.get("status", "unknown")),
+        "ipfs_status": str(ipfs.get("status", "unknown")),
+        "backend_latency_ms": backend_latency_ms,
+        "current_block": _safe_int(algorand.get("current_round"), 0),
+        "active_connections": ws_manager.get_connection_count(),
+    }
+
+
+async def _send_heartbeat() -> None:
+    await ws_manager.broadcast("ping", {})
+    await ws_manager.broadcast("health_update", _build_health_update_payload())
+
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket, token: str | None = Query(default=None)) -> None:
+    client_id = await ws_manager.connect(websocket)
+    logger.info("[WS] Connected client_id=%s token_present=%s", client_id, bool(token))
+
+    try:
+        while True:
+            try:
+                message = await asyncio.wait_for(websocket.receive_text(), timeout=35.0)
+            except asyncio.TimeoutError:
+                ws_manager.disconnect(client_id)
+                try:
+                    await websocket.close(code=1000)
+                except Exception:
+                    pass
+                break
+
+            if message == '{"type":"pong"}':
+                client = ws_manager.active_connections.get(client_id)
+                if client is not None:
+                    client.last_ping_at = time.time()
+    except WebSocketDisconnect:
+        ws_manager.disconnect(client_id)
+
+
 @app.on_event("startup")
 async def startup_checks() -> None:
     """Startup hook to normalize env and warn on missing required keys.
@@ -1068,6 +1115,13 @@ async def startup_checks() -> None:
         "interval",
         hours=6,
         id="wallet_top_up",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        _send_heartbeat,
+        "interval",
+        seconds=30,
+        id="ws_heartbeat",
         replace_existing=True,
     )
     if not scheduler.running:
@@ -2456,6 +2510,21 @@ async def create_listing(request: ListingRequest) -> dict[str, int | str]:
         except Exception:
             # Never block listing success on cache invalidation.
             pass
+
+        await ws_manager.broadcast(
+            "new_listing",
+            {
+                "listing_id": str(listing_id),
+                "seller_wallet": effective_seller_wallet,
+                "seller_name": "seller",
+                "price_usdc": round(float(request.price), 6),
+                "insight_preview": request.insight_text[:100],
+                "source_type": request.source_type,
+                "ipfs_cid": cid,
+                "listing_tx_id": tx_id,
+                "reputation_score": 0,
+            },
+        )
     except IPFSUploadError as err:
         logger.error("IPFS upload failed | error=%s", err, exc_info=True)
         return _error_response(500, ipfs_down(logger, str(err)))
@@ -2604,6 +2673,16 @@ async def subscribe(request: SubscriptionRequest) -> dict[str, object]:
             payment_txn=payment_txn,
         )
         payload = _subscription_status_payload(request.buyer_wallet)
+        await ws_manager.broadcast(
+            "new_subscription",
+            {
+                "buyer_wallet": request.buyer_wallet,
+                "months_paid": request.months,
+                "expiry_round": _safe_int(payload.get("expiry_round"), 0),
+                "expiry_approx_date": str(payload.get("expiry_approx_date", "")),
+                "total_usdc_paid": round((monthly_rate_micro_usdc * request.months) / 1_000_000, 6),
+            },
+        )
         return {
             "success": True,
             "tx_id": tx_ids[-1] if tx_ids else "",
@@ -2697,6 +2776,24 @@ async def demo_purchase(request: DemoPurchaseRequest) -> dict[str, object]:
         "success": bool(result.get("success", False)) if isinstance(result, dict) else False,
         "final_insight_text": final_insight_text,
         "result": result,
+    }
+
+
+@app.get("/api/v1/listings")
+async def get_recent_listings(limit: int = 50) -> dict[str, object]:
+    safe_limit = max(1, min(limit, 200))
+    return {
+        "success": True,
+        "count": min(len(RECENT_LISTINGS), safe_limit),
+        "listings": list(RECENT_LISTINGS)[:safe_limit],
+    }
+
+
+@app.get("/traces/latest")
+async def traces_latest(limit: int = 20) -> dict[str, object]:
+    return {
+        "success": True,
+        "events": ws_manager.get_recent_events(limit),
     }
 
 

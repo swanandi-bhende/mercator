@@ -3,7 +3,7 @@
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AppProvider } from './context/AppContext'
-import MainLayout from './layouts/MainLayout'
+import Layout from './components/Layout'
 import HomePage from './pages/Home'
 import SellInsightPage from './pages/SellInsight'
 import DiscoverInsightsPage from './pages/DiscoverInsights'
@@ -20,7 +20,7 @@ export default function App() {
     <BrowserRouter>
       <AppProvider>
         <Routes>
-          <Route element={<MainLayout />}>
+          <Route element={<Layout />}>
             {/* Public Landing Route */}
             <Route path="/" element={<HomePage />} />
 
