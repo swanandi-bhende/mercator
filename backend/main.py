@@ -19,6 +19,7 @@ import json
 import logging
 import os
 import hashlib
+import re
 import time
 import warnings
 from uuid import uuid4
@@ -74,6 +75,15 @@ from backend.tools.semantic_search import (
 from backend.agents import curator_agent
 from backend.tools import staging_seed_wallet
 from backend.utils.db import initialise_curator_schema
+from backend.utils.custodial_wallet import (
+    create_user,
+    authenticate_user,
+    get_wallet_for_user,
+    fund_new_wallet,
+    is_custodial_address,
+    get_user_id_by_address,
+    create_demo_session,
+)
 from backend.utils.flow_tracer import tracer
 from backend.utils.runtime_env import configure_demo_logging, normalize_network_env, warn_missing_required_env
 from backend.utils.error_handler import contract_error, ipfs_down
@@ -630,6 +640,8 @@ class DemoPurchaseRequest(BaseModel):
     user_approval_input: str = "approve"
     force_buy_for_test: bool = True
     target_listing_id: int | None = None
+    user_id: str | None = None
+    session_token: str | None = None
 
 
 class DiscoverRequest(BaseModel):
@@ -660,6 +672,22 @@ class SubscriptionRequest(BaseModel):
 class SubscriptionReleaseRequest(BaseModel):
     buyer_wallet: str
     listing_id: int
+
+
+class OnboardRequest(BaseModel):
+    display_name: str
+    email: str
+    password: str
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+class ExportRequest(BaseModel):
+    user_id: str
+    password: str
 
 
 def _safe_iso_from_round_time(round_time: object) -> str:
@@ -871,6 +899,29 @@ def _get_indexer_client() -> indexer.IndexerClient:
         raise HTTPException(status_code=500, detail="INDEXER_URL/INDEXER_SERVER is not configured")
     token = os.getenv("INDEXER_TOKEN", "").strip() or os.getenv("ALGOD_TOKEN", "").strip()
     return indexer.IndexerClient(indexer_token=token, indexer_address=indexer_url)
+
+
+def _fetch_wallet_balances_micro(address: str) -> tuple[int, int]:
+    """Fetch ALGO and USDC micro-unit balances for an address from TestNet indexer."""
+    response = requests.get(f"https://testnet-idx.algonode.cloud/v2/accounts/{address}", timeout=12)
+    response.raise_for_status()
+    payload = response.json()
+    account_data = payload.get("account", {}) if isinstance(payload, dict) else {}
+
+    algo_balance_micro = int(account_data.get("amount", 0) or 0)
+    usdc_asset_id = int(os.getenv("USDC_ASA_ID", "10458941") or 10458941)
+    usdc_balance_micro = 0
+
+    assets = account_data.get("assets", []) if isinstance(account_data, dict) else []
+    if isinstance(assets, list):
+        for item in assets:
+            if not isinstance(item, dict):
+                continue
+            if int(item.get("asset-id", 0) or 0) == usdc_asset_id:
+                usdc_balance_micro = int(item.get("amount", 0) or 0)
+                break
+
+    return algo_balance_micro, usdc_balance_micro
 
 
 def _available_signer_mnemonics() -> list[str]:
@@ -2748,6 +2799,120 @@ async def release_for_subscriber(request: SubscriptionReleaseRequest) -> dict[st
         raise HTTPException(status_code=500, detail=str(err))
 
 
+@app.post("/onboard")
+async def onboard(request: OnboardRequest) -> dict[str, object]:
+    display_name = request.display_name.strip()
+    email = request.email.strip()
+    password = request.password
+
+    if len(display_name) < 2 or len(display_name) > 50:
+        return JSONResponse(status_code=400, content={"error": "Display name must be 2-50 characters"})
+
+    if not re.match(r"^[^@]+@[^@]+\.[^@]+$", email):
+        return JSONResponse(status_code=400, content={"error": "Invalid email format"})
+
+    if len(password) < 10 or not re.search(r"[A-Za-z]", password) or not re.search(r"\d", password):
+        return JSONResponse(
+            status_code=400,
+            content={"error": "Password must be at least 10 chars and include letters and numbers"},
+        )
+
+    try:
+        wallet, user_id = create_user(email, password)
+    except ValueError:
+        return JSONResponse(status_code=409, content={"error": "Email already registered"})
+    except Exception as exc:
+        logger.error("Onboarding failed for email hash flow: %s", exc, exc_info=True)
+        return JSONResponse(status_code=500, content={"error": "Registration failed"})
+
+    algo_balance_micro = 0
+    usdc_balance_micro = 0
+    funding_status = "pending"
+
+    try:
+        funding_result = fund_new_wallet(wallet.algo_address)
+        algo_balance_micro = int(funding_result.get("algo_balance", 0) or 0)
+        usdc_balance_micro = int(funding_result.get("usdc_balance", 0) or 0)
+        funding_status = "funded" if bool(funding_result.get("funding_confirmed", False)) else "pending"
+    except Exception as exc:
+        logger.warning("Faucet funding pending for %s: %s", wallet.algo_address, exc)
+        funding_status = "pending"
+
+    session_token = create_demo_session(user_id, password)
+
+    return {
+        "user_id": user_id,
+        "session_token": session_token,
+        "algo_address": wallet.algo_address,
+        "display_name": display_name,
+        "algo_balance_micro": algo_balance_micro,
+        "usdc_balance_micro": usdc_balance_micro,
+        "funding_status": funding_status,
+        "message": "Your testnet wallet is ready. 2 USDC loaded for testing.",
+    }
+
+
+@app.post("/auth/login")
+async def auth_login(request: LoginRequest) -> dict[str, object]:
+    authenticated, user_id, algo_address = authenticate_user(request.email, request.password)
+    if not authenticated:
+        return JSONResponse(status_code=401, content={"error": "Invalid credentials"})
+
+    session_token = create_demo_session(user_id, request.password)
+    return {
+        "user_id": user_id,
+        "session_token": session_token,
+        "algo_address": algo_address,
+        "message": "Logged in",
+    }
+
+
+@app.get("/wallet/balance")
+async def wallet_balance(address: str = Query(..., description="Algorand wallet address")) -> dict[str, object]:
+    if not encoding.is_valid_address(address):
+        return JSONResponse(status_code=400, content={"error": "Invalid wallet address"})
+
+    try:
+        algo_balance_micro, usdc_balance_micro = _fetch_wallet_balances_micro(address)
+    except Exception as exc:
+        logger.error("Wallet balance lookup failed for %s: %s", address, exc, exc_info=True)
+        return JSONResponse(status_code=502, content={"error": "Balance lookup failed"})
+
+    return {
+        "algo_balance_micro": algo_balance_micro,
+        "usdc_balance_micro": usdc_balance_micro,
+        "algo_balance_display": round(algo_balance_micro / 1_000_000, 6),
+        "usdc_balance_display": round(usdc_balance_micro / 1_000_000, 6),
+    }
+
+
+@app.get("/wallet/is_custodial")
+async def wallet_is_custodial(address: str = Query(..., description="Algorand wallet address")) -> dict[str, object]:
+    if not encoding.is_valid_address(address):
+        return JSONResponse(status_code=400, content={"error": "Invalid wallet address"})
+
+    custodial = is_custodial_address(address)
+    user_id = get_user_id_by_address(address) if custodial else None
+    return {
+        "is_custodial": custodial,
+        "user_id": user_id,
+    }
+
+
+@app.post("/wallet/export")
+async def wallet_export(request: ExportRequest) -> dict[str, object]:
+    result = get_wallet_for_user(request.user_id, request.password)
+    if not result.success:
+        if "invalid" in result.error.lower():
+            return JSONResponse(status_code=401, content={"error": "Invalid credentials"})
+        return JSONResponse(status_code=400, content={"error": result.error or "Wallet export failed"})
+
+    return {
+        "mnemonic": result.mnemonic,
+        "warning": "Store this mnemonic securely. Anyone with these 25 words controls your wallet. This export is for migration to a self-custodial wallet only.",
+    }
+
+
 @app.post("/demo_purchase")
 async def demo_purchase(request: DemoPurchaseRequest) -> dict[str, object]:
     """Launch autonomous agent for semantic search → evaluation → x402 payment.
@@ -2770,6 +2935,8 @@ async def demo_purchase(request: DemoPurchaseRequest) -> dict[str, object]:
             user_approval_input=request.user_approval_input,
             force_buy_for_test=request.force_buy_for_test,
             target_listing_id=request.target_listing_id,
+            user_id=request.user_id,
+            session_token=request.session_token,
             autonomous_mode=False,
         )
 

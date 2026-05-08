@@ -3,6 +3,11 @@ import type {
   ListResponse,
   DemoPurchaseRequest,
   DemoPurchaseResponse,
+  OnboardRequest,
+  OnboardResponse,
+  LoginRequest,
+  LoginResponse,
+  WalletBalanceResponse,
   HealthResponse,
   DiscoverResponse,
   LedgerResponse,
@@ -99,6 +104,8 @@ export const api = {
         user_approval_input: request.user_approval_input.trim(),
         force_buy_for_test: request.force_buy_for_test,
         target_listing_id: request.target_listing_id,
+        user_id: request.user_id,
+        session_token: request.session_token,
       })
       return response.data
     } catch (error) {
@@ -117,6 +124,35 @@ export const api = {
       return response.data
     } catch (error) {
       throw new ApiError('Failed to discover insights', error)
+    }
+  },
+
+  onboard: async (payload: OnboardRequest) => {
+    try {
+      const response = await client.post<OnboardResponse>('/onboard', payload)
+      return response.data
+    } catch (error) {
+      throw new ApiError('Onboarding failed', error)
+    }
+  },
+
+  login: async (payload: LoginRequest) => {
+    try {
+      const response = await client.post<LoginResponse>('/auth/login', payload)
+      return response.data
+    } catch (error) {
+      throw new ApiError('Login failed', error)
+    }
+  },
+
+  walletBalance: async (address: string) => {
+    try {
+      const response = await client.get<WalletBalanceResponse>('/wallet/balance', {
+        params: { address: address.trim() },
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('Failed to fetch wallet balance', error)
     }
   },
 

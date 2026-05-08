@@ -14,6 +14,7 @@ import TrustPage from './pages/Trust'
 import ActivityLedgerPage from './pages/ActivityLedger'
 import OperationsPage from './pages/Operations'
 import AboutPage from './pages/About'
+import OnboardPage from './pages/Onboard'
 
 export default function App() {
   return (
@@ -36,6 +37,7 @@ export default function App() {
             <Route path="/transaction" element={<TransactionPage />} />
 
             {/* Shared Routes */}
+            <Route path="/onboard" element={<OnboardPage />} />
             <Route path="/trust" element={<TrustPage />} />
             <Route path="/activity" element={<ActivityLedgerPage />} />
 

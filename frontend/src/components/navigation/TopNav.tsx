@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAppContext } from '../../context/AppContext'
 import { useEffect, useState } from 'react'
+import { api } from '../../utils/api'
 
 type ConnectionStatus = 'connecting' | 'connected' | 'disconnected'
 
@@ -15,8 +16,34 @@ export default function TopNav({ connectionStatus }: { connectionStatus: Connect
   const navigate = useNavigate()
   const { currentJourney, setCurrentJourney } = useAppContext()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [walletMenuOpen, setWalletMenuOpen] = useState(false)
+  const [session, setSession] = useState<{ user_id: string; algo_address: string; display_name: string; session_token?: string } | null>(null)
+  const [balances, setBalances] = useState<{ usdc: number; algo: number }>({ usdc: 0, algo: 0 })
 
   const isActive = (path: string) => location.pathname === path
+
+  const truncateAddress = (address: string) => {
+    if (address.length <= 12) return address
+    return `${address.slice(0, 8)}...${address.slice(-4)}`
+  }
+
+  const loadSession = () => {
+    const raw = localStorage.getItem('mercator_session')
+    if (!raw) {
+      setSession(null)
+      return
+    }
+    try {
+      const parsed = JSON.parse(raw)
+      if (parsed?.user_id && parsed?.algo_address) {
+        setSession(parsed)
+        return
+      }
+      setSession(null)
+    } catch {
+      setSession(null)
+    }
+  }
 
   // Update journey based on current route
   useEffect(() => {
@@ -28,6 +55,37 @@ export default function TopNav({ connectionStatus }: { connectionStatus: Connect
       setCurrentJourney('home')
     }
   }, [location.pathname, setCurrentJourney])
+
+  useEffect(() => {
+    loadSession()
+  }, [location.pathname])
+
+  useEffect(() => {
+    if (!session?.algo_address) {
+      return
+    }
+
+    let mounted = true
+    const refreshBalance = async () => {
+      try {
+        const response = await api.walletBalance(session.algo_address)
+        if (!mounted) return
+        setBalances({
+          usdc: response.usdc_balance_micro / 1_000_000,
+          algo: response.algo_balance_micro / 1_000_000,
+        })
+      } catch {
+        // Keep stale balance if refresh fails.
+      }
+    }
+
+    refreshBalance()
+    const id = window.setInterval(refreshBalance, 30000)
+    return () => {
+      mounted = false
+      window.clearInterval(id)
+    }
+  }, [session?.algo_address])
 
   const switchFlow = (journey: 'seller' | 'buyer' | 'home') => {
     setCurrentJourney(journey)
@@ -106,6 +164,42 @@ export default function TopNav({ connectionStatus }: { connectionStatus: Connect
               <span className={indicatorClass} />
               <span className="ws-status-text">{connectionLabel(connectionStatus)}</span>
             </div>
+
+            {session ? (
+              <>
+                <div className="wallet-panel">
+                  <div className="wallet-panel-main">
+                    <p className="wallet-panel-name">{session.display_name || 'Mercator User'}</p>
+                    <p className="wallet-panel-address">{truncateAddress(session.algo_address)}</p>
+                  </div>
+                  <div className="wallet-panel-balance">
+                    <p className="wallet-panel-usdc">${balances.usdc.toFixed(2)} USDC</p>
+                    <p className="wallet-panel-algo">{balances.algo.toFixed(3)} ALGO</p>
+                  </div>
+                </div>
+                <div className="wallet-actions">
+                  <button onClick={() => setWalletMenuOpen((prev) => !prev)}>⋯</button>
+                  {walletMenuOpen && (
+                    <div className="wallet-dropdown">
+                      <button
+                        onClick={() => {
+                          localStorage.removeItem('mercator_session')
+                          setSession(null)
+                          setWalletMenuOpen(false)
+                          navigate('/')
+                        }}
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <button className="home-btn home-btn--primary" onClick={() => navigate('/onboard')}>
+                Sign Up Free
+              </button>
+            )}
 
             {/* Flow Switcher - Visible on all sizes */}
             <div className="hidden md:flex items-center gap-1 border-l border-gray-200 pl-3">

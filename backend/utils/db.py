@@ -68,6 +68,21 @@ def initialise_curator_schema() -> None:
             )
             """
         )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS users (
+                user_id TEXT PRIMARY KEY,
+                email_hash TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                algo_address TEXT UNIQUE NOT NULL,
+                encrypted_mnemonic TEXT NOT NULL,
+                pbkdf2_salt TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                last_active_at TEXT,
+                onboarding_complete INTEGER DEFAULT 0
+            )
+            """
+        )
         conn.commit()
 
 

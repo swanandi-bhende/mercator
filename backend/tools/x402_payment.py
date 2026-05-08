@@ -49,6 +49,12 @@ from backend.contracts.escrow.smart_contracts.artifacts.escrow.escrow_client imp
 from backend.contracts.reputation.smart_contracts.artifacts.reputation.reputation_client import ReputationClient
 from backend.tools.post_payment_flow import complete_purchase_flow
 from backend.utils.auto_approval import check_auto_conditions
+from backend.utils.custodial_wallet import (
+    is_custodial_address,
+    get_user_id_by_address,
+    get_wallet_for_user,
+    get_session_password,
+)
 from backend.utils.flow_tracer import record_event, tracer
 from backend.utils.runtime_env import configure_demo_logging, normalize_network_env
 from backend.utils.error_handler import contract_error, insufficient_balance, payment_rejected
@@ -186,11 +192,13 @@ class X402Client:
         algorand: AlgorandClient,
         usdc_asset_id: int = USDC_ASA_ID,
         decimals: int = USDC_DECIMALS,
+        private_key_overrides: dict[str, str] | None = None,
     ):
         self.algorand = algorand
         self.algod = algorand.client.algod
         self.usdc_asset_id = usdc_asset_id
         self.decimals = decimals
+        self.private_key_overrides = private_key_overrides or {}
         # Get sender from environment or deployer
         self.sender = os.getenv("DEPLOYER_ADDRESS", "").strip()
 
@@ -199,6 +207,10 @@ class X402Client:
         sender = sender.strip()
         if not sender:
             raise ValueError("Sender address is required")
+
+        override_key = self.private_key_overrides.get(sender)
+        if override_key:
+            return override_key
 
         mnemonic_candidates = [
             os.getenv("BUYER_MNEMONIC", "").strip(),
@@ -590,6 +602,8 @@ async def trigger_x402_payment(
     buyer_address: str,
     amount_usdc: float,
     user_approval_input: str = "",
+    user_id: str | None = None,
+    session_token: str | None = None,
     autonomous_mode: bool = False,
     relevance_score: int | None = None,
     reputation_score: int | None = None,
@@ -609,6 +623,8 @@ async def trigger_x402_payment(
         buyer_address (str): The buyer's wallet address (58 chars, checksummed)
         amount_usdc (float): The payment amount in USDC (should match listed price)
         user_approval_input (str): User confirmation - MUST be "approve" to proceed
+        user_id (str | None): Demo session user id for custodial wallets.
+        session_token (str | None): Short-lived demo token for custodial wallet unlock.
         autonomous_mode (bool): Skip the explicit approval gate when trust
             thresholds have already been validated by the buyer agent.
         relevance_score (int | None): Relevance score used for autonomous safety checks.
@@ -657,6 +673,22 @@ async def trigger_x402_payment(
                 logger.error("Subscription release request failed for listing %s: %s", listing_id, exc, exc_info=True)
                 raise
             raise RuntimeError("Subscription release endpoint returned an invalid response")
+
+        def _fetch_wallet_is_custodial(address: str) -> dict[str, object]:
+            try:
+                query_string = urlencode({"address": address})
+                request = UrlRequest(f"{backend_base_url}/wallet/is_custodial?{query_string}", method="GET")
+                with urlopen(request, timeout=12) as response:
+                    payload = response.read().decode("utf-8")
+                parsed = json.loads(payload)
+                if isinstance(parsed, dict):
+                    return parsed
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("wallet/is_custodial check failed for %s: %s", address, exc)
+            return {
+                "is_custodial": is_custodial_address(address),
+                "user_id": get_user_id_by_address(address),
+            }
 
         def _friendly_payment_error(raw: str) -> str:
             low = raw.lower()
@@ -902,10 +934,48 @@ async def trigger_x402_payment(
             },
         )
 
+        private_key_overrides: dict[str, str] = {}
+        custodial_lookup = _fetch_wallet_is_custodial(buyer_address)
+        if bool(custodial_lookup.get("is_custodial", False)):
+            resolved_user_id = str(custodial_lookup.get("user_id") or user_id or "")
+            if not resolved_user_id:
+                resolved_user_id = get_user_id_by_address(buyer_address) or ""
+
+            if not resolved_user_id or not session_token:
+                return json.dumps(
+                    {
+                        "success": False,
+                        "error": "CUSTODIAL_AUTH_REQUIRED",
+                        "message": "Custodial wallet payment requires user_id and session_token",
+                    }
+                )
+
+            session_password = get_session_password(resolved_user_id, session_token)
+            if not session_password:
+                return json.dumps(
+                    {
+                        "success": False,
+                        "error": "CUSTODIAL_SESSION_INVALID",
+                        "message": "Custodial session is invalid or expired",
+                    }
+                )
+
+            decrypted_wallet = get_wallet_for_user(resolved_user_id, session_password)
+            if not decrypted_wallet.success:
+                return json.dumps(
+                    {
+                        "success": False,
+                        "error": "CUSTODIAL_DECRYPT_FAILED",
+                        "message": decrypted_wallet.error,
+                    }
+                )
+            private_key_overrides[buyer_address] = decrypted_wallet.private_key
+
         x402_client = X402Client(
             algorand,
             usdc_asset_id=USDC_ASA_ID,
             decimals=USDC_DECIMALS,
+            private_key_overrides=private_key_overrides,
         )
         
         try:

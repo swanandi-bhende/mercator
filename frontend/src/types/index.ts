@@ -36,6 +36,44 @@ export interface DemoPurchaseRequest {
   user_approval_input: string
   force_buy_for_test: boolean
   target_listing_id?: number
+  user_id?: string
+  session_token?: string
+}
+
+export interface OnboardRequest {
+  display_name: string
+  email: string
+  password: string
+}
+
+export interface OnboardResponse {
+  user_id: string
+  session_token: string
+  algo_address: string
+  display_name: string
+  algo_balance_micro: number
+  usdc_balance_micro: number
+  funding_status: string
+  message: string
+}
+
+export interface LoginRequest {
+  email: string
+  password: string
+}
+
+export interface LoginResponse {
+  user_id: string
+  session_token: string
+  algo_address: string
+  message: string
+}
+
+export interface WalletBalanceResponse {
+  algo_balance_micro: number
+  usdc_balance_micro: number
+  algo_balance_display: number
+  usdc_balance_display: number
 }
 
 export interface DemoPurchaseResponse {

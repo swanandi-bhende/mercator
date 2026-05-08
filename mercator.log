@@ -2715,3 +2715,51 @@ RuntimeError: simulation failed
 2026-05-08 17:51:16,986 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
 2026-05-08 17:51:16,986 | INFO | backend.tools.x402_payment | Listing 77: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
 2026-05-08 17:51:16,987 | INFO | backend.tools.x402_payment | [AUTO-REJECTED] listing=77 reason=relevance below threshold thresholds={'AUTO_MIN_RELEVANCE': 80, 'AUTO_MIN_REPUTATION': 70, 'AUTO_MAX_PRICE_USDC': 3.0}
+2026-05-08 18:09:18,495 | WARNING | mercator.backend | Missing required environment keys: GEMINI_API_KEY
+2026-05-08 18:09:18,496 | INFO | backend.agents.curator_agent | CURATOR_WALLET_ADDRESS or CURATOR_MNEMONIC not set; skipping curator registration check
+2026-05-08 18:09:18,499 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote buyer registration check
+2026-05-08 18:09:18,499 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 18:09:18,500 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 18:09:18,500 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 18:09:18,500 | INFO | apscheduler.scheduler | Added job "run_full_cycle" to job store "default"
+2026-05-08 18:09:18,500 | INFO | apscheduler.scheduler | Added job "check_and_top_up" to job store "default"
+2026-05-08 18:09:18,500 | INFO | apscheduler.scheduler | Added job "_send_heartbeat" to job store "default"
+2026-05-08 18:09:18,500 | INFO | apscheduler.scheduler | Scheduler started
+2026-05-08 18:09:19,252 | INFO | httpx | HTTP Request: POST http://testserver/onboard "HTTP/1.1 200 OK"
+2026-05-08 18:09:19,252 | INFO | apscheduler.scheduler | Scheduler has been shut down
+2026-05-08 18:09:20,008 | WARNING | mercator.backend | Missing required environment keys: GEMINI_API_KEY
+2026-05-08 18:09:20,009 | INFO | backend.agents.curator_agent | CURATOR_WALLET_ADDRESS or CURATOR_MNEMONIC not set; skipping curator registration check
+2026-05-08 18:09:20,011 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote buyer registration check
+2026-05-08 18:09:20,011 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 18:09:20,011 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 18:09:20,011 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 18:09:20,011 | INFO | apscheduler.scheduler | Added job "run_full_cycle" to job store "default"
+2026-05-08 18:09:20,011 | INFO | apscheduler.scheduler | Added job "check_and_top_up" to job store "default"
+2026-05-08 18:09:20,011 | INFO | apscheduler.scheduler | Added job "_send_heartbeat" to job store "default"
+2026-05-08 18:09:20,011 | INFO | apscheduler.scheduler | Scheduler started
+2026-05-08 18:09:20,399 | INFO | httpx | HTTP Request: POST http://testserver/auth/login "HTTP/1.1 401 Unauthorized"
+2026-05-08 18:09:20,400 | INFO | apscheduler.scheduler | Scheduler has been shut down
+2026-05-08 18:09:21,158 | WARNING | mercator.backend | Missing required environment keys: GEMINI_API_KEY
+2026-05-08 18:09:21,159 | INFO | backend.agents.curator_agent | CURATOR_WALLET_ADDRESS or CURATOR_MNEMONIC not set; skipping curator registration check
+2026-05-08 18:09:21,161 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote buyer registration check
+2026-05-08 18:09:21,161 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 18:09:21,161 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 18:09:21,161 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 18:09:21,161 | INFO | apscheduler.scheduler | Added job "run_full_cycle" to job store "default"
+2026-05-08 18:09:21,161 | INFO | apscheduler.scheduler | Added job "check_and_top_up" to job store "default"
+2026-05-08 18:09:21,161 | INFO | apscheduler.scheduler | Added job "_send_heartbeat" to job store "default"
+2026-05-08 18:09:21,162 | INFO | apscheduler.scheduler | Scheduler started
+2026-05-08 18:09:21,522 | INFO | httpx | HTTP Request: POST http://testserver/wallet/export "HTTP/1.1 200 OK"
+2026-05-08 18:09:21,523 | INFO | apscheduler.scheduler | Scheduler has been shut down
+2026-05-08 18:09:22,302 | WARNING | mercator.backend | Missing required environment keys: GEMINI_API_KEY
+2026-05-08 18:09:22,302 | INFO | backend.agents.curator_agent | CURATOR_WALLET_ADDRESS or CURATOR_MNEMONIC not set; skipping curator registration check
+2026-05-08 18:09:22,305 | INFO | backend.agents.curator_agent | AGENT_REGISTRY_APP_ID not configured; skipping remote buyer registration check
+2026-05-08 18:09:22,305 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 18:09:22,305 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 18:09:22,305 | INFO | apscheduler.scheduler | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-08 18:09:22,305 | INFO | apscheduler.scheduler | Added job "run_full_cycle" to job store "default"
+2026-05-08 18:09:22,305 | INFO | apscheduler.scheduler | Added job "check_and_top_up" to job store "default"
+2026-05-08 18:09:22,305 | INFO | apscheduler.scheduler | Added job "_send_heartbeat" to job store "default"
+2026-05-08 18:09:22,305 | INFO | apscheduler.scheduler | Scheduler started
+2026-05-08 18:09:22,666 | INFO | httpx | HTTP Request: POST http://testserver/wallet/export "HTTP/1.1 401 Unauthorized"
+2026-05-08 18:09:22,666 | INFO | apscheduler.scheduler | Scheduler has been shut down

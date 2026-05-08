@@ -302,6 +302,15 @@ export default function CheckoutPage() {
 
       const query = selectedInsight.query_text || selectedInsight.insight_text
       const targetListingId = parseListingId(selectedInsight.listing_id)
+      const sessionRaw = localStorage.getItem('mercator_session')
+      let sessionData: { user_id?: string; session_token?: string } = {}
+      if (sessionRaw) {
+        try {
+          sessionData = JSON.parse(sessionRaw)
+        } catch {
+          sessionData = {}
+        }
+      }
 
       setActiveStage('submitting_x402')
       setConfirmationState('submitting')
@@ -312,6 +321,8 @@ export default function CheckoutPage() {
         user_approval_input: 'approve',
         force_buy_for_test: false,
         target_listing_id: targetListingId,
+        user_id: sessionData.user_id,
+        session_token: sessionData.session_token,
       })
 
       const responseText = JSON.stringify(response).toLowerCase()
