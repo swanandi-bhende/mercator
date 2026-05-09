@@ -2,6 +2,10 @@
 
 Mercator is an agentic commerce platform on Algorand where sellers list trading insights, an autonomous agent discovers and evaluates them, and buyers complete micropayments atomically with instant content delivery.
 
+
+[mercator-algorand.vercel.app](https://mercator-algorand.vercel.app/)
+https://mercator-reka.onrender.com/
+
 ## Quick Start
 
 ### Run the Demo (2 minutes)

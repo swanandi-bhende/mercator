@@ -5,9 +5,17 @@ from __future__ import annotations
 import json
 import os
 import re
+import warnings
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Sequence
+
+warnings.filterwarnings(
+    "ignore",
+    message="'_UnionGenericAlias' is deprecated and slated for removal in Python 3.17",
+    category=DeprecationWarning,
+    module=r"google\.genai\.types",
+)
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 

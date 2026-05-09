@@ -22,6 +22,7 @@ import hashlib
 import re
 import time
 import warnings
+from contextlib import asynccontextmanager
 from uuid import uuid4
 from dataclasses import asdict
 from typing import Any
@@ -49,6 +50,12 @@ warnings.filterwarnings(
     message="Core Pydantic V1 functionality isn't compatible with Python 3.14 or greater.",
     category=UserWarning,
 )
+warnings.filterwarnings(
+    "ignore",
+    message="'_UnionGenericAlias' is deprecated and slated for removal in Python 3.17",
+    category=DeprecationWarning,
+    module=r"google\.genai\.types",
+)
 
 try:
     from backend.agent import run_agent
@@ -71,6 +78,7 @@ except Exception as exc:  # pragma: no cover
 from backend.tools.semantic_search import (
     semantic_search as semantic_search_tool,
     clear_semantic_search_cache,
+    warm_cache,
 )
 from backend.agents import curator_agent
 from backend.tools import staging_seed_wallet
@@ -121,20 +129,87 @@ except ModuleNotFoundError:
 normalize_network_env()
 demo_logger = configure_demo_logging()
 
-app = FastAPI(title="Mercator Backend")
 logger = logging.getLogger("mercator.backend")
 scheduler = AsyncIOScheduler()
 
-# Mount API v1 router (protected routes)
-app.include_router(api_v1_router)
 
-
-@app.on_event("startup")
-async def _ensure_demo_key():
+async def _run_startup_hooks() -> None:
     try:
         seed_demo_key()
     except Exception:
         pass
+
+    normalize_network_env()
+    warn_missing_required_env(logger)
+    initialise_curator_schema()
+
+    try:
+        await curator_agent.ensure_registered()
+    except Exception:
+        logger.exception("Failed to ensure curator registration during startup")
+
+    try:
+        await curator_agent.ensure_registered(
+            agent_name="Mercator Buyer Agent",
+            role="buyer",
+            wallet_env="BUYER_WALLET",
+            mnemonic_env="BUYER_MNEMONIC",
+        )
+    except Exception:
+        logger.exception("Failed to ensure buyer registration during startup")
+
+    try:
+        await warm_cache()
+    except Exception:
+        logger.exception("Failed to warm semantic search cache during startup")
+
+    curator_minutes = int(os.getenv("CURATOR_CYCLE_INTERVAL_MINUTES", "30") or 30)
+    scheduler.add_job(
+        curator_agent.run_full_cycle,
+        "interval",
+        minutes=curator_minutes,
+        id="curator_cycle",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        staging_seed_wallet.check_and_top_up,
+        "interval",
+        hours=6,
+        id="wallet_top_up",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        _send_heartbeat,
+        "interval",
+        seconds=30,
+        id="ws_heartbeat",
+        replace_existing=True,
+    )
+    if not scheduler.running:
+        try:
+            scheduler.start()
+        except RuntimeError as exc:
+            logger.warning("Scheduler start skipped: %s", exc)
+
+
+async def _run_shutdown_hooks() -> None:
+    if scheduler.running:
+        scheduler.shutdown(wait=False)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await _run_startup_hooks()
+    try:
+        yield
+    finally:
+        await _run_shutdown_hooks()
+
+
+app = FastAPI(title="Mercator Backend", lifespan=lifespan)
+
+# Mount API v1 router (protected routes)
+app.include_router(api_v1_router)
 
 
 @app.get("/api/v1/health")
@@ -1175,67 +1250,6 @@ async def websocket_endpoint(websocket: WebSocket, token: str | None = Query(def
                     client.last_ping_at = time.time()
     except WebSocketDisconnect:
         ws_manager.disconnect(client_id)
-
-
-@app.on_event("startup")
-async def startup_checks() -> None:
-    """Startup hook to normalize env and warn on missing required keys.
-
-    Micropayment role: preflight guardrail before serving listing/payment endpoints.
-    """
-    normalize_network_env()
-    warn_missing_required_env(logger)
-    initialise_curator_schema()
-
-    # Ensure role manifests are signed and locally verified before jobs start.
-    try:
-        await curator_agent.ensure_registered()
-    except Exception:
-        logger.exception("Failed to ensure curator registration during startup")
-
-    try:
-        await curator_agent.ensure_registered(
-            agent_name="Mercator Buyer Agent",
-            role="buyer",
-            wallet_env="BUYER_WALLET",
-            mnemonic_env="BUYER_MNEMONIC",
-        )
-    except Exception:
-        logger.exception("Failed to ensure buyer registration during startup")
-
-    curator_minutes = int(os.getenv("CURATOR_CYCLE_INTERVAL_MINUTES", "30") or 30)
-    scheduler.add_job(
-        curator_agent.run_full_cycle,
-        "interval",
-        minutes=curator_minutes,
-        id="curator_cycle",
-        replace_existing=True,
-    )
-    scheduler.add_job(
-        staging_seed_wallet.check_and_top_up,
-        "interval",
-        hours=6,
-        id="wallet_top_up",
-        replace_existing=True,
-    )
-    scheduler.add_job(
-        _send_heartbeat,
-        "interval",
-        seconds=30,
-        id="ws_heartbeat",
-        replace_existing=True,
-    )
-    if not scheduler.running:
-        try:
-            scheduler.start()
-        except RuntimeError as exc:
-            logger.warning("Scheduler start skipped: %s", exc)
-
-
-@app.on_event("shutdown")
-def shutdown_scheduler() -> None:
-    if scheduler.running:
-        scheduler.shutdown(wait=False)
 
 
 def _extract_final_insight_text(result: dict[str, object]) -> str:
@@ -3089,13 +3103,29 @@ async def discover_insights(request: DiscoverRequest) -> dict[str, object]:
         raw = await semantic_search_tool.ainvoke({"query": user_query})
         parsed: dict[str, object]
         if isinstance(raw, str):
-            parsed = json.loads(raw)
+            try:
+                parsed = json.loads(raw)
+            except json.JSONDecodeError:
+                return {
+                    "success": True,
+                    "query": user_query,
+                    "embedding_fallback": False,
+                    "matches": [],
+                    "message": raw,
+                    "degraded": False,
+                    "diagnostics": {
+                        "code": "OK",
+                        "detail": raw,
+                    },
+                }
         elif isinstance(raw, dict):
             parsed = raw
         else:
             parsed = {"query": user_query, "matches": []}
 
-        semantic_matches = parsed.get("matches", []) if isinstance(parsed.get("matches", []), list) else []
+        semantic_matches = parsed.get("results", parsed.get("matches", []))
+        if not isinstance(semantic_matches, list):
+            semantic_matches = []
         fallback_matches = _recent_listing_matches(user_query)
 
         merged: dict[str, dict[str, object]] = {}

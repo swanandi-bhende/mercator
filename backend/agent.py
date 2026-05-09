@@ -18,8 +18,16 @@ import asyncio
 import os
 import logging
 import re
+import warnings
 from typing import Any
 from dataclasses import dataclass
+
+warnings.filterwarnings(
+    "ignore",
+    message="'_UnionGenericAlias' is deprecated and slated for removal in Python 3.17",
+    category=DeprecationWarning,
+    module=r"google\.genai\.types",
+)
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate

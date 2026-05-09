@@ -44,27 +44,49 @@ async def search_and_purchase(body: SearchAndPurchaseRequest, request: Request, 
 
     # Call agent with timeout; if backend.agent.run_agent exists it will be used, otherwise fallback from main applies
     try:
-        coro = asyncio.to_thread(__import__("backend.agent").agent.run_agent, body.query,)
+        coro = asyncio.to_thread(
+            __import__("backend.agent").agent.run_agent,
+            body.query,
+            buyer_address=body.buyer_wallet,
+            user_approval_input="approve" if body.auto_approve else "",
+        )
     except Exception:
         # Fallback: call run_agent via import path used in main
         try:
             from backend import agent as _agent
 
-            coro = asyncio.to_thread(_agent.run_agent, body.query)
+            coro = asyncio.to_thread(
+                _agent.run_agent,
+                body.query,
+                buyer_address=body.buyer_wallet,
+                user_approval_input="approve" if body.auto_approve else "",
+            )
         except Exception as exc:
-            tracer.export_session(session)
+            try:
+                tracer.export_json(session)
+            except Exception:
+                pass
             raise HTTPException(status_code=500, detail=error_response("AGENT_UNAVAILABLE", str(exc), request_id))
 
     try:
         result = await asyncio.wait_for(coro, timeout=120)
     except asyncio.TimeoutError:
-        tracer.export_session(session)
+        try:
+            tracer.export_json(session)
+        except Exception:
+            pass
         raise HTTPException(status_code=504, detail=error_response("AGENT_TIMEOUT", "Agent timed out after 120s", request_id))
     except Exception as exc:  # generic mapping
-        tracer.export_session(session)
+        try:
+            tracer.export_json(session)
+        except Exception:
+            pass
         raise HTTPException(status_code=500, detail=error_response("AGENT_ERROR", str(exc), request_id))
 
-    tracer.export_session(session)
+    try:
+        tracer.export_json(session)
+    except Exception:
+        pass
 
     # For demo, translate agent result into listing payload if present; otherwise stub
     payload = {

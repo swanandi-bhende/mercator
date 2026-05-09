@@ -2843,3 +2843,66 @@ RuntimeError: simulation failed
 2026-05-09 00:14:09,959 | INFO | httpx | HTTP Request: GET http://testserver/api/v1/listings "HTTP/1.1 200 OK"
 2026-05-09 00:14:09,964 | INFO | httpx | HTTP Request: GET http://testserver/api/v1/listings "HTTP/1.1 200 OK"
 2026-05-09 00:14:09,973 | INFO | httpx | HTTP Request: GET http://testserver/api/v1/listings "HTTP/1.1 200 OK"
+2026-05-09 15:28:40,256 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-09 15:28:41,261 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:28:41,265 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:28:41,410 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:28:41,430 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:28:41,450 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:28:41,470 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:28:41,491 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:28:41,511 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:28:41,531 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:28:41,551 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:28:41,714 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:batchEmbedContents "HTTP/1.1 400 Bad Request"
+2026-05-09 15:28:43,826 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:batchEmbedContents "HTTP/1.1 400 Bad Request"
+2026-05-09 15:28:45,921 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:batchEmbedContents "HTTP/1.1 400 Bad Request"
+2026-05-09 15:28:45,923 | WARNING | backend.tools.semantic_search | Embedding failure during semantic_search: RetryError[<Future at 0x126b764c0 state=finished raised GoogleGenerativeAIError>]
+2026-05-09 15:28:45,924 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:29:37,327 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-09 15:29:37,909 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:29:37,914 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:29:38,058 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:29:38,079 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:29:38,100 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:29:38,120 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:29:38,141 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:29:38,162 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:29:38,183 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:29:38,203 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:29:38,333 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:batchEmbedContents "HTTP/1.1 400 Bad Request"
+2026-05-09 15:29:40,425 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:batchEmbedContents "HTTP/1.1 400 Bad Request"
+2026-05-09 15:29:42,524 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:batchEmbedContents "HTTP/1.1 400 Bad Request"
+2026-05-09 15:29:42,526 | WARNING | backend.tools.semantic_search | Embedding failure during semantic_search: RetryError[<Future at 0x13782d910 state=finished raised GoogleGenerativeAIError>]
+2026-05-09 15:29:42,527 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:30:52,241 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-09 15:30:52,840 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:30:52,845 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:30:52,850 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:30:52,854 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:30:52,859 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:30:52,863 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:30:52,868 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:30:52,873 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:30:52,878 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:30:52,883 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:30:52,887 | WARNING | backend.tools.semantic_search | Skipping CID cid due to fetch failure: bad cid
+2026-05-09 15:31:20,147 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-09 15:31:20,718 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:31:20,723 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:31:20,728 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:31:20,733 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:31:20,738 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:31:20,742 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:31:20,747 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:31:20,751 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:31:20,756 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:31:20,760 | INFO | demo.flow | Agent semantic search returned 3 results
+2026-05-09 15:31:20,764 | WARNING | backend.tools.semantic_search | Skipping CID cid due to fetch failure: bad cid
+2026-05-09 15:36:03,556 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-09 15:36:45,664 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-09 15:54:47,859 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-09 15:54:48,427 | INFO | httpx | HTTP Request: GET http://testserver/api/v1/listings "HTTP/1.1 401 Unauthorized"
+2026-05-09 15:54:48,434 | INFO | httpx | HTTP Request: GET http://testserver/api/v1/listings "HTTP/1.1 200 OK"
+2026-05-09 15:59:26,874 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-09 15:59:27,412 | INFO | httpx | HTTP Request: POST http://testserver/api/v1/search_and_purchase "HTTP/1.1 200 OK"
