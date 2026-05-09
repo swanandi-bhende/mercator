@@ -15,3 +15,9 @@ apscheduler>=3.11.2,<4.0.0
 
 # Added to satisfy backend.utils.custodial_wallet import
 bcrypt>=4.0.1,<5.0.0
+
+# Required by backend.agents.market_data_fetcher
+yfinance>=0.2.18
+
+# Required for AES-GCM encryption used in custodial wallet
+cryptography>=41.0.0
