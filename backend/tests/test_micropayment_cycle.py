@@ -9,7 +9,6 @@ import importlib
 import itertools
 import json
 import os
-import re
 import sys
 import time
 from pathlib import Path
@@ -26,6 +25,8 @@ TEST_ENV_FILE = REPO_ROOT / ".env.testnet"
 
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
+
+from backend.utils.evaluation_result import CriterionScore, EvaluationResult
 
 
 
@@ -515,17 +516,6 @@ async def test_semantic_search_ranking_and_cache(
     assert embed_mock.call_count == 5
     assert mock_ipfs_fetch.await_count == 4
 
-
-EVALUATION_OUTPUT_PATTERN = re.compile(
-    r"^Reasoning:\n"
-    r"1\. Relevance: .+\n"
-    r"2\. Reputation check: .+\n"
-    r"3\. Value-for-price: .+\n"
-    r"4\. Final rationale: .+\n"
-    r"Decision: (BUY|SKIP)$"
-)
-
-
 EVALUATION_CASES = [
     pytest.param(
         {
@@ -650,11 +640,48 @@ EVALUATION_CASES = [
 ]
 
 
+def _mock_evaluation_result(decision: str) -> EvaluationResult:
+    step1 = CriterionScore(
+        score=10,
+        evidence_cited="mocked evidence one",
+        reasoning="Mocked reasoning for the first criterion with enough detail.",
+    )
+    step2 = CriterionScore(
+        score=5,
+        evidence_cited="mocked evidence two",
+        reasoning="Mocked reasoning for the second criterion with enough detail.",
+    )
+    step3 = CriterionScore(
+        score=8,
+        evidence_cited="mocked evidence three",
+        reasoning="Mocked reasoning for the third criterion with enough detail.",
+    )
+    step4 = CriterionScore(
+        score=7,
+        evidence_cited="mocked evidence four",
+        reasoning="Mocked reasoning for the fourth criterion with enough detail.",
+    )
+    total_score = step1.score + step2.score + step3.score + step4.score
+    return EvaluationResult(
+        step1_relevance=step1,
+        step2_reputation=step2,
+        step3_value_for_price=step3,
+        step4_specificity=step4,
+        total_score=total_score,
+        buy_confidence=total_score,
+        decision=decision,
+        decision_reasoning="Mocked decision reasoning that is long enough to satisfy validation.",
+        improvement_suggestion="" if decision == "BUY" else "Add specific entry, stop, target, and a quantified indicator.",
+        evaluation_version="v2",
+    )
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize("case", EVALUATION_CASES)
 async def test_evaluation_reasoning_and_decision_format(monkeypatch, case):
     invoke_mock = MagicMock(return_value=SimpleNamespace(content=case["llm_output"]))
     monkeypatch.setattr(agent_module, "llm", SimpleNamespace(invoke=invoke_mock))
+    monkeypatch.setattr(agent_module, "parse_evaluation_result", MagicMock(side_effect=lambda _: _mock_evaluation_result(case["decision"])))
 
     state = {
         "query": case["query"],
@@ -663,9 +690,15 @@ async def test_evaluation_reasoning_and_decision_format(monkeypatch, case):
     evaluated = await agent_module.evaluate_insights(state)
 
     assert evaluated["decision"] == case["decision"]
-    assert evaluated["evaluation"] == case["llm_output"]
-    assert EVALUATION_OUTPUT_PATTERN.fullmatch(evaluated["evaluation"]) is not None
-    invoke_mock.assert_called_once()
+    if case["semantic_results"] == "[]":
+        assert evaluated["evaluation_result"]["decision"] == "SKIP"
+        assert evaluated["buy_confidence"] == 0
+        assert "no listing" in evaluated["evaluation"].lower()
+    else:
+        assert evaluated["evaluation"] == case["llm_output"]
+        assert evaluated["buy_confidence"] == evaluated["total_score"]
+        assert evaluated["evaluation_result"]["decision"] == case["decision"]
+        invoke_mock.assert_called_once()
 
 
 @pytest.mark.asyncio

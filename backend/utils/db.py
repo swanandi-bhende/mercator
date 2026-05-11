@@ -171,6 +171,122 @@ def record_curator_run(row: dict[str, Any]) -> None:
         conn.commit()
 
 
+def initialise_evaluations_schema() -> None:
+    with _connect() as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS evaluations (
+                evaluation_id TEXT PRIMARY KEY,
+                session_id TEXT,
+                listing_id TEXT,
+                seller_wallet TEXT,
+                query TEXT,
+                reputation_score_at_eval INTEGER,
+                price_usdc_at_eval REAL,
+                step1_relevance_score INTEGER,
+                step1_evidence TEXT,
+                step2_reputation_score INTEGER,
+                step2_evidence TEXT,
+                step3_value_score INTEGER,
+                step3_evidence TEXT,
+                step4_specificity_score INTEGER,
+                step4_evidence TEXT,
+                total_score INTEGER,
+                buy_confidence INTEGER,
+                decision TEXT,
+                decision_reasoning TEXT,
+                improvement_suggestion TEXT,
+                evaluation_version TEXT,
+                gemini_call_count INTEGER,
+                evaluated_at TEXT,
+                duration_ms INTEGER
+            )
+            """
+        )
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_evaluations_listing_id ON evaluations(listing_id)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_evaluations_evaluated_at ON evaluations(evaluated_at)")
+        conn.commit()
+    conn.commit()
+
+
+def record_evaluation(row: dict[str, Any]) -> None:
+    initialise_evaluations_schema()
+    with _connect() as conn:
+        conn.execute(
+            """
+            INSERT OR REPLACE INTO evaluations (
+                evaluation_id,
+                session_id,
+                listing_id,
+                seller_wallet,
+                query,
+                reputation_score_at_eval,
+                price_usdc_at_eval,
+                step1_relevance_score,
+                step1_evidence,
+                step2_reputation_score,
+                step2_evidence,
+                step3_value_score,
+                step3_evidence,
+                step4_specificity_score,
+                step4_evidence,
+                total_score,
+                buy_confidence,
+                decision,
+                decision_reasoning,
+                improvement_suggestion,
+                evaluation_version,
+                gemini_call_count,
+                evaluated_at,
+                duration_ms
+            ) VALUES (
+                :evaluation_id,
+                :session_id,
+                :listing_id,
+                :seller_wallet,
+                :query,
+                :reputation_score_at_eval,
+                :price_usdc_at_eval,
+                :step1_relevance_score,
+                :step1_evidence,
+                :step2_reputation_score,
+                :step2_evidence,
+                :step3_value_score,
+                :step3_evidence,
+                :step4_specificity_score,
+                :step4_evidence,
+                :total_score,
+                :buy_confidence,
+                :decision,
+                :decision_reasoning,
+                :improvement_suggestion,
+                :evaluation_version,
+                :gemini_call_count,
+                :evaluated_at,
+                :duration_ms
+            )
+            """,
+            row,
+        )
+        conn.commit()
+
+
+def fetch_evaluations_history(limit: int = 20, decision: str | None = None) -> list[dict[str, Any]]:
+    initialise_evaluations_schema()
+    with _connect() as conn:
+        if decision and decision.lower() != "all":
+            rows = conn.execute(
+                "SELECT * FROM evaluations WHERE decision = ? ORDER BY evaluated_at DESC LIMIT ?",
+                (decision.upper(), limit),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT * FROM evaluations ORDER BY evaluated_at DESC LIMIT ?",
+                (limit,),
+            ).fetchall()
+    return [dict(r) for r in rows]
+
+
 def record_curator_error(row: dict[str, Any]) -> None:
     initialise_curator_schema()
     with _connect() as conn:

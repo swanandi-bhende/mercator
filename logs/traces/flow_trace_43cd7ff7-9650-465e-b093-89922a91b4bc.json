@@ -1,0 +1,30 @@
+{
+  "export_version": "1.0",
+  "session_id": "43cd7ff7-9650-465e-b093-89922a91b4bc",
+  "exported_at": "2026-05-11T02:51:16.620863+00:00",
+  "total_events": 1,
+  "session_duration_ms": 0,
+  "success_count": 1,
+  "failure_count": 0,
+  "skipped_count": 0,
+  "events": [
+    {
+      "event_id": "d0fff273-8905-4757-85cd-3cb8b6e5c52b",
+      "session_id": "43cd7ff7-9650-465e-b093-89922a91b4bc",
+      "event_name": "session.started",
+      "timestamp_iso": "2026-05-11T02:51:16.616Z",
+      "status": "success",
+      "duration_ms": null,
+      "wallet_involved": null,
+      "tx_id": null,
+      "ipfs_cid": null,
+      "error_code": null,
+      "error_message": null,
+      "plain_english_description": "New buyer_purchase session started",
+      "metadata": {
+        "session_type": "buyer_purchase"
+      },
+      "exported": 0
+    }
+  ]
+}

@@ -17,7 +17,6 @@ import argparse
 import asyncio
 import os
 import logging
-import re
 import warnings
 from typing import Any
 from dataclasses import dataclass
@@ -33,8 +32,6 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.tools import tool
 from langchain_core.messages import SystemMessage
-from langchain_core.output_parsers import PydanticOutputParser
-from pydantic import BaseModel, Field
 
 try:
     from langchain.agents import create_tool_calling_agent, AgentExecutor  # type: ignore
@@ -49,6 +46,7 @@ from backend.contracts.escrow.smart_contracts.artifacts.escrow.escrow_client imp
 from backend.contracts.reputation.smart_contracts.artifacts.reputation.reputation_client import ReputationClient
 from backend.tools.semantic_search import semantic_search as semantic_search_tool
 from backend.tools.x402_payment import trigger_x402_payment, validate_x402_payment
+from backend.utils.evaluation_result import EvaluationResult, build_evaluation_prompt, parse_evaluation_result
 from backend.utils.error_handler import low_reputation, payment_rejected
 from backend.utils.flow_tracer import export_json, record_event, start_session
 from backend.utils.runtime_env import configure_demo_logging, normalize_network_env
@@ -94,9 +92,29 @@ if not GEMINI_API_KEY:
 llm = ChatGoogleGenerativeAI(
     model=GEMINI_MODEL,
     google_api_key=GEMINI_API_KEY,
-    temperature=0.3,
+    temperature=0.2,
     max_retries=0,
 )
+
+
+class _DecisionParser:
+    def parse(self, text: str) -> Any:
+        upper = str(text or "").upper()
+        if "BUY" in upper:
+            return type("ParsedDecision", (), {"decision": "BUY"})()
+        return type("ParsedDecision", (), {"decision": "SKIP"})()
+
+
+decision_parser = _DecisionParser()
+
+
+def _parse_decision(text: str) -> str:
+    try:
+        parsed = decision_parser.parse(text)
+        decision = str(getattr(parsed, "decision", "SKIP") or "SKIP").upper()
+        return "BUY" if decision == "BUY" else "SKIP"
+    except Exception:
+        return "SKIP"
 
 # Purpose: Global system prompt that constrains agent behavior and tool usage safety.
 # It enforces explicit approval before x402 payment and disallows synthetic/fake insight data.
@@ -117,44 +135,31 @@ If any tool call or backend step fails, respond naturally and helpfully with:
 "Sorry, I encountered an issue: [clear message]. Would you like to try a different insight or check your wallet balance?"
 """
 
-# Purpose: Structured evaluation prompt for deterministic BUY/SKIP reasoning output.
-# The agent must score relevance, enforce reputation >= 50, compute value/price, then decide.
-EVALUATION_PROMPT_TEMPLATE = """You must evaluate semantic search results step-by-step before any payment decision.
-
-User Query: {query}
-Semantic Search Results:
-{semantic_results}
-
-Follow this exact sequence:
-1) First, rate relevance 0-100 to the user query and NSE context.
-2) Second, check on-chain reputation. Reputation must be 50 or higher - otherwise SKIP.
-3) Third, calculate value-for-price using: value_for_price = relevance_score / price_in_usdc.
-4) Fourth, only BUY if value_for_price > 8.0. Otherwise SKIP.
-
-IMPORTANT: If Decision is BUY, the user will be prompted to type "approve" to trigger x402 micropayment.
-The actual payment will only execute after explicit user approval and simulation validation.
-If any tool call fails, respond naturally with:
-"Sorry, I encountered an issue: [clear message]. Would you like to try a different insight or check your wallet balance?"
-
-You MUST output a visible markdown reasoning block followed by a final decision line:
-```markdown
-Reasoning:
-1. Relevance: ...
-2. Reputation check: ...
-3. Value-for-price: ...
-4. Final rationale: ...
-```
-Decision: BUY or SKIP
-"""
-
 prompt = ChatPromptTemplate.from_messages(
     [
         SystemMessage(content=SYSTEM_PROMPT),
-        ("system", EVALUATION_PROMPT_TEMPLATE),
+        ("system", "Evaluation guidance is built at runtime from backend.utils.evaluation_result."),
         ("system", "Semantic search results:\n{semantic_results}"),
         ("human", "{input}"),
     ]
 )
+
+
+def _evaluate_with_structured_output(eval_prompt: str) -> EvaluationResult:
+    from google import genai
+
+    client = genai.Client(api_key=GEMINI_API_KEY)
+    response = client.models.generate_content(
+        model=GEMINI_MODEL,
+        contents=eval_prompt,
+        config={
+            "temperature": 0.2,
+            "response_mime_type": "application/json",
+            "response_schema": EvaluationResult.model_json_schema(),
+        },
+    )
+    response_text = getattr(response, "text", "") or str(response)
+    return parse_evaluation_result(response_text)
 
 
 @tool
@@ -171,73 +176,150 @@ def on_chain_query(listing_id: int) -> str:
 tools = [on_chain_query, semantic_search_tool, trigger_x402_payment, validate_x402_payment]
 
 
-class EvaluationDecision(BaseModel):
-    decision: str = Field(description="Final decision, either BUY or SKIP")
-
-
-decision_parser = PydanticOutputParser(pydantic_object=EvaluationDecision)
-
-
-def _parse_decision(eval_text: str) -> str:
-    """Extract BUY or SKIP decision from LLM evaluation output.
-    
-    Tries pydantic parser first, then regex fallback (\"Decision: BUY\" or \"Decision: SKIP\").
-    Defaults to SKIP if decision cannot be parsed (safety default).
-    
-    Purpose: Ensure agent decision is always machine-readable regardless of LLM response format.
-    """
+def _extract_top_listing_details(results: Any) -> dict[str, Any] | None:
     try:
-        parsed = decision_parser.parse(eval_text)
-        decision = parsed.decision.upper().strip()
-        if decision in {"BUY", "SKIP"}:
-            return decision
-    except Exception:
-        pass
+        parsed = results
+        if isinstance(parsed, str):
+            import json
+            parsed = json.loads(parsed)
 
-    match = re.search(r"Decision\s*:\s*(BUY|SKIP)", eval_text, re.IGNORECASE)
-    if match:
-        return match.group(1).upper()
-    return "SKIP"
+        top_listing: dict[str, Any] | None = None
+        if isinstance(parsed, list) and parsed:
+            first = parsed[0]
+            if isinstance(first, dict):
+                top_listing = first
+        elif isinstance(parsed, dict):
+            matches = parsed.get("matches", [])
+            if isinstance(matches, list) and matches:
+                first = matches[0]
+                if isinstance(first, dict):
+                    top_listing = first
+
+        if not top_listing:
+            return None
+
+        listing_id = top_listing.get("listing_id")
+        if listing_id is not None:
+            listing_id = int(listing_id)
+
+        if "price_usdc" in top_listing:
+            price_usdc = float(top_listing.get("price_usdc", 1.0))
+        elif "price_micro_usdc" in top_listing:
+            price_usdc = float(top_listing.get("price_micro_usdc", 1_000_000)) / 1_000_000
+        elif "price" in top_listing:
+            raw_price = float(top_listing.get("price", 1.0))
+            price_usdc = raw_price / 1_000_000 if raw_price > 1000 else raw_price
+        else:
+            price_usdc = 1.0
+
+        if "relevance_score" in top_listing:
+            relevance_score = int(round(float(top_listing.get("relevance_score", 0))))
+        elif "relevance" in top_listing:
+            raw_relevance = float(top_listing.get("relevance", 0.0))
+            relevance_score = int(round(raw_relevance * 100 if raw_relevance <= 1 else raw_relevance))
+        else:
+            relevance_score = 0
+
+        reputation_score = int(round(float(top_listing.get("reputation", 0))))
+        insight_text = str(
+            top_listing.get(
+                "insight_preview",
+                top_listing.get("text", top_listing.get("description", top_listing.get("summary", ""))),
+            )
+        )
+
+        return {
+            "listing_id": listing_id,
+            "price_usdc": price_usdc,
+            "relevance_score": relevance_score,
+            "reputation_score": reputation_score,
+            "insight_text": insight_text,
+            "raw": top_listing,
+        }
+    except Exception:
+        return None
 
 
 async def evaluate_insights(state: dict) -> dict:
     """Chain-of-thought evaluation of semantic search results.
     
-    Purpose: Use LLM to reason step-by-step:
-    1. Rate relevance of top result to user query (0-100 scale).
-    2. Check seller on-chain reputation (must be >= 50 or SKIP).
-    3. Calculate value_for_price = relevance / price_usdc (must be > 8.0 to BUY).
-    4. Return BUY or SKIP decision with full reasoning.
+    Purpose: Use LLM to score the top result against the structured v2 rubric,
+    then retry with Gemini structured output if the first parse fails.
     
-    Returns: Updated state dict with evaluation (reasoning text) + decision (BUY|SKIP).
+    Returns: Updated state dict with evaluation JSON + decision and structured scores.
     """
     query = state.get("query", "")
     semantic_results = state.get("semantic_results", "")
-    eval_prompt = EVALUATION_PROMPT_TEMPLATE.format(
+    listing_details = _extract_top_listing_details(semantic_results)
+    if listing_details is None:
+        empty_score = 0
+        empty_result = EvaluationResult(
+            step1_relevance={"score": empty_score, "evidence_cited": "no listing returned", "reasoning": "No candidate insight was returned for the query."},
+            step2_reputation={"score": empty_score, "evidence_cited": "no seller evidence", "reasoning": "Without a listing there is no seller reputation to assess."},
+            step3_value_for_price={"score": empty_score, "evidence_cited": "no price available", "reasoning": "No listing means there is no price-to-value comparison to make."},
+            step4_specificity={"score": empty_score, "evidence_cited": "no listing text", "reasoning": "No listing text means no specificity or actionability can be evaluated."},
+            total_score=0,
+            buy_confidence=0,
+            decision="SKIP",
+            decision_reasoning="No listing was returned to evaluate, so the safe decision is to skip.",
+            improvement_suggestion="Surface at least one concrete listing with reputation, price, and insight text.",
+            evaluation_version="v2",
+        )
+        updated_state = dict(state)
+        updated_state["evaluation"] = empty_result.model_dump_json(indent=2)
+        updated_state["decision"] = empty_result.decision
+        updated_state["buy_confidence"] = empty_result.buy_confidence
+        updated_state["total_score"] = empty_result.total_score
+        updated_state["evaluation_result"] = empty_result.model_dump()
+        return updated_state
+
+    eval_prompt = build_evaluation_prompt(
         query=query,
-        semantic_results=semantic_results,
+        reputation_score=int(listing_details["reputation_score"]),
+        price_usdc=float(listing_details["price_usdc"]),
+        insight_text=str(listing_details.get("insight_text", listing_details.get("raw", ""))),
     )
 
     try:
         eval_response = await asyncio.to_thread(llm.invoke, eval_prompt)
         eval_text = getattr(eval_response, "content", str(eval_response))
+        parsed_result = parse_evaluation_result(eval_text)
     except Exception as exc:  # noqa: BLE001
-        error_text = str(exc)
-        is_rate_limit = "429" in error_text or "TooManyRequests" in error_text
-        is_quota_error = "RESOURCE_EXHAUSTED" in error_text
-        if is_rate_limit or is_quota_error:
-            logger.warning("Evaluation step hit Gemini limit; falling back to SKIP")
-            eval_text = (
-                "Reasoning: Gemini limit reached during evaluation; cannot verify safely.\n"
-                "Decision: SKIP"
-            )
-        else:
-            raise
+        logger.warning("Primary evaluation parse failed; retrying with structured output | error=%s", exc)
+        try:
+            parsed_result = await asyncio.to_thread(_evaluate_with_structured_output, eval_prompt)
+            eval_text = parsed_result.model_dump_json(indent=2)
+        except Exception as fallback_exc:  # noqa: BLE001
+            error_text = str(fallback_exc)
+            is_rate_limit = "429" in error_text or "TooManyRequests" in error_text
+            is_quota_error = "RESOURCE_EXHAUSTED" in error_text
+            if is_rate_limit or is_quota_error:
+                logger.warning("Evaluation step hit Gemini limit; falling back to SKIP")
+                eval_text = (
+                    "{\n"
+                    '  "step1_relevance": {"score": 0, "evidence_cited": "Gemini limit reached", "reasoning": "The model could not complete the evaluation."},\n'
+                    '  "step2_reputation": {"score": 0, "evidence_cited": "Gemini limit reached", "reasoning": "The model could not complete the evaluation."},\n'
+                    '  "step3_value_for_price": {"score": 0, "evidence_cited": "Gemini limit reached", "reasoning": "The model could not complete the evaluation."},\n'
+                    '  "step4_specificity": {"score": 0, "evidence_cited": "Gemini limit reached", "reasoning": "The model could not complete the evaluation."},\n'
+                    '  "total_score": 0,\n'
+                    '  "buy_confidence": 0,\n'
+                    '  "decision": "SKIP",\n'
+                    '  "decision_reasoning": "Gemini limit reached during evaluation; cannot verify safely.",\n'
+                    '  "improvement_suggestion": "Retry the evaluation after Gemini quota recovers.",\n'
+                    '  "evaluation_version": "v2"\n'
+                    "}"
+                )
+                parsed_result = EvaluationResult.model_validate_json(eval_text)
+            else:
+                raise
 
-    decision = _parse_decision(eval_text)
+    decision = parsed_result.decision
     updated_state = dict(state)
     updated_state["evaluation"] = eval_text
     updated_state["decision"] = decision
+    updated_state["buy_confidence"] = parsed_result.buy_confidence
+    updated_state["total_score"] = parsed_result.total_score
+    updated_state["evaluation_result"] = parsed_result.model_dump()
     return updated_state
 
 
@@ -322,7 +404,12 @@ async def run_agent(
         dry_run,
     )
 
-    def _agent_error_result(clear_message: str, evaluation: str | None = None) -> dict[str, Any]:
+    def _agent_error_result(
+        clear_message: str,
+        evaluation: str | None = None,
+        *,
+        fallback: bool = False,
+    ) -> dict[str, Any]:
         natural = (
             f"Sorry, I encountered an issue: {clear_message}. "
             "Would you like to try a different insight or check your wallet balance?"
@@ -333,6 +420,7 @@ async def run_agent(
             "evaluation": evaluation or "",
             "message": natural,
             "error": clear_message,
+            "fallback": fallback,
         }
 
     def _extract_top_reputation(results: Any) -> float | None:
@@ -400,12 +488,19 @@ async def run_agent(
                 relevance_score = 0
 
             reputation_score = int(round(float(top_listing.get("reputation", 0))))
+            insight_text = str(
+                top_listing.get(
+                    "insight_preview",
+                    top_listing.get("text", top_listing.get("description", top_listing.get("summary", ""))),
+                )
+            )
 
             return {
                 "listing_id": listing_id,
                 "price_usdc": price_usdc,
                 "relevance_score": relevance_score,
                 "reputation_score": reputation_score,
+                "insight_text": insight_text,
                 "raw": top_listing,
             }
         except Exception:
@@ -568,10 +663,13 @@ async def run_agent(
                 price = float(listing_details["price_usdc"])
 
             if listing_id is None or listing_id < 0:
-                return _agent_error_result(
-                    "No valid on-chain listing_id found for the selected insight",
-                    str(eval_state.get("evaluation", "")),
-                )
+                if force_buy_for_test:
+                    listing_id = 0
+                else:
+                    return _agent_error_result(
+                        "No valid on-chain listing_id found for the selected insight",
+                        str(eval_state.get("evaluation", "")),
+                    )
 
             if not buyer_address:
                 buyer_address = (
@@ -595,6 +693,7 @@ async def run_agent(
                     "relevance_score": int(listing_details["relevance_score"]) if listing_details else None,
                     "reputation_score": int(listing_details["reputation_score"]) if listing_details else None,
                     "price_usdc": float(listing_details["price_usdc"]) if listing_details else price,
+                    "evaluation_result": eval_state.get("evaluation_result"),
                 })
 
                 payment_payload = payment_response
@@ -678,6 +777,7 @@ async def run_agent(
                 return _agent_error_result(
                     "Gemini free-tier quota reached. Skipping live AI reasoning for now",
                     str(eval_state.get("evaluation", "")),
+                    fallback=True,
                 )
 
             if is_model_error:
@@ -690,6 +790,7 @@ async def run_agent(
                         "Set GEMINI_MODEL in .env to an available model and retry"
                     ),
                     str(eval_state.get("evaluation", "")),
+                    fallback=True,
                 )
 
             raise

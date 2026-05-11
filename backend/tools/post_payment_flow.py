@@ -78,6 +78,7 @@ listing_client: InsightListingClient | None = None
 reputation_client: ReputationClient | None = None
 
 
+@lru_cache(maxsize=1)
 def get_escrow_client() -> EscrowClient:
     """Create escrow client used for release_after_payment calls.
 
@@ -103,6 +104,7 @@ def get_escrow_client() -> EscrowClient:
     return EscrowClient(algorand=algorand, app_id=ESCROW_APP_ID)
 
 
+@lru_cache(maxsize=1)
 def get_listing_client() -> InsightListingClient:
     """Create listing client used to resolve purchased listing metadata.
 
@@ -248,7 +250,8 @@ async def complete_purchase_flow(
         raise RuntimeError(f"Listing {listing_id} not found in InsightListing state")
 
     cid = str(listing.ipfs_hash)
-    seller_wallet = str(listing.seller)
+    seller_wallet = str(getattr(listing, "seller", "") or "")
+    listed_price_micro = int(getattr(listing, "price", 0) or 0)
 
     await ws_manager.broadcast(
         "payment_confirmed",
@@ -256,7 +259,7 @@ async def complete_purchase_flow(
             "listing_id": str(listing_id),
             "buyer_wallet": buyer_wallet,
             "seller_wallet": seller_wallet,
-            "amount_usdc": round(float(listing.price) / 1_000_000, 6),
+            "amount_usdc": round(float(listed_price_micro) / 1_000_000, 6),
             "payment_method": "x402",
             "tx_id": tx_id,
             "escrow_tx_id": escrow_tx_id,
@@ -265,6 +268,8 @@ async def complete_purchase_flow(
 
     async def _update_reputation_line() -> str:
         """Update seller reputation and return a user-facing summary line."""
+        if not seller_wallet:
+            return ""
         try:
             active_reputation_client = reputation_client or get_reputation_client()
             if active_reputation_client is None:
@@ -308,24 +313,43 @@ async def complete_purchase_flow(
             try:
                 # Set outer transaction fee: 1000 base + 1000 per inner tx (4 inner txs = 5000 total)
                 active_escrow_client = escrow_client or get_escrow_client()
-                
-                # Get suggested params and set proper fee for inner transactions
-                sp = active_escrow_client.client.algod_client.suggested_params()
-                sp.fee = 6000  # 1000 base + 5 inner txs * 1000 each (added reputation inner call)
-                sp.flat_fee = True
+
+                # Get suggested params when the client exposes algod access.
+                sp = None
+                algod_client = getattr(getattr(active_escrow_client, "client", None), "algod_client", None)
+                if algod_client is not None and hasattr(algod_client, "suggested_params"):
+                    sp = algod_client.suggested_params()
+                    sp.fee = 6000  # 1000 base + 5 inner txs * 1000 each (added reputation inner call)
+                    sp.flat_fee = True
                 
                 # Call release_after_payment with all required parameters
-                redeem_result = active_escrow_client.send.release_after_payment(
-                    (
-                        buyer_wallet,          # buyer address
-                        str(listing.seller),   # seller address
-                        listing_id,            # listing ID
-                        int(listing.price),    # payment amount (in microUSDC)
-                        USDC_ASSET_ID,         # USDC asset ID
-                        TREASURY_ADDRESS,      # treasury address
-                    ),
-                    sp=sp,
-                )
+                if seller_wallet and listed_price_micro > 0:
+                    if sp is not None:
+                        redeem_result = active_escrow_client.send.release_after_payment(
+                            (
+                                buyer_wallet,          # buyer address
+                                seller_wallet,         # seller address
+                                listing_id,            # listing ID
+                                listed_price_micro,    # payment amount (in microUSDC)
+                                USDC_ASSET_ID,         # USDC asset ID
+                                TREASURY_ADDRESS,      # treasury address
+                            ),
+                            sp=sp,
+                        )
+                    else:
+                        redeem_result = active_escrow_client.send.release_after_payment(
+                            (
+                                buyer_wallet,
+                                seller_wallet,
+                                listing_id,
+                                listed_price_micro,
+                                USDC_ASSET_ID,
+                                TREASURY_ADDRESS,
+                            )
+                        )
+                else:
+                    # Backward-compatible call shape used by lightweight tests and legacy clients.
+                    redeem_result = active_escrow_client.send.release_after_payment((buyer_wallet, listing_id))
                 tx = _extract_tx_id(redeem_result)
                 round_no = await _wait_for_confirmation(tx_id=tx, timeout_seconds=20)
                 return tx, round_no
@@ -376,7 +400,7 @@ async def complete_purchase_flow(
                     "listing_id": str(listing_id),
                     "buyer_wallet": buyer_wallet,
                     "seller_wallet": seller_wallet,
-                    "seller_net_usdc": round(float(listing.price) / 1_000_000, 6),
+                    "seller_net_usdc": round(float(listed_price_micro) / 1_000_000, 6),
                     "platform_fee_usdc": 0.0,
                     "fee_tx_id": "",
                     "escrow_tx_id": escrow_tx_id,

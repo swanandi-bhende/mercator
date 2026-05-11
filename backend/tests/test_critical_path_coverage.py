@@ -24,6 +24,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from backend.utils.evaluation_result import CriterionScore, EvaluationResult
+
 
 def _load_module_with_env(module_file: Path, module_name: str, monkeypatch, env: dict[str, str]) -> object:
     for key in [
@@ -214,11 +216,34 @@ def test_agent_parse_and_evaluate_branches(agent_module, monkeypatch):
 @pytest.mark.asyncio
 async def test_agent_evaluate_exception_branches(agent_module, monkeypatch):
     monkeypatch.setattr(agent_module, "llm", SimpleNamespace(invoke=MagicMock(side_effect=RuntimeError("boom"))))
+    monkeypatch.setattr(agent_module, "_evaluate_with_structured_output", MagicMock(side_effect=RuntimeError("boom")))
     with pytest.raises(RuntimeError):
-        await agent_module.evaluate_insights({"query": "q", "semantic_results": "[]"})
+        await agent_module.evaluate_insights(
+            {"query": "q", "semantic_results": "[{\"relevance\": 10, \"reputation\": 60, \"price_usdc\": 1.0, \"insight_preview\": \"mock insight\"}]"}
+        )
 
     monkeypatch.setattr(agent_module, "llm", SimpleNamespace(invoke=MagicMock(side_effect=RuntimeError("429 TooManyRequests"))))
-    out = await agent_module.evaluate_insights({"query": "q", "semantic_results": "[]"})
+    monkeypatch.setattr(
+        agent_module,
+        "_evaluate_with_structured_output",
+        MagicMock(
+            return_value=EvaluationResult(
+                step1_relevance=CriterionScore(score=0, evidence_cited="mocked evidence one", reasoning="Mocked criterion reasoning for rate-limit fallback."),
+                step2_reputation=CriterionScore(score=0, evidence_cited="mocked evidence two", reasoning="Mocked criterion reasoning for rate-limit fallback."),
+                step3_value_for_price=CriterionScore(score=0, evidence_cited="mocked evidence three", reasoning="Mocked criterion reasoning for rate-limit fallback."),
+                step4_specificity=CriterionScore(score=0, evidence_cited="mocked evidence four", reasoning="Mocked criterion reasoning for rate-limit fallback."),
+                total_score=0,
+                buy_confidence=0,
+                decision="SKIP",
+                decision_reasoning="Mocked fallback reasoning for the SKIP result.",
+                improvement_suggestion="Retry the evaluation after quota recovers.",
+                evaluation_version="v2",
+            )
+        ),
+    )
+    out = await agent_module.evaluate_insights(
+        {"query": "q", "semantic_results": "[{\"relevance\": 10, \"reputation\": 60, \"price_usdc\": 1.0, \"insight_preview\": \"mock insight\"}]"}
+    )
     assert out["decision"] == "SKIP"
 
 

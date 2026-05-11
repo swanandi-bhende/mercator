@@ -1,6 +1,7 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
+import useWebSocket, { WebSocketEvent } from '../hooks/useWebSocket'
 
 type TrustBand = 'trusted' | 'borderline' | 'below'
 type ValueBand = 'cheap' | 'fair' | 'expensive'
@@ -12,6 +13,44 @@ function clamp(value: number, min: number, max: number) {
 export default function InsightDetailPage() {
   const navigate = useNavigate()
   const { selectedInsight, sellerMetadata, setHasReviewedEvaluation } = useAppContext()
+
+  // Agent evaluation panel state
+  const [agentEvaluation, setAgentEvaluation] = useState<null | {
+    listing_id: string
+    total_score: number
+    buy_confidence: number
+    decision: string
+    decision_reasoning: string
+    improvement_suggestion?: string
+    step_scores?: number[]
+    step_evidence?: string[]
+  }>(
+    selectedInsight && (selectedInsight as any).evaluation
+      ? (selectedInsight as any).evaluation
+      : null
+  )
+
+  useWebSocket((event: WebSocketEvent) => {
+    try {
+      if (event.event_type === 'agent_evaluation_completed') {
+        const payload = event.payload as any
+        if (!selectedInsight) return
+        if (String(payload.listing_id) === String(selectedInsight.listing_id)) {
+          setAgentEvaluation({
+            listing_id: String(payload.listing_id),
+            total_score: Number(payload.total_score || 0),
+            buy_confidence: Number(payload.buy_confidence || 0),
+            decision: String(payload.decision || 'SKIP'),
+            decision_reasoning: String(payload.decision_reasoning || ''),
+            improvement_suggestion: String(payload.improvement_suggestion || ''),
+            step_scores: Array.isArray(payload.step_scores) ? payload.step_scores as number[] : [],
+          })
+        }
+      }
+    } catch (err) {
+      // ignore malformed ws payloads
+    }
+  })
 
   if (!selectedInsight) {
     return (
@@ -268,6 +307,62 @@ export default function InsightDetailPage() {
                 <strong>{sellerIdentity}</strong>
               </div>
             </div>
+          </article>
+        </div>
+      </section>
+
+      <section className="insight-evaluation-section">
+        <div className="home-wrap insight-evaluation-panel">
+          <article className="insight-panel">
+            <p className="home-kicker">Agent Reasoning</p>
+            {!agentEvaluation ? (
+              <div>
+                <h3>Evaluation pending</h3>
+                <p className="muted">The buyer agent is evaluating this listing. Results will appear here when available.</p>
+              </div>
+            ) : (
+              <div>
+                <h3>{agentEvaluation.decision === 'BUY' ? 'BUY ✓' : 'SKIP ✗'}</h3>
+                <div className="evaluation-summary">
+                  <div className={`evaluation-badge ${agentEvaluation.buy_confidence >= 75 ? 'green' : 'red'}`}>
+                    {agentEvaluation.buy_confidence}%
+                  </div>
+                  <div className="evaluation-details">
+                    <p className="evaluation-reason">{agentEvaluation.decision_reasoning}</p>
+                    {agentEvaluation.decision === 'SKIP' && agentEvaluation.improvement_suggestion && (
+                      <div className="improvement-box">
+                        <strong>What would make this worth buying?</strong>
+                        <p>{agentEvaluation.improvement_suggestion}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="evaluation-criteria-grid">
+                  <div className="criteria-card">
+                    <strong>Relevance</strong>
+                    <div className="criteria-score">{agentEvaluation.step_scores?.[0] || 0} / 40</div>
+                  </div>
+                  <div className="criteria-card">
+                    <strong>Reputation</strong>
+                    <div className="criteria-score">{agentEvaluation.step_scores?.[1] || 0} / 20</div>
+                  </div>
+                  <div className="criteria-card">
+                    <strong>Value</strong>
+                    <div className="criteria-score">{agentEvaluation.step_scores?.[2] || 0} / 20</div>
+                  </div>
+                  <div className="criteria-card">
+                    <strong>Specificity</strong>
+                    <div className="criteria-score">{agentEvaluation.step_scores?.[3] || 0} / 20</div>
+                  </div>
+                </div>
+
+                <div className="evaluation-total">
+                  <strong>Total</strong>
+                  <div className="total-score">{agentEvaluation.total_score} / 100</div>
+                </div>
+              </div>
+            )}
           </article>
         </div>
       </section>
