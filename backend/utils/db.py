@@ -382,3 +382,116 @@ def fetch_curator_today_stats(now: datetime | None = None) -> dict[str, int]:
         "errors": int(errors or 0),
         "total_insights_published_today": int(total_insights_published_today or 0),
     }
+
+
+def initialise_listing_preparation_schema() -> None:
+    """Create listing_preparation_log table for IPFS two-phase audit trail.
+    
+    Purpose: Track all listing creation attempts, whether they succeed or fail at
+    simulation or execution. Provides complete audit trail for IPFS orphan cleanup.
+    
+    Columns:
+    - preparation_id: Unique identifier for this attempt (UUID)
+    - cid_pinned: The IPFS CID that was pinned (NULL if pin failed)
+    - simulation_success: True if ASA creation simulation passed
+    - execution_success: True if ASA creation executed successfully
+    - simulation_error: Error message if simulation failed
+    - execution_tx_id: On-chain transaction ID if execution succeeded
+    - created_at: ISO 8601 timestamp when preparation started
+    """
+    with _connect() as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS listing_preparation_log (
+                preparation_id TEXT PRIMARY KEY,
+                seller_wallet TEXT NOT NULL,
+                cid_pinned TEXT,
+                simulation_success INTEGER DEFAULT 0,
+                execution_success INTEGER DEFAULT 0,
+                simulation_error TEXT,
+                execution_error TEXT,
+                execution_tx_id TEXT,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_listing_prep_seller ON listing_preparation_log(seller_wallet)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_listing_prep_cid ON listing_preparation_log(cid_pinned)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_listing_prep_created ON listing_preparation_log(created_at)")
+        conn.commit()
+
+
+def log_listing_preparation_start(
+    preparation_id: str,
+    seller_wallet: str,
+    cid: str | None = None,
+) -> None:
+    """Log the start of a listing preparation attempt.
+    
+    Args:
+        preparation_id: Unique ID for this preparation attempt
+        seller_wallet: Seller's Algorand address
+        cid: IPFS CID if IPFS upload succeeded, None if not yet uploaded
+    """
+    initialise_listing_preparation_schema()
+    with _connect() as conn:
+        conn.execute(
+            """
+            INSERT INTO listing_preparation_log (
+                preparation_id,
+                seller_wallet,
+                cid_pinned,
+                created_at
+            ) VALUES (?, ?, ?, ?)
+            """,
+            (preparation_id, seller_wallet, cid, _utc_now_iso()),
+        )
+        conn.commit()
+
+
+def log_listing_simulation_failure(
+    preparation_id: str,
+    error_message: str,
+) -> None:
+    """Log a simulation failure for a preparation attempt.
+    
+    Args:
+        preparation_id: Unique ID for this preparation attempt
+        error_message: Simulation failure reason
+    """
+    with _connect() as conn:
+        conn.execute(
+            """
+            UPDATE listing_preparation_log
+            SET simulation_success = 0, simulation_error = ?
+            WHERE preparation_id = ?
+            """,
+            (error_message, preparation_id),
+        )
+        conn.commit()
+
+
+def log_listing_execution_result(
+    preparation_id: str,
+    success: bool,
+    tx_id: str | None = None,
+    error_message: str | None = None,
+) -> None:
+    """Log the execution result (success or failure) for a preparation attempt.
+    
+    Args:
+        preparation_id: Unique ID for this preparation attempt
+        success: True if execution succeeded
+        tx_id: Transaction ID if execution succeeded
+        error_message: Error message if execution failed
+    """
+    with _connect() as conn:
+        conn.execute(
+            """
+            UPDATE listing_preparation_log
+            SET simulation_success = 1, execution_success = ?, execution_tx_id = ?, execution_error = ?
+            WHERE preparation_id = ?
+            """,
+            (1 if success else 0, tx_id, error_message, preparation_id),
+        )
+        conn.commit()

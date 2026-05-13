@@ -97,6 +97,30 @@ class SubscriptionManager(ARC4Contract):
 
     @arc4.abimethod(allow_actions=["NoOp"])
     def subscribe(self, months: arc4.UInt64) -> None:
+        """Subscribe to insight access for multiple months with USDC payment.
+        
+        Atomicity Guarantee:
+        - This method is called as part of an outer ATC group (index 1)
+        - Index 0 of the group is an AssetTransfer transaction sending USDC to this contract
+        - If this method reverts for ANY reason (validation, state write, etc.), the payment
+          transaction at index 0 also reverts automatically
+        - Either payment + subscription both succeed, or both are rolled back
+        
+        Conservation Check:
+        - Validates that the payment amount meets the minimum required for the duration
+        - Formula: payment_tx.asset_amount >= months * monthly_rate_micro_usdc
+        - Overpayment is allowed; underpayment reverts the entire transaction
+        
+        Args:
+            months: Number of months to subscribe (1-12)
+        
+        Raises:
+            AssertionError if months not in range [1, 12]
+            AssertionError if payment asset ID doesn't match configured USDC
+            AssertionError if payment amount is insufficient
+            AssertionError if payment is not sent to this contract
+            AssertionError if payment sender doesn't match subscriber wallet
+        """
         months_native = months.native
         assert 1 <= months_native <= 12, "months must be between 1 and 12"
         caller = arc4.Address(Txn.sender)
@@ -104,6 +128,7 @@ class SubscriptionManager(ARC4Contract):
         payment_tx = gtxn.AssetTransferTransaction(0)
         required_payment = months_native * self.monthly_rate_micro_usdc.value.native
 
+        # Conservation checks: validate payment details before any state updates
         assert payment_tx.xfer_asset.id == self.usdc_asset_id.value, "Payment must use the configured USDC asset"
         assert payment_tx.asset_amount >= required_payment, "Payment amount is below the required subscription price"
         assert payment_tx.asset_receiver == Global.current_application_address, (

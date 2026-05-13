@@ -48,12 +48,14 @@ class InsightListing(ARC4Contract):
     next_listing_id: GlobalState[UInt64]
     listings: BoxMap[arc4.UInt64, Listing]
     subscriber_access: BoxMap[arc4.String, arc4.Bool]
+    sold_listings: BoxMap[arc4.UInt64, arc4.Bool]
 
     def __init__(self) -> None:
         self.registry_app_id = GlobalState(UInt64)
         self.next_listing_id = GlobalState(UInt64)
         self.listings = BoxMap(arc4.UInt64, Listing, key_prefix=b"listing")
         self.subscriber_access = BoxMap(arc4.String, arc4.Bool, key_prefix=b"subaccess")
+        self.sold_listings = BoxMap(arc4.UInt64, arc4.Bool, key_prefix=b"sold")
 
     @arc4.abimethod()
     def create_listing(
@@ -131,7 +133,16 @@ class InsightListing(ARC4Contract):
         exists = self.listings.maybe(listing_id)[1]
         if not exists:
             return arc4.String("missing")
+        sold_exists = self.sold_listings.maybe(listing_id)[1]
+        if sold_exists and self.sold_listings[listing_id].native:
+            return arc4.String("sold")
         return arc4.String("active")
+
+    @arc4.abimethod(readonly=True)
+    def get_seller(self, listing_id: arc4.UInt64) -> arc4.Address:
+        exists = self.listings.maybe(listing_id)[1]
+        assert exists, "Listing not found"
+        return self.listings[listing_id].seller
 
     @arc4.abimethod()
     def mark_sold_to_subscriber(self, listing_id: arc4.UInt64, buyer: arc4.Address) -> None:
@@ -139,3 +150,20 @@ class InsightListing(ARC4Contract):
         assert exists, "Listing not found"
         access_key = arc4.String(buyer.native + "|" + str(listing_id.native))
         self.subscriber_access[access_key] = arc4.Bool(True)
+        self.sold_listings[listing_id] = arc4.Bool(True)
+
+    @arc4.abimethod()
+    def mark_sold(self, listing_id: arc4.UInt64, buyer: arc4.Address) -> None:
+        exists = self.listings.maybe(listing_id)[1]
+        assert exists, "Listing not found"
+        access_key = arc4.String(buyer.native + "|" + str(listing_id.native))
+        self.subscriber_access[access_key] = arc4.Bool(True)
+        self.sold_listings[listing_id] = arc4.Bool(True)
+
+    @arc4.abimethod(readonly=True)
+    def is_sold_to_subscriber(self, listing_id: arc4.UInt64, buyer: arc4.Address) -> arc4.Bool:
+        access_key = arc4.String(buyer.native + "|" + str(listing_id.native))
+        exists = self.subscriber_access.maybe(access_key)[1]
+        if not exists:
+            return arc4.Bool(False)
+        return self.subscriber_access[access_key]

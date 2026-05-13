@@ -22,6 +22,12 @@ from __future__ import annotations
 from langchain_core.tools import tool
 from algosdk.v2client import indexer
 from algosdk.error import AlgodHTTPError
+from algosdk.atomic_transaction_composer import (
+    AtomicTransactionComposer,
+    TransactionWithSigner,
+    AccountTransactionSigner,
+)
+from algosdk import transaction, mnemonic as algo_mnemonic, account as algo_account
 from contracts.escrow import EscrowClient
 from contracts.insight_listing import InsightListingClient
 from contracts.reputation import ReputationClient
@@ -30,10 +36,12 @@ import os
 import asyncio
 import time
 import logging
+from dataclasses import dataclass
 from functools import lru_cache
 from algokit_utils import AlgorandClient
 from backend.utils.runtime_env import configure_demo_logging, normalize_network_env
 from backend.utils.error_handler import contract_error, ipfs_down
+from backend.utils.transaction_utils import execute_with_simulation
 from backend.utils.ws_manager import ws_manager
 
 try:
@@ -158,6 +166,157 @@ def get_reputation_client() -> ReputationClient | None:
 
     return ReputationClient(algorand=algorand, app_id=REPUTATION_APP_ID)
 
+
+@dataclass
+class AtomicGroupResult:
+    """Result of an atomic transaction group execution combining x402 payment + escrow release.
+    
+    Attributes:
+        payment_tx_id: Transaction ID of the USDC AssetTransfer to seller
+        escrow_tx_id: Transaction ID of the Escrow.release_after_payment() contract call
+        confirmed_round: Block round where the atomic group was confirmed
+        group_id: Transaction ID of the group (same as first tx in group)
+    """
+    payment_tx_id: str
+    escrow_tx_id: str
+    confirmed_round: int
+    group_id: str
+
+
+async def complete_purchase_atomically(
+    payment_params: dict,
+    listing_id: int,
+    buyer_wallet: str,
+    buyer_private_key: str,
+) -> AtomicGroupResult:
+    """Execute x402 payment and escrow release in a single atomic transaction group.
+    
+    Critical guarantees:
+    - If escrow release reverts for ANY reason (listing expired, already sold, etc),
+      the USDC payment is automatically reverted and the buyer's USDC is returned.
+    - The payment and escrow release succeed together or fail together.
+    - No intermediate state where buyer's USDC is confirmed but escrow is not released.
+    
+    Args:
+        listing_id: InsightListing ID that buyer is purchasing
+        buyer_wallet: Buyer's Algorand address (58 chars)
+        buyer_private_key: Buyer's private key for signing
+        payment_params: Dict containing at least seller_wallet and price_micro_usdc
+    
+    Returns:
+        AtomicGroupResult with both transaction IDs and confirmed round
+    
+    Raises:
+        RuntimeError: If simulation fails, execution fails, or confirmation times out
+    """
+    normalize_network_env()
+    algorand = AlgorandClient.from_environment()
+    algod = algorand.client.algod
+
+    seller_wallet = str(payment_params.get("seller_wallet", "")).strip()
+    price_micro_usdc = int(payment_params.get("price_micro_usdc", 0) or 0)
+    usdc_asset_id = int(payment_params.get("usdc_asset_id", USDC_ASSET_ID) or USDC_ASSET_ID)
+    treasury_address = str(payment_params.get("treasury_address", TREASURY_ADDRESS)).strip()
+    if not seller_wallet:
+        raise RuntimeError("payment_params.seller_wallet is required")
+    if price_micro_usdc <= 0:
+        raise RuntimeError("payment_params.price_micro_usdc must be positive")
+    if not treasury_address:
+        raise RuntimeError("Treasury address is required")
+    
+    logger.info(
+        "Starting atomic purchase | listing=%s buyer=%s seller=%s amount=%s",
+        listing_id,
+        buyer_wallet[:8],
+        seller_wallet[:8],
+        price_micro_usdc,
+    )
+    
+    # Get fresh suggested params for the current network state
+    try:
+        sp = algod.suggested_params()
+    except Exception as exc:
+        raise RuntimeError(f"Failed to get suggested params: {exc}") from exc
+    
+    # Create AtomicTransactionComposer for grouping
+    atc = AtomicTransactionComposer()
+    
+    # Transaction 1: USDC AssetTransfer from buyer to seller
+    # This is the micropayment itself
+    try:
+        usdc_transfer = transaction.AssetTransferTxn(
+            sender=buyer_wallet,
+            index=usdc_asset_id,
+            amt=price_micro_usdc,
+            receiver=seller_wallet,
+            sp=sp,
+        )
+        signer = AccountTransactionSigner(buyer_private_key)
+        atc.add_transaction(TransactionWithSigner(usdc_transfer, signer))
+        logger.info("Added USDC transfer to atomic group (index 0)")
+    except Exception as exc:
+        raise RuntimeError(f"Failed to build USDC transfer transaction: {exc}") from exc
+    
+    # Transaction 2: Escrow.release_after_payment() contract call
+    # This splits the payment between seller and treasury, records the unlock, and updates reputation
+    # Fee must cover: 1000 (base) + 2 inner USDC transfers (2000) + 1000 (method overhead) = 4000 minimum
+    # Setting to 6000 to account for additional inner operations
+    try:
+        escrow_client_instance = get_escrow_client()
+        sp_for_escrow = algod.suggested_params()
+        sp_for_escrow.fee = 6000
+        sp_for_escrow.flat_fee = True
+        
+        # Get the release_after_payment method from the escrow contract
+        escrow_method = escrow_client_instance.get_method("release_after_payment")
+        atc.add_method_call(
+            app_id=ESCROW_APP_ID,
+            method=escrow_method,
+            sender=buyer_wallet,
+            sp=sp_for_escrow,
+            signer=signer,
+            method_args=[
+                buyer_wallet,
+                seller_wallet,
+                listing_id,
+                price_micro_usdc,
+                usdc_asset_id,
+                treasury_address,
+            ],
+        )
+        logger.info("Added Escrow.release_after_payment to atomic group (index 1)")
+    except Exception as exc:
+        raise RuntimeError(f"Failed to build escrow release transaction: {exc}") from exc
+
+    try:
+        result = await execute_with_simulation(
+            atc,
+            algod,
+            context_description=f"purchase_listing_{listing_id}",
+        )
+        logger.info(
+            "✓ Atomic group executed | confirmed_round=%s tx_ids=%s",
+            result.confirmed_round,
+            result.tx_ids,
+        )
+        
+        if len(result.tx_ids) < 2:
+            raise RuntimeError(f"Expected 2 tx_ids in group, got {len(result.tx_ids)}")
+        
+        payment_tx_id = result.tx_ids[0]
+        escrow_tx_id = result.tx_ids[1]
+        
+        return AtomicGroupResult(
+            payment_tx_id=payment_tx_id,
+            escrow_tx_id=escrow_tx_id,
+            confirmed_round=result.confirmed_round,
+            group_id=result.group_id,
+        )
+    except Exception as exc:
+        logger.error("Atomic group execution failed: %s", exc, exc_info=True)
+        raise RuntimeError(f"Atomic transaction execution failed: {exc}") from exc
+
+
 async def _wait_for_confirmation(tx_id: str, timeout_seconds: int = 30) -> int:
     """Poll indexer until transaction is confirmed.
 
@@ -267,38 +426,8 @@ async def complete_purchase_flow(
     )
 
     async def _update_reputation_line() -> str:
-        """Update seller reputation and return a user-facing summary line."""
-        if not seller_wallet:
-            return ""
-        try:
-            active_reputation_client = reputation_client or get_reputation_client()
-            if active_reputation_client is None:
-                return ""
-            score_before_raw = active_reputation_client.state.box.seller_scores.get_value(seller_wallet)
-            score_before = int(score_before_raw) if score_before_raw is not None else 0
-            score_after = score_before + max(REPUTATION_INCREMENT, 0)
-            reputation_result = active_reputation_client.send.update_score((seller_wallet, score_after))
-            reputation_tx_id = _extract_tx_id(reputation_result)
-            await _wait_for_confirmation(tx_id=reputation_tx_id, timeout_seconds=20)
-            line = (
-                f"Reputation update: seller={seller_wallet} | before={score_before} "
-                f"| after={score_after} | delta=+{score_after - score_before} | tx={reputation_tx_id}"
-            )
-            await ws_manager.broadcast(
-                "reputation_updated",
-                {
-                    "wallet": seller_wallet,
-                    "old_score": score_before,
-                    "new_score": score_after,
-                    "change": score_after - score_before,
-                    "triggered_by_listing_id": str(listing_id),
-                },
-            )
-            logger.info(line)
-            return line
-        except Exception as exc:  # noqa: BLE001
-            logger.warning("Reputation update skipped | seller=%s error=%s", seller_wallet, exc)
-            return ""
+        """Reputation is updated inside escrow contract to keep settlement atomic."""
+        return ""
 
     async def _release_escrow_with_retry() -> tuple[str, int | None]:
         """Try escrow release a few times to avoid stale round failures.

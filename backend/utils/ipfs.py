@@ -24,9 +24,17 @@ from typing import Any
 
 import algosdk
 import requests
-from algokit_utils import AlgorandClient
+from algokit_utils import AlgorandClient, BoxReference, CommonAppCallParams
 from backend.utils.error_handler import ipfs_down
 from backend.utils.flow_tracer import tracer
+from dataclasses import dataclass
+from uuid import uuid4
+from backend.utils.db import (
+    log_listing_preparation_start,
+    log_listing_simulation_failure,
+    log_listing_execution_result,
+)
+from backend.utils.transaction_utils import execute_with_simulation
 
 
 PINATA_BASE_URL = "https://api.pinata.cloud"
@@ -464,7 +472,15 @@ def store_cid_in_listing(
             app_id=listing_app_id,
             default_sender=signer.address,
         )
-        result = app_client.send.create_listing((listing_price, seller_address, cid))
+        next_listing_id = int(app_client.state.global_state.next_listing_id)
+        box_name = b"listing" + next_listing_id.to_bytes(8, "big")
+        call_params = CommonAppCallParams(
+            box_references=[BoxReference(listing_app_id, box_name)],
+        )
+        result = app_client.send.create_listing(
+            (listing_price, seller_address, cid),
+            params=call_params,
+        )
         if result.abi_return is None:
             raise ListingStoreError("Listing call returned no ABI value")
         listing_id = int(result.abi_return)
@@ -482,3 +498,257 @@ def store_cid_in_listing(
         raise ListingStoreError(
             f"Could not link IPFS CID to listing on-chain: {detail}"
         ) from err
+
+
+@dataclass
+class PreparedListing:
+    """Result of a two-phase listing preparation (IPFS + simulation).
+    
+    Attributes:
+        preparation_id: Unique ID for this preparation attempt (UUID)
+        cid: IPFS CID (Qm...) where insight was pinned
+        listing_id: On-chain listing ID (only set if execution succeeded)
+        asa_id: On-chain ASA ID (only set if execution succeeded)
+        tx_id: Transaction ID of ASA creation (only set if execution succeeded)
+        simulation_passed: True if ASA creation simulation succeeded
+        execution_succeeded: True if ASA creation actually executed
+        error_message: Description of failure (if any)
+    
+    Purpose: Holds complete state from two-phase approach enabling rollback
+    on simulation failure via IPFS unpin.
+    """
+    preparation_id: str
+    cid: str
+    listing_id: int = 0
+    asa_id: int = 0
+    tx_id: str = ""
+    simulation_passed: bool = False
+    execution_succeeded: bool = False
+    error_message: str = ""
+
+
+async def create_listing_prepared(
+    insight_text: str,
+    price_usdc: float,
+    seller_wallet: str,
+    listing_app_id: int,
+    signer_mnemonic: str,
+) -> PreparedListing:
+    """Two-phase approach: IPFS upload → Simulate → Execute (with cleanup on failure).
+    
+    Purpose: Prevent orphaned IPFS pins from failed listing attempts. If ASA creation
+    simulation fails, immediately unpin the IPFS content before returning error.
+    Only after successful simulation does real on-chain execution happen.
+    
+    Args:
+        insight_text: Insight content to upload to IPFS
+        price_usdc: Price in USDC (will be converted to microUSDC)
+        seller_wallet: Seller's Algorand address
+        listing_app_id: InsightListing app ID
+        signer_mnemonic: Seller's mnemonic for signing transactions
+    
+    Returns:
+        PreparedListing with complete state and results
+    
+    Raises:
+        IPFSUploadError: If IPFS upload fails
+        ListingStoreError: If on-chain operations fail
+    
+    Guarantee:
+        If simulation passes but execution fails: IPFS is pinned (can retry)
+        If simulation fails: IPFS is unpinned (no orphan)
+        If execution succeeds: Everything is committed
+    """
+    preparation_id = str(uuid4())
+    logger.info(
+        "Starting listing preparation: preparation_id=%s seller=%s price=%s",
+        preparation_id,
+        seller_wallet[:8],
+        price_usdc,
+    )
+    
+    # Phase 1: Upload to IPFS
+    # If this fails, no cleanup needed (nothing was pinned)
+    try:
+        logger.info("Phase 1: Uploading insight to IPFS...")
+        cid = await upload_insight_to_ipfs(
+            insight_text,
+            filename="insight.txt",
+            seller_wallet=seller_wallet,
+        )
+        logger.info("Phase 1 complete: cid=%s", cid)
+        
+        # Log the start with CID now that upload succeeded
+        log_listing_preparation_start(preparation_id, seller_wallet, cid)
+    except IPFSUploadError as err:
+        logger.error("Phase 1 failed: IPFS upload error: %s", str(err))
+        log_listing_preparation_start(preparation_id, seller_wallet, None)
+        log_listing_simulation_failure(preparation_id, f"IPFS upload failed: {str(err)}")
+        raise
+    
+    # Phase 2: Simulate ASA creation with the CID
+    # If this fails, we MUST unpin the CID before returning error
+    try:
+        logger.info("Phase 2: Simulating ASA creation with CID=%s...", cid)
+        
+        micro_price = int(price_usdc * 1_000_000)
+        
+        # Import AtomicTransactionComposer from transaction utilities
+        from backend.utils.transaction_utils import validate_atomic_group
+        from algosdk.atomic_transaction_composer import AtomicTransactionComposer
+        
+        # Build ATC for the listing transaction (single outer txn)
+        atc = AtomicTransactionComposer()
+        
+        # Get Algorand client
+        algorand = AlgorandClient.from_environment()
+        signer = algorand.account.from_mnemonic(
+            mnemonic=signer_mnemonic,
+            sender=seller_wallet,
+        )
+        algorand.set_default_signer(signer)
+        
+        # Get the InsightListing client
+        insight_client_cls = _load_insight_listing_client_class()
+        app_client = insight_client_cls(
+            algorand=algorand,
+            app_id=listing_app_id,
+            default_sender=signer.address,
+        )
+        
+        # Get suggested params
+        sp = algorand.client.algod.suggested_params()
+        
+        # Add the create_listing method call to ATC
+        create_listing_method = app_client.get_method("create_listing")
+        atc.add_method_call(
+            app_id=listing_app_id,
+            method=create_listing_method,
+            sender=seller_wallet,
+            sp=sp,
+            signer=signer,
+            method_args=[micro_price, seller_wallet, cid],
+        )
+        
+        logger.info("ATC group built, simulating...")
+        
+        # Simulate the group
+        sim_result = atc.simulate(algorand.client.algod)
+        
+        if sim_result.failure_message:
+            # Simulation failed - MUST unpin before returning error
+            logger.error(
+                "Phase 2 simulation failed for preparation_id=%s: %s",
+                preparation_id,
+                sim_result.failure_message,
+            )
+            
+            # Cleanup: unpin the CID
+            try:
+                logger.info("Cleaning up: unpinning CID=%s", cid)
+                unpin_cid(cid)
+                logger.info("CID successfully unpinned")
+            except Exception as unpin_err:
+                logger.error("Failed to unpin CID=%s during cleanup: %s", cid, str(unpin_err))
+                # Continue - still log the failure even if unpin failed
+            
+            # Log simulation failure
+            log_listing_simulation_failure(preparation_id, sim_result.failure_message)
+            
+            raise ListingStoreError(
+                f"ASA creation simulation failed: {sim_result.failure_message}. "
+                f"IPFS content has been cleaned up."
+            )
+        
+        logger.info("Phase 2 complete: Simulation passed")
+        
+    except ListingStoreError:
+        raise
+    except Exception as err:
+        logger.error("Phase 2 failed with unexpected error: %s", str(err))
+        
+        # Try to cleanup on unexpected errors too
+        try:
+            logger.info("Cleaning up after unexpected error: unpinning CID=%s", cid)
+            unpin_cid(cid)
+            logger.info("CID successfully unpinned")
+        except Exception as unpin_err:
+            logger.error("Failed to unpin CID during cleanup: %s", str(unpin_err))
+        
+        log_listing_simulation_failure(preparation_id, f"Unexpected error: {str(err)}")
+        raise ListingStoreError(
+            f"Unexpected error during ASA simulation: {str(err)}. "
+            f"IPFS content has been cleaned up."
+        ) from err
+    
+    # Phase 3: Execute ASA creation (simulation already passed)
+    # At this point we know:
+    # 1. IPFS is pinned with the insight
+    # 2. ASA creation simulation passed
+    # 3. Network is responsive
+    # Execution should succeed with high probability
+    try:
+        logger.info("Phase 3: Executing ASA creation...")
+        
+        # Execute the group through the common simulation wrapper.
+        result = await execute_with_simulation(
+            atc,
+            algorand.client.algod,
+            context_description=f"listing_create_{preparation_id}",
+        )
+        
+        # Extract listing and ASA IDs from state
+        listing_id, asa_id = store_cid_in_listing(
+            cid=cid,
+            listing_app_id=listing_app_id,
+            seller_address=seller_wallet,
+            price=micro_price,
+            signer_mnemonic=signer_mnemonic,
+        )
+        
+        tx_id = result.tx_ids[0] if result.tx_ids else ""
+        
+        logger.info(
+            "Phase 3 complete: listing_id=%s asa_id=%s tx_id=%s",
+            listing_id,
+            asa_id,
+            tx_id,
+        )
+        
+        # Log success
+        log_listing_execution_result(preparation_id, True, tx_id=tx_id)
+        
+        # Return success result
+        return PreparedListing(
+            preparation_id=preparation_id,
+            cid=cid,
+            listing_id=listing_id,
+            asa_id=asa_id,
+            tx_id=tx_id,
+            simulation_passed=True,
+            execution_succeeded=True,
+        )
+        
+    except Exception as err:
+        logger.error(
+            "Phase 3 execution failed for preparation_id=%s: %s",
+            preparation_id,
+            str(err),
+        )
+        
+        # Log execution failure (but don't cleanup IPFS - caller can retry)
+        log_listing_execution_result(
+            preparation_id,
+            False,
+            error_message=str(err),
+        )
+        
+        # Return partial failure result
+        # IPFS is still pinned so caller can retry
+        return PreparedListing(
+            preparation_id=preparation_id,
+            cid=cid,
+            simulation_passed=True,
+            execution_succeeded=False,
+            error_message=f"Execution failed: {str(err)}",
+        )

@@ -5,10 +5,21 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, Field
+from algosdk import abi, transaction
+from algosdk.atomic_transaction_composer import (
+    AccountTransactionSigner,
+    AtomicTransactionComposer,
+    TransactionWithSigner,
+)
+from algosdk.logic import get_application_address
+from algosdk import mnemonic as algo_mnemonic
+from algokit_utils import AlgorandClient
 
 from .dependencies import verify_api_key, check_rate_limit, log_request
 from .responses import success_response, error_response
 from backend.utils.flow_tracer import tracer
+from backend.utils.runtime_env import normalize_network_env
+from backend.utils.transaction_utils import AtomicGroupResult, execute_with_simulation
 
 router = APIRouter(prefix="/api/v1", tags=["Mercator API v1"], dependencies=[Depends(verify_api_key), Depends(check_rate_limit), Depends(log_request)])
 
@@ -153,6 +164,121 @@ async def seller_reputation(wallet: str, request: Request):
         return success_response(data, request_id)
     except Exception:
         raise HTTPException(status_code=404, detail=error_response("SELLER_NOT_FOUND", "No reputation record found for this wallet", request_id))
+
+
+class SubscribeRequest(BaseModel):
+    """Request to subscribe to insight access with USDC payment."""
+    buyer_wallet: str = Field(..., description="Buyer's Algorand wallet address")
+    months: int = Field(1, ge=1, le=12, description="Number of months to subscribe (1-12)")
+    buyer_private_key: Optional[str] = Field(None, description="Buyer's private key for signing (optional if using default signer)")
+
+
+async def subscribe_atomically(buyer_wallet: str, months: int, buyer_private_key: str) -> AtomicGroupResult:
+    """Build and execute subscription payment + contract call as one outer ATC group."""
+    import os
+
+    normalize_network_env()
+    algorand = AlgorandClient.from_environment()
+    algod = algorand.client.algod
+
+    subscription_manager_app_id = int(os.getenv("SUBSCRIPTION_MANAGER_APP_ID", "0"))
+    usdc_asset_id = int(os.getenv("USDC_ASSET_ID", os.getenv("USDC_ASA_ID", "10458941")))
+    monthly_rate_micro_usdc = int(os.getenv("SUBSCRIPTION_MONTHLY_RATE", "50000000"))
+    if subscription_manager_app_id <= 0:
+        raise ValueError("SUBSCRIPTION_MANAGER_APP_ID not configured")
+    if usdc_asset_id <= 0:
+        raise ValueError("USDC asset id not configured")
+
+    payment_micro_usdc = months * monthly_rate_micro_usdc
+    signer = AccountTransactionSigner(buyer_private_key)
+    atc = AtomicTransactionComposer()
+
+    # Group index 0: USDC payment to the subscription app address.
+    payment_sp = algod.suggested_params()
+    payment_txn = transaction.AssetTransferTxn(
+        sender=buyer_wallet,
+        index=usdc_asset_id,
+        amt=payment_micro_usdc,
+        receiver=get_application_address(subscription_manager_app_id),
+        sp=payment_sp,
+    )
+    atc.add_transaction(TransactionWithSigner(payment_txn, signer))
+
+    # Group index 1: subscribe(uint64) method call.
+    subscribe_sp = algod.suggested_params()
+    subscribe_sp.fee = 2000
+    subscribe_sp.flat_fee = True
+    atc.add_method_call(
+        app_id=subscription_manager_app_id,
+        method=abi.Method.from_signature("subscribe(uint64)void"),
+        sender=buyer_wallet,
+        sp=subscribe_sp,
+        signer=signer,
+        method_args=[months],
+    )
+
+    return await execute_with_simulation(
+        atc,
+        algod,
+        context_description=f"subscription_{buyer_wallet[:8]}_{months}m",
+    )
+
+
+@router.post("/subscribe_atomically")
+async def subscribe_atomically_route(body: SubscribeRequest, request: Request, response: Response):
+    """Subscribe to insight access using an atomic transaction group.
+    
+    Atomicity Guarantee:
+    - USDC payment (index 0) and SubscriptionManager.subscribe() call (index 1) are submitted
+      together in a single atomic transaction group
+    - If subscription fails for ANY reason, the USDC payment is automatically reverted
+    - Either both succeed or both fail; no intermediate state
+    
+    Returns:
+        JSON with payment_tx_id, subscription_tx_id, confirmed_round, and subscription details
+    """
+    request_id = getattr(request.state, "request_id", "")
+    
+    # Validate inputs
+    if not isinstance(body.buyer_wallet, str) or len(body.buyer_wallet) != 58:
+        raise HTTPException(status_code=400, detail=error_response("INVALID_WALLET", "buyer_wallet must be a valid Algorand address", request_id))
+    if not (1 <= body.months <= 12):
+        raise HTTPException(status_code=400, detail=error_response("INVALID_MONTHS", "months must be between 1 and 12", request_id))
+    
+    try:
+        if body.buyer_private_key:
+            private_key = body.buyer_private_key
+        else:
+            import os
+
+            mnemonic_str = os.getenv("BUYER_MNEMONIC", "").strip() or os.getenv("DEPLOYER_MNEMONIC", "").strip()
+            if not mnemonic_str:
+                raise ValueError("No private key provided and no mnemonic configured in environment")
+            private_key = algo_mnemonic.to_private_key(mnemonic_str)
+
+        result = await subscribe_atomically(
+            buyer_wallet=body.buyer_wallet,
+            months=body.months,
+            buyer_private_key=private_key,
+        )
+        payload = {
+            "payment_tx_id": result.tx_ids[0] if len(result.tx_ids) > 0 else "",
+            "subscription_tx_id": result.tx_ids[1] if len(result.tx_ids) > 1 else "",
+            "tx_ids": result.tx_ids,
+            "group_id": result.group_id,
+            "confirmed_round": result.confirmed_round,
+            "all_confirmed": result.all_confirmed,
+            "months": body.months,
+            "buyer_wallet": body.buyer_wallet,
+        }
+        return success_response(payload, request_id)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=error_response("SUBSCRIPTION_ERROR", f"Subscription failed: {str(exc)}", request_id),
+        )
 
 
 @router.post("/list_insight")

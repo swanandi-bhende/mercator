@@ -50,6 +50,7 @@ _set_env_if_present("INDEXER_SERVER", os.getenv("INDEXER_SERVER") or os.getenv("
 _set_env_if_present("USDC_ASA_ID", os.getenv("USDC_ASA_ID") or "10458941")
 
 from backend import main as backend_main
+from backend.utils.ipfs import PreparedListing
 
 semantic_module = importlib.import_module("backend.tools.semantic_search")
 agent_module = importlib.import_module("backend.agent")
@@ -169,14 +170,21 @@ def client(
 
 @pytest.fixture()
 def list_call_mocks(mock_env, mock_algod_client, monkeypatch):
-    upload_mock = AsyncMock(return_value="QmMockCID")
-    store_mock = MagicMock(return_value=(4, 758196266))
-    poll_mock = AsyncMock(return_value="MOCK_LISTING_TX")
     monkeypatch.setattr(backend_main, "_get_algod_client", lambda: mock_algod_client)
-    monkeypatch.setattr(backend_main, "upload_insight_to_ipfs", upload_mock)
-    monkeypatch.setattr(backend_main, "store_cid_in_listing", store_mock)
-    monkeypatch.setattr(backend_main, "_poll_for_listing_confirmation", poll_mock)
-    return upload_mock, store_mock, poll_mock
+    monkeypatch.setattr(backend_main, "_ensure_listing_app_funded", MagicMock(return_value=None))
+    prepared_mock = AsyncMock(
+        return_value=PreparedListing(
+            preparation_id="prep-default",
+            cid="QmMockCID",
+            listing_id=4,
+            asa_id=758196266,
+            tx_id="MOCK_LISTING_TX",
+            simulation_passed=True,
+            execution_succeeded=True,
+        )
+    )
+    monkeypatch.setattr(backend_main, "create_listing_prepared", prepared_mock)
+    return prepared_mock
 
 
 LISTING_CASES = [
@@ -188,7 +196,15 @@ LISTING_CASES = [
                 "price": "1.00",
                 "seller_wallet": os.getenv("DEPLOYER_ADDRESS", "M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM"),
             },
-            "cid": "QmValidCID1",
+            "prepared_result": PreparedListing(
+                preparation_id="prep-1",
+                cid="QmValidCID1",
+                listing_id=4,
+                asa_id=758196266,
+                tx_id="MOCK_LISTING_TX",
+                simulation_passed=True,
+                execution_succeeded=True,
+            ),
             "listing_id": 4,
             "asa_id": 758196266,
             "status": 200,
@@ -203,7 +219,15 @@ LISTING_CASES = [
                 "price": "2.50",
                 "seller_wallet": os.getenv("DEPLOYER_ADDRESS", "M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM"),
             },
-            "cid": "QmValidCID2",
+            "prepared_result": PreparedListing(
+                preparation_id="prep-2",
+                cid="QmValidCID2",
+                listing_id=8,
+                asa_id=758196267,
+                tx_id="MOCK_LISTING_TX_2",
+                simulation_passed=True,
+                execution_succeeded=True,
+            ),
             "listing_id": 8,
             "asa_id": 758196267,
             "status": 200,
@@ -248,57 +272,31 @@ LISTING_CASES = [
     ),
     pytest.param(
         {
-            "name": "ipfs_upload_failure",
+            "name": "simulation_failure_cleanup",
             "payload": {
                 "insight_text": "Sample trading insight: Buy NIFTY above 24500 with SL 24380",
                 "price": "1.00",
                 "seller_wallet": os.getenv("DEPLOYER_ADDRESS", "M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM"),
             },
-            "upload_side_effect": backend_main.IPFSUploadError("IPFS failed"),
+            "prepared_side_effect": backend_main.ListingStoreError(
+                "ASA creation simulation failed: agent not registered. IPFS content has been cleaned up."
+            ),
             "status": 500,
         },
-        id="ipfs_upload_failure",
-    ),
-    pytest.param(
-        {
-            "name": "onchain_store_failure",
-            "payload": {
-                "insight_text": "Sample trading insight: Buy NIFTY above 24500 with SL 24380",
-                "price": "1.00",
-                "seller_wallet": os.getenv("DEPLOYER_ADDRESS", "M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM"),
-            },
-            "store_side_effect": backend_main.ListingStoreError("store failed"),
-            "status": 500,
-        },
-        id="onchain_store_failure",
-    ),
-    pytest.param(
-        {
-            "name": "confirmation_timeout",
-            "payload": {
-                "insight_text": "Sample trading insight: Buy NIFTY above 24500 with SL 24380",
-                "price": "1.00",
-                "seller_wallet": os.getenv("DEPLOYER_ADDRESS", "M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM"),
-            },
-            "poll_side_effect": RuntimeError("timed out"),
-            "status": 500,
-        },
-        id="confirmation_timeout",
+        id="simulation_failure_cleanup",
     ),
 ]
 
 
 @pytest.mark.parametrize("case", LISTING_CASES)
 def test_list_endpoint_matrix(client, list_call_mocks, case):
-    upload_mock, store_mock, poll_mock = list_call_mocks
+    prepared_mock = list_call_mocks
     payload = case["payload"]
 
-    if "upload_side_effect" in case:
-        upload_mock.side_effect = case["upload_side_effect"]
-    if "store_side_effect" in case:
-        store_mock.side_effect = case["store_side_effect"]
-    if "poll_side_effect" in case:
-        poll_mock.side_effect = case["poll_side_effect"]
+    if "prepared_result" in case:
+        prepared_mock.return_value = case["prepared_result"]
+    if "prepared_side_effect" in case:
+        prepared_mock.side_effect = case["prepared_side_effect"]
 
     response = client.post("/list", json=payload)
     assert response.status_code == case["status"]
@@ -306,34 +304,41 @@ def test_list_endpoint_matrix(client, list_call_mocks, case):
     if case["status"] == 200:
         body = response.json()
         assert bool(body["success"]) is True
-        assert body["listing_id"] == 4
-        assert body["asa_id"] == 758196266
-        assert body["cid"] == "QmMockCID"
-        assert body["txId"] == "MOCK_LISTING_TX"
-        assert body["transaction_id"] == "MOCK_LISTING_TX"
-        upload_mock.assert_awaited_once_with(payload["insight_text"].strip())
-        store_mock.assert_called_once()
-        assert store_mock.call_args.kwargs["cid"] == "QmMockCID"
-        assert store_mock.call_args.kwargs["price"] == int(float(payload["price"]) * 1_000_000)
-        assert store_mock.call_args.kwargs["seller_address"] == payload["seller_wallet"]
-        assert poll_mock.await_count == 1
+        assert body["listing_id"] == case["listing_id"]
+        assert body["asa_id"] == case["asa_id"]
+        assert body["cid"] == case["prepared_result"].cid
+        assert body["txId"] == case["prepared_result"].tx_id
+        assert body["transaction_id"] == case["prepared_result"].tx_id
+        prepared_mock.assert_awaited_once()
+        assert prepared_mock.call_args.kwargs["insight_text"] == payload["insight_text"]
+        assert prepared_mock.call_args.kwargs["price_usdc"] == float(payload["price"])
+        assert prepared_mock.call_args.kwargs["seller_wallet"] == payload["seller_wallet"]
     else:
-        if case["name"] == "ipfs_upload_failure":
-            assert upload_mock.await_count == 1
-            assert store_mock.call_count == 0
-            assert poll_mock.await_count == 0
-        elif case["name"] == "onchain_store_failure":
-            assert upload_mock.await_count == 1
-            assert store_mock.call_count == 1
-            assert poll_mock.await_count == 0
-        elif case["name"] == "confirmation_timeout":
-            assert upload_mock.await_count == 1
-            assert store_mock.call_count == 1
-            assert poll_mock.await_count == 1
+        if case["name"] == "simulation_failure_cleanup":
+            prepared_mock.assert_awaited_once()
+            assert "cleaned up" in response.text.lower()
         else:
-            assert upload_mock.await_count == 0
-            assert store_mock.call_count == 0
-            assert poll_mock.await_count == 0
+            prepared_mock.assert_not_called()
+
+
+def test_list_endpoint_simulation_failure_cleanup(client, monkeypatch):
+    cleanup_mock = AsyncMock(
+        side_effect=backend_main.ListingStoreError(
+            "ASA creation simulation failed: agent not registered. IPFS content has been cleaned up."
+        )
+    )
+    monkeypatch.setattr(backend_main, "create_listing_prepared", cleanup_mock)
+
+    payload = {
+        "insight_text": "Sample trading insight: Buy NIFTY above 24500 with SL 24380",
+        "price": "1.00",
+        "seller_wallet": os.getenv("DEPLOYER_ADDRESS", "M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM"),
+    }
+
+    response = client.post("/list", json=payload)
+    assert response.status_code == 500
+    assert "cleaned up" in response.text.lower()
+    cleanup_mock.assert_awaited_once()
 
 
 BASE_LISTINGS = [

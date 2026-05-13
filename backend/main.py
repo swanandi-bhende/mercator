@@ -110,6 +110,7 @@ try:
     from utils.ipfs import (
         IPFSUploadError,
         ListingStoreError,
+        create_listing_prepared,
         upload_insight_to_ipfs,
         store_cid_in_listing,
         fetch_insight_from_ipfs,
@@ -119,6 +120,7 @@ except ModuleNotFoundError:
     from backend.utils.ipfs import (
         IPFSUploadError,
         ListingStoreError,
+        create_listing_prepared,
         upload_insight_to_ipfs,
         store_cid_in_listing,
         fetch_insight_from_ipfs,
@@ -2549,6 +2551,7 @@ async def create_listing(request: ListingRequest) -> dict[str, object]:
 
     try:
         effective_seller_wallet = signer_address
+        micro_price = int(request.price * 1_000_000)
 
         if request.seller_wallet != effective_seller_wallet:
             logger.warning(
@@ -2557,66 +2560,40 @@ async def create_listing(request: ListingRequest) -> dict[str, object]:
                 request.seller_wallet,
             )
 
-        logger.info("IPFS upload started | seller=%s", effective_seller_wallet)
-        cid = await upload_insight_to_ipfs(request.insight_text)
-        logger.info("IPFS upload complete, cid=%s", cid)
+        _ensure_listing_app_funded(listing_app_id, preferred_sender=signer_address)
 
-        micro_price = int(request.price * 1_000_000)
-        listing_id = 0
-        asa_id = 0
-        tx_id = ""
-        attempts = 3
-        last_chain_error: Exception | None = None
+        prepared = await create_listing_prepared(
+            insight_text=request.insight_text,
+            price_usdc=float(request.price),
+            seller_wallet=effective_seller_wallet,
+            listing_app_id=listing_app_id,
+            signer_mnemonic=signing_mnemonic,
+        )
 
-        for attempt in range(1, attempts + 1):
-            try:
-                _ensure_listing_app_funded(listing_app_id, preferred_sender=signer_address)
+        if not prepared.execution_succeeded:
+            raise ListingStoreError(prepared.error_message or "Listing execution failed")
 
-                logger.info(
-                    "ASA creation attempted | seller=%s price_micro=%s app_id=%s attempt=%s/%s",
-                    effective_seller_wallet,
-                    micro_price,
-                    listing_app_id,
-                    attempt,
-                    attempts,
-                )
-                listing_id, asa_id = store_cid_in_listing(
-                    cid=cid,
-                    listing_app_id=listing_app_id,
-                    seller_address=effective_seller_wallet,
-                    price=micro_price,
-                    signer_mnemonic=signing_mnemonic,
-                )
+        cid = prepared.cid
+        listing_id = prepared.listing_id
+        asa_id = prepared.asa_id
+        tx_id = prepared.tx_id
 
-                logger.info(
-                    "On-chain listing submitted: listing_id=%s asa_id=%s",
-                    listing_id,
-                    asa_id,
-                )
-                demo_logger.info("Seller upload complete")
-                demo_logger.info("On-chain ASA created")
+        logger.info(
+            "On-chain listing submitted via two-phase flow: listing_id=%s asa_id=%s prep_id=%s",
+            listing_id,
+            asa_id,
+            prepared.preparation_id,
+        )
+        demo_logger.info("Seller upload complete")
+        demo_logger.info("On-chain ASA created")
 
-                tx_id = await _poll_for_listing_confirmation(
-                    app_id=listing_app_id,
-                    sender=effective_seller_wallet,
-                    cid=cid,
-                )
-                logger.info("Transaction confirmed: tx_id=%s", tx_id)
-                break
-            except Exception as chain_err:
-                last_chain_error = chain_err
-                if attempt == attempts or not _is_transient_chain_error(chain_err):
-                    raise
-                logger.warning(
-                    "Transient chain error during /list; retrying | attempt=%s/%s error=%s",
-                    attempt,
-                    attempts,
-                    chain_err,
-                )
-                await asyncio.sleep(min(3, attempt))
-
-        if not tx_id and last_chain_error is not None:
-            raise last_chain_error
+        if not tx_id:
+            tx_id = await _poll_for_listing_confirmation(
+                app_id=listing_app_id,
+                sender=effective_seller_wallet,
+                cid=cid,
+            )
+            logger.info("Transaction confirmed: tx_id=%s", tx_id)
 
         _record_recent_listing(
             {

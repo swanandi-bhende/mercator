@@ -8698,3 +8698,602 @@ RuntimeError: stop after fallback check
 2026-05-11 08:39:36,585 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
 2026-05-11 08:39:36,585 | INFO | backend.tools.x402_payment | Listing 77: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
 2026-05-11 08:39:36,586 | INFO | backend.tools.x402_payment | [AUTO-REJECTED] listing=77 reason=relevance below threshold thresholds={'AUTO_MIN_RELEVANCE': 80, 'AUTO_MIN_REPUTATION': 70, 'AUTO_MAX_PRICE_USDC': 3.0}
+2026-05-12 22:35:04,714 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-12 22:35:05,579 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-05-12 22:35:05,583 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM (effective signer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM exact_match=True)
+2026-05-12 22:35:05,583 | INFO | mercator.backend | On-chain listing submitted via two-phase flow: listing_id=4 asa_id=758196266 prep_id=prep-1
+2026-05-12 22:35:05,583 | INFO | demo.flow | Seller upload complete
+2026-05-12 22:35:05,583 | INFO | demo.flow | On-chain ASA created
+2026-05-12 22:35:05,585 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-05-12 22:35:05,593 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=2.5, insight_len=58
+2026-05-12 22:35:05,593 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM (effective signer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM exact_match=True)
+2026-05-12 22:35:05,593 | INFO | mercator.backend | On-chain listing submitted via two-phase flow: listing_id=8 asa_id=758196267 prep_id=prep-2
+2026-05-12 22:35:05,593 | INFO | demo.flow | Seller upload complete
+2026-05-12 22:35:05,593 | INFO | demo.flow | On-chain ASA created
+2026-05-12 22:35:05,594 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-05-12 22:35:05,602 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=-1.0, insight_len=59
+2026-05-12 22:35:05,603 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:05,611 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=3
+2026-05-12 22:35:05,612 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:05,620 | INFO | mercator.backend | Incoming /list request: seller_wallet=BAD_WALLET, price=1.0, insight_len=59
+2026-05-12 22:35:05,620 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:05,628 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-05-12 22:35:05,628 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM (effective signer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM exact_match=True)
+2026-05-12 22:35:05,629 | ERROR | mercator.backend | ASA creation failed | error=ASA creation simulation failed: agent not registered. IPFS content has been cleaned up.
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 2565, in create_listing
+    prepared = await create_listing_prepared(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: ASA creation simulation failed: agent not registered. IPFS content has been cleaned up.
+2026-05-12 22:35:05,631 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-05-12 22:35:05,813 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-05-12 22:35:05,814 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM (effective signer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM exact_match=True)
+2026-05-12 22:35:05,814 | ERROR | mercator.backend | ASA creation failed | error=ASA creation simulation failed: agent not registered. IPFS content has been cleaned up.
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 2565, in create_listing
+    prepared = await create_listing_prepared(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: ASA creation simulation failed: agent not registered. IPFS content has been cleaned up.
+2026-05-12 22:35:05,815 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-05-12 22:35:05,836 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:05,857 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:05,858 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:05,858 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:06,022 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:06,023 | WARNING | backend.tools.semantic_search | Falling back to deterministic relevance explanations | error=error calling model 'gemini-2.0-flash' (invalid_argument): 400 invalid_argument. {'error': {'code': 400, 'message': 'api key not valid. please pass a valid api key.', 'status': 'invalid_argument', 'details': [{'@type': 'type.googleapis.com/google.rpc.errorinfo', 'reason': 'api_key_invalid', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.localizedmessage', 'locale': 'en-us', 'message': 'api key not valid. please pass a valid api key.'}]}}
+2026-05-12 22:35:06,025 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:08,338 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:13,587 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:13,591 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:13,594 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:13,594 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:13,595 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:13,976 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:13,978 | WARNING | backend.tools.semantic_search | Falling back to deterministic relevance explanations | error=error calling model 'gemini-2.0-flash' (invalid_argument): 400 invalid_argument. {'error': {'code': 400, 'message': 'api key not valid. please pass a valid api key.', 'status': 'invalid_argument', 'details': [{'@type': 'type.googleapis.com/google.rpc.errorinfo', 'reason': 'api_key_invalid', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.localizedmessage', 'locale': 'en-us', 'message': 'api key not valid. please pass a valid api key.'}]}}
+2026-05-12 22:35:13,980 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:14,430 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:16,088 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:16,096 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:16,101 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:16,101 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:16,102 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:16,192 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:16,194 | WARNING | backend.tools.semantic_search | Falling back to deterministic relevance explanations | error=error calling model 'gemini-2.0-flash' (invalid_argument): 400 invalid_argument. {'error': {'code': 400, 'message': 'api key not valid. please pass a valid api key.', 'status': 'invalid_argument', 'details': [{'@type': 'type.googleapis.com/google.rpc.errorinfo', 'reason': 'api_key_invalid', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.localizedmessage', 'locale': 'en-us', 'message': 'api key not valid. please pass a valid api key.'}]}}
+2026-05-12 22:35:16,196 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:16,462 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:16,462 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:16,475 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:16,479 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:16,479 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:16,480 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:16,577 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:16,579 | WARNING | backend.tools.semantic_search | Falling back to deterministic relevance explanations | error=error calling model 'gemini-2.0-flash' (invalid_argument): 400 invalid_argument. {'error': {'code': 400, 'message': 'api key not valid. please pass a valid api key.', 'status': 'invalid_argument', 'details': [{'@type': 'type.googleapis.com/google.rpc.errorinfo', 'reason': 'api_key_invalid', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.localizedmessage', 'locale': 'en-us', 'message': 'api key not valid. please pass a valid api key.'}]}}
+2026-05-12 22:35:16,580 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:16,933 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:16,934 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:16,942 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:16,945 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:16,946 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:16,946 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:17,040 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:17,041 | WARNING | backend.tools.semantic_search | Falling back to deterministic relevance explanations | error=error calling model 'gemini-2.0-flash' (invalid_argument): 400 invalid_argument. {'error': {'code': 400, 'message': 'api key not valid. please pass a valid api key.', 'status': 'invalid_argument', 'details': [{'@type': 'type.googleapis.com/google.rpc.errorinfo', 'reason': 'api_key_invalid', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.localizedmessage', 'locale': 'en-us', 'message': 'api key not valid. please pass a valid api key.'}]}}
+2026-05-12 22:35:17,707 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:17,709 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:17,719 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:17,723 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:17,723 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:17,723 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:17,810 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:17,812 | WARNING | backend.tools.semantic_search | Falling back to deterministic relevance explanations | error=error calling model 'gemini-2.0-flash' (invalid_argument): 400 invalid_argument. {'error': {'code': 400, 'message': 'api key not valid. please pass a valid api key.', 'status': 'invalid_argument', 'details': [{'@type': 'type.googleapis.com/google.rpc.errorinfo', 'reason': 'api_key_invalid', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.localizedmessage', 'locale': 'en-us', 'message': 'api key not valid. please pass a valid api key.'}]}}
+2026-05-12 22:35:17,814 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:20,515 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:20,520 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:20,529 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:20,532 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:20,534 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:20,534 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:20,620 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:20,621 | WARNING | backend.tools.semantic_search | Falling back to deterministic relevance explanations | error=error calling model 'gemini-2.0-flash' (invalid_argument): 400 invalid_argument. {'error': {'code': 400, 'message': 'api key not valid. please pass a valid api key.', 'status': 'invalid_argument', 'details': [{'@type': 'type.googleapis.com/google.rpc.errorinfo', 'reason': 'api_key_invalid', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.localizedmessage', 'locale': 'en-us', 'message': 'api key not valid. please pass a valid api key.'}]}}
+2026-05-12 22:35:20,623 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:21,540 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:21,540 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:21,552 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:21,556 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:21,557 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:21,557 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:21,654 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:21,655 | WARNING | backend.tools.semantic_search | Falling back to deterministic relevance explanations | error=error calling model 'gemini-2.0-flash' (invalid_argument): 400 invalid_argument. {'error': {'code': 400, 'message': 'api key not valid. please pass a valid api key.', 'status': 'invalid_argument', 'details': [{'@type': 'type.googleapis.com/google.rpc.errorinfo', 'reason': 'api_key_invalid', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.localizedmessage', 'locale': 'en-us', 'message': 'api key not valid. please pass a valid api key.'}]}}
+2026-05-12 22:35:21,657 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:23,073 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:23,074 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:23,086 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:23,090 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:23,090 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:23,091 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:23,174 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:23,176 | WARNING | backend.tools.semantic_search | Falling back to deterministic relevance explanations | error=error calling model 'gemini-2.0-flash' (invalid_argument): 400 invalid_argument. {'error': {'code': 400, 'message': 'api key not valid. please pass a valid api key.', 'status': 'invalid_argument', 'details': [{'@type': 'type.googleapis.com/google.rpc.errorinfo', 'reason': 'api_key_invalid', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.localizedmessage', 'locale': 'en-us', 'message': 'api key not valid. please pass a valid api key.'}]}}
+2026-05-12 22:35:23,177 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:28,337 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:28,338 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:28,347 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:28,352 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:28,353 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:28,353 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-12 22:35:28,539 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:28,541 | WARNING | backend.tools.semantic_search | Falling back to deterministic relevance explanations | error=error calling model 'gemini-2.0-flash' (invalid_argument): 400 invalid_argument. {'error': {'code': 400, 'message': 'api key not valid. please pass a valid api key.', 'status': 'invalid_argument', 'details': [{'@type': 'type.googleapis.com/google.rpc.errorinfo', 'reason': 'api_key_invalid', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.localizedmessage', 'locale': 'en-us', 'message': 'api key not valid. please pass a valid api key.'}]}}
+2026-05-12 22:35:28,543 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:29,192 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:29,193 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-12 22:35:29,255 | WARNING | backend.tools.x402_payment | Subscription status check failed for M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM: <urlopen error [Errno 61] Connection refused>
+2026-05-12 22:35:29,256 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-12 22:35:29,256 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-12 22:35:29,256 | INFO | demo.flow | Payment approved
+2026-05-12 22:35:29,256 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 7
+2026-05-12 22:35:29,256 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 999.0 USDC
+2026-05-12 22:35:29,256 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-05-12 22:35:29,256 | INFO | backend.tools.x402_payment | Listing 7: Price=2.25, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-12 22:35:29,256 | WARNING | backend.tools.x402_payment | Requested amount differs from listing; using on-chain listing price | requested=999.0 listed=2.25
+2026-05-12 22:35:29,256 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-05-12 22:35:29,256 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:29,256 | WARNING | backend.tools.x402_payment | wallet/is_custodial check failed for M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM: <urlopen error [Errno 61] Connection refused>
+2026-05-12 22:35:29,259 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'is_safe': True}
+2026-05-12 22:35:29,259 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-05-12 22:35:29,259 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:29,259 | INFO | backend.tools.x402_payment | ✓ x402 atomic group executed: payment_tx=TX402 redeem_tx=
+2026-05-12 22:35:29,259 | INFO | demo.flow | IPFS content delivered
+2026-05-12 22:35:29,260 | INFO | backend.tools.x402_payment | x402 payment flow completed successfully: {'success': True, 'approved': True, 'transaction_id': 'TX402', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 7, 'buyer_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 2.25, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic payment+redeem group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Escrow redeem recorded atomically with payment'}, 'status': 'CONFIRMED', 'explorer_url': 'https://lora.algokit.io/testnet/tx/TX402/', 'redeem_transaction_id': '', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': 'Insight delivered in full text'}
+2026-05-12 22:35:29,267 | WARNING | backend.tools.x402_payment | Subscription status check failed for M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM: <urlopen error [Errno 61] Connection refused>
+2026-05-12 22:35:29,267 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-12 22:35:29,267 | WARNING | backend.tools.x402_payment | User approval gate: Payment requires explicit user approval. Type 'approve' to continue.
+2026-05-12 22:35:29,274 | WARNING | backend.tools.x402_payment | Subscription status check failed for M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM: <urlopen error [Errno 61] Connection refused>
+2026-05-12 22:35:29,274 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-12 22:35:29,274 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-12 22:35:29,274 | INFO | demo.flow | Payment approved
+2026-05-12 22:35:29,274 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 3
+2026-05-12 22:35:29,274 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-05-12 22:35:29,274 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-05-12 22:35:29,274 | INFO | backend.tools.x402_payment | Listing 3: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-12 22:35:29,274 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-05-12 22:35:29,274 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:29,275 | WARNING | backend.tools.x402_payment | wallet/is_custodial check failed for M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM: <urlopen error [Errno 61] Connection refused>
+2026-05-12 22:35:29,276 | ERROR | backend.tools.x402_payment | Payment simulation failed safety check: {'is_safe': False, 'reason': 'unsafe'}
+2026-05-12 22:35:29,283 | WARNING | backend.tools.x402_payment | Subscription status check failed for M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM: <urlopen error [Errno 61] Connection refused>
+2026-05-12 22:35:29,283 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-12 22:35:29,284 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-12 22:35:29,284 | INFO | demo.flow | Payment approved
+2026-05-12 22:35:29,284 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 3
+2026-05-12 22:35:29,284 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-05-12 22:35:29,284 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-05-12 22:35:29,284 | INFO | backend.tools.x402_payment | Listing 3: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-12 22:35:29,284 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-05-12 22:35:29,284 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:29,284 | WARNING | backend.tools.x402_payment | wallet/is_custodial check failed for M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM: <urlopen error [Errno 61] Connection refused>
+2026-05-12 22:35:29,286 | ERROR | backend.tools.x402_payment | Payment simulation error: insufficient balance
+2026-05-12 22:35:29,286 | ERROR | backend.tools.x402_payment | insufficient_balance | details=insufficient balance
+2026-05-12 22:35:29,293 | WARNING | backend.tools.x402_payment | Subscription status check failed for M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM: <urlopen error [Errno 61] Connection refused>
+2026-05-12 22:35:29,293 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-12 22:35:29,293 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-12 22:35:29,293 | INFO | demo.flow | Payment approved
+2026-05-12 22:35:29,293 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 999
+2026-05-12 22:35:29,293 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-05-12 22:35:29,293 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-05-12 22:35:29,293 | ERROR | backend.tools.x402_payment | contract_error | details=Listing 999 not found
+2026-05-12 22:35:29,300 | WARNING | backend.tools.x402_payment | Subscription status check failed for INVALID: <urlopen error [Errno 61] Connection refused>
+2026-05-12 22:35:29,300 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-12 22:35:29,300 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-12 22:35:29,300 | INFO | demo.flow | Payment approved
+2026-05-12 22:35:29,300 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 1
+2026-05-12 22:35:29,300 | INFO | backend.tools.x402_payment | Buyer: INVALID, Amount: 1.0 USDC
+2026-05-12 22:35:29,300 | ERROR | backend.tools.x402_payment | Invalid buyer address: INVALID
+2026-05-12 22:35:29,307 | WARNING | backend.tools.x402_payment | Subscription status check failed for M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM: <urlopen error [Errno 61] Connection refused>
+2026-05-12 22:35:29,307 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-12 22:35:29,307 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-12 22:35:29,307 | INFO | demo.flow | Payment approved
+2026-05-12 22:35:29,307 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 2
+2026-05-12 22:35:29,307 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 0.0 USDC
+2026-05-12 22:35:29,307 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-05-12 22:35:29,308 | INFO | backend.tools.x402_payment | Listing 2: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-12 22:35:29,308 | ERROR | backend.tools.x402_payment | Invalid payment amount: 0.0. Must be > 0
+2026-05-12 22:35:29,314 | WARNING | backend.tools.x402_payment | Subscription status check failed for M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM: <urlopen error [Errno 61] Connection refused>
+2026-05-12 22:35:29,314 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-12 22:35:29,314 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-12 22:35:29,314 | INFO | demo.flow | Payment approved
+2026-05-12 22:35:29,315 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 2
+2026-05-12 22:35:29,315 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-05-12 22:35:29,315 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-05-12 22:35:29,315 | INFO | backend.tools.x402_payment | Listing 2: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-12 22:35:29,315 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-05-12 22:35:29,315 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:29,315 | WARNING | backend.tools.x402_payment | wallet/is_custodial check failed for M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM: <urlopen error [Errno 61] Connection refused>
+2026-05-12 22:35:29,317 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'is_safe': True}
+2026-05-12 22:35:29,317 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-05-12 22:35:29,317 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-12 22:35:29,317 | ERROR | backend.tools.x402_payment | x402 micropayment execution failed: network submission failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 1167, in trigger_x402_payment
+    payment_txid = await x402_client.send_micropayment(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: network submission failed
+2026-05-12 22:35:29,321 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=9 buyer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-12 22:35:29,321 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=PAY_TX round=12345
+2026-05-12 22:35:29,322 | INFO | demo.flow | IPFS content delivered
+2026-05-12 22:35:29,322 | INFO | backend.tools.post_payment_flow | Escrow redeem confirmed | tx_id=ESCROW_TX round=12346
+2026-05-12 22:35:29,322 | INFO | demo.flow | Escrow released
+2026-05-12 22:35:29,323 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=1 buyer=buyer
+2026-05-12 22:35:29,323 | ERROR | backend.tools.post_payment_flow | Payment confirmation failed | tx_id=PAY_TX error=timed out waiting for confirmation
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 393, in complete_purchase_flow
+    payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out waiting for confirmation
+2026-05-12 22:35:29,325 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=2 buyer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-12 22:35:29,325 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=PAY_TX round=12345
+2026-05-12 22:35:29,325 | INFO | demo.flow | IPFS content delivered
+2026-05-12 22:35:29,325 | INFO | backend.tools.post_payment_flow | Escrow redeem confirmed | tx_id=ESCROW_TX round=12346
+2026-05-12 22:35:29,326 | INFO | demo.flow | Escrow released
+2026-05-12 22:35:29,327 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=2 buyer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-12 22:35:29,327 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=PAY_TX round=12345
+2026-05-12 22:35:29,327 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=1 listing_id=2 error=guard reject
+2026-05-12 22:35:29,327 | INFO | demo.flow | IPFS content delivered
+2026-05-12 22:35:29,729 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=2 listing_id=2 error=guard reject
+2026-05-12 22:35:30,131 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=3 listing_id=2 error=guard reject
+2026-05-12 22:35:30,536 | WARNING | backend.tools.post_payment_flow | Escrow redeem unavailable; continuing with paid content delivery | error=Escrow redeem failed after retries: guard reject
+2026-05-12 22:35:30,541 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=2 buyer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-12 22:35:30,542 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=PAY_TX round=12345
+2026-05-12 22:35:30,542 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=1 listing_id=2 error=guard reject
+2026-05-12 22:35:30,542 | WARNING | backend.tools.post_payment_flow | IPFS fetch failed after payment confirmation | cid=QmBrokenCID error=ipfs unavailable
+2026-05-12 22:35:30,542 | ERROR | backend.tools.post_payment_flow | ipfs_down | details=ipfs unavailable
+2026-05-12 22:35:30,943 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=2 listing_id=2 error=guard reject
+2026-05-12 22:35:31,345 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=3 listing_id=2 error=guard reject
+2026-05-12 22:35:31,746 | WARNING | backend.tools.post_payment_flow | Escrow redeem unavailable; continuing with paid content delivery | error=Escrow redeem failed after retries: guard reject
+2026-05-12 22:35:31,756 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=2 buyer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-12 22:35:31,756 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=PAY_TX round=12345
+2026-05-12 22:35:31,764 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=1 buyer=FALLBACK_BUYER
+2026-05-12 22:35:31,764 | ERROR | backend.tools.post_payment_flow | Payment confirmation failed | tx_id=PAY_TX error=stop after fallback check
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 393, in complete_purchase_flow
+    payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: stop after fallback check
+2026-05-12 22:37:14,327 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-12 22:37:14,897 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-05-12 22:37:14,899 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM (effective signer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM exact_match=True)
+2026-05-12 22:37:14,899 | INFO | mercator.backend | On-chain listing submitted via two-phase flow: listing_id=4 asa_id=758196266 prep_id=prep-1
+2026-05-12 22:37:14,899 | INFO | demo.flow | Seller upload complete
+2026-05-12 22:37:14,899 | INFO | demo.flow | On-chain ASA created
+2026-05-12 22:37:14,901 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-05-12 22:37:14,909 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=2.5, insight_len=58
+2026-05-12 22:37:14,909 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM (effective signer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM exact_match=True)
+2026-05-12 22:37:14,909 | INFO | mercator.backend | On-chain listing submitted via two-phase flow: listing_id=8 asa_id=758196267 prep_id=prep-2
+2026-05-12 22:37:14,909 | INFO | demo.flow | Seller upload complete
+2026-05-12 22:37:14,909 | INFO | demo.flow | On-chain ASA created
+2026-05-12 22:37:14,910 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-05-12 22:37:14,918 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=-1.0, insight_len=59
+2026-05-12 22:37:14,919 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-05-12 22:37:14,927 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=3
+2026-05-12 22:37:14,928 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-05-12 22:37:14,935 | INFO | mercator.backend | Incoming /list request: seller_wallet=BAD_WALLET, price=1.0, insight_len=59
+2026-05-12 22:37:14,936 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-05-12 22:37:14,944 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-05-12 22:37:14,944 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM (effective signer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM exact_match=True)
+2026-05-12 22:37:14,944 | ERROR | mercator.backend | ASA creation failed | error=ASA creation simulation failed: agent not registered. IPFS content has been cleaned up.
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 2565, in create_listing
+    prepared = await create_listing_prepared(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: ASA creation simulation failed: agent not registered. IPFS content has been cleaned up.
+2026-05-12 22:37:14,946 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-05-12 22:37:14,954 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-05-12 22:37:14,954 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM (effective signer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM exact_match=True)
+2026-05-12 22:37:14,955 | ERROR | mercator.backend | ASA creation failed | error=ASA creation simulation failed: agent not registered. IPFS content has been cleaned up.
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 2565, in create_listing
+    prepared = await create_listing_prepared(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: ASA creation simulation failed: agent not registered. IPFS content has been cleaned up.
+2026-05-12 22:37:14,956 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-05-13 06:46:25,832 | INFO | backend.agent | LangChain create_tool_calling_agent/AgentExecutor not available; using create_agent compatibility mode
+2026-05-13 06:46:26,409 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-05-13 06:46:26,411 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM (effective signer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM exact_match=True)
+2026-05-13 06:46:26,411 | INFO | mercator.backend | On-chain listing submitted via two-phase flow: listing_id=4 asa_id=758196266 prep_id=prep-1
+2026-05-13 06:46:26,412 | INFO | demo.flow | Seller upload complete
+2026-05-13 06:46:26,412 | INFO | demo.flow | On-chain ASA created
+2026-05-13 06:46:26,413 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-05-13 06:46:26,421 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=2.5, insight_len=58
+2026-05-13 06:46:26,422 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM (effective signer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM exact_match=True)
+2026-05-13 06:46:26,422 | INFO | mercator.backend | On-chain listing submitted via two-phase flow: listing_id=8 asa_id=758196267 prep_id=prep-2
+2026-05-13 06:46:26,422 | INFO | demo.flow | Seller upload complete
+2026-05-13 06:46:26,422 | INFO | demo.flow | On-chain ASA created
+2026-05-13 06:46:26,423 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 200 OK"
+2026-05-13 06:46:26,431 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=-1.0, insight_len=59
+2026-05-13 06:46:26,432 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:26,440 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=3
+2026-05-13 06:46:26,441 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:26,448 | INFO | mercator.backend | Incoming /list request: seller_wallet=BAD_WALLET, price=1.0, insight_len=59
+2026-05-13 06:46:26,449 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:26,457 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-05-13 06:46:26,457 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM (effective signer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM exact_match=True)
+2026-05-13 06:46:26,457 | ERROR | mercator.backend | ASA creation failed | error=ASA creation simulation failed: agent not registered. IPFS content has been cleaned up.
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 2565, in create_listing
+    prepared = await create_listing_prepared(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: ASA creation simulation failed: agent not registered. IPFS content has been cleaned up.
+2026-05-13 06:46:26,460 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-05-13 06:46:26,467 | INFO | mercator.backend | Incoming /list request: seller_wallet=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, price=1.0, insight_len=59
+2026-05-13 06:46:26,467 | INFO | mercator.backend | Validation passed for seller M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM (effective signer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM exact_match=True)
+2026-05-13 06:46:26,468 | ERROR | mercator.backend | ASA creation failed | error=ASA creation simulation failed: agent not registered. IPFS content has been cleaned up.
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/main.py", line 2565, in create_listing
+    prepared = await create_listing_prepared(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+backend.utils.ipfs.ListingStoreError: ASA creation simulation failed: agent not registered. IPFS content has been cleaned up.
+2026-05-13 06:46:26,469 | INFO | httpx | HTTP Request: POST http://testserver/list "HTTP/1.1 500 Internal Server Error"
+2026-05-13 06:46:26,474 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:26,495 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:26,495 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:26,496 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:26,637 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:26,638 | WARNING | backend.tools.semantic_search | Falling back to deterministic relevance explanations | error=error calling model 'gemini-2.0-flash' (invalid_argument): 400 invalid_argument. {'error': {'code': 400, 'message': 'api key not valid. please pass a valid api key.', 'status': 'invalid_argument', 'details': [{'@type': 'type.googleapis.com/google.rpc.errorinfo', 'reason': 'api_key_invalid', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.localizedmessage', 'locale': 'en-us', 'message': 'api key not valid. please pass a valid api key.'}]}}
+2026-05-13 06:46:26,639 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:26,642 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:26,643 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:26,647 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:26,649 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:26,649 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:26,649 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:26,914 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:26,916 | WARNING | backend.tools.semantic_search | Falling back to deterministic relevance explanations | error=error calling model 'gemini-2.0-flash' (invalid_argument): 400 invalid_argument. {'error': {'code': 400, 'message': 'api key not valid. please pass a valid api key.', 'status': 'invalid_argument', 'details': [{'@type': 'type.googleapis.com/google.rpc.errorinfo', 'reason': 'api_key_invalid', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.localizedmessage', 'locale': 'en-us', 'message': 'api key not valid. please pass a valid api key.'}]}}
+2026-05-13 06:46:26,921 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:26,931 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:26,933 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:26,942 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:26,945 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:26,946 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:26,946 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:27,022 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:27,023 | WARNING | backend.tools.semantic_search | Falling back to deterministic relevance explanations | error=error calling model 'gemini-2.0-flash' (invalid_argument): 400 invalid_argument. {'error': {'code': 400, 'message': 'api key not valid. please pass a valid api key.', 'status': 'invalid_argument', 'details': [{'@type': 'type.googleapis.com/google.rpc.errorinfo', 'reason': 'api_key_invalid', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.localizedmessage', 'locale': 'en-us', 'message': 'api key not valid. please pass a valid api key.'}]}}
+2026-05-13 06:46:27,025 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:27,025 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:27,027 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:27,032 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:27,035 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:27,036 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:27,036 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:27,325 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:27,327 | WARNING | backend.tools.semantic_search | Falling back to deterministic relevance explanations | error=error calling model 'gemini-2.0-flash' (invalid_argument): 400 invalid_argument. {'error': {'code': 400, 'message': 'api key not valid. please pass a valid api key.', 'status': 'invalid_argument', 'details': [{'@type': 'type.googleapis.com/google.rpc.errorinfo', 'reason': 'api_key_invalid', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.localizedmessage', 'locale': 'en-us', 'message': 'api key not valid. please pass a valid api key.'}]}}
+2026-05-13 06:46:27,328 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:27,330 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:27,330 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:27,339 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:27,342 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:27,343 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:27,343 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:27,421 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:27,422 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:27,423 | WARNING | backend.tools.semantic_search | Falling back to deterministic relevance explanations | error=error calling model 'gemini-2.0-flash' (invalid_argument): 400 invalid_argument. {'error': {'code': 400, 'message': 'api key not valid. please pass a valid api key.', 'status': 'invalid_argument', 'details': [{'@type': 'type.googleapis.com/google.rpc.errorinfo', 'reason': 'api_key_invalid', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.localizedmessage', 'locale': 'en-us', 'message': 'api key not valid. please pass a valid api key.'}]}}
+2026-05-13 06:46:27,424 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:27,427 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:27,430 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:27,433 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:27,433 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:27,433 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:27,719 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:27,724 | WARNING | backend.tools.semantic_search | Falling back to deterministic relevance explanations | error=error calling model 'gemini-2.0-flash' (invalid_argument): 400 invalid_argument. {'error': {'code': 400, 'message': 'api key not valid. please pass a valid api key.', 'status': 'invalid_argument', 'details': [{'@type': 'type.googleapis.com/google.rpc.errorinfo', 'reason': 'api_key_invalid', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.localizedmessage', 'locale': 'en-us', 'message': 'api key not valid. please pass a valid api key.'}]}}
+2026-05-13 06:46:27,725 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:27,727 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:27,729 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:27,737 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:27,740 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:27,741 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:27,741 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:27,819 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:27,821 | WARNING | backend.tools.semantic_search | Falling back to deterministic relevance explanations | error=error calling model 'gemini-2.0-flash' (invalid_argument): 400 invalid_argument. {'error': {'code': 400, 'message': 'api key not valid. please pass a valid api key.', 'status': 'invalid_argument', 'details': [{'@type': 'type.googleapis.com/google.rpc.errorinfo', 'reason': 'api_key_invalid', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.localizedmessage', 'locale': 'en-us', 'message': 'api key not valid. please pass a valid api key.'}]}}
+2026-05-13 06:46:27,822 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:27,824 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:27,825 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:27,830 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:27,833 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:27,834 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:27,833 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:28,117 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:28,121 | WARNING | backend.tools.semantic_search | Falling back to deterministic relevance explanations | error=error calling model 'gemini-2.0-flash' (invalid_argument): 400 invalid_argument. {'error': {'code': 400, 'message': 'api key not valid. please pass a valid api key.', 'status': 'invalid_argument', 'details': [{'@type': 'type.googleapis.com/google.rpc.errorinfo', 'reason': 'api_key_invalid', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.localizedmessage', 'locale': 'en-us', 'message': 'api key not valid. please pass a valid api key.'}]}}
+2026-05-13 06:46:28,123 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:28,125 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:28,145 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:28,150 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:28,153 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:28,153 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:28,154 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:28,247 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:28,248 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:28,250 | WARNING | backend.tools.semantic_search | Falling back to deterministic relevance explanations | error=error calling model 'gemini-2.0-flash' (invalid_argument): 400 invalid_argument. {'error': {'code': 400, 'message': 'api key not valid. please pass a valid api key.', 'status': 'invalid_argument', 'details': [{'@type': 'type.googleapis.com/google.rpc.errorinfo', 'reason': 'api_key_invalid', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.localizedmessage', 'locale': 'en-us', 'message': 'api key not valid. please pass a valid api key.'}]}}
+2026-05-13 06:46:28,251 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:28,252 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:28,258 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:28,260 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:28,261 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:28,261 | INFO | google_genai.models | AFC is enabled with max remote calls: 10.
+2026-05-13 06:46:28,531 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:28,533 | WARNING | backend.tools.semantic_search | Falling back to deterministic relevance explanations | error=error calling model 'gemini-2.0-flash' (invalid_argument): 400 invalid_argument. {'error': {'code': 400, 'message': 'api key not valid. please pass a valid api key.', 'status': 'invalid_argument', 'details': [{'@type': 'type.googleapis.com/google.rpc.errorinfo', 'reason': 'api_key_invalid', 'domain': 'googleapis.com', 'metadata': {'service': 'generativelanguage.googleapis.com'}}, {'@type': 'type.googleapis.com/google.rpc.localizedmessage', 'locale': 'en-us', 'message': 'api key not valid. please pass a valid api key.'}]}}
+2026-05-13 06:46:28,544 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:28,544 | INFO | httpx | HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 400 Bad Request"
+2026-05-13 06:46:28,728 | WARNING | backend.tools.x402_payment | Subscription status check failed for M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM: <urlopen error [Errno 61] Connection refused>
+2026-05-13 06:46:28,728 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-13 06:46:28,728 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-13 06:46:28,728 | INFO | demo.flow | Payment approved
+2026-05-13 06:46:28,728 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 7
+2026-05-13 06:46:28,728 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 999.0 USDC
+2026-05-13 06:46:28,728 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-05-13 06:46:28,728 | INFO | backend.tools.x402_payment | Listing 7: Price=2.25, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-13 06:46:28,728 | WARNING | backend.tools.x402_payment | Requested amount differs from listing; using on-chain listing price | requested=999.0 listed=2.25
+2026-05-13 06:46:28,728 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-05-13 06:46:28,729 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:28,729 | WARNING | backend.tools.x402_payment | wallet/is_custodial check failed for M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM: <urlopen error [Errno 61] Connection refused>
+2026-05-13 06:46:28,731 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'is_safe': True}
+2026-05-13 06:46:28,731 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-05-13 06:46:28,731 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:28,731 | INFO | backend.tools.x402_payment | ✓ x402 atomic group executed: payment_tx=TX402 redeem_tx=
+2026-05-13 06:46:28,731 | INFO | demo.flow | IPFS content delivered
+2026-05-13 06:46:28,731 | INFO | backend.tools.x402_payment | x402 payment flow completed successfully: {'success': True, 'approved': True, 'transaction_id': 'TX402', 'message': 'x402 USDC micropayment confirmed on TestNet', 'payment_details': {'listing_id': 7, 'buyer_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'seller_address': 'M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM', 'amount_usdc': 2.25, 'settlement_asset_id': 10458941, 'consensus_round': 'SETTLED'}, 'x402_flow': {'step_1': '✓ User approval confirmed', 'step_2': '✓ Payment transaction simulated for safety', 'step_3': '✓ Atomic payment+redeem group executed on TestNet', 'step_4': '✓ USDC transferred to seller', 'step_5': '✓ Escrow redeem recorded atomically with payment'}, 'status': 'CONFIRMED', 'explorer_url': 'https://lora.algokit.io/testnet/tx/TX402/', 'redeem_transaction_id': '', 'next_step': 'Buyer can now view the IPFS insight content', 'post_payment_output': 'Insight delivered in full text'}
+2026-05-13 06:46:28,739 | WARNING | backend.tools.x402_payment | Subscription status check failed for M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM: <urlopen error [Errno 61] Connection refused>
+2026-05-13 06:46:28,739 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-13 06:46:28,739 | WARNING | backend.tools.x402_payment | User approval gate: Payment requires explicit user approval. Type 'approve' to continue.
+2026-05-13 06:46:28,746 | WARNING | backend.tools.x402_payment | Subscription status check failed for M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM: <urlopen error [Errno 61] Connection refused>
+2026-05-13 06:46:28,746 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-13 06:46:28,746 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-13 06:46:28,746 | INFO | demo.flow | Payment approved
+2026-05-13 06:46:28,746 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 3
+2026-05-13 06:46:28,746 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-05-13 06:46:28,746 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-05-13 06:46:28,746 | INFO | backend.tools.x402_payment | Listing 3: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-13 06:46:28,746 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-05-13 06:46:28,746 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:28,747 | WARNING | backend.tools.x402_payment | wallet/is_custodial check failed for M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM: <urlopen error [Errno 61] Connection refused>
+2026-05-13 06:46:28,748 | ERROR | backend.tools.x402_payment | Payment simulation failed safety check: {'is_safe': False, 'reason': 'unsafe'}
+2026-05-13 06:46:28,756 | WARNING | backend.tools.x402_payment | Subscription status check failed for M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM: <urlopen error [Errno 61] Connection refused>
+2026-05-13 06:46:28,756 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-13 06:46:28,756 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-13 06:46:28,756 | INFO | demo.flow | Payment approved
+2026-05-13 06:46:28,756 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 3
+2026-05-13 06:46:28,756 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-05-13 06:46:28,756 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-05-13 06:46:28,756 | INFO | backend.tools.x402_payment | Listing 3: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-13 06:46:28,756 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-05-13 06:46:28,756 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:28,756 | WARNING | backend.tools.x402_payment | wallet/is_custodial check failed for M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM: <urlopen error [Errno 61] Connection refused>
+2026-05-13 06:46:28,758 | ERROR | backend.tools.x402_payment | Payment simulation error: insufficient balance
+2026-05-13 06:46:28,758 | ERROR | backend.tools.x402_payment | insufficient_balance | details=insufficient balance
+2026-05-13 06:46:28,765 | WARNING | backend.tools.x402_payment | Subscription status check failed for M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM: <urlopen error [Errno 61] Connection refused>
+2026-05-13 06:46:28,765 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-13 06:46:28,765 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-13 06:46:28,765 | INFO | demo.flow | Payment approved
+2026-05-13 06:46:28,765 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 999
+2026-05-13 06:46:28,765 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-05-13 06:46:28,765 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-05-13 06:46:28,766 | ERROR | backend.tools.x402_payment | contract_error | details=Listing 999 not found
+2026-05-13 06:46:28,773 | WARNING | backend.tools.x402_payment | Subscription status check failed for INVALID: <urlopen error [Errno 61] Connection refused>
+2026-05-13 06:46:28,773 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-13 06:46:28,773 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-13 06:46:28,773 | INFO | demo.flow | Payment approved
+2026-05-13 06:46:28,773 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 1
+2026-05-13 06:46:28,773 | INFO | backend.tools.x402_payment | Buyer: INVALID, Amount: 1.0 USDC
+2026-05-13 06:46:28,773 | ERROR | backend.tools.x402_payment | Invalid buyer address: INVALID
+2026-05-13 06:46:28,780 | WARNING | backend.tools.x402_payment | Subscription status check failed for M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM: <urlopen error [Errno 61] Connection refused>
+2026-05-13 06:46:28,780 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-13 06:46:28,780 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-13 06:46:28,780 | INFO | demo.flow | Payment approved
+2026-05-13 06:46:28,780 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 2
+2026-05-13 06:46:28,780 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 0.0 USDC
+2026-05-13 06:46:28,780 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-05-13 06:46:28,780 | INFO | backend.tools.x402_payment | Listing 2: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-13 06:46:28,780 | ERROR | backend.tools.x402_payment | Invalid payment amount: 0.0. Must be > 0
+2026-05-13 06:46:28,788 | WARNING | backend.tools.x402_payment | Subscription status check failed for M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM: <urlopen error [Errno 61] Connection refused>
+2026-05-13 06:46:28,788 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-13 06:46:28,788 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-13 06:46:28,788 | INFO | demo.flow | Payment approved
+2026-05-13 06:46:28,788 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 2
+2026-05-13 06:46:28,788 | INFO | backend.tools.x402_payment | Buyer: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM, Amount: 1.0 USDC
+2026-05-13 06:46:28,788 | INFO | backend.tools.x402_payment | Fetching listing details from InsightListing app...
+2026-05-13 06:46:28,788 | INFO | backend.tools.x402_payment | Listing 2: Price=1.0, Settlement asset=10458941, Seller=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-13 06:46:28,788 | INFO | backend.tools.x402_payment | Simulating x402 payment transaction...
+2026-05-13 06:46:28,788 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:28,788 | WARNING | backend.tools.x402_payment | wallet/is_custodial check failed for M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM: <urlopen error [Errno 61] Connection refused>
+2026-05-13 06:46:28,790 | INFO | backend.tools.x402_payment | ✓ Payment simulation passed: {'is_safe': True}
+2026-05-13 06:46:28,790 | INFO | backend.tools.x402_payment | Executing x402 micropayment transaction group...
+2026-05-13 06:46:28,790 | WARNING | backend.utils.flow_tracer | FlowTracer.record() called outside of a session - event discarded
+2026-05-13 06:46:28,790 | ERROR | backend.tools.x402_payment | x402 micropayment execution failed: network submission failed
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 1167, in trigger_x402_payment
+    payment_txid = await x402_client.send_micropayment(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: network submission failed
+2026-05-13 06:46:28,794 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=9 buyer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-13 06:46:28,794 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=PAY_TX round=12345
+2026-05-13 06:46:28,794 | INFO | demo.flow | IPFS content delivered
+2026-05-13 06:46:28,794 | INFO | backend.tools.post_payment_flow | Escrow redeem confirmed | tx_id=ESCROW_TX round=12346
+2026-05-13 06:46:28,794 | INFO | demo.flow | Escrow released
+2026-05-13 06:46:28,795 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=1 buyer=buyer
+2026-05-13 06:46:28,796 | ERROR | backend.tools.post_payment_flow | Payment confirmation failed | tx_id=PAY_TX error=timed out waiting for confirmation
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 391, in complete_purchase_flow
+    payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: timed out waiting for confirmation
+2026-05-13 06:46:28,797 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=2 buyer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-13 06:46:28,798 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=PAY_TX round=12345
+2026-05-13 06:46:28,798 | INFO | demo.flow | IPFS content delivered
+2026-05-13 06:46:28,798 | INFO | backend.tools.post_payment_flow | Escrow redeem confirmed | tx_id=ESCROW_TX round=12346
+2026-05-13 06:46:28,798 | INFO | demo.flow | Escrow released
+2026-05-13 06:46:28,799 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=2 buyer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-13 06:46:28,800 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=PAY_TX round=12345
+2026-05-13 06:46:28,800 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=1 listing_id=2 error=guard reject
+2026-05-13 06:46:28,800 | INFO | demo.flow | IPFS content delivered
+2026-05-13 06:46:29,201 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=2 listing_id=2 error=guard reject
+2026-05-13 06:46:29,605 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=3 listing_id=2 error=guard reject
+2026-05-13 06:46:30,007 | WARNING | backend.tools.post_payment_flow | Escrow redeem unavailable; continuing with paid content delivery | error=Escrow redeem failed after retries: guard reject
+2026-05-13 06:46:30,011 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=2 buyer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-13 06:46:30,011 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=PAY_TX round=12345
+2026-05-13 06:46:30,011 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=1 listing_id=2 error=guard reject
+2026-05-13 06:46:30,011 | WARNING | backend.tools.post_payment_flow | IPFS fetch failed after payment confirmation | cid=QmBrokenCID error=ipfs unavailable
+2026-05-13 06:46:30,011 | ERROR | backend.tools.post_payment_flow | ipfs_down | details=ipfs unavailable
+2026-05-13 06:46:30,413 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=2 listing_id=2 error=guard reject
+2026-05-13 06:46:30,814 | WARNING | backend.tools.post_payment_flow | Escrow redeem attempt failed | attempt=3 listing_id=2 error=guard reject
+2026-05-13 06:46:31,216 | WARNING | backend.tools.post_payment_flow | Escrow redeem unavailable; continuing with paid content delivery | error=Escrow redeem failed after retries: guard reject
+2026-05-13 06:46:31,225 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=2 buyer=M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
+2026-05-13 06:46:31,225 | INFO | backend.tools.post_payment_flow | Payment confirmed | tx_id=PAY_TX round=12345
+2026-05-13 06:46:31,231 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=1 buyer=FALLBACK_BUYER
+2026-05-13 06:46:31,231 | ERROR | backend.tools.post_payment_flow | Payment confirmation failed | tx_id=PAY_TX error=stop after fallback check
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 391, in complete_purchase_flow
+    payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
+    raise effect
+RuntimeError: stop after fallback check
