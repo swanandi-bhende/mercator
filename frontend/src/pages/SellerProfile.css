@@ -1,0 +1,697 @@
+/* SellerProfile Page Styles */
+
+.seller-profile-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f5f7 0%, #ffffff 100%);
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.skeleton-loader {
+  display: grid;
+  gap: 24px;
+  padding: 20px;
+}
+
+.skeleton-card {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 8px;
+}
+
+.skeleton-header {
+  height: 180px;
+}
+
+.skeleton-stats {
+  height: 120px;
+}
+
+.skeleton-reputation {
+  height: 300px;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.error-message {
+  padding: 40px;
+  background: white;
+  border-radius: 8px;
+  border-left: 4px solid #d32f2f;
+  color: #d32f2f;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.back-button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.back-button:hover {
+  background: #b71c1c;
+}
+
+/* Sections */
+.seller-profile-section {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+}
+
+.section-title {
+  margin: 0 0 24px 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 16px;
+}
+
+/* Section 1: Profile Header */
+.seller-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 32px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+.header-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 32px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+
+.header-info {
+  flex: 1;
+}
+
+.header-name {
+  margin: 0 0 8px 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+}
+
+.header-wallet {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.header-wallet code {
+  font-family: 'Monaco', 'Courier New', monospace;
+  font-size: 12px;
+  color: #666;
+  background-color: #f0f0f0;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.copy-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.copy-button:hover {
+  opacity: 1;
+}
+
+.header-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge--verified {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.badge--unverified {
+  background-color: #f5f5f5;
+  color: #666;
+}
+
+.badge--role {
+  text-transform: capitalize;
+}
+
+.badge--role-curator {
+  background-color: #f3e5f5;
+  color: #6a1b9a;
+}
+
+.badge--role-buyer {
+  background-color: #fff3e0;
+  color: #e65100;
+}
+
+.badge--role-human {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.header-reputation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+
+.header-reputation.reputation-badge--excellent {
+  background: linear-gradient(135deg, #4caf50, #45a049);
+}
+
+.header-reputation.reputation-badge--good {
+  background: linear-gradient(135deg, #2196f3, #1976d2);
+}
+
+.header-reputation.reputation-badge--fair {
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+}
+
+.header-reputation.reputation-badge--poor {
+  background: linear-gradient(135deg, #f44336, #d32f2f);
+}
+
+.reputation-score {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.reputation-label {
+  font-size: 10px;
+  margin-top: 4px;
+  opacity: 0.9;
+}
+
+/* Section 2: Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.stat-card {
+  padding: 24px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  text-align: center;
+  transition: all 0.2s ease-in-out;
+}
+
+.stat-card:hover {
+  border-color: #0066cc;
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.1);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0066cc;
+}
+
+/* Section 3: Reputation Panel */
+.reputation-panel {
+  display: grid;
+  gap: 32px;
+}
+
+.reputation-score-display {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.score-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 3px solid currentColor;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.score-circle .reputation-badge {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin: 0;
+  box-shadow: none;
+}
+
+.score-details {
+  flex: 1;
+  display: grid;
+  gap: 12px;
+}
+
+.score-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+}
+
+.detail-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.detail-value {
+  font-size: 14px;
+  color: #0066cc;
+  font-weight: 700;
+}
+
+.score-detail-item.decay-warning {
+  background-color: #fff3e0;
+  border-left: 3px solid #ff9800;
+}
+
+.score-detail-item.decay-warning .detail-value {
+  color: #e65100;
+}
+
+.progress-bar-container {
+  margin: 20px 0;
+}
+
+.progress-bar {
+  height: 28px;
+  background-color: #e0e0e0;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4caf50, #2196f3);
+  transition: width 0.3s ease;
+}
+
+.threshold-markers {
+  position: relative;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.threshold {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(-50%);
+}
+
+.threshold span {
+  font-size: 11px;
+  color: #666;
+  font-weight: 600;
+  background: white;
+  padding: 0 4px;
+}
+
+.threshold::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  width: 2px;
+  height: 16px;
+  background-color: #999;
+}
+
+.sparkline-container {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.sparkline-title {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.no-history-message {
+  padding: 40px;
+  text-align: center;
+  color: #999;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+/* Section 4: Listing History */
+.listings-table-container {
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+.listings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.listings-table thead {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.listings-table th {
+  padding: 14px;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+}
+
+.listings-table td {
+  padding: 14px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.listings-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.price-cell {
+  color: #0066cc;
+  font-weight: 600;
+}
+
+.purchases-cell {
+  color: #666;
+  text-align: center;
+}
+
+.date-cell {
+  color: #999;
+  font-size: 13px;
+}
+
+.action-cell {
+  text-align: center;
+}
+
+.view-button {
+  padding: 6px 12px;
+  background-color: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.view-button:hover {
+  background-color: #0052a3;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.pagination-button {
+  padding: 8px 16px;
+  background-color: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background-color: #0052a3;
+}
+
+.pagination-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-size: 13px;
+  color: #666;
+  font-weight: 600;
+}
+
+/* Section 5: Evaluations */
+.evaluations-table-container {
+  overflow-x: auto;
+}
+
+.evaluations-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.evaluations-table thead {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.evaluations-table th {
+  padding: 14px;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+}
+
+.evaluations-table td {
+  padding: 14px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.evaluations-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.score-cell {
+  color: #0066cc;
+  font-weight: 600;
+  text-align: center;
+}
+
+.decision-cell {
+  text-align: center;
+}
+
+.decision-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.decision-buy {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.decision-skip {
+  background-color: #f3e5f5;
+  color: #6a1b9a;
+}
+
+/* Section 6: Trust Summary */
+.trust-summary-box {
+  padding: 24px;
+  background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
+  border-left: 4px solid #0066cc;
+  border-radius: 8px;
+  line-height: 1.7;
+}
+
+.trust-summary-box p {
+  margin: 0;
+  font-size: 15px;
+  color: #333;
+}
+
+.no-data-message {
+  padding: 40px;
+  text-align: center;
+  color: #999;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .seller-profile-section {
+    padding: 20px;
+  }
+
+  .seller-profile-header {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .header-name {
+    font-size: 22px;
+  }
+
+  .reputation-score-display {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .listings-table {
+    font-size: 12px;
+  }
+
+  .listings-table th,
+  .listings-table td {
+    padding: 10px;
+  }
+
+  .evaluations-table {
+    font-size: 12px;
+  }
+
+  .evaluations-table th,
+  .evaluations-table td {
+    padding: 10px;
+  }
+
+  .pagination {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .pagination-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .seller-profile-page {
+    padding: 12px;
+  }
+
+  .seller-profile-section {
+    padding: 16px;
+    border-radius: 8px;
+  }
+
+  .header-avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+  }
+
+  .header-reputation {
+    width: 60px;
+    height: 60px;
+  }
+
+  .reputation-score {
+    font-size: 24px;
+  }
+
+  .header-name {
+    font-size: 18px;
+  }
+
+  .stat-value {
+    font-size: 18px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-title {
+    font-size: 16px;
+  }
+}

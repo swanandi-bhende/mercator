@@ -1,6 +1,3 @@
-// Purpose: Root React app routing for Mercator x402 micropayment platform.
-// Handles: navigation between buyer (discover/evaluate/checkout) and seller (/sell) flows.
-
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AppProvider } from './context/AppContext'
 import Layout from './components/Layout'
@@ -8,6 +5,7 @@ import HomePage from './pages/Home'
 import SellInsightPage from './pages/SellInsight'
 import DiscoverInsightsPage from './pages/DiscoverInsights'
 import InsightDetailPage from './pages/InsightDetail'
+import SellerProfilePage from './pages/SellerProfile'
 import CheckoutPage from './pages/Checkout'
 import TransactionPage from './pages/Transaction'
 import TrustPage from './pages/Trust'
@@ -31,6 +29,7 @@ export default function App() {
             {/* Buyer Journey Route Group */}
             <Route path="/discover" element={<DiscoverInsightsPage />} />
             <Route path="/evaluate" element={<InsightDetailPage />} />
+            <Route path="/sellers/:wallet" element={<SellerProfilePage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
 
             {/* Shared Transaction Route (seller listing success, buyer purchase success) */}

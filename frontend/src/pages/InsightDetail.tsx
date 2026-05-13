@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
+import { SellerCard } from '../components/SellerCard'
 import useWebSocket, { WebSocketEvent } from '../hooks/useWebSocket'
 
 type TrustBand = 'trusted' | 'borderline' | 'below'
@@ -29,6 +30,7 @@ export default function InsightDetailPage() {
       ? (selectedInsight as any).evaluation
       : null
   )
+  const [showAboutSeller, setShowAboutSeller] = useState(false)
 
   useWebSocket((event: WebSocketEvent) => {
     try {
@@ -201,6 +203,21 @@ export default function InsightDetailPage() {
                   ? 'Decision needs caution'
                   : 'High trust risk detected'}
             </p>
+          </aside>
+
+          <aside className="insight-seller-card">
+            <button
+              className="insight-seller-toggle"
+              onClick={() => setShowAboutSeller(!showAboutSeller)}
+            >
+              <p className="home-kicker">About this Seller</p>
+              <span className="toggle-icon">{showAboutSeller ? '▼' : '▶'}</span>
+            </button>
+            {showAboutSeller && sellerIdentity && (
+              <div className="insight-seller-expanded">
+                <SellerCard wallet={sellerIdentity} expanded={true} />
+              </div>
+            )}
           </aside>
         </div>
       </section>

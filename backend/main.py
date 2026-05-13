@@ -31,6 +31,7 @@ from datetime import datetime, timezone, timedelta
 from collections import deque
 from pathlib import Path
 
+from cachetools import TTLCache
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -82,7 +83,7 @@ from backend.tools.semantic_search import (
 )
 from backend.agents import curator_agent
 from backend.tools import staging_seed_wallet
-from backend.utils.db import initialise_curator_schema
+from backend.utils.db import get_db_path, initialise_curator_schema, initialise_seller_profile_schema
 from backend.utils.custodial_wallet import (
     create_user,
     authenticate_user,
@@ -100,6 +101,7 @@ from backend.api.v1.router import router as api_v1_router
 from backend.api.v1.auth import seed_demo_key
 from backend.api.v1.responses import error_response
 from backend.utils.health_checker import HealthChecker
+from backend.utils.seller_profile import SellerProfileService, build_trust_summary
 import uuid as _uuid
 
 try:
@@ -135,6 +137,9 @@ demo_logger = configure_demo_logging()
 logger = logging.getLogger("mercator.backend")
 scheduler = AsyncIOScheduler()
 health_checker: HealthChecker | None = None
+seller_profile_cache: TTLCache[str, dict[str, Any]] = TTLCache(maxsize=100, ttl=30)
+seller_leaderboard_cache: TTLCache[str, list[dict[str, Any]]] = TTLCache(maxsize=20, ttl=60)
+_seller_profile_service: SellerProfileService | None = None
 
 
 def _configure_logging() -> None:
@@ -258,6 +263,17 @@ def startup_checks() -> None:
     warn_missing_required_env(logger)
 
 
+def _get_seller_profile_service() -> SellerProfileService:
+    global _seller_profile_service
+    if _seller_profile_service is None:
+        _seller_profile_service = SellerProfileService(
+            _get_algod_client(),
+            _get_indexer_client(),
+            str(get_db_path()),
+        )
+    return _seller_profile_service
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await _run_startup_hooks()
@@ -283,6 +299,120 @@ async def api_v1_health():
         "network": "algorand_testnet",
         "timestamp": datetime.utcnow().isoformat() + "Z",
     }
+
+
+def _validate_wallet_or_400(wallet: str, request_id: str = "") -> None:
+    if not isinstance(wallet, str) or len(wallet) != 58 or not encoding.is_valid_address(wallet):
+        raise HTTPException(
+            status_code=400,
+            detail=error_response("INVALID_WALLET", "wallet must be a valid Algorand address", request_id),
+        )
+
+
+@app.get("/sellers/leaderboard")
+async def get_seller_leaderboard(limit: int = Query(10, ge=1, le=50), request: Request | None = None):
+    request_id = getattr(request.state, "request_id", "") if request else ""
+    cache_key = f"leaderboard:{limit}"
+    cached = seller_leaderboard_cache.get(cache_key)
+    if cached is not None:
+        return {"success": True, "sellers": cached, "limit": limit, "cached": True, "request_id": request_id}
+
+    with sqlite3.connect(str(get_db_path())) as conn:
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            """
+            SELECT seller_wallet, total_purchases, total_usdc_earned, avg_price_usdc, last_purchase_date
+            FROM seller_leaderboard
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        sellers = [dict(row) for row in rows]
+
+    seller_leaderboard_cache[cache_key] = sellers
+    return {"success": True, "sellers": sellers, "limit": limit, "cached": False, "request_id": request_id}
+
+
+@app.get("/sellers/{wallet}/profile")
+async def get_seller_profile(wallet: str, request: Request):
+    request_id = getattr(request.state, "request_id", "")
+    _validate_wallet_or_400(wallet, request_id)
+
+    cached = seller_profile_cache.get(wallet)
+    if cached is not None:
+        return {"success": True, "profile": cached, "cached": True, "request_id": request_id}
+
+    service = _get_seller_profile_service()
+    profile = await service.get_profile_tier1_tier2(wallet)
+    payload = asdict(profile)
+    seller_profile_cache[wallet] = payload
+    return {"success": True, "profile": payload, "cached": False, "request_id": request_id}
+
+
+@app.get("/sellers/{wallet}/listings")
+async def get_seller_listings(wallet: str, page: int = Query(1, ge=1), page_size: int = Query(10, ge=1, le=50), request: Request | None = None):
+    request_id = getattr(request.state, "request_id", "") if request else ""
+    _validate_wallet_or_400(wallet, request_id)
+    service = _get_seller_profile_service()
+    data = await service.get_listing_history(wallet, page=page, page_size=page_size)
+    return {"success": True, **data, "request_id": request_id}
+
+
+@app.get("/sellers/{wallet}/reputation_history")
+async def get_seller_reputation_history(wallet: str, request: Request):
+    request_id = getattr(request.state, "request_id", "")
+    _validate_wallet_or_400(wallet, request_id)
+
+    with sqlite3.connect(str(get_db_path())) as conn:
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            """
+            SELECT score_before, score_after, change, recorded_at
+            FROM reputation_score_history
+            WHERE seller_wallet = ?
+            ORDER BY recorded_at DESC
+            LIMIT 20
+            """,
+            (wallet,),
+        ).fetchall()
+        history = [dict(row) for row in rows]
+        current_row = conn.execute(
+            """
+            SELECT score_after
+            FROM reputation_score_history
+            WHERE seller_wallet = ?
+            ORDER BY recorded_at DESC
+            LIMIT 1
+            """,
+            (wallet,),
+        ).fetchone()
+
+    return {
+        "success": True,
+        "history": history,
+        "current_score": int(current_row["score_after"] or 0) if current_row else 0,
+        "request_id": request_id,
+    }
+
+
+@app.get("/sellers/{wallet}/evaluations")
+async def get_seller_evaluations(wallet: str, limit: int = Query(10, ge=1, le=50), request: Request | None = None):
+    request_id = getattr(request.state, "request_id", "") if request else ""
+    _validate_wallet_or_400(wallet, request_id)
+
+    with sqlite3.connect(str(get_db_path())) as conn:
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            """
+            SELECT evaluation_id, listing_id, total_score, decision, evaluated_at, decision_reasoning, buy_confidence, improvement_suggestion
+            FROM evaluations
+            WHERE seller_wallet = ?
+            ORDER BY evaluated_at DESC
+            LIMIT ?
+            """,
+            (wallet, limit),
+        ).fetchall()
+    return {"success": True, "evaluations": [dict(row) for row in rows], "limit": limit, "request_id": request_id}
 
 
 @app.get("/ops/health/snapshot")

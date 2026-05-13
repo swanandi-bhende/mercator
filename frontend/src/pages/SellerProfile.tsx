@@ -1,582 +1,439 @@
-import { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useAppContext } from '../context/AppContext'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { api } from '../utils/api'
-import type { LayoutOutletContext } from '../components/Layout'
-import { useOutletContext } from 'react-router-dom'
+import type { SellerProfileResponse, ListingHistoryEntry, ReputationHistoryEntry } from '../types'
+import './SellerProfile.css'
 
-interface ReputationData {
-  wallet: string
-  effective_score: number
-  raw_score: number
-  decay_points_applied: number
-  rounds_since_last_purchase: number
-  rounds_until_decay_starts: number
-  total_purchases: number
-  last_purchase_round: number
-  last_purchase_approx_date: string
+/**
+ * Get reputation badge color
+ */
+function getReputationBadgeClass(score: number): string {
+  if (score >= 80) return 'reputation-badge reputation-badge--excellent'
+  if (score >= 70) return 'reputation-badge reputation-badge--good'
+  if (score >= 50) return 'reputation-badge reputation-badge--fair'
+  return 'reputation-badge reputation-badge--poor'
 }
 
-interface PurchaseRecord {
-  buyer_wallet: string
-  listing_id: string
-  purchase_round: number
-  purchase_approx_date: string
+/**
+ * Truncate wallet address
+ */
+function truncateWallet(wallet: string): string {
+  return `${wallet.slice(0, 8)}...${wallet.slice(-4)}`
 }
 
-export default function SellerProfilePage() {
-  const navigate = useNavigate()
-  const { latestWsEvent } = useOutletContext<LayoutOutletContext>()
-  const { buyerWallet } = useAppContext()
+/**
+ * Format USDC balance from microunits
+ */
+function formatUsdc(micro: number): string {
+  return (micro / 1000000).toLocaleString('en-US', { maximumFractionDigits: 2 })
+}
+
+/**
+ * Deterministic avatar color from wallet hash
+ */
+function getAvatarColor(wallet: string): string {
+  const hex = wallet.slice(0, 6)
+  const hue = parseInt(hex, 16) % 360
+  return `hsl(${hue}, 70%, 60%)`
+}
+
+/**
+ * Copy text to clipboard
+ */
+function copyToClipboard(text: string) {
+  navigator.clipboard.writeText(text).then(() => {
+    alert(`Copied: ${text}`)
+  })
+}
+
+interface SellerProfilePageProps {}
+
+export const SellerProfilePage: React.FC<SellerProfilePageProps> = () => {
   const { wallet } = useParams<{ wallet: string }>()
+  const navigate = useNavigate()
 
-  const [reputation, setReputation] = useState<ReputationData | null>(null)
-  const [purchaseHistory, setPurchaseHistory] = useState<PurchaseRecord[]>([])
+  const [profile, setProfile] = useState<SellerProfileResponse | null>(null)
+  const [listings, setListings] = useState<ListingHistoryEntry[]>([])
+  const [reputationHistory, setReputationHistory] = useState<ReputationHistoryEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize] = useState(10)
+  const [totalPages, setTotalPages] = useState(0)
 
-  const reputationCacheRef = useRef<Map<string, { data: ReputationData; fetchedAt: number }>>(
-    new Map(),
-  )
+  const fetchData = useCallback(async () => {
+    if (!wallet) return
 
-  const fetchReputation = async (sellerWallet: string) => {
-    if (!sellerWallet) return
-
-    const cached = reputationCacheRef.current.get(sellerWallet)
-    if (cached && Date.now() - cached.fetchedAt < 60000) {
-      setReputation(cached.data)
+    try {
+      setLoading(true)
       setError(null)
-      return
-    }
 
-    try {
-      const data = await api.get<ReputationData>(`/sellers/${sellerWallet}/reputation`)
-      if (data && data.wallet) {
-        reputationCacheRef.current.set(sellerWallet, {
-          data,
-          fetchedAt: Date.now(),
-        })
-        setReputation(data)
-        setError(null)
-      }
+      // Fetch profile (Tier 1 & 2 data)
+      const profileData = await api.sellerProfile(wallet)
+      setProfile(profileData)
+
+      // Fetch reputation history for sparkline
+      const reputationData = await api.sellerReputationHistory(wallet)
+      setReputationHistory(reputationData.history || [])
+
+      // Fetch listings for current page
+      const listingsData = await api.sellerListings(wallet, currentPage, pageSize)
+      setListings(listingsData.listings || [])
+      setTotalPages(listingsData.total_pages || 0)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load reputation')
-      setReputation(null)
+      setError(err instanceof Error ? err.message : 'Failed to load seller profile')
+      console.error('Error fetching seller profile:', err)
+    } finally {
+      setLoading(false)
     }
-  }
-
-  const fetchPurchaseHistory = async (sellerWallet: string) => {
-    if (!sellerWallet) return
-
-    try {
-      const data = await api.get<{ purchase_history: PurchaseRecord[] }>(
-        `/sellers/${sellerWallet}/purchase_history`,
-      )
-      if (data && Array.isArray(data.purchase_history)) {
-        setPurchaseHistory(data.purchase_history)
-      }
-    } catch {
-      setPurchaseHistory([])
-    }
-  }
+  }, [wallet, currentPage, pageSize])
 
   useEffect(() => {
-    if (!wallet) {
-      setError('No seller wallet provided')
-      setLoading(false)
-      return
-    }
+    fetchData()
+  }, [fetchData])
 
-    setLoading(true)
-    Promise.all([fetchReputation(wallet), fetchPurchaseHistory(wallet)]).finally(() => {
-      setLoading(false)
-    })
-  }, [wallet])
-
-  // Listen for reputation updates via WebSocket
-  useEffect(() => {
-    if (!wallet || !latestWsEvent) return
-
-    if (latestWsEvent.event_type === 'reputation_updated') {
-      const payload = latestWsEvent.payload as Record<string, unknown>
-      if (String(payload.wallet) === wallet) {
-        // Invalidate cache and refetch
-        reputationCacheRef.current.delete(wallet)
-        void fetchReputation(wallet)
-        void fetchPurchaseHistory(wallet)
-      }
-    }
-  }, [latestWsEvent, wallet])
-
-  const getScoreBadgeColor = (score: number): string => {
-    if (score >= 70) return 'reputation-badge--green'
-    if (score >= 50) return 'reputation-badge--yellow'
-    return 'reputation-badge--red'
+  if (!wallet) {
+    return (
+      <div className="seller-profile-page">
+        <div className="error-message">Invalid seller wallet address</div>
+      </div>
+    )
   }
 
-  const daysUntilDecay = reputation
-    ? (reputation.rounds_until_decay_starts * 4.5) / 86400
-    : 0
+  if (loading && !profile) {
+    return (
+      <div className="seller-profile-page">
+        <div className="skeleton-loader">
+          <div className="skeleton-card skeleton-header" />
+          <div className="skeleton-card skeleton-stats" />
+          <div className="skeleton-card skeleton-reputation" />
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !profile) {
+    return (
+      <div className="seller-profile-page">
+        <div className="error-message">
+          {error || 'Failed to load seller profile'}
+          <button onClick={() => navigate(-1)} className="back-button">
+            Go Back
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  const avatarColor = getAvatarColor(wallet)
+  const displayName = profile.display_name || 'Anonymous Seller'
+  const isRegisteredAgent = profile.registered_agent_role && profile.registered_agent_name
+
+  // Prepare reputation sparkline data
+  const sparklineData = reputationHistory.map((entry) => ({
+    score: entry.score_after,
+    timestamp: new Date(entry.recorded_at).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    }),
+  }))
 
   return (
     <div className="seller-profile-page">
-      <header className="seller-profile-header">
-        <button onClick={() => navigate(-1)} className="seller-profile-back-btn">
-          ← Back
-        </button>
-        <h1>Seller Profile</h1>
-        <p className="seller-profile-wallet">{wallet}</p>
-      </header>
-
-      {loading && (
-        <div className="seller-profile-loading">
-          <p>Loading seller reputation...</p>
+      {/* Section 1: Profile Header */}
+      <section className="seller-profile-section seller-profile-header">
+        <div className="header-avatar" style={{ backgroundColor: avatarColor }}>
+          {displayName.slice(0, 1).toUpperCase()}
         </div>
-      )}
 
-      {error && !loading && (
-        <div className="seller-profile-error">
-          <p>Error: {error}</p>
-          <button onClick={() => wallet && fetchReputation(wallet)}>
-            Retry
-          </button>
-        </div>
-      )}
-
-      {!loading && !error && reputation && (
-        <main className="seller-profile-content">
-          <section className="reputation-breakdown-panel">
-            <h2>Reputation Breakdown</h2>
-
-            <div className="reputation-score-display">
-              <div className={`reputation-badge ${getScoreBadgeColor(reputation.effective_score)}`}>
-                <span className="reputation-score-number">{reputation.effective_score}</span>
-                <span className="reputation-score-label">Score</span>
-              </div>
-
-              <div className="reputation-progress-container">
-                <div className="reputation-progress-bar">
-                  <div
-                    className="reputation-progress-fill"
-                    style={{
-                      width: `${Math.min((reputation.effective_score / 100) * 100, 100)}%`,
-                    }}
-                  ></div>
-                </div>
-                <p className="reputation-progress-label">
-                  {reputation.effective_score} of 100
-                </p>
-              </div>
-            </div>
-
-            <div className="reputation-details">
-              <p>
-                <strong>Raw score:</strong> {reputation.raw_score} — <strong>Decay applied:</strong>{' '}
-                {reputation.decay_points_applied} points
-              </p>
-              <p className="reputation-decay-info">
-                Decay starts in approximately <strong>{daysUntilDecay.toFixed(1)} days</strong>
-              </p>
-            </div>
-
-            <div className="reputation-stats">
-              <div className="stat-card">
-                <span className="stat-label">Total Purchases</span>
-                <span className="stat-value">{reputation.total_purchases}</span>
-              </div>
-              <div className="stat-card">
-                <span className="stat-label">Last Purchase</span>
-                <span className="stat-value">
-                  {new Date(reputation.last_purchase_approx_date).toLocaleDateString()}
-                </span>
-              </div>
-              <div className="stat-card">
-                <span className="stat-label">Rounds Since Last</span>
-                <span className="stat-value">{reputation.rounds_since_last_purchase}</span>
-              </div>
-            </div>
-          </section>
-
-          <section className="purchase-history-panel">
-            <h2>Recent Purchases</h2>
-            {purchaseHistory.length === 0 ? (
-              <p className="purchase-history-empty">No purchase history yet</p>
-            ) : (
-              <div className="purchase-history-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Buyer Wallet</th>
-                      <th>Listing ID</th>
-                      <th>Purchase Date</th>
-                      <th>Round</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {purchaseHistory.map((record, idx) => (
-                      <tr key={idx} className="purchase-record">
-                        <td className="purchase-wallet" title={record.buyer_wallet}>
-                          {record.buyer_wallet.slice(0, 12)}...
-                        </td>
-                        <td className="purchase-listing">{record.listing_id}</td>
-                        <td className="purchase-date">
-                          {new Date(record.purchase_approx_date).toLocaleDateString()}
-                        </td>
-                        <td className="purchase-round">{record.purchase_round}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </section>
-
-          <section className="seller-profile-actions">
-            <button onClick={() => navigate(`/discover?seller=${wallet}`)}>
-              View Seller's Listings
+        <div className="header-info">
+          <h1 className="header-name">{displayName}</h1>
+          <div className="header-wallet">
+            <code>{truncateWallet(wallet)}</code>
+            <button
+              className="copy-button"
+              onClick={() => copyToClipboard(wallet)}
+              title="Copy full wallet address"
+            >
+              📋
             </button>
-            {buyerWallet && (
-              <button onClick={() => navigate('/checkout')}>
-                Search & Buy from This Seller
-              </button>
+          </div>
+
+          <div className="header-badges">
+            {isRegisteredAgent ? (
+              <>
+                <span className="badge badge--verified">✓ Verified Agent</span>
+                <span className={`badge badge--role badge--role-${profile.registered_agent_role?.toLowerCase()}`}>
+                  {profile.registered_agent_role}
+                </span>
+              </>
+            ) : (
+              <span className="badge badge--unverified">Unverified Seller</span>
             )}
-          </section>
-        </main>
-      )}
+          </div>
+        </div>
 
-      <style>{`
-        .seller-profile-page {
-          min-height: 100vh;
-          background: linear-gradient(135deg, #f5f5f7 0%, #ffffff 100%);
-          padding: 20px;
-        }
+        <div className={`header-reputation ${getReputationBadgeClass(profile.reputation_score_effective)}`}>
+          <div className="reputation-score">{profile.reputation_score_effective}</div>
+          <div className="reputation-label">Score</div>
+        </div>
+      </section>
 
-        .seller-profile-header {
-          max-width: 900px;
-          margin: 0 auto 40px;
-          display: flex;
-          align-items: center;
-          gap: 20px;
-          border-bottom: 1px solid #e0e0e0;
-          padding-bottom: 20px;
-        }
+      {/* Section 2: Stats Grid */}
+      <section className="seller-profile-section seller-profile-stats">
+        <div className="stats-grid">
+          <div className="stat-card">
+            <div className="stat-label">Total Insights Sold</div>
+            <div className="stat-value">{profile.total_purchases}</div>
+          </div>
 
-        .seller-profile-back-btn {
-          padding: 8px 12px;
-          background: #f0f0f0;
-          border: none;
-          border-radius: 6px;
-          cursor: pointer;
-          font-size: 14px;
-          transition: background 0.2s;
-        }
+          <div className="stat-card">
+            <div className="stat-label">Total USDC Earned</div>
+            <div className="stat-value">${formatUsdc(profile.total_usdc_earned_micro)}</div>
+          </div>
 
-        .seller-profile-back-btn:hover {
-          background: #e0e0e0;
-        }
+          <div className="stat-card">
+            <div className="stat-label">Average Price</div>
+            <div className="stat-value">
+              ${profile.avg_price_usdc ? profile.avg_price_usdc.toFixed(2) : 'N/A'}
+            </div>
+          </div>
 
-        .seller-profile-header h1 {
-          margin: 0;
-          font-size: 28px;
-          flex: 1;
-        }
+          <div className="stat-card">
+            <div className="stat-label">Days Active</div>
+            <div className="stat-value">
+              {profile.first_listing_date
+                ? Math.floor(
+                    (Date.now() - new Date(profile.first_listing_date).getTime()) /
+                      (1000 * 60 * 60 * 24),
+                  )
+                : '0'}
+            </div>
+          </div>
+        </div>
+      </section>
 
-        .seller-profile-wallet {
-          margin: 0;
-          font-size: 14px;
-          color: #666;
-          font-family: monospace;
-        }
+      {/* Section 3: Reputation Panel */}
+      <section className="seller-profile-section seller-profile-reputation">
+        <h2 className="section-title">Reputation History</h2>
 
-        .seller-profile-loading,
-        .seller-profile-error {
-          max-width: 900px;
-          margin: 0 auto;
-          padding: 40px;
-          text-align: center;
-          background: white;
-          border-radius: 8px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
+        <div className="reputation-panel">
+          <div className="reputation-score-display">
+            <div className="score-circle" style={{ borderColor: avatarColor }}>
+              <div className={getReputationBadgeClass(profile.reputation_score_effective)}>
+                {profile.reputation_score_effective}
+              </div>
+            </div>
+            <div className="score-details">
+              <div className="score-detail-item">
+                <span className="detail-label">Effective Score:</span>
+                <span className="detail-value">{profile.reputation_score_effective}/100</span>
+              </div>
+              <div className="score-detail-item">
+                <span className="detail-label">Raw Score:</span>
+                <span className="detail-value">{profile.reputation_score_raw}</span>
+              </div>
+              {profile.decay_info?.decay_points_applied !== undefined &&
+                profile.decay_info.decay_points_applied > 0 && (
+                  <div className="score-detail-item decay-warning">
+                    <span className="detail-label">Decay Applied:</span>
+                    <span className="detail-value">-{profile.decay_info.decay_points_applied} points</span>
+                  </div>
+                )}
+            </div>
+          </div>
 
-        .seller-profile-error {
-          border-left: 4px solid #d32f2f;
-        }
+          {/* Progress Bar with Thresholds */}
+          <div className="progress-bar-container">
+            <div className="progress-bar">
+              <div
+                className="progress-fill"
+                style={{
+                  width: `${Math.min(profile.reputation_score_effective / 100, 1) * 100}%`,
+                }}
+              />
+            </div>
+            <div className="threshold-markers">
+              <div className="threshold" style={{ left: '50%' }} title="Trust threshold">
+                <span>50</span>
+              </div>
+              <div className="threshold" style={{ left: '70%' }} title="High tier threshold">
+                <span>70</span>
+              </div>
+            </div>
+          </div>
 
-        .seller-profile-error button {
-          margin-top: 20px;
-          padding: 10px 20px;
-          background: #d32f2f;
-          color: white;
-          border: none;
-          border-radius: 6px;
-          cursor: pointer;
-          font-size: 14px;
-        }
+          {/* Sparkline Chart */}
+          {sparklineData.length > 0 ? (
+            <div className="sparkline-container">
+              <h3 className="sparkline-title">Score Trend (Last 20 Updates)</h3>
+              <ResponsiveContainer width="100%" height={200}>
+                <AreaChart data={sparklineData}>
+                  <defs>
+                    <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={avatarColor} stopOpacity={0.8} />
+                      <stop offset="95%" stopColor={avatarColor} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                  <XAxis dataKey="timestamp" tick={{ fontSize: 12 }} />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#fff',
+                      border: `2px solid ${avatarColor}`,
+                      borderRadius: '8px',
+                    }}
+                    formatter={(value) => [`Score: ${value}`, 'Reputation']}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="score"
+                    stroke={avatarColor}
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorScore)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="no-history-message">No reputation history available yet</div>
+          )}
+        </div>
+      </section>
 
-        .seller-profile-content {
-          max-width: 900px;
-          margin: 0 auto;
-          display: grid;
-          gap: 40px;
-        }
+      {/* Section 4: Listing History */}
+      <section className="seller-profile-section seller-profile-listings">
+        <h2 className="section-title">Listing History</h2>
 
-        .reputation-breakdown-panel {
-          background: white;
-          border-radius: 12px;
-          padding: 40px;
-          box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-        }
+        {listings.length > 0 ? (
+          <>
+            <div className="listings-table-container">
+              <table className="listings-table">
+                <thead>
+                  <tr>
+                    <th>Price</th>
+                    <th>Purchases</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {listings.map((listing) => (
+                    <tr key={listing.listing_id}>
+                      <td className="price-cell">${listing.price_usdc ? listing.price_usdc.toFixed(2) : 'N/A'}</td>
+                      <td className="purchases-cell">{listing.purchase_count}</td>
+                      <td className="date-cell">
+                        {new Date(listing.timestamp_iso).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </td>
+                      <td className="action-cell">
+                        <button className="view-button" title={`View listing ${listing.listing_id}`}>
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-        .reputation-breakdown-panel h2 {
-          margin: 0 0 30px 0;
-          font-size: 22px;
-          border-bottom: 2px solid #f0f0f0;
-          padding-bottom: 15px;
-        }
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="pagination">
+                <button
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="pagination-button"
+                >
+                  ← Previous
+                </button>
+                <span className="pagination-info">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className="pagination-button"
+                >
+                  Next →
+                </button>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="no-data-message">No listings found for this seller</div>
+        )}
+      </section>
 
-        .reputation-score-display {
-          display: grid;
-          grid-template-columns: 120px 1fr;
-          gap: 40px;
-          margin-bottom: 30px;
-          align-items: center;
-        }
+      {/* Section 5: Agent Evaluations */}
+      <section className="seller-profile-section seller-profile-evaluations">
+        <h2 className="section-title">Agent Evaluation History</h2>
 
-        .reputation-badge {
-          width: 120px;
-          height: 120px;
-          border-radius: 50%;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          font-weight: bold;
-          color: white;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
+        {profile.evaluations && profile.evaluations.length > 0 ? (
+          <div className="evaluations-table-container">
+            <table className="evaluations-table">
+              <thead>
+                <tr>
+                  <th>Quality</th>
+                  <th>Relevance</th>
+                  <th>Total Score</th>
+                  <th>Decision</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {profile.evaluations.slice(0, 10).map((eval_record) => (
+                  <tr key={eval_record.evaluation_id}>
+                    <td className="score-cell">{eval_record.quality_score}</td>
+                    <td className="score-cell">{eval_record.relevance_score}</td>
+                    <td className="score-cell">
+                      <strong>{eval_record.total_score}</strong>
+                    </td>
+                    <td className="decision-cell">
+                      <span
+                        className={`decision-badge decision-${eval_record.decision?.toLowerCase()}`}
+                      >
+                        {eval_record.decision}
+                      </span>
+                    </td>
+                    <td className="date-cell">
+                      {new Date(eval_record.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="no-data-message">No evaluation history available yet</div>
+        )}
+      </section>
 
-        .reputation-badge--green {
-          background: linear-gradient(135deg, #4caf50, #45a049);
-        }
+      {/* Section 6: Trust Summary */}
+      <section className="seller-profile-section seller-profile-trust-summary">
+        <h2 className="section-title">Trust Summary</h2>
 
-        .reputation-badge--yellow {
-          background: linear-gradient(135deg, #ff9800, #fb8c00);
-        }
-
-        .reputation-badge--red {
-          background: linear-gradient(135deg, #f44336, #d32f2f);
-        }
-
-        .reputation-score-number {
-          font-size: 40px;
-          line-height: 1;
-        }
-
-        .reputation-score-label {
-          font-size: 12px;
-          margin-top: 8px;
-          opacity: 0.9;
-        }
-
-        .reputation-progress-container {
-          flex: 1;
-        }
-
-        .reputation-progress-bar {
-          height: 24px;
-          background: #e0e0e0;
-          border-radius: 12px;
-          overflow: hidden;
-          margin-bottom: 8px;
-        }
-
-        .reputation-progress-fill {
-          height: 100%;
-          background: linear-gradient(90deg, #4caf50, #45a049);
-          transition: width 0.3s ease;
-        }
-
-        .reputation-progress-label {
-          margin: 0;
-          font-size: 13px;
-          color: #666;
-        }
-
-        .reputation-details {
-          margin: 30px 0;
-          padding: 20px;
-          background: #f9f9f9;
-          border-left: 4px solid #2196f3;
-          border-radius: 4px;
-        }
-
-        .reputation-details p {
-          margin: 8px 0;
-          font-size: 14px;
-          line-height: 1.6;
-        }
-
-        .reputation-decay-info {
-          color: #1976d2;
-          font-weight: 500;
-        }
-
-        .reputation-stats {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-          gap: 20px;
-          margin-top: 30px;
-        }
-
-        .stat-card {
-          padding: 20px;
-          background: #f5f5f5;
-          border-radius: 8px;
-          text-align: center;
-          border: 1px solid #e0e0e0;
-        }
-
-        .stat-label {
-          display: block;
-          font-size: 12px;
-          text-transform: uppercase;
-          color: #999;
-          letter-spacing: 0.5px;
-          margin-bottom: 8px;
-        }
-
-        .stat-value {
-          display: block;
-          font-size: 24px;
-          font-weight: bold;
-          color: #1976d2;
-        }
-
-        .purchase-history-panel {
-          background: white;
-          border-radius: 12px;
-          padding: 40px;
-          box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-        }
-
-        .purchase-history-panel h2 {
-          margin: 0 0 30px 0;
-          font-size: 22px;
-          border-bottom: 2px solid #f0f0f0;
-          padding-bottom: 15px;
-        }
-
-        .purchase-history-empty {
-          text-align: center;
-          color: #999;
-          padding: 40px 20px;
-          font-style: italic;
-        }
-
-        .purchase-history-table {
-          overflow-x: auto;
-        }
-
-        .purchase-history-table table {
-          width: 100%;
-          border-collapse: collapse;
-          font-size: 14px;
-        }
-
-        .purchase-history-table thead {
-          background: #f5f5f5;
-          border-bottom: 2px solid #e0e0e0;
-        }
-
-        .purchase-history-table th {
-          padding: 12px;
-          text-align: left;
-          font-weight: 600;
-          color: #333;
-        }
-
-        .purchase-history-table td {
-          padding: 12px;
-          border-bottom: 1px solid #e0e0e0;
-        }
-
-        .purchase-record:hover {
-          background: #f9f9f9;
-        }
-
-        .purchase-wallet {
-          font-family: monospace;
-          font-size: 12px;
-          color: #666;
-        }
-
-        .purchase-listing {
-          font-weight: 500;
-          color: #1976d2;
-        }
-
-        .purchase-date {
-          color: #666;
-        }
-
-        .purchase-round {
-          color: #999;
-          font-size: 12px;
-        }
-
-        .seller-profile-actions {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 15px;
-          padding: 20px 0;
-        }
-
-        .seller-profile-actions button {
-          padding: 12px 20px;
-          background: #1976d2;
-          color: white;
-          border: none;
-          border-radius: 6px;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: background 0.2s;
-        }
-
-        .seller-profile-actions button:hover {
-          background: #1565c0;
-        }
-
-        @media (max-width: 768px) {
-          .seller-profile-header {
-            flex-direction: column;
-            align-items: flex-start;
-          }
-
-          .reputation-score-display {
-            grid-template-columns: 1fr;
-            gap: 20px;
-          }
-
-          .reputation-badge {
-            margin: 0 auto;
-          }
-
-          .reputation-stats {
-            grid-template-columns: 1fr;
-          }
-
-          .purchase-history-table {
-            font-size: 12px;
-          }
-
-          .purchase-history-table th,
-          .purchase-history-table td {
-            padding: 8px;
-          }
-        }
-      `}</style>
+        {profile.trust_summary ? (
+          <div className="trust-summary-box">
+            <p>{profile.trust_summary}</p>
+          </div>
+        ) : (
+          <div className="no-data-message">Trust summary not yet available</div>
+        )}
+      </section>
     </div>
   )
 }
+
+export default SellerProfilePage
+

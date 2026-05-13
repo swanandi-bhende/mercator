@@ -4,6 +4,7 @@ import { useAppContext } from '../context/AppContext'
 import { api, ApiError } from '../utils/api'
 import type { DiscoverMatch, ListingsFeedItem } from '../types'
 import VerifiedBadge from '../components/shared/VerifiedBadge'
+import { SellerCard } from '../components/SellerCard'
 import type { LayoutOutletContext } from '../components/Layout'
 
 type SearchPhase = 'idle' | 'fetching' | 'evaluating' | 'ready'
@@ -236,6 +237,8 @@ export default function DiscoverInsightsPage() {
   const [newListingIds, setNewListingIds] = useState<string[]>([])
   const [agentBadges, setAgentBadges] = useState<Record<string, string>>({})
   const [reputationOverrides, setReputationOverrides] = useState<Record<string, number>>({})
+  const [topSellers, setTopSellers] = useState<any[]>([])
+  const [topSellersLoading, setTopSellersLoading] = useState(false)
 
   const reputationCacheRef = useRef<
     Map<string, { score: number; fetchedAt: number }>
@@ -369,6 +372,29 @@ export default function DiscoverInsightsPage() {
     }
 
     void loadListings()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const loadTopSellers = async () => {
+      try {
+        setTopSellersLoading(true)
+        const sellers = await api.sellerLeaderboard(5)
+        if (cancelled) return
+        setTopSellers(sellers || [])
+      } catch {
+        // Best-effort load - if leaderboard fails, just don't show it
+        setTopSellers([])
+      } finally {
+        if (!cancelled) setTopSellersLoading(false)
+      }
+    }
+
+    void loadTopSellers()
     return () => {
       cancelled = true
     }
@@ -766,6 +792,25 @@ export default function DiscoverInsightsPage() {
             <button className="discover-side-link" onClick={() => navigate('/trust')}>
               Understand Reputation Rules
             </button>
+
+            {/* Top Sellers Panel */}
+            <div className="discover-top-sellers-panel">
+              <p className="home-kicker">Top Sellers</p>
+              {topSellersLoading ? (
+                <p style={{ color: '#999', fontSize: '14px' }}>Loading top sellers...</p>
+              ) : topSellers.length > 0 ? (
+                <div className="discover-top-sellers-list">
+                  {topSellers.map((seller, index) => (
+                    <div key={seller.seller_wallet} className="discover-top-seller-item">
+                      <span className="discover-top-seller-rank">#{index + 1}</span>
+                      <SellerCard wallet={seller.seller_wallet} />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ color: '#999', fontSize: '14px' }}>No sellers yet</p>
+              )}
+            </div>
           </aside>
         </div>
       </section>
@@ -882,9 +927,7 @@ export default function DiscoverInsightsPage() {
                 </div>
 
                 <h3>{insight.title}</h3>
-                <p className="discover-seller">
-                  by {insight.seller} · {insight.wallet}
-                </p>
+                <SellerCard wallet={insight.wallet} />
                 <p className="discover-reason">{insight.reason}</p>
 
                 <div className="discover-metrics">

@@ -393,6 +393,77 @@ export const api = {
       throw new ApiError('Failed to fetch verified agents', error)
     }
   },
+
+  /**
+   * Fetch seller profile (Tier 1 & Tier 2 data)
+   */
+  sellerProfile: async (wallet: string) => {
+    try {
+      const response = await client.get<{ success: boolean; profile: any }>(`/sellers/${wallet.trim()}/profile`)
+      return response.data.profile
+    } catch (error) {
+      throw new ApiError(`Failed to fetch seller profile for ${wallet}`, error)
+    }
+  },
+
+  /**
+   * Fetch paginated seller listing history
+   */
+  sellerListings: async (wallet: string, page = 1, pageSize = 10) => {
+    try {
+      const response = await client.get<{ success: boolean; listings: any[] }>(`/sellers/${wallet.trim()}/listings`, {
+        params: { page, page_size: pageSize },
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError(`Failed to fetch seller listings for ${wallet}`, error)
+    }
+  },
+
+  /**
+   * Fetch seller leaderboard (top sellers by earnings)
+   */
+  sellerLeaderboard: async (limit = 10) => {
+    try {
+      const response = await client.get<{ success: boolean; sellers: any[] }>('/sellers/leaderboard', {
+        params: { limit },
+      })
+      return response.data.sellers
+    } catch (error) {
+      throw new ApiError('Failed to fetch seller leaderboard', error)
+    }
+  },
+
+  /**
+   * Fetch seller reputation history (sparkline data)
+   */
+  sellerReputationHistory: async (wallet: string) => {
+    try {
+      const response = await client.get<{ success: boolean; history: any[]; current_score: number }>(
+        `/sellers/${wallet.trim()}/reputation_history`,
+      )
+      return response.data
+    } catch (error) {
+      throw new ApiError(`Failed to fetch seller reputation history for ${wallet}`, error)
+    }
+  },
+
+  /**
+   * Fetch seller evaluations (Buyer Agent scores)
+   */
+  sellerEvaluations: async (wallet: string, limit = 10) => {
+    try {
+      const response = await client.get<{ success: boolean; evaluations: any[] }>(
+        `/sellers/${wallet.trim()}/evaluations`,
+        {
+          params: { limit },
+        },
+      )
+      return response.data.evaluations
+    } catch (error) {
+      throw new ApiError(`Failed to fetch seller evaluations for ${wallet}`, error)
+    }
+  },
 }
 
 /**

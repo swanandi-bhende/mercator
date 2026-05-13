@@ -492,3 +492,91 @@ export interface RegisteredAgent {
   registered_at_round: number
   total_transactions: number
 }
+
+// Seller Profile Types
+export interface DecayInfo {
+  last_updated_at: string | null
+  decay_rate: number | null
+  decay_points_applied: number | null
+}
+
+export interface SellerStats {
+  seller_wallet: string
+  total_purchases: number
+  total_usdc_earned_micro: number
+  avg_price_usdc: number | null
+  first_listing_date: string | null
+  last_purchase_date: string | null
+  recent_evaluations_avg_score: number | null
+  display_name: string
+  registered_agent_name: string | null
+  registered_agent_role: string | null
+  registered_at_round: number | null
+  trust_summary: string | null
+}
+
+export interface ListingHistoryEntry {
+  listing_id: string
+  timestamp_iso: string
+  price_usdc: number | null
+  purchase_count: number
+  ipfs_cid: string | null
+}
+
+export interface ReputationHistoryEntry {
+  score_before: number
+  score_after: number
+  change: number
+  recorded_at: string
+}
+
+export interface EvaluationRecord {
+  evaluation_id: string
+  seller_wallet: string
+  insight_listing_id: string
+  total_score: number
+  quality_score: number
+  relevance_score: number
+  decision: string
+  created_at: string
+}
+
+export interface SellerProfileResponse {
+  seller_wallet: string
+  display_name: string
+  registered_agent_name: string | null
+  registered_agent_role: string | null
+  registered_at_round: number | null
+  reputation_score_effective: number
+  reputation_score_raw: number
+  decay_info: DecayInfo
+  total_purchases: number
+  total_usdc_earned_micro: number
+  avg_price_usdc: number | null
+  first_listing_date: string | null
+  last_purchase_date: string | null
+  days_active: number | null
+  recent_evaluations_avg_score: number | null
+  reputation_history: ReputationHistoryEntry[]
+  evaluations: EvaluationRecord[]
+  trust_summary: string
+}
+
+export interface SellerLeaderboardEntry {
+  seller_wallet: string
+  display_name: string
+  reputation_score: number
+  total_purchases: number
+  total_usdc_earned: number
+  avg_price_usdc: number | null
+}
+
+export interface ListingHistoryResponse {
+  success: boolean
+  listings: ListingHistoryEntry[]
+  page: number
+  page_size: number
+  total_count: number
+  has_more: boolean
+  total_pages: number
+}
