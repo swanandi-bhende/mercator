@@ -8,9 +8,30 @@ import type {
   OpsEndpointHeatCell,
 } from '../types'
 import { useAppContext } from '../context/AppContext'
+import { useOutletContext } from 'react-router-dom'
+import type { LayoutOutletContext } from '../components/Layout'
 
 type SeverityFilter = 'all' | 'error' | 'warning' | 'recovery' | 'info'
 type TimeFilter = '15m' | '1h' | '24h' | 'all'
+
+// Health Metrics Types
+interface HealthMetricData {
+  name: string
+  status: 'healthy' | 'degraded' | 'down' | 'unknown'
+  value: Record<string, unknown>
+  message: string
+  measured_at?: string
+}
+
+interface HealthSnapshot {
+  snapshot_id: string
+  measured_at: string
+  overall_status: 'healthy' | 'degraded' | 'down' | 'unknown'
+  metrics: Record<string, HealthMetricData>
+  active_connections: number
+  alert_count: number
+  changed_metrics?: string[]
+}
 
 function fmtPct(value: number) {
   return `${Math.max(0, Math.min(100, value)).toFixed(1)}%`
@@ -113,6 +134,13 @@ export default function OperationsPage() {
   const [debugMode, setDebugMode] = useState(false)
   const [frontendErrors, setFrontendErrors] = useState<string[]>([])
   const [opsNotes, setOpsNotes] = useState<string>(typeof window !== 'undefined' ? localStorage.getItem('opsOperatorNotes') || '' : '')
+
+  // Health Metrics State
+  const [healthSnapshot, setHealthSnapshot] = useState<HealthSnapshot | null>(null)
+  const [healthHistory, setHealthHistory] = useState<HealthSnapshot[]>([])
+  const [curatorCountdown, setCuratorCountdown] = useState<number>(0)
+  const [systemAlertLog, setSystemAlertLog] = useState<Array<{ id: string; message: string; timestamp: string }>>([])
+  const { latestWsEvent } = useOutletContext<LayoutOutletContext>()
 
   const isSessionValid = sessionExpiresAt > Date.now()
 
@@ -241,6 +269,97 @@ export default function OperationsPage() {
   useEffect(() => {
     localStorage.setItem('opsOperatorNotes', opsNotes)
   }, [opsNotes])
+
+  // Fetch initial health snapshot
+  useEffect(() => {
+    const fetchHealthSnapshot = async () => {
+      try {
+        const response = await fetch('/ops/health/snapshot')
+        const data = await response.json()
+        setHealthSnapshot(data)
+      } catch (err) {
+        console.error('Failed to fetch health snapshot:', err)
+      }
+    }
+    fetchHealthSnapshot()
+    // Fetch again every 15 seconds as fallback if WebSocket isn't updating
+    const interval = setInterval(fetchHealthSnapshot, 15000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Listen for WebSocket health_update events
+  useEffect(() => {
+    if (latestWsEvent?.type === 'health_update' && latestWsEvent.data) {
+      setHealthSnapshot(latestWsEvent.data)
+      // Add to system alert log if there are DOWN metrics
+      if (latestWsEvent.data.alert_count > 0) {
+        const downMetrics = Object.entries(latestWsEvent.data.metrics)
+          .filter(([_, metric]) => metric.status === 'down')
+          .map(([name, _]) => name)
+          .join(', ')
+        if (downMetrics) {
+          setSystemAlertLog((prev) => [
+            ...prev,
+            {
+              id: latestWsEvent.data.snapshot_id,
+              message: `Alert: ${downMetrics} are down`,
+              timestamp: latestWsEvent.data.measured_at,
+            },
+          ])
+        }
+      }
+    }
+  }, [latestWsEvent])
+
+  // Curator countdown timer
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (healthSnapshot?.metrics?.curator_agent_health) {
+        const lastRunAt = new Date(healthSnapshot.metrics.curator_agent_health.value?.last_run_at as string || Date.now())
+        const nextRunTime = new Date(lastRunAt.getTime() + 35 * 60 * 1000)
+        const secondsUntilNext = Math.max(0, Math.floor((nextRunTime.getTime() - Date.now()) / 1000))
+        setCuratorCountdown(secondsUntilNext)
+      }
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [healthSnapshot])
+
+  // Fetch health history
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const response = await fetch('/ops/health/history?minutes=10')
+        const data = await response.json()
+        setHealthHistory(Array.isArray(data) ? data : [])
+      } catch (err) {
+        console.error('Failed to fetch health history:', err)
+      }
+    }
+    fetchHistory()
+  }, [healthSnapshot])
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'healthy':
+        return 'is-good'
+      case 'degraded':
+        return 'is-warn'
+      case 'down':
+        return 'is-bad'
+      default:
+        return 'is-neutral'
+    }
+  }
+
+  const triggerHealthRefresh = async () => {
+    try {
+      const response = await fetch('/admin/health/refresh', { method: 'POST' })
+      const data = await response.json()
+      setHealthSnapshot(data)
+    } catch (err) {
+      console.error('Failed to refresh health:', err)
+    }
+  }
 
   const metrics = overview?.request_metrics || []
   const contracts = overview?.contracts || []
@@ -422,6 +541,184 @@ export default function OperationsPage() {
             {lastUpdated && <div className="activity-sync-note"><strong>Last update</strong><span>{lastUpdated} (auto-refresh every 15s)</span></div>}
             {error && <div className="activity-empty"><h3>Operations warning</h3><p>{error}</p></div>}
           </article>
+
+          {/* ===== HEALTH METRICS DASHBOARD ===== */}
+          {healthSnapshot && (
+            <>
+              {/* Overall Health Banner */}
+              <article className={`ops-health-banner is-${getStatusColor(healthSnapshot.overall_status)}`}>
+                <div className="ops-health-header">
+                  <div>
+                    <p className="home-kicker">System Health Status</p>
+                    <h2>
+                      {healthSnapshot.overall_status === 'healthy' && '🟢 All Systems Healthy'}
+                      {healthSnapshot.overall_status === 'degraded' && '🟡 Some Systems Degraded'}
+                      {healthSnapshot.overall_status === 'down' && '🔴 Critical Issues Detected'}
+                      {healthSnapshot.overall_status === 'unknown' && '⚫ Status Unknown'}
+                    </h2>
+                  </div>
+                  <div className="ops-health-actions">
+                    <span className="ops-alert-badge">{healthSnapshot.alert_count} alert{healthSnapshot.alert_count !== 1 ? 's' : ''}</span>
+                    <small>{new Date(healthSnapshot.measured_at).toLocaleTimeString()}</small>
+                    <button className="activity-action-btn" onClick={triggerHealthRefresh}>
+                      Refresh Now
+                    </button>
+                  </div>
+                </div>
+              </article>
+
+              {/* Algorand Network Section */}
+              <article className="ops-metrics-group">
+                <p className="home-kicker">Algorand Network</p>
+                <div className="ops-metrics-grid">
+                  {healthSnapshot.metrics.algorand_block_height && (
+                    <div className={`ops-metric-card is-${getStatusColor(healthSnapshot.metrics.algorand_block_height.status)}`}>
+                      <h4>Block Height</h4>
+                      <div className="ops-metric-value">
+                        <span className="ops-metric-number">{(healthSnapshot.metrics.algorand_block_height.value as any)?.current_round || 'N/A'}</span>
+                        <span className="ops-metric-unit">ms</span>
+                      </div>
+                      <p className="ops-metric-message">{healthSnapshot.metrics.algorand_block_height.message}</p>
+                    </div>
+                  )}
+                  {healthSnapshot.metrics.algorand_node_sync && (
+                    <div className={`ops-metric-card is-${getStatusColor(healthSnapshot.metrics.algorand_node_sync.status)}`}>
+                      <h4>Node Sync</h4>
+                      <div className="ops-metric-value">
+                        <span>{(healthSnapshot.metrics.algorand_node_sync.value as any)?.is_synced ? '✓ Synced' : '✗ Not Synced'}</span>
+                      </div>
+                      <p className="ops-metric-message">{healthSnapshot.metrics.algorand_node_sync.message}</p>
+                    </div>
+                  )}
+                  {healthSnapshot.metrics.algorand_pending_txns && (
+                    <div className={`ops-metric-card is-${getStatusColor(healthSnapshot.metrics.algorand_pending_txns.status)}`}>
+                      <h4>Pending Txns</h4>
+                      <div className="ops-metric-value">
+                        <span className="ops-metric-number">{(healthSnapshot.metrics.algorand_pending_txns.value as any)?.top_transactions || 0}</span>
+                        <span className="ops-metric-unit">txns</span>
+                      </div>
+                      <p className="ops-metric-message">{healthSnapshot.metrics.algorand_pending_txns.message}</p>
+                    </div>
+                  )}
+                </div>
+              </article>
+
+              {/* Contracts Section */}
+              {healthSnapshot.metrics.contract_states && (
+                <article className="ops-metrics-group">
+                  <p className="home-kicker">Smart Contracts</p>
+                  <div className="ops-contracts-grid">
+                    {Object.entries((healthSnapshot.metrics.contract_states.value as any) || {}).map(([contractName, contractData]: [string, any]) => (
+                      <div key={contractName} className={`ops-contract-card is-${getStatusColor(contractData?.status || 'unknown')}`}>
+                        <h4>{contractName}</h4>
+                        <div className="ops-contract-details">
+                          {contractData?.app_id && <span>App ID: {contractData.app_id}</span>}
+                          {contractData?.is_paused !== undefined && (
+                            <span className={`ops-pause-badge is-${contractData.is_paused ? 'bad' : 'good'}`}>
+                              {contractData.is_paused ? '⏸ Paused' : '▶ Running'}
+                            </span>
+                          )}
+                          {contractData?.rounds_since_last_call !== undefined && (
+                            <span>{contractData.rounds_since_last_call} rounds ago (~{Math.floor(contractData.rounds_since_last_call * 4.5 / 60)} min)</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </article>
+              )}
+
+              {/* Infrastructure Section */}
+              <article className="ops-metrics-group">
+                <p className="home-kicker">Infrastructure</p>
+                <div className="ops-infra-grid">
+                  {healthSnapshot.metrics.ipfs_gateway && (
+                    <div className={`ops-metric-card is-${getStatusColor(healthSnapshot.metrics.ipfs_gateway.status)}`}>
+                      <h4>IPFS Gateway</h4>
+                      <div className="ops-metric-value">
+                        <span className="ops-metric-number">{(healthSnapshot.metrics.ipfs_gateway.value as any)?.test_cid_fetch_latency_ms || 'N/A'}</span>
+                        <span className="ops-metric-unit">ms</span>
+                      </div>
+                      <p className="ops-metric-message">{healthSnapshot.metrics.ipfs_gateway.message}</p>
+                    </div>
+                  )}
+                  {healthSnapshot.metrics.api_endpoint_latencies && (
+                    <div className="ops-endpoints-card">
+                      <h4>API Endpoints</h4>
+                      <div className="ops-endpoints-list">
+                        {Object.entries((healthSnapshot.metrics.api_endpoint_latencies.value as any) || {}).map(([endpoint, data]: [string, any]) => (
+                          <div key={endpoint} className={`ops-endpoint-item is-${getStatusColor(data?.status || 'unknown')}`}>
+                            <span className="ops-endpoint-name">{endpoint}</span>
+                            <span className="ops-endpoint-latency">{data?.latency_ms || 'N/A'}ms</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {healthSnapshot.metrics.error_rate_last_5min && (
+                    <div className={`ops-metric-card is-${getStatusColor(healthSnapshot.metrics.error_rate_last_5min.status)}`}>
+                      <h4>Error Rate (5m)</h4>
+                      <div className="ops-metric-value">
+                        <span className="ops-metric-number">{((healthSnapshot.metrics.error_rate_last_5min.value as any)?.error_pct || 0).toFixed(1)}</span>
+                        <span className="ops-metric-unit">%</span>
+                      </div>
+                      <p className="ops-metric-message">{healthSnapshot.metrics.error_rate_last_5min.message}</p>
+                    </div>
+                  )}
+                </div>
+              </article>
+
+              {/* Business Metrics Section */}
+              <article className="ops-metrics-group">
+                <p className="home-kicker">Business Metrics</p>
+                <div className="ops-business-grid">
+                  {healthSnapshot.metrics.usdc_volume_today && (
+                    <div className={`ops-metric-card is-${getStatusColor(healthSnapshot.metrics.usdc_volume_today.status)}`}>
+                      <h4>USDC Volume Today</h4>
+                      <div className="ops-metric-value">
+                        <span className="ops-metric-number">${((healthSnapshot.metrics.usdc_volume_today.value as any)?.total_micro_usdc || 0) / 1000000}</span>
+                      </div>
+                      <p className="ops-metric-message">{healthSnapshot.metrics.usdc_volume_today.message}</p>
+                    </div>
+                  )}
+                  {healthSnapshot.metrics.curator_agent_health && (
+                    <div className={`ops-metric-card is-${getStatusColor(healthSnapshot.metrics.curator_agent_health.status)}`}>
+                      <h4>Curator Agent</h4>
+                      <div className="ops-metric-value">
+                        <span className="ops-metric-text">Next run in {Math.floor(curatorCountdown / 60)}m {curatorCountdown % 60}s</span>
+                      </div>
+                      <p className="ops-metric-message">Last run: {(healthSnapshot.metrics.curator_agent_health.value as any)?.last_run_at ? new Date((healthSnapshot.metrics.curator_agent_health.value as any)?.last_run_at).toLocaleTimeString() : 'Never'}</p>
+                    </div>
+                  )}
+                  {healthSnapshot.metrics.websocket_connections && (
+                    <div className={`ops-metric-card is-${getStatusColor(healthSnapshot.metrics.websocket_connections.status)}`}>
+                      <h4>WebSocket Connections</h4>
+                      <div className="ops-metric-value">
+                        <span className="ops-metric-number">{(healthSnapshot.metrics.websocket_connections.value as any)?.active_count || 0}</span>
+                        <span className="ops-metric-unit">clients</span>
+                      </div>
+                      <p className="ops-metric-message">{healthSnapshot.metrics.websocket_connections.message}</p>
+                    </div>
+                  )}
+                </div>
+              </article>
+
+              {/* System Events Timeline */}
+              {systemAlertLog.length > 0 && (
+                <article className="ops-events-timeline">
+                  <p className="home-kicker">Health Alerts (Last 10 minutes)</p>
+                  <div className="ops-alert-feed">
+                    {systemAlertLog.slice(-10).reverse().map((alert) => (
+                      <div key={alert.id} className="ops-alert-item">
+                        <span className="ops-alert-time">{new Date(alert.timestamp).toLocaleTimeString()}</span>
+                        <span className="ops-alert-text">{alert.message}</span>
+                      </div>
+                    ))}
+                  </div>
+                </article>
+              )}
+            </>
+          )}
 
           <article className="ops-synthetic-card">
             <p className="home-kicker">Synthetic Transaction Tester</p>

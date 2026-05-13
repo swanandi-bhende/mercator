@@ -99,6 +99,7 @@ from backend.utils.ws_manager import ws_manager
 from backend.api.v1.router import router as api_v1_router
 from backend.api.v1.auth import seed_demo_key
 from backend.api.v1.responses import error_response
+from backend.utils.health_checker import HealthChecker
 import uuid as _uuid
 
 try:
@@ -133,6 +134,7 @@ demo_logger = configure_demo_logging()
 
 logger = logging.getLogger("mercator.backend")
 scheduler = AsyncIOScheduler()
+health_checker: HealthChecker | None = None
 
 
 def _configure_logging() -> None:
@@ -149,6 +151,8 @@ def _configure_logging() -> None:
 
 
 async def _run_startup_hooks() -> None:
+    global health_checker
+    
     try:
         seed_demo_key()
     except Exception:
@@ -178,6 +182,19 @@ async def _run_startup_hooks() -> None:
     except Exception:
         logger.exception("Failed to warm semantic search cache during startup")
 
+    # Initialize health checker
+    try:
+        health_checker = HealthChecker(
+            _get_algod_client(),
+            _get_indexer_client(),
+            ws_manager,
+        )
+        await health_checker.startup()
+        logger.info("Health checker initialized and started")
+    except Exception:
+        logger.exception("Failed to initialize health checker during startup")
+        health_checker = None
+
     curator_minutes = int(os.getenv("CURATOR_CYCLE_INTERVAL_MINUTES", "30") or 30)
     scheduler.add_job(
         curator_agent.run_full_cycle,
@@ -200,6 +217,19 @@ async def _run_startup_hooks() -> None:
         id="ws_heartbeat",
         replace_existing=True,
     )
+    
+    # Add health check job (runs every 10 seconds with asyncio executor)
+    if health_checker:
+        scheduler.add_job(
+            health_checker.run_all_checks,
+            "interval",
+            seconds=10,
+            id="health_check",
+            executor="asyncio",
+            replace_existing=True,
+        )
+        logger.info("Health checker job scheduled every 10 seconds")
+    
     if not scheduler.running:
         try:
             scheduler.start()
@@ -208,6 +238,16 @@ async def _run_startup_hooks() -> None:
 
 
 async def _run_shutdown_hooks() -> None:
+    global health_checker
+    
+    # Shutdown health checker
+    if health_checker:
+        try:
+            await health_checker.shutdown()
+            logger.info("Health checker shut down successfully")
+        except Exception:
+            logger.exception("Error shutting down health checker")
+    
     if scheduler.running:
         scheduler.shutdown(wait=False)
 
@@ -243,6 +283,81 @@ async def api_v1_health():
         "network": "algorand_testnet",
         "timestamp": datetime.utcnow().isoformat() + "Z",
     }
+
+
+@app.get("/ops/health/snapshot")
+async def get_health_snapshot():
+    """Get the latest health snapshot with all 12 metrics."""
+    global health_checker
+    if not health_checker:
+        return {"error": "Health checker not initialized"}, 503
+    
+    snapshot = health_checker.get_latest_snapshot()
+    if not snapshot:
+        return {"error": "No health snapshot available yet"}, 503
+    
+    # Convert to dict for JSON serialization
+    from dataclasses import asdict
+    return {
+        "snapshot_id": snapshot.snapshot_id,
+        "measured_at": snapshot.measured_at,
+        "overall_status": snapshot.overall_status.value,
+        "alert_count": snapshot.alert_count,
+        "active_websocket_connections": snapshot.active_websocket_connections,
+        "metrics": {
+            name: {
+                "status": metric.status.value,
+                "value": metric.value,
+                "message": metric.message,
+                "measured_at": metric.measured_at,
+            }
+            for name, metric in snapshot.metrics.items()
+        },
+    }
+
+
+@app.get("/ops/health/history")
+async def get_health_history(minutes: int = 10):
+    """Get health snapshot history for the last N minutes."""
+    global health_checker
+    if not health_checker:
+        return {"error": "Health checker not initialized"}, 503
+    
+    snapshots = health_checker.get_health_history(minutes=minutes)
+    return {
+        "minutes": minutes,
+        "snapshot_count": len(snapshots),
+        "snapshots": [
+            {
+                "snapshot_id": s.snapshot_id,
+                "measured_at": s.measured_at,
+                "overall_status": s.overall_status.value,
+                "alert_count": s.alert_count,
+                "active_websocket_connections": s.active_websocket_connections,
+            }
+            for s in snapshots
+        ],
+    }
+
+
+@app.post("/admin/health/refresh")
+async def refresh_health_check():
+    """Trigger an immediate out-of-cycle health check."""
+    global health_checker
+    if not health_checker:
+        return {"error": "Health checker not initialized"}, 503
+    
+    try:
+        snapshot = await health_checker.run_all_checks()
+        return {
+            "success": True,
+            "snapshot_id": snapshot.snapshot_id,
+            "overall_status": snapshot.overall_status.value,
+            "alert_count": snapshot.alert_count,
+        }
+    except Exception as exc:
+        logger.error(f"Failed to refresh health check: {exc}")
+        return {"error": str(exc)}, 500
 
 
 @app.get("/evaluations/history")
