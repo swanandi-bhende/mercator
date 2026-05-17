@@ -25,8 +25,14 @@ from typing import Any
 import algosdk
 import requests
 from algokit_utils import AlgorandClient, BoxReference, CommonAppCallParams
-from backend.utils.error_handler import ipfs_down
+from backend.utils.error_handler import ipfs_down, retry_with_backoff, ErrorHandler, ErrorCode, MercatorError
+try:
+    import httpx
+except Exception:
+    httpx = None
 from backend.utils.flow_tracer import tracer
+from backend.utils.failure_simulator import is_active as failure_is_active
+from backend.utils.error_handler import IPFSError
 from dataclasses import dataclass
 from uuid import uuid4
 from backend.utils.db import (
@@ -121,6 +127,7 @@ def unpin_cid(cid: str) -> None:
     response.raise_for_status()
 
 
+@retry_with_backoff(max_attempts=3, retryable_error_codes=[ErrorCode.IPFS_UPLOAD_FAILED])
 async def upload_insight_to_ipfs(
     text: str,
     filename: str = "insight.txt",
@@ -148,6 +155,15 @@ async def upload_insight_to_ipfs(
         ),
         metadata={"filename": filename},
     )
+
+    # Simulated failure injection (demo): short-circuit when IPFS is down
+    try:
+        if failure_is_active("ipfs_down"):
+            raise ErrorHandler.handle(IPFSError(ErrorCode.IPFS_UPLOAD_FAILED, context={"function": "upload_insight_to_ipfs"}))
+
+    except MercatorError:
+        # propagate MercatorError as-is
+        raise
 
     try:
         last_error: Exception | None = None
@@ -211,7 +227,16 @@ async def upload_insight_to_ipfs(
             except IPFSUploadError:
                 raise
             except Exception as err:
-                logger.error("IPFS upload unexpected error | attempt=%s error=%s", attempt + 1, err)
+                # Map unexpected exceptions to a MercatorError and raise
+                try:
+                    if httpx is not None and isinstance(err, getattr(httpx, 'TimeoutException', Exception)):
+                        raise ErrorHandler.handle(err, {"function": "upload_insight_to_ipfs", "insight_length": len(text)}) from err
+                    if httpx is not None and isinstance(err, getattr(httpx, 'HTTPStatusError', Exception)):
+                        status = getattr(getattr(err, 'response', None), 'status_code', None)
+                        raise ErrorHandler.handle(err, {"status_code": status, "function": "upload_insight_to_ipfs"}) from err
+                except MercatorError:
+                    raise
+                # Fallback: wrap generic exception
                 last_error = err
                 break
 
@@ -227,43 +252,16 @@ async def upload_insight_to_ipfs(
             )
         raise final_error from last_error
     except requests.exceptions.RequestException as err:
-        logger.error("IPFS upload request exception | error=%s", err)
-        if event_id:
-            tracer.resolve_event(
-                event_id,
-                "failure",
-                error_code="IPFS_UPLOAD_FAILED",
-                error_message=str(err),
-                plain_english_description=f"IPFS upload failed: {str(err)}",
-                metadata={"filename": filename},
-            )
-        raise IPFSUploadError(ipfs_down(logger, str(err))) from err
+        # Map request exceptions to MercatorError and raise
+        raise ErrorHandler.handle(err, {"function": "upload_insight_to_ipfs", "filename": filename}) from err
     except TimeoutError as err:
-        logger.error("IPFS upload timeout exception | error=%s", err)
-        if event_id:
-            tracer.resolve_event(
-                event_id,
-                "failure",
-                error_code="IPFS_UPLOAD_FAILED",
-                error_message=str(err),
-                plain_english_description=f"IPFS upload failed: {str(err)}",
-                metadata={"filename": filename},
-            )
-        raise IPFSUploadError(ipfs_down(logger, str(err))) from err
+        raise ErrorHandler.handle(err, {"function": "upload_insight_to_ipfs", "filename": filename}) from err
     except IPFSUploadError as err:
-        logger.error("IPFS upload failed | error=%s", err)
-        if event_id:
-            tracer.resolve_event(
-                event_id,
-                "failure",
-                error_code="IPFS_UPLOAD_FAILED",
-                error_message=str(err),
-                plain_english_description=f"IPFS upload failed: {str(err)}",
-                metadata={"filename": filename},
-            )
-        raise
+        # Already domain-specific; convert to MercatorError for consistent API
+        raise ErrorHandler.handle(err, {"function": "upload_insight_to_ipfs", "filename": filename}) from err
 
 
+@retry_with_backoff(max_attempts=3, retryable_error_codes=[ErrorCode.IPFS_FETCH_FAILED])
 async def fetch_insight_from_ipfs(cid: str) -> str:
     """Fetch insight text by CID from Pinata/public gateways.
 
@@ -292,6 +290,13 @@ async def fetch_insight_from_ipfs(cid: str) -> str:
         f"https://gateway.pinata.cloud/ipfs/{cid}",
         f"https://ipfs.io/ipfs/{cid}",
     ]
+    # Simulated failure injection (demo): short-circuit when IPFS is down
+    try:
+        if failure_is_active("ipfs_down"):
+            raise ErrorHandler.handle(IPFSError(ErrorCode.IPFS_FETCH_FAILED, context={"function": "fetch_insight_from_ipfs"}))
+    except MercatorError:
+        raise
+
     event_id = tracer.start_event(
         "ipfs.fetch_started",
         plain_english_description=f"Fetching insight content from IPFS CID {cid}",
@@ -321,13 +326,19 @@ async def fetch_insight_from_ipfs(cid: str) -> str:
                     )
                 return text
             except requests.exceptions.RequestException as err:
-                logger.error("IPFS fetch request error | url=%s error=%s", url, err)
+                # Map network errors to MercatorError
                 last_error = err
             except TimeoutError as err:
-                logger.error("IPFS fetch TimeoutError | url=%s error=%s", url, err)
                 last_error = err
             except Exception as err:
-                logger.error("IPFS fetch unexpected error | url=%s error=%s", url, err)
+                try:
+                    if httpx is not None and isinstance(err, getattr(httpx, 'TimeoutException', Exception)):
+                        raise ErrorHandler.handle(err, {"function": "fetch_insight_from_ipfs", "cid": cid}) from err
+                    if httpx is not None and isinstance(err, getattr(httpx, 'HTTPStatusError', Exception)):
+                        status = getattr(getattr(err, 'response', None), 'status_code', None)
+                        raise ErrorHandler.handle(err, {"status_code": status, "function": "fetch_insight_from_ipfs", "cid": cid}) from err
+                except MercatorError:
+                    raise
                 last_error = err
 
         final_error = IPFSUploadError(ipfs_down(logger, str(last_error) if last_error else None))
@@ -343,44 +354,11 @@ async def fetch_insight_from_ipfs(cid: str) -> str:
             )
         raise final_error from last_error
     except requests.exceptions.RequestException as err:
-        logger.error("IPFS fetch request exception | cid=%s error=%s", cid, err)
-        if event_id:
-            tracer.resolve_event(
-                event_id,
-                "failure",
-                ipfs_cid=cid,
-                error_code="IPFS_FETCH_FAILED",
-                error_message=str(err),
-                plain_english_description=f"IPFS fetch failed: {str(err)}",
-                metadata={"cid": cid},
-            )
-        raise IPFSUploadError(ipfs_down(logger, str(err))) from err
+        raise ErrorHandler.handle(err, {"function": "fetch_insight_from_ipfs", "cid": cid}) from err
     except TimeoutError as err:
-        logger.error("IPFS fetch timeout exception | cid=%s error=%s", cid, err)
-        if event_id:
-            tracer.resolve_event(
-                event_id,
-                "failure",
-                ipfs_cid=cid,
-                error_code="IPFS_FETCH_FAILED",
-                error_message=str(err),
-                plain_english_description=f"IPFS fetch failed: {str(err)}",
-                metadata={"cid": cid},
-            )
-        raise IPFSUploadError(ipfs_down(logger, str(err))) from err
+        raise ErrorHandler.handle(err, {"function": "fetch_insight_from_ipfs", "cid": cid}) from err
     except IPFSUploadError as err:
-        logger.error("IPFS fetch failed | cid=%s error=%s", cid, err)
-        if event_id:
-            tracer.resolve_event(
-                event_id,
-                "failure",
-                ipfs_cid=cid,
-                error_code="IPFS_FETCH_FAILED",
-                error_message=str(err),
-                plain_english_description=f"IPFS fetch failed: {str(err)}",
-                metadata={"cid": cid},
-            )
-        raise
+        raise ErrorHandler.handle(err, {"function": "fetch_insight_from_ipfs", "cid": cid}) from err
 
 
 def _load_insight_listing_client_class() -> type:

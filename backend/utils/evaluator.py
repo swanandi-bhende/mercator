@@ -18,10 +18,14 @@ from backend.utils.flow_tracer import tracer
 from backend.utils.evaluation_result import EvaluationResult, build_evaluation_prompt
 from backend.utils.db import record_evaluation
 from backend.utils.ws_manager import ws_manager
+from backend.utils.error_handler import retry_with_backoff
+from backend.utils.failure_simulator import is_active as failure_is_active
+from backend.utils.error_handler import AgentError, ErrorCode as EH_ErrorCode, ErrorHandler
 
 logger = logging.getLogger(__name__)
 
 
+@retry_with_backoff()
 async def evaluate_insight(query: str, listing: Any, reputation_score: int) -> EvaluationResult:
     """Evaluate a single SearchResult listing and return an EvaluationResult.
 
@@ -46,6 +50,10 @@ async def evaluate_insight(query: str, listing: Any, reputation_score: int) -> E
     # Initialize client/model
     if genai is None:
         raise RuntimeError("genai client not available in this environment")
+
+    # Demo scenario: simulate Gemini rate limit
+    if failure_is_active("gemini_rate_limit"):
+        raise ErrorHandler.handle(AgentError(EH_ErrorCode.GEMINI_RATE_LIMIT, context={"function": "evaluate_insight"}))
 
     client = genai.Client()
     model = client.models

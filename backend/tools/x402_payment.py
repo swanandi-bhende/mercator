@@ -57,7 +57,15 @@ from backend.utils.custodial_wallet import (
 )
 from backend.utils.flow_tracer import record_event, tracer
 from backend.utils.runtime_env import configure_demo_logging, normalize_network_env
-from backend.utils.error_handler import contract_error, insufficient_balance, payment_rejected
+from backend.utils.error_handler import (
+    contract_error,
+    insufficient_balance,
+    payment_rejected,
+    ErrorHandler,
+    ErrorCode,
+    PaymentError,
+    AlgorandError,
+)
 from backend.utils.ws_manager import ws_manager
 from backend.utils.evaluation_result import EvaluationResult
 
@@ -375,9 +383,13 @@ class X402Client:
             }
         
         except Exception as e:
-            error_msg = f"Payment simulation failed: {str(e)}"
-            logger.error(error_msg)
-            raise ValueError(error_msg) from e
+            low = str(e).lower()
+            if isinstance(e, TimeoutError) or "timeout" in low or "took too long" in low:
+                raise AlgorandError(ErrorCode.ALGOD_TIMEOUT, context={"function": "simulate_payment"}, original_exception=e) from e
+            if "insufficient" in low or "underflow" in low or "overspend" in low:
+                raise PaymentError(ErrorCode.PAYMENT_INSUFFICIENT_BALANCE, context={"function": "simulate_payment", "sender": sender}, original_exception=e) from e
+            # Generic simulation failure
+            raise PaymentError(ErrorCode.PAYMENT_SIMULATION_FAILED, context={"function": "simulate_payment"}, original_exception=e) from e
     
     async def send_micropayment(
         self,
@@ -446,15 +458,22 @@ class X402Client:
                 return txid
             except AlgodHTTPError as signing_error:
                 logger.error(f"Algod signing/submission error: {str(signing_error)}")
-                raise Exception(f"Micropayment submit/sign failed: {str(signing_error)}") from signing_error
+                msg = str(signing_error).lower()
+                if "insufficient" in msg or "insufficient funds" in msg:
+                    raise PaymentError(ErrorCode.PAYMENT_INSUFFICIENT_BALANCE, context={"function": "send_micropayment"}, original_exception=signing_error) from signing_error
+                if "fee" in msg and "low" in msg:
+                    raise AlgorandError(ErrorCode.ALGOD_INSUFFICIENT_FEES, context={"function": "send_micropayment"}, original_exception=signing_error) from signing_error
+                raise PaymentError(ErrorCode.PAYMENT_BROADCAST_FAILED, context={"function": "send_micropayment"}, original_exception=signing_error) from signing_error
             except Exception as signing_error:
                 logger.error(f"Signing error: {str(signing_error)}")
-                raise Exception(f"Micropayment submit/sign failed: {str(signing_error)}") from signing_error
+                low = str(signing_error).lower()
+                if "insufficient" in low:
+                    raise PaymentError(ErrorCode.PAYMENT_INSUFFICIENT_BALANCE, context={"function": "send_micropayment"}, original_exception=signing_error) from signing_error
+                raise PaymentError(ErrorCode.PAYMENT_BROADCAST_FAILED, context={"function": "send_micropayment"}, original_exception=signing_error) from signing_error
         
         except Exception as e:
-            error_msg = f"x402 payment send failed: {str(e)}"
-            logger.error(error_msg)
-            raise Exception(error_msg) from e
+            # Map send failures to Mercator PaymentError via ErrorHandler
+            raise ErrorHandler.handle(e, {"function": "send_micropayment", "sender": sender, "receiver": receiver, "amount": amount}) from e
 
     async def send_atomic_payment_and_redeem(
         self,
@@ -597,11 +616,14 @@ class X402Client:
         if isinstance(last_error, asyncio.TimeoutError):
             error_msg = "x402 atomic payment+redeem timed out: blockchain network is slow, please retry"
             logger.error(error_msg, exc_info=True)
-            raise TimeoutError(error_msg) from last_error
+            raise AlgorandError(ErrorCode.ALGOD_TIMEOUT, context={"function": "send_atomic_payment_and_redeem"}, original_exception=last_error) from last_error
 
         error_msg = f"x402 atomic payment+redeem failed: {str(last_error) if last_error else 'unknown error'}"
         logger.error(error_msg, exc_info=True)
-        raise Exception(error_msg) from last_error
+        low = str(last_error).lower() if last_error is not None else ""
+        if "insufficient" in low:
+            raise PaymentError(ErrorCode.PAYMENT_INSUFFICIENT_BALANCE, context={"function": "send_atomic_payment_and_redeem"}, original_exception=last_error) from last_error
+        raise PaymentError(ErrorCode.PAYMENT_BROADCAST_FAILED, context={"function": "send_atomic_payment_and_redeem"}, original_exception=last_error) from last_error
 
 
 @tool
@@ -1080,41 +1102,24 @@ async def trigger_x402_payment(
                     metadata={"listing_id": listing_id, "estimated_fee": simulation_result.get("estimated_fee")},
                 )
         
-        except (ValueError, AlgodHTTPError, TimeoutError, ConnectionError) as e:
-            error_msg = f"Payment simulation error: {str(e)}"
-            logger.error(error_msg)
-            if simulation_event_id:
-                tracer.resolve_event(
-                    simulation_event_id,
-                    "failure",
-                    error_code="PAYMENT_SIMULATION_FAILED",
-                    error_message=str(e),
-                    plain_english_description=f"Payment simulation failed: {str(e)}",
-                    metadata={"listing_id": listing_id},
-                )
-            return json.dumps({
-                "success": False,
-                "error": "SIMULATION_ERROR",
-                "message": _friendly_payment_error(str(e)),
-                "next_step": "Check buyer balance, receiver address, and asset availability"
-            })
         except Exception as e:
-            error_msg = f"Payment simulation unexpected error: {str(e)}"
-            logger.error(error_msg, exc_info=True)
+            # Map simulation errors to MercatorError and return standardized envelope
+            err = ErrorHandler.handle(e, {"function": "trigger_x402_payment", "stage": "simulation", "listing_id": listing_id})
             if simulation_event_id:
                 tracer.resolve_event(
                     simulation_event_id,
                     "failure",
-                    error_code="PAYMENT_SIMULATION_FAILED",
-                    error_message=str(e),
-                    plain_english_description=f"Payment simulation failed: {str(e)}",
+                    error_code=err.code,
+                    error_message=err.user_message,
+                    plain_english_description=f"Payment simulation failed: {err.user_message}",
                     metadata={"listing_id": listing_id},
                 )
             return json.dumps({
                 "success": False,
-                "error": "SIMULATION_ERROR",
-                "message": _friendly_payment_error(str(e)),
-                "next_step": "Check buyer balance, receiver address, and asset availability"
+                "error": err.code.value if hasattr(err.code, 'value') else str(err.code),
+                "message": err.user_message,
+                "recovery_suggestion": err.recovery_suggestion,
+                "next_step": "Check buyer balance, receiver address, and asset availability",
             })
 
         if autonomous_mode:
@@ -1243,65 +1248,26 @@ async def trigger_x402_payment(
             logger.info(f"x402 payment flow completed successfully: {response}")
             return json.dumps(response)
         
-        except AlgodHTTPError as e:
-            error_msg = f"x402 micropayment execution failed: {str(e)}"
-            logger.error(error_msg, exc_info=True)
-            if broadcast_event_id:
-                tracer.resolve_event(
-                    broadcast_event_id,
-                    "failure",
-                    error_code="PAYMENT_BROADCAST_FAILED",
-                    error_message=str(e),
-                    plain_english_description=f"Payment broadcast failed: {str(e)}",
-                    metadata={"listing_id": listing_id},
-                )
-            return json.dumps({
-                "success": False,
-                "approved": True,
-                "simulation_passed": True,
-                "error": "PAYMENT_EXECUTION_FAILED",
-                "message": _friendly_payment_error(str(e)),
-                "next_step": "Verify buyer USDC balance and network connectivity"
-            })
-        except (TimeoutError, ConnectionError) as e:
-            error_msg = f"x402 micropayment network failure: {str(e)}"
-            logger.error(error_msg, exc_info=True)
-            if broadcast_event_id:
-                tracer.resolve_event(
-                    broadcast_event_id,
-                    "failure",
-                    error_code="PAYMENT_BROADCAST_FAILED",
-                    error_message=str(e),
-                    plain_english_description=f"Payment broadcast failed: {str(e)}",
-                    metadata={"listing_id": listing_id},
-                )
-            return json.dumps({
-                "success": False,
-                "approved": True,
-                "simulation_passed": True,
-                "error": "PAYMENT_EXECUTION_FAILED",
-                "message": _friendly_payment_error(str(e)),
-                "next_step": "Verify buyer USDC balance and network connectivity"
-            })
         except Exception as e:
-            error_msg = f"x402 micropayment execution failed: {str(e)}"
-            logger.error(error_msg, exc_info=True)
+            # Map broadcast/execution errors into standardized MercatorError envelope
+            err = ErrorHandler.handle(e, {"function": "trigger_x402_payment", "stage": "broadcast", "listing_id": listing_id})
             if broadcast_event_id:
                 tracer.resolve_event(
                     broadcast_event_id,
                     "failure",
-                    error_code="PAYMENT_BROADCAST_FAILED",
-                    error_message=str(e),
-                    plain_english_description=f"Payment broadcast failed: {str(e)}",
+                    error_code=err.code,
+                    error_message=err.user_message,
+                    plain_english_description=f"Payment broadcast failed: {err.user_message}",
                     metadata={"listing_id": listing_id},
                 )
             return json.dumps({
                 "success": False,
                 "approved": True,
                 "simulation_passed": True,
-                "error": "PAYMENT_EXECUTION_FAILED",
-                "message": _friendly_payment_error(str(e)),
-                "next_step": "Verify buyer USDC balance and network connectivity"
+                "error": err.code.value if hasattr(err.code, 'value') else str(err.code),
+                "message": err.user_message,
+                "recovery_suggestion": err.recovery_suggestion,
+                "next_step": "Verify buyer USDC balance and network connectivity",
             })
     
     except ValueError as e:

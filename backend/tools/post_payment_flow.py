@@ -40,7 +40,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from algokit_utils import AlgorandClient
 from backend.utils.runtime_env import configure_demo_logging, normalize_network_env
-from backend.utils.error_handler import contract_error, ipfs_down
+from backend.utils.error_handler import contract_error, ipfs_down, retry_with_backoff, ErrorHandler, ErrorCode, AlgorandError
 from backend.utils.transaction_utils import execute_with_simulation
 from backend.utils.ws_manager import ws_manager
 
@@ -207,6 +207,7 @@ class AtomicGroupResult:
     group_id: str
 
 
+@retry_with_backoff()
 async def complete_purchase_atomically(
     payment_params: dict,
     listing_id: int,
@@ -313,11 +314,15 @@ async def complete_purchase_atomically(
         raise RuntimeError(f"Failed to build escrow release transaction: {exc}") from exc
 
     try:
-        result = await execute_with_simulation(
-            atc,
-            algod,
-            context_description=f"purchase_listing_{listing_id}",
-        )
+        @retry_with_backoff(max_attempts=2, retryable_error_codes=[ErrorCode.ALGOD_TIMEOUT])
+        async def _exec_atc():
+            return await execute_with_simulation(
+                atc,
+                algod,
+                context_description=f"purchase_listing_{listing_id}",
+            )
+
+        result = await _exec_atc()
         logger.info(
             "✓ Atomic group executed | confirmed_round=%s tx_ids=%s",
             result.confirmed_round,
@@ -336,9 +341,18 @@ async def complete_purchase_atomically(
             confirmed_round=result.confirmed_round,
             group_id=result.group_id,
         )
+    except AlgodHTTPError as exc:
+        msg = str(exc).lower()
+        if "fee" in msg and "low" in msg:
+            raise ErrorHandler.handle(exc, {"function": "complete_purchase_atomically", "error_code": ErrorCode.ALGOD_INSUFFICIENT_FEES}) from exc
+        if "insufficient funds" in msg or "insufficient balance" in msg:
+            raise ErrorHandler.handle(exc, {"function": "complete_purchase_atomically", "error_code": ErrorCode.PAYMENT_INSUFFICIENT_BALANCE}) from exc
+        if "rejected" in msg:
+            raise ErrorHandler.handle(exc, {"function": "complete_purchase_atomically", "error_code": ErrorCode.ALGOD_TRANSACTION_REJECTED}) from exc
+        raise ErrorHandler.handle(exc, {"function": "complete_purchase_atomically"}) from exc
     except Exception as exc:
         logger.error("Atomic group execution failed: %s", exc, exc_info=True)
-        raise RuntimeError(f"Atomic transaction execution failed: {exc}") from exc
+        raise ErrorHandler.handle(exc, {"function": "complete_purchase_atomically"}) from exc
 
 
 async def _wait_for_confirmation(tx_id: str, timeout_seconds: int = 30) -> int:
@@ -358,9 +372,7 @@ async def _wait_for_confirmation(tx_id: str, timeout_seconds: int = 30) -> int:
         except Exception as exc:  # noqa: BLE001
             logger.warning("Indexer lookup retry | tx_id=%s error=%s", tx_id, exc)
         await asyncio.sleep(0.5)
-    raise RuntimeError(
-        f"Transaction {tx_id} was not confirmed within {timeout_seconds} seconds"
-    )
+    raise AlgorandError(ErrorCode.PAYMENT_BROADCAST_FAILED, context={"tx_id": tx_id})
 
 
 def _extract_tx_id(result: object) -> str:
@@ -415,7 +427,7 @@ async def complete_purchase_flow(
         payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
     except Exception as exc:  # noqa: BLE001
         logger.error("Payment confirmation failed | tx_id=%s error=%s", tx_id, exc, exc_info=True)
-        raise
+        raise ErrorHandler.handle(exc, {"function": "complete_purchase_flow", "tx_id": tx_id}) from exc
 
     logger.info("Payment confirmed | tx_id=%s round=%s", tx_id, payment_round)
 

@@ -95,7 +95,9 @@ from backend.utils.custodial_wallet import (
 )
 from backend.utils.flow_tracer import tracer
 from backend.utils.runtime_env import configure_demo_logging, normalize_network_env, warn_missing_required_env
-from backend.utils.error_handler import contract_error, ipfs_down
+from backend.utils.error_handler import contract_error, ipfs_down, MercatorError, ErrorHandler
+from backend.utils.failure_simulator import trigger_scenario, list_scenarios, active_scenarios, is_active as failure_is_active
+from backend.utils.error_handler import AlgorandError, ErrorCode as EH_ErrorCode
 from backend.utils.ws_manager import ws_manager
 from backend.api.v1.router import router as api_v1_router
 from backend.api.v1.auth import seed_demo_key
@@ -537,6 +539,88 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     except Exception:
         body = error_response("ERROR", str(detail), request_id, {})
     return JSONResponse(status_code=exc.status_code, content=body, headers=headers)
+
+
+@app.exception_handler(MercatorError)
+async def mercator_exception_handler(request: Request, exc: MercatorError):
+    request_id = getattr(request.state, "request_id", None) or str(_uuid.uuid4())
+    # map MercatorError subclasses to HTTP status codes
+    status_code = 500
+    from backend.utils.error_handler import IPFSError, AlgorandError, PaymentError, AgentError, ContractStateError, SystemError
+
+    if isinstance(exc, (IPFSError, AlgorandError, AgentError)):
+        status_code = 503
+    elif isinstance(exc, PaymentError):
+        status_code = 402
+    elif isinstance(exc, ContractStateError):
+        status_code = 409
+    elif isinstance(exc, SystemError):
+        status_code = 500
+
+    details = {
+        "recovery_suggestion": exc.recovery_suggestion,
+        "error_id": exc.error_id,
+        "occurred_at": getattr(exc, "occurred_at", ""),
+    }
+
+    body = error_response(str(exc.code.value if hasattr(exc.code, 'value') else exc.code), exc.user_message, request_id, details)
+    return JSONResponse(status_code=status_code, content=body)
+
+
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    request_id = getattr(request.state, "request_id", None) or str(_uuid.uuid4())
+    # Convert unknown exceptions into MercatorError via ErrorHandler
+    merc_err = ErrorHandler.handle(exc, {"path": str(request.url)})
+    from backend.utils.error_handler import IPFSError, AlgorandError, PaymentError, AgentError, ContractStateError, SystemError
+
+    status_code = 500
+    if isinstance(merc_err, (IPFSError, AlgorandError, AgentError)):
+        status_code = 503
+    elif isinstance(merc_err, PaymentError):
+        status_code = 402
+    elif isinstance(merc_err, ContractStateError):
+        status_code = 409
+    elif isinstance(merc_err, SystemError):
+        status_code = 500
+
+    details = {
+        "recovery_suggestion": merc_err.recovery_suggestion,
+        "error_id": merc_err.error_id,
+        "occurred_at": getattr(merc_err, "occurred_at", ""),
+    }
+
+    body = error_response(str(merc_err.code.value if hasattr(merc_err.code, 'value') else merc_err.code), merc_err.user_message, request_id, details)
+    return JSONResponse(status_code=status_code, content=body)
+
+
+@app.post("/admin/simulate_failure")
+async def admin_simulate_failure(request: Request):
+    """Trigger a short-lived simulated failure scenario for demos.
+
+    Security: requires header `x-admin-key` matching `ADMIN_SIM_KEY` env var.
+    Body: JSON { "scenario": "ipfs_down", "duration": 10 }
+    """
+    admin_key = os.getenv("ADMIN_SIM_KEY", "")
+    header_key = request.headers.get("x-admin-key", "")
+    if not admin_key or header_key != admin_key:
+        return JSONResponse(status_code=403, content={"success": False, "error": "FORBIDDEN", "message": "Invalid admin key"})
+
+    payload = await request.json()
+    scenario = str(payload.get("scenario", "")).strip()
+    try:
+        duration = int(payload.get("duration", 10) or 10)
+    except Exception:
+        duration = 10
+
+    if not scenario or scenario not in list_scenarios():
+        return JSONResponse(status_code=400, content={"success": False, "error": "BAD_REQUEST", "message": f"Unknown scenario. Valid: {', '.join(list_scenarios())}"})
+
+    triggered = trigger_scenario(scenario, duration)
+    if not triggered:
+        return JSONResponse(status_code=500, content={"success": False, "error": "SIMULATOR_ERROR", "message": "Failed to trigger scenario"})
+
+    return JSONResponse(status_code=200, content={"success": True, "scenario": scenario, "duration": duration, "active": active_scenarios()})
 
 EXPLORER_TX_BASE = os.getenv("EXPLORER_TX_BASE", "https://lora.algokit.io/testnet/tx").rstrip("/")
 
@@ -1294,6 +1378,13 @@ def _get_algod_client() -> algod.AlgodClient:
     if not algod_url:
         raise HTTPException(status_code=500, detail="ALGOD_URL/ALGOD_SERVER is not configured")
     token = os.getenv("ALGOD_TOKEN", "").strip()
+    # Simulated failure injection: if algorand_timeout is active, raise a Mercator AlgorandError
+    try:
+        if failure_is_active("algorand_timeout"):
+            raise ErrorHandler.handle(AlgorandError(EH_ErrorCode.ALGOD_TIMEOUT, context={"function": "_get_algod_client"}))
+    except MercatorError:
+        raise
+
     return algod.AlgodClient(algod_token=token, algod_address=algod_url)
 
 

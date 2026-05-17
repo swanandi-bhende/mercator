@@ -18,6 +18,8 @@ warnings.filterwarnings(
 )
 
 from langchain_google_genai import ChatGoogleGenerativeAI
+from backend.utils.failure_simulator import is_active as failure_is_active
+from backend.utils.error_handler import AgentError, ErrorCode as EH_ErrorCode, ErrorHandler
 
 try:
     from newsapi import NewsApiClient
@@ -222,6 +224,15 @@ def synthesise_insight(
         google_api_key=api_key,
         temperature=float(os.getenv("CURATOR_GEMINI_TEMPERATURE", "0.2")),
     )
+
+    # Demo scenario: simulate Gemini rate limit
+    if failure_is_active("gemini_rate_limit"):
+        raise ErrorHandler.handle(AgentError(EH_ErrorCode.GEMINI_RATE_LIMIT, context={"function": "synthesise_insight"}))
+
+    # Demo scenario: force malformed JSON from model (will trigger fallback)
+    if failure_is_active("malformed_json"):
+        # raise a JSON decode error to exercise fallback path
+        raise json.JSONDecodeError("Simulated malformed JSON", "", 0)
 
     prompt = _build_prompt(snapshot, news_headlines)
     last_error: Exception | None = None

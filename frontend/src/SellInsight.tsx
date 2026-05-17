@@ -89,9 +89,16 @@ export default function SellInsight() {
               ? error.message
               : 'Could not list this insight right now. Please try again.'
 
+      const recovery = axios.isAxiosError(error) ? error.response?.data?.error?.details?.recovery_suggestion : undefined
+
       setErrorMessage(backendMessage)
       setFormLockedByError(true)
-      toast.error(backendMessage)
+      toast.error(
+        <div>
+          <div>{backendMessage}</div>
+          {recovery && <div className="mt-1 text-sm">{recovery}</div>}
+        </div>
+      )
     } finally {
       setIsLoading(false)
     }

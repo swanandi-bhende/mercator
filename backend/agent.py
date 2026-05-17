@@ -47,7 +47,12 @@ from backend.contracts.reputation.smart_contracts.artifacts.reputation.reputatio
 from backend.tools.semantic_search import semantic_search as semantic_search_tool
 from backend.tools.x402_payment import trigger_x402_payment, validate_x402_payment
 from backend.utils.evaluation_result import EvaluationResult, build_evaluation_prompt, parse_evaluation_result
-from backend.utils.error_handler import low_reputation, payment_rejected
+from backend.utils.error_handler import low_reputation, payment_rejected, ErrorHandler, ErrorCode, AgentError, MercatorError
+try:
+    from google.api_core import exceptions as google_exceptions
+except Exception:
+    google_exceptions = None
+import json as _json
 from backend.utils.flow_tracer import export_json, record_event, start_session
 from backend.utils.runtime_env import configure_demo_logging, normalize_network_env
 
@@ -285,6 +290,13 @@ async def evaluate_insights(state: dict) -> dict:
         eval_text = getattr(eval_response, "content", str(eval_response))
         parsed_result = parse_evaluation_result(eval_text)
     except Exception as exc:  # noqa: BLE001
+        # Map Google ResourceExhausted to AgentError for structured handling
+        if google_exceptions is not None and isinstance(exc, getattr(google_exceptions, 'ResourceExhausted', ())):
+            raise ErrorHandler.handle(exc, {"function": "evaluate_insights"}) from exc
+        # Map JSON decode errors to Gemini parse failure
+        if isinstance(exc, _json.JSONDecodeError):
+            raise ErrorHandler.handle(exc, {"function": "evaluate_insights"}) from exc
+
         logger.warning("Primary evaluation parse failed; retrying with structured output | error=%s", exc)
         try:
             parsed_result = await asyncio.to_thread(_evaluate_with_structured_output, eval_prompt)
@@ -356,6 +368,23 @@ else:
     agent_executor = agent
 
 
+def _mercator_error_handler_async(fn):
+    async def _wrapper(*args, **kwargs):
+        try:
+            return await fn(*args, **kwargs)
+        except MercatorError as e:
+            return {
+                "success": False,
+                "error_code": e.code,
+                "user_message": e.user_message,
+                "recovery_suggestion": e.recovery_suggestion,
+                "error_id": e.error_id,
+            }
+
+    return _wrapper
+
+
+@_mercator_error_handler_async
 async def run_agent(
     user_query: str = "",
     user_approval: bool = False,
@@ -860,7 +889,16 @@ async def run_autonomous_loop(query: str, rounds: int, dry_run: bool) -> Autonom
     )
 
 
-if __name__ == "__main__":
+    except MercatorError as e:
+        return {
+            "success": False,
+            "error_code": e.code,
+            "user_message": e.user_message,
+            "recovery_suggestion": e.recovery_suggestion,
+            "error_id": e.error_id,
+        }
+
+    if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Mercator AI Buyer Agent")
     parser.add_argument(
         "--autonomous",

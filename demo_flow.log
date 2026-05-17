@@ -8278,3 +8278,12 @@ Traceback (most recent call last):
   File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 2326, in _execute_mock_call
     raise effect
 RuntimeError: HTTP 500: boom
+2026-05-17 15:44:21,953 INFO backend.tools.x402_payment: Simulating payment: ADDR_SENDER -> ADDR_RECV, amount=100, asset_id=10458941
+2026-05-17 15:44:22,031 INFO backend.tools.x402_payment: Simulating payment: ADDR_SENDER -> ADDR_RECV, amount=1, asset_id=10458941
+2026-05-17 15:44:22,061 INFO backend.tools.x402_payment: Sending x402 micropayment: ADDR_SENDER -> ADDR_RECV, amount=1
+2026-05-17 15:44:22,061 ERROR mercator.errors: An unexpected error occurred
+2026-05-17 15:44:57,508 INFO backend.tools.x402_payment: Simulating payment: ADDR_SENDER -> ADDR_RECV, amount=100, asset_id=10458941
+2026-05-17 15:44:57,510 INFO backend.tools.x402_payment: Simulating payment: ADDR_SENDER -> ADDR_RECV, amount=1, asset_id=10458941
+2026-05-17 15:44:57,512 INFO backend.tools.x402_payment: Sending x402 micropayment: ADDR_SENDER -> ADDR_RECV, amount=1
+2026-05-17 15:44:57,512 ERROR backend.tools.x402_payment: Signing error: insufficient funds
+2026-05-17 15:44:57,512 ERROR mercator.errors: Your wallet doesn't have enough USDC

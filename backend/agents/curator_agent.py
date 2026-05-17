@@ -34,11 +34,13 @@ from backend.utils.db import (
 from backend.tools.semantic_search import get_insight_listing_client, invalidate_listing_cache
 from backend.utils.runtime_env import normalize_network_env
 from backend.utils.flow_tracer import tracer
+from backend.utils.error_handler import ErrorHandler, ErrorCode
 import sqlite3
 import os
 from backend.utils.runtime_env import load_repo_env_files, normalize_network_env
 from backend.utils.ws_manager import ws_manager
 from backend.utils.flow_tracer import tracer
+from backend.utils.error_handler import retry_with_backoff
 
 logger = logging.getLogger(__name__)
 
@@ -241,14 +243,22 @@ async def run_cycle_for_symbol(symbol: str) -> CuratorRunResult:
     listing_ipfs_cid = ""
 
     try:
-        snapshot = await asyncio.to_thread(fetch_market_snapshot, symbol)
+        try:
+            snapshot = await asyncio.to_thread(fetch_market_snapshot, symbol)
+        except Exception as exc:
+            # Map market data provider issues to MARKET_DATA_UNAVAILABLE
+            raise ErrorHandler.handle(exc, {"function": "run_cycle_for_symbol", "symbol": symbol}) from exc
         snapshot_quality = _percent_int(getattr(snapshot, "data_quality_score", 0))
         result.snapshot_quality = snapshot_quality
         if snapshot_quality < min_quality:
             result.skip_reason = f"data_quality_score {snapshot_quality} below threshold {min_quality}"
             return result
 
-        insight = await asyncio.to_thread(synthesise_insight, snapshot)
+        try:
+            insight = await asyncio.to_thread(synthesise_insight, snapshot)
+        except Exception as exc:
+            # Map model/Gemini errors to agent errors via ErrorHandler
+            raise ErrorHandler.handle(exc, {"function": "run_cycle_for_symbol", "symbol": symbol}) from exc
         insight_text = _insight_text(insight)
         result.insight_text = insight_text
         result.price_usdc = float(insight.price_usdc)
@@ -277,6 +287,7 @@ async def run_cycle_for_symbol(symbol: str) -> CuratorRunResult:
             logger.exception("Failed to persist curator run %s", result.run_id)
 
 
+@retry_with_backoff()
 async def run_full_cycle() -> list[CuratorRunResult]:
     tracer.start_session("curator_cycle")
     tracer.record(

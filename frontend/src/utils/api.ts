@@ -473,49 +473,56 @@ export const api = {
 export class ApiError extends Error {
   public readonly originalError: unknown
   public readonly userMessage: string
+  public readonly recoverySuggestion?: string
 
   constructor(message: string, error: unknown) {
     super(message)
     this.originalError = error
-    this.userMessage = this.extractUserMessage(error)
+    const { message: userMessage, recovery } = this.extractUserMessage(error)
+    this.userMessage = userMessage
+    this.recoverySuggestion = recovery
   }
 
   private extractUserMessage(error: unknown): string {
     if (axios.isAxiosError(error)) {
       const data = error.response?.data as Record<string, unknown> | undefined
 
+      // If backend provided structured envelope, try to extract recovery suggestion
+      const details = data?.error && typeof data.error === 'object' ? (data.error as any).details : data?.details
+      const recovery = details && typeof details?.recovery_suggestion === 'string' ? details.recovery_suggestion : undefined
+
       // Check backend error message
-      if (typeof data?.error === 'string') return data.error
-      if (typeof data?.detail === 'string') return data.detail
-      if (typeof data?.message === 'string') return data.message
+      if (typeof data?.error === 'string') return { message: data.error, recovery }
+      if (typeof data?.detail === 'string') return { message: data.detail, recovery }
+      if (typeof data?.message === 'string') return { message: data.message, recovery }
 
       // Network/CORS/backend-down cases should never fall through to generic message.
       if (!error.response) {
-        if (error.code === 'ECONNABORTED') return errorMessageMap.TIMEOUT
+        if (error.code === 'ECONNABORTED') return { message: errorMessageMap.TIMEOUT, recovery }
         if (error.code === 'ERR_NETWORK') {
-          return 'Cannot reach backend API. Ensure backend server is running and CORS origin is configured.'
+          return { message: 'Cannot reach backend API. Ensure backend server is running and CORS origin is configured.', recovery }
         }
-        return 'Network request failed. Verify backend URL and internet connectivity.'
+        return { message: 'Network request failed. Verify backend URL and internet connectivity.', recovery }
       }
 
       // Map common error codes
       for (const [code, message] of Object.entries(errorMessageMap)) {
         const backendError = typeof data?.error === 'string' ? data.error : ''
         if (this.message.includes(code) || backendError.includes(code)) {
-          return message
+          return { message, recovery }
         }
       }
 
       // Use status code fallback
-      if (error.code === 'ECONNABORTED') return errorMessageMap.TIMEOUT
+      if (error.code === 'ECONNABORTED') return { message: errorMessageMap.TIMEOUT, recovery }
       if (error.response?.status === 500)
-        return 'Server error. Please try again later.'
+        return { message: 'Server error. Please try again later.', recovery }
       if (error.response?.status === 400)
-        return 'Invalid request. Please check your input.'
+        return { message: 'Invalid request. Please check your input.', recovery }
     } else if (error instanceof Error) {
-      return error.message
+      return { message: error.message }
     }
 
-    return 'An unexpected error occurred. Please try again.'
+    return { message: 'An unexpected error occurred. Please try again.' }
   }
 }

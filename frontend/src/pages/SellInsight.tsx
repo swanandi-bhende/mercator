@@ -193,7 +193,13 @@ export default function SellInsightPage() {
 
       setStudioError(classifyError(message))
       setFormLockedByError(true)
-      toast.error(message)
+      const recovery = error instanceof ApiError ? error.recoverySuggestion : undefined
+      toast.error(
+        <div>
+          <div>{message}</div>
+          {recovery && <div className="mt-1 text-sm">{recovery}</div>}
+        </div>
+      )
     } finally {
       setIsLoading(false)
     }
