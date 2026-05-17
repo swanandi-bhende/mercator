@@ -889,16 +889,7 @@ async def run_autonomous_loop(query: str, rounds: int, dry_run: bool) -> Autonom
     )
 
 
-    except MercatorError as e:
-        return {
-            "success": False,
-            "error_code": e.code,
-            "user_message": e.user_message,
-            "recovery_suggestion": e.recovery_suggestion,
-            "error_id": e.error_id,
-        }
-
-    if __name__ == "__main__":
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Mercator AI Buyer Agent")
     parser.add_argument(
         "--autonomous",

@@ -14,9 +14,10 @@ import hashlib
 import uuid
 import time
 import logging
+import asyncio
 from datetime import datetime, timezone, timedelta
 from algosdk import account, mnemonic as algo_mnemonic
-import requests
+from backend.utils.http_client import get_http_client
 from .db import _connect, initialise_curator_schema
 from .retry import retry_with_backoff
 
@@ -252,13 +253,11 @@ def _parse_txid_from_output(output: str) -> str | None:
     return None
 
 
-def _read_balances_from_indexer(algo_address: str) -> tuple[int, int]:
-    response = requests.get(
-        f"https://testnet-idx.algonode.cloud/v2/accounts/{algo_address}",
-        timeout=10,
-    )
-    response.raise_for_status()
-    payload = response.json()
+async def _read_balances_from_indexer(algo_address: str) -> tuple[int, int]:
+    client = await get_http_client()
+    r = await client.get(f"https://testnet-idx.algonode.cloud/v2/accounts/{algo_address}", timeout=12)
+    r.raise_for_status()
+    payload = r.json()
     account_data = payload.get("account", {}) if isinstance(payload, dict) else {}
 
     algo_balance = int(account_data.get("amount", 0) or 0)
@@ -274,7 +273,7 @@ def _read_balances_from_indexer(algo_address: str) -> tuple[int, int]:
     return algo_balance, usdc_balance
 
 
-def fund_new_wallet(algo_address: str) -> dict:
+async def fund_new_wallet(algo_address: str) -> dict:
     funding_tx_ids: list[str] = []
 
     algo_output = retry_with_backoff(
@@ -323,7 +322,7 @@ def fund_new_wallet(algo_address: str) -> dict:
     usdc_balance = 0
     while time.time() < deadline:
         try:
-            algo_balance, usdc_balance = _read_balances_from_indexer(algo_address)
+            algo_balance, usdc_balance = await _read_balances_from_indexer(algo_address)
             if algo_balance >= 4_000_000 and usdc_balance >= 1_000_000:
                 return {
                     "algo_funded": True,
@@ -335,7 +334,7 @@ def fund_new_wallet(algo_address: str) -> dict:
                 }
         except Exception as exc:  # noqa: BLE001
             logger.warning("Balance confirmation poll failed for %s: %s", algo_address, exc)
-        time.sleep(2)
+        await asyncio.sleep(2)
 
     return {
         "algo_funded": True,

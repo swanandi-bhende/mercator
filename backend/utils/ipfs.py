@@ -23,7 +23,6 @@ from pathlib import Path
 from typing import Any
 
 import algosdk
-import requests
 from algokit_utils import AlgorandClient, BoxReference, CommonAppCallParams
 from backend.utils.error_handler import ipfs_down, retry_with_backoff, ErrorHandler, ErrorCode, MercatorError
 try:
@@ -41,6 +40,7 @@ from backend.utils.db import (
     log_listing_execution_result,
 )
 from backend.utils.transaction_utils import execute_with_simulation
+from backend.utils.algorand_async import algod_suggested_params
 
 
 PINATA_BASE_URL = "https://api.pinata.cloud"
@@ -75,7 +75,7 @@ def _get_pinata_headers() -> dict[str, str]:
     return {"Authorization": f"Bearer {jwt}"}
 
 
-def upload_text_content(content: str, name: str = "insight.txt") -> dict[str, Any]:
+async def upload_text_content(content: str, name: str = "insight.txt") -> dict[str, Any]:
     """Upload plain-text content to IPFS via Pinata.
     
     Purpose: Persistence layer for insight text. Returns CID + full Pinata response.
@@ -85,46 +85,41 @@ def upload_text_content(content: str, name: str = "insight.txt") -> dict[str, An
     files = {
         "file": (name, content.encode("utf-8"), "text/plain"),
     }
-    response = requests.post(
-        PIN_FILE_ENDPOINT,
-        headers=_get_pinata_headers(),
-        files=files,
-        timeout=30,
-    )
-    response.raise_for_status()
-    return response.json()
+    from backend.utils.http_client import get_http_client
+
+    client = await get_http_client()
+    r = await client.post(PIN_FILE_ENDPOINT, headers=_get_pinata_headers(), files=files, timeout=30.0)
+    r.raise_for_status()
+    return r.json()
 
 
-def upload_json_content(payload: dict[str, Any]) -> dict[str, Any]:
+async def upload_json_content(payload: dict[str, Any]) -> dict[str, Any]:
     """Upload JSON payload to Pinata and return pinning response.
 
     Input: payload dictionary.
     Output: Pinata response including IpfsHash on success.
     Micropayment role: optional metadata channel for auxiliary flow artifacts.
     """
-    response = requests.post(
-        PIN_JSON_ENDPOINT,
-        headers=_get_pinata_headers(),
-        json=payload,
-        timeout=30,
-    )
-    response.raise_for_status()
-    return response.json()
+    from backend.utils.http_client import get_http_client
+
+    client = await get_http_client()
+    r = await client.post(PIN_JSON_ENDPOINT, headers=_get_pinata_headers(), json=payload, timeout=30.0)
+    r.raise_for_status()
+    return r.json()
 
 
-def unpin_cid(cid: str) -> None:
+async def unpin_cid(cid: str) -> None:
     """Remove a CID from Pinata pinset.
 
     Input: CID string.
     Output: none (raises on request failure).
     Micropayment role: cleanup helper for test artifacts and stale demo uploads.
     """
-    response = requests.delete(
-        f"{UNPIN_ENDPOINT}/{cid}",
-        headers=_get_pinata_headers(),
-        timeout=30,
-    )
-    response.raise_for_status()
+    from backend.utils.http_client import get_http_client
+
+    client = await get_http_client()
+    r = await client.delete(f"{UNPIN_ENDPOINT}/{cid}", headers=_get_pinata_headers(), timeout=30.0)
+    r.raise_for_status()
 
 
 @retry_with_backoff(max_attempts=3, retryable_error_codes=[ErrorCode.IPFS_UPLOAD_FAILED])
@@ -169,24 +164,19 @@ async def upload_insight_to_ipfs(
         last_error: Exception | None = None
         for attempt in range(3):
             try:
-                response = await asyncio.to_thread(
-                    requests.post,
-                    PIN_FILE_ENDPOINT,
-                    headers=_get_pinata_headers(),
-                    files=files,
-                    data=data,
-                    timeout=30,
-                )
+                from backend.utils.http_client import get_http_client
 
-                if response.status_code == 429:
+                client = await get_http_client()
+                r = await client.post(PIN_FILE_ENDPOINT, headers=_get_pinata_headers(), files=files, data=data, timeout=30.0)
+                if r.status_code == 429:
                     if attempt < 2:
                         await asyncio.sleep(3)
                         continue
                     raise IPFSUploadError(ipfs_down(logger, "Pinata rate limit after retries"))
 
-                response.raise_for_status()
+                r.raise_for_status()
 
-                payload = response.json()
+                payload = r.json()
                 cid = str(payload.get("IpfsHash", "")).strip()
                 if not cid:
                     raise RuntimeError("Pinata response missing IpfsHash")
@@ -202,27 +192,15 @@ async def upload_insight_to_ipfs(
                         metadata={"filename": filename},
                     )
                 return cid
-            except requests.exceptions.Timeout as err:
-                logger.error("IPFS upload timeout | attempt=%s error=%s", attempt + 1, err)
+            except Exception as err:
+                # httpx raises TimeoutException or HTTPStatusError; map to last_error
+                logger.error("IPFS upload error | attempt=%s error=%s", attempt + 1, err)
                 last_error = err
                 if attempt < 2:
                     await asyncio.sleep(3)
                     continue
-            except requests.exceptions.HTTPError as err:
-                logger.error("IPFS upload HTTP error | attempt=%s error=%s", attempt + 1, err)
-                last_error = err
-                status_code = err.response.status_code if err.response is not None else None
-                if status_code == 429 and attempt < 2:
-                    await asyncio.sleep(3)
-                    continue
-                break
-            except requests.exceptions.RequestException as err:
-                logger.error("IPFS upload request error | attempt=%s error=%s", attempt + 1, err)
-                last_error = err
-                break
-            except TimeoutError as err:
-                logger.error("IPFS upload TimeoutError | attempt=%s error=%s", attempt + 1, err)
-                last_error = err
+            except Exception:
+                # last_error already set above
                 break
             except IPFSUploadError:
                 raise
@@ -251,10 +229,8 @@ async def upload_insight_to_ipfs(
                 metadata={"filename": filename},
             )
         raise final_error from last_error
-    except requests.exceptions.RequestException as err:
+    except Exception as err:
         # Map request exceptions to MercatorError and raise
-        raise ErrorHandler.handle(err, {"function": "upload_insight_to_ipfs", "filename": filename}) from err
-    except TimeoutError as err:
         raise ErrorHandler.handle(err, {"function": "upload_insight_to_ipfs", "filename": filename}) from err
     except IPFSUploadError as err:
         # Already domain-specific; convert to MercatorError for consistent API
@@ -307,14 +283,12 @@ async def fetch_insight_from_ipfs(cid: str) -> str:
         last_error: Exception | None = None
         for url in gateways:
             try:
-                response = await asyncio.to_thread(
-                    requests.get,
-                    url,
-                    headers=headers,
-                    timeout=30,
-                )
-                response.raise_for_status()
-                text = response.text
+                from backend.utils.http_client import get_http_client
+
+                client = await get_http_client()
+                r = await client.get(url, headers=headers, timeout=30.0)
+                r.raise_for_status()
+                text = r.text
                 _CID_TEXT_CACHE[cid] = text
                 if event_id:
                     tracer.resolve_event(
@@ -325,7 +299,7 @@ async def fetch_insight_from_ipfs(cid: str) -> str:
                         metadata={"gateway": url},
                     )
                 return text
-            except requests.exceptions.RequestException as err:
+            except Exception as err:
                 # Map network errors to MercatorError
                 last_error = err
             except TimeoutError as err:
@@ -353,7 +327,7 @@ async def fetch_insight_from_ipfs(cid: str) -> str:
                 metadata={"cid": cid},
             )
         raise final_error from last_error
-    except requests.exceptions.RequestException as err:
+    except Exception as err:
         raise ErrorHandler.handle(err, {"function": "fetch_insight_from_ipfs", "cid": cid}) from err
     except TimeoutError as err:
         raise ErrorHandler.handle(err, {"function": "fetch_insight_from_ipfs", "cid": cid}) from err
@@ -604,7 +578,7 @@ async def create_listing_prepared(
         )
         
         # Get suggested params
-        sp = algorand.client.algod.suggested_params()
+        sp = await algod_suggested_params(algorand.client.algod)
         
         # Add the create_listing method call to ATC
         create_listing_method = app_client.get_method("create_listing")
@@ -633,7 +607,7 @@ async def create_listing_prepared(
             # Cleanup: unpin the CID
             try:
                 logger.info("Cleaning up: unpinning CID=%s", cid)
-                unpin_cid(cid)
+                await unpin_cid(cid)
                 logger.info("CID successfully unpinned")
             except Exception as unpin_err:
                 logger.error("Failed to unpin CID=%s during cleanup: %s", cid, str(unpin_err))
@@ -657,7 +631,7 @@ async def create_listing_prepared(
         # Try to cleanup on unexpected errors too
         try:
             logger.info("Cleaning up after unexpected error: unpinning CID=%s", cid)
-            unpin_cid(cid)
+            await unpin_cid(cid)
             logger.info("CID successfully unpinned")
         except Exception as unpin_err:
             logger.error("Failed to unpin CID during cleanup: %s", str(unpin_err))

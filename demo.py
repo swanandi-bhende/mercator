@@ -201,16 +201,16 @@ async def _run_demo_flow(logger: logging.Logger) -> str:
     deployer_wallet = os.getenv("DEPLOYER_ADDRESS", "").strip()
     buyer_wallet = configured_buyer
 
-    _ensure_deployer_algo_for_listing(logger, configured_buyer)
+    await asyncio.to_thread(_ensure_deployer_algo_for_listing, logger, configured_buyer)
 
-    configured_buyer_balance = _asset_balance_micro(configured_buyer, USDC_ASA_ID)
-    deployer_balance = _asset_balance_micro(deployer_wallet, USDC_ASA_ID)
+    configured_buyer_balance = await asyncio.to_thread(_asset_balance_micro, configured_buyer, USDC_ASA_ID)
+    deployer_balance = await asyncio.to_thread(_asset_balance_micro, deployer_wallet, USDC_ASA_ID)
 
     if configured_buyer_balance <= 0 and deployer_balance > 0:
         buyer_wallet = deployer_wallet
         logger.info("Configured buyer has no USDC; falling back to deployer wallet for demo purchase")
 
-    selected_buyer_balance = _asset_balance_micro(buyer_wallet, USDC_ASA_ID)
+    selected_buyer_balance = await asyncio.to_thread(_asset_balance_micro, buyer_wallet, USDC_ASA_ID)
     if selected_buyer_balance <= 0:
         raise RuntimeError(
             "No funded buyer wallet found for demo purchase. Fund BUYER_WALLET or DEPLOYER_ADDRESS with USDC."

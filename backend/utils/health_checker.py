@@ -221,24 +221,15 @@ class HealthChecker:
         self._last_metric_status: dict[str, MetricStatus] = {}
 
     async def startup(self) -> None:
-        """Initialize shared httpx client on app startup.
+        """Obtain shared httpx client on app startup.
 
-        Called from FastAPI lifespan startup event. Sets up a single reusable
-        AsyncClient with configured timeouts to prevent connection pool exhaustion
-        on repeated health checks.
+        The shared client lifecycle is managed by `backend.utils.http_client`.
+        This method assigns the shared client instance for use by health checks.
         """
-        self._http_client = httpx.AsyncClient(
-            timeout=httpx.Timeout(
-                connect=2.0,  # Connection establishment timeout
-                read=3.0,  # Read timeout for response body
-                write=2.0,  # Write timeout for request body
-                pool=1.0,  # Timeout for acquiring from pool
-            ),
-            limits=httpx.Limits(
-                max_connections=10,  # Connection pool size
-            ),
-        )
-        logger.info("Health checker httpx.AsyncClient initialized")
+        from backend.utils.http_client import get_http_client
+
+        self._http_client = await get_http_client()
+        logger.info("Health checker attached to shared httpx.AsyncClient")
 
     async def _call_client(self, func, *args, **kwargs):
         """Call a potentially sync or async client method and return its result.
@@ -259,13 +250,12 @@ class HealthChecker:
 
     async def shutdown(self) -> None:
         """Clean up httpx client on app shutdown.
-
-        Called from FastAPI lifespan shutdown event. Closes connection pool
-        and releases resources.
+        Called from FastAPI lifespan shutdown event. The shared client is closed
+        by the application lifecycle manager; the health checker should not
+        close it.
         """
-        if self._http_client:
-            await self._http_client.aclose()
-            logger.info("Health checker httpx.AsyncClient closed")
+        # No-op: shared client is closed by backend.utils.http_client.shutdown_http_client
+        logger.info("Health checker shutdown complete (shared client managed externally)")
 
     # ========================================================================
     # ALGORAND NETWORK CHECKS

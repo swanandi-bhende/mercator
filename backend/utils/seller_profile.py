@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 from urllib.parse import quote
 
-import requests
+from cachetools import TTLCache
 
 try:
     from algosdk import encoding as algo_encoding
@@ -110,7 +110,31 @@ class SellerProfileService:
         self.db_path = db_path
         initialise_seller_profile_schema()
 
+# Module-level caches for hot-path seller lookups
+_profile_cache: TTLCache = TTLCache(maxsize=200, ttl=30)
+_reputation_cache: TTLCache = TTLCache(maxsize=200, ttl=30)
+
+
+def invalidate_profile_cache(wallet: str) -> None:
+    """Invalidate cached seller profile for `wallet`."""
+    try:
+        _profile_cache.pop(wallet, None)
+    except Exception:
+        pass
+
+
+def invalidate_reputation_cache(wallet: str) -> None:
+    try:
+        _reputation_cache.pop(wallet, None)
+    except Exception:
+        pass
+
     async def get_profile_tier1_tier2(self, wallet: str) -> SellerProfileResponse:
+        # Return cached profile when available to reduce indexer/sqlite load
+        cached = _profile_cache.get(wallet)
+        if cached is not None:
+            return cached
+
         sqlite_task = asyncio.create_task(self._fetch_sqlite_stats(wallet))
         onchain_task = asyncio.create_task(self._fetch_onchain_profile(wallet))
         sqlite_result, onchain_result = await asyncio.gather(sqlite_task, onchain_task)
@@ -147,6 +171,10 @@ class SellerProfileService:
         )
 
         response.trust_summary = await build_trust_summary(response)
+        try:
+            _profile_cache[wallet] = response
+        except Exception:
+            pass
         return response
 
     async def _fetch_sqlite_stats(self, wallet: str) -> dict[str, Any]:
@@ -226,7 +254,7 @@ class SellerProfileService:
         else:
             key_bytes = prefix
 
-        raw_bytes = await asyncio.to_thread(self._read_box_raw, app_id, key_bytes)
+        raw_bytes = await self._read_box_raw(app_id, key_bytes)
         if not raw_bytes:
             return {}
         return self._deserialise_seller_record(raw_bytes)
@@ -256,7 +284,7 @@ class SellerProfileService:
                 return str(candidate)
         return ""
 
-    def _read_box_raw(self, app_id: int, key_bytes: bytes) -> Optional[bytes]:
+    async def _read_box_raw(self, app_id: int, key_bytes: bytes) -> Optional[bytes]:
         base_url = self._indexer_base_url().rstrip("/")
         if not base_url:
             return None
@@ -269,11 +297,14 @@ class SellerProfileService:
         if token:
             headers["X-Indexer-API-Token"] = token
 
-        response = requests.get(url, headers=headers, timeout=10)
-        if response.status_code == 404:
+        from backend.utils.http_client import get_http_client
+
+        client = await get_http_client()
+        r = await client.get(url, headers=headers, timeout=10.0)
+        if r.status_code == 404:
             return None
-        response.raise_for_status()
-        payload = response.json() if response.content else {}
+        r.raise_for_status()
+        payload = r.json() if r.content else {}
         value = payload.get("value")
         if not value and isinstance(payload.get("box"), dict):
             value = payload["box"].get("value")

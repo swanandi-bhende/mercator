@@ -43,6 +43,7 @@ from backend.utils.runtime_env import configure_demo_logging, normalize_network_
 from backend.utils.error_handler import contract_error, ipfs_down, retry_with_backoff, ErrorHandler, ErrorCode, AlgorandError
 from backend.utils.transaction_utils import execute_with_simulation
 from backend.utils.ws_manager import ws_manager
+from backend.utils.algorand_async import algod_suggested_params
 
 try:
     from utils.ipfs import fetch_insight_from_ipfs
@@ -259,7 +260,7 @@ async def complete_purchase_atomically(
     
     # Get fresh suggested params for the current network state
     try:
-        sp = algod.suggested_params()
+        sp = await algod_suggested_params(algod)
     except Exception as exc:
         raise RuntimeError(f"Failed to get suggested params: {exc}") from exc
     
@@ -288,7 +289,7 @@ async def complete_purchase_atomically(
     # Setting to 6000 to account for additional inner operations
     try:
         escrow_client_instance = get_escrow_client()
-        sp_for_escrow = algod.suggested_params()
+        sp_for_escrow = await algod_suggested_params(algod)
         sp_for_escrow.fee = 6000
         sp_for_escrow.flat_fee = True
         
@@ -483,7 +484,9 @@ async def complete_purchase_flow(
                 sp = None
                 algod_client = getattr(getattr(active_escrow_client, "client", None), "algod_client", None)
                 if algod_client is not None and hasattr(algod_client, "suggested_params"):
-                    sp = algod_client.suggested_params()
+                    from backend.utils.algorand_async import algod_suggested_params
+
+                    sp = await algod_suggested_params(algod_client)
                     sp.fee = 6000  # 1000 base + 5 inner txs * 1000 each (added reputation inner call)
                     sp.flat_fee = True
                 

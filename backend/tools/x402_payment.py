@@ -68,6 +68,12 @@ from backend.utils.error_handler import (
 )
 from backend.utils.ws_manager import ws_manager
 from backend.utils.evaluation_result import EvaluationResult
+from backend.utils.algorand_async import (
+    algod_suggested_params,
+    algod_account_info,
+    algod_send_raw_transaction,
+    algod_pending_transaction_info,
+)
 
 logger = logging.getLogger(__name__)
 normalize_network_env()
@@ -200,7 +206,6 @@ EXPLORER_TX_BASE = os.getenv("EXPLORER_TX_BASE", "https://lora.algokit.io/testne
 
 class X402Client:
     """Simulated x402 client for micropayment flows on Algorand."""
-    
     def __init__(
         self,
         algorand: AlgorandClient,
@@ -209,13 +214,14 @@ class X402Client:
         private_key_overrides: dict[str, str] | None = None,
     ):
         self.algorand = algorand
-        self.algod = algorand.client.algod
+        # algokit AlgorandClient may expose underlying algod at algorand.client.algod
+        try:
+            self.algod = algorand.client.algod
+        except Exception:
+            self.algod = getattr(algorand, "algod", algorand)
         self.usdc_asset_id = usdc_asset_id
         self.decimals = decimals
         self.private_key_overrides = private_key_overrides or {}
-        # Get sender from environment or deployer
-        self.sender = os.getenv("DEPLOYER_ADDRESS", "").strip()
-
     def _resolve_private_key_for_sender(self, sender: str) -> str:
         """Resolve a private key that matches the provided sender address."""
         sender = sender.strip()
@@ -244,13 +250,13 @@ class X402Client:
             "Set BUYER_MNEMONIC or DEPLOYER_MNEMONIC for this wallet."
         )
 
-    def ensure_asset_opt_in(self, address: str, asset_id: int) -> Optional[str]:
+    async def ensure_asset_opt_in(self, address: str, asset_id: int) -> Optional[str]:
         """Opt an address into an asset when mnemonic for that address is configured."""
         if asset_id <= 0:
             return None
 
         try:
-            account_info = self.algod.account_info(address)
+            account_info = await algod_account_info(address, self.algod)
             assets = account_info.get("assets", [])
             if any(int(asset.get("asset-id", -1)) == asset_id for asset in assets):
                 return None
@@ -268,7 +274,7 @@ class X402Client:
             except Exception:
                 return None
 
-        params = self.algod.suggested_params()
+        params = await algod_suggested_params(self.algod)
         opt_in_txn = transaction.AssetTransferTxn(
             sender=address,
             sp=params,
@@ -277,8 +283,8 @@ class X402Client:
             index=asset_id,
         )
         signed_txn = opt_in_txn.sign(private_key)
-        txid = self.algod.send_transaction(signed_txn)
-        transaction.wait_for_confirmation(self.algod, txid, 4)
+        txid = await algod_send_raw_transaction(signed_txn, self.algod)
+        await asyncio.to_thread(transaction.wait_for_confirmation, self.algod, txid, 4)
         logger.info("Asset opt-in confirmed for address %s asset %s: txid=%s", address, asset_id, txid)
         return txid
     
@@ -314,17 +320,11 @@ class X402Client:
                 raise ValueError(f"Invalid receiver address: {receiver}")
             
             if asset_id > 0:
-                # Make parallel account info calls to reduce latency
-                import concurrent.futures
-                with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-                    future_sender = executor.submit(self.algod.account_info, sender)
-                    future_receiver = executor.submit(self.algod.account_info, receiver)
-                    
-                    try:
-                        sender_info = future_sender.result(timeout=15)
-                        receiver_info = future_receiver.result(timeout=15)
-                    except concurrent.futures.TimeoutError:
-                        raise TimeoutError("Account info lookup took too long - network may be slow")
+                # Make parallel async account info calls to reduce latency
+                sender_info, receiver_info = await asyncio.gather(
+                    algod_account_info(sender, self.algod),
+                    algod_account_info(receiver, self.algod),
+                )
 
                 sender_assets = sender_info.get("assets", [])
                 receiver_assets = receiver_info.get("assets", [])
@@ -346,7 +346,7 @@ class X402Client:
                         )
 
             # Get current network params for transaction creation
-            params = self.algod.suggested_params()
+            params = await algod_suggested_params(self.algod)
             
             # Create payment transaction
             if asset_id > 0:
@@ -419,7 +419,7 @@ class X402Client:
             logger.info(f"Sending x402 micropayment: {sender} -> {receiver}, amount={amount}")
             
             # Get network params
-            params = self.algod.suggested_params()
+            params = await algod_suggested_params(self.algod)
             
             # Create payment transaction
             if asset_id > 0:
@@ -448,13 +448,13 @@ class X402Client:
                 # Manual signing
                 signed_txn = txn.sign(private_key)
                 
-                txid = self.algod.send_transaction(signed_txn)
+                txid = await algod_send_raw_transaction(signed_txn, self.algod)
                 logger.info(f"x402 micropayment sent: txid={txid}")
-                
-                # Wait for confirmation
-                confirmed_txn = transaction.wait_for_confirmation(self.algod, txid, 4)
+
+                # Wait for confirmation (run blocking helper in thread)
+                confirmed_txn = await asyncio.to_thread(transaction.wait_for_confirmation, self.algod, txid, 4)
                 logger.info(f"x402 payment confirmed in round {confirmed_txn.get('confirmed-round')}")
-                
+
                 return txid
             except AlgodHTTPError as signing_error:
                 logger.error(f"Algod signing/submission error: {str(signing_error)}")
@@ -506,11 +506,7 @@ class X402Client:
         for attempt in range(1, attempts + 1):
             try:
                 # Always fetch fresh params for each attempt to avoid stale round windows.
-                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-                    params = await asyncio.wait_for(
-                        loop.run_in_executor(executor, self.algod.suggested_params),
-                        timeout=12.0,
-                    )
+                params = await asyncio.wait_for(algod_suggested_params(self.algod), timeout=12.0)
 
                 first_valid_round = int(getattr(params, "first", 0) or 0)
                 if first_valid_round <= 0:
@@ -561,6 +557,7 @@ class X402Client:
                 )
 
                 # Skip extra atomic simulation here; pre-flight simulate_payment already ran.
+                # composer.send is blocking; run in thread to avoid blocking event loop
                 with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
                     send_result = await asyncio.wait_for(
                         loop.run_in_executor(
@@ -649,15 +646,15 @@ async def trigger_x402_payment(
     3. Execute instant USDC micropayment via x402 atomic group
     4. Return confirmation with explorer link
     
-    Args:
-        listing_id (int): The on-chain listing ID (from InsightListing app)
-        buyer_address (str): The buyer's wallet address (58 chars, checksummed)
-        amount_usdc (float): The payment amount in USDC (should match listed price)
-        user_approval_input (str): User confirmation - MUST be "approve" to proceed
-        user_id (str | None): Demo session user id for custodial wallets.
-        session_token (str | None): Short-lived demo token for custodial wallet unlock.
-        autonomous_mode (bool): Skip the explicit approval gate when trust
-            thresholds have already been validated by the buyer agent.
+                try:
+                    private_key = self._resolve_private_key_for_sender(sender)
+                    txn_signer = AccountTransactionSigner(private_key)
+
+                    escrow_client = EscrowClient(
+                        algorand=self.algorand,
+                        app_id=ESCROW_APP_ID,
+                        default_sender=sender,
+                    )
         relevance_score (int | None): Relevance score used for autonomous safety checks.
         reputation_score (int | None): Reputation score used for autonomous safety checks.
         price_usdc (float | None): Price in USDC used for autonomous safety checks.
@@ -1164,8 +1161,8 @@ async def trigger_x402_payment(
         )
         
         try:
-            x402_client.ensure_asset_opt_in(buyer_address, settlement_asset_id)
-            x402_client.ensure_asset_opt_in(seller_wallet, settlement_asset_id)
+            await x402_client.ensure_asset_opt_in(buyer_address, settlement_asset_id)
+            await x402_client.ensure_asset_opt_in(seller_wallet, settlement_asset_id)
             # Prefer lightweight send_micropayment if available (test fakes use this),
             # otherwise fall back to the full atomic group helper.
             if hasattr(x402_client, "send_micropayment"):
@@ -1317,8 +1314,8 @@ async def validate_x402_payment(transaction_id: str) -> str:
         
         # Query algod for transaction confirmation
         try:
-            tx_info = algod_client.pending_transaction_info(transaction_id)
-            confirmed_round = tx_info.get("confirmed-round", 0)
+            tx_info = await algod_pending_transaction_info(transaction_id, algod_client)
+            confirmed_round = int(tx_info.get("confirmed-round", 0) or 0)
             
             if confirmed_round == 0:
                 logger.info(f"Transaction {transaction_id} still pending...")

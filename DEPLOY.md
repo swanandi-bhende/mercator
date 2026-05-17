@@ -214,3 +214,32 @@ and redeploy backend.
   - `FRONTEND_ORIGIN`
 
 Then redeploy both.
+
+## 9. SQLite maintenance (recommended)
+
+To keep SQLite statistics and indexes tuned for read-heavy workloads, run the included maintenance script periodically (e.g., via cron or a scheduled job on your host).
+
+Run locally or in CI from the repo root:
+
+```bash
+export PYTHONPATH=.
+./scripts/optimize_and_analyze.sh
+```
+
+This executes `ANALYZE` and `PRAGMA optimize` and will refresh sqlite_stat tables; scheduling once per day is a sensible default for production.
+
+On platforms that support scheduled jobs (Render cron jobs / GitHub Actions), run this daily or weekly depending on write volume.
+
+### mmap_size and tuning guidance
+
+We set a safe default `mmap_size` of 64MB to reduce page IO on many hosted environments. You can control this via env var:
+
+- `CURATOR_DB_MMAP_SIZE` — bytes to assign to SQLite `mmap_size`. Set `0` to disable.
+- `CURATOR_DB_CACHE_PAGES` — number of pages for `cache_size` (default `2000`).
+- `CURATOR_DB_TEMP_STORE` — `MEMORY` (default) or `FILE`.
+
+For heavy-write workloads, enable hourly optimization by setting:
+
+- `CURATOR_DB_OPTIMIZE_HOURLY=true`
+
+Or control the periodic optimize interval with `CURATOR_DB_OPTIMIZE_HOURS` (default `24`).

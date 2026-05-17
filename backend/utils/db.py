@@ -28,6 +28,53 @@ def get_db_path() -> Path:
 def _connect() -> sqlite3.Connection:
     conn = sqlite3.connect(_db_path())
     conn.row_factory = sqlite3.Row
+
+    # Tunable PRAGMAs to improve concurrent-read performance and reduce
+    # disk round-trips on typical hosted environments (Railway, Heroku).
+    # Values can be tuned via env vars:
+    # - CURATOR_DB_CACHE_PAGES: integer number of pages for cache (default 2000)
+    # - CURATOR_DB_MMAP_SIZE: integer bytes to set PRAGMA mmap_size (optional)
+    # - CURATOR_DB_TEMP_STORE: 'MEMORY' or 'FILE' (default MEMORY)
+    try:
+        conn.execute("PRAGMA journal_mode=WAL;")
+
+        # synchronous: OFF=0, NORMAL=2, FULL=3. NORMAL is a good balance for cloud.
+        conn.execute("PRAGMA synchronous=NORMAL;")
+
+        temp_store = os.getenv("CURATOR_DB_TEMP_STORE", "MEMORY").upper()
+        if temp_store == "MEMORY":
+            conn.execute("PRAGMA temp_store=MEMORY;")
+        else:
+            conn.execute("PRAGMA temp_store=FILE;")
+
+        # cache_size in pages (negative indicates number of pages).
+        cache_pages = int(os.getenv("CURATOR_DB_CACHE_PAGES", "2000"))
+        # Use negative value to set cache in pages
+        conn.execute(f"PRAGMA cache_size=-{cache_pages};")
+
+        # Optional mmap_size (may be unsupported on some SQLite builds)
+        # Allow optional mmap tuning; default to 64MB which is safe for many
+        # hosted environments. Set CURATOR_DB_MMAP_SIZE=0 to disable explicitly.
+        mmap_size_env = os.getenv("CURATOR_DB_MMAP_SIZE")
+        if mmap_size_env is None:
+            mmap_size_val = 64 * 1024 * 1024
+        else:
+            try:
+                mmap_size_val = int(mmap_size_env)
+            except Exception:
+                mmap_size_val = 0
+
+        if mmap_size_val and mmap_size_val > 0:
+            try:
+                conn.execute(f"PRAGMA mmap_size={mmap_size_val};")
+            except Exception:
+                pass
+
+        conn.execute("PRAGMA foreign_keys=ON;")
+    except Exception:
+        # Non-fatal: leave DB usable even if a PRAGMA isn't supported
+        pass
+
     return conn
 
 
@@ -64,6 +111,9 @@ def initialise_curator_schema(db_path: str | Path | None = None) -> None:
             )
             """
         )
+        # Indexes to speed up curator run queries
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_curator_runs_started_at ON curator_runs(run_started_at)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_curator_runs_published ON curator_runs(published)")
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS curator_run_errors (
@@ -121,6 +171,10 @@ def initialise_curator_schema(db_path: str | Path | None = None) -> None:
             )
             """
         )
+        # Helpful indexes for request logging / rate-limit queries
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_api_request_log_endpoint ON api_request_log(endpoint)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_api_request_log_requested_at ON api_request_log(requested_at)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_api_request_log_key_id ON api_request_log(key_id)")
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS flow_events (
@@ -131,6 +185,10 @@ def initialise_curator_schema(db_path: str | Path | None = None) -> None:
             )
             """
         )
+        # Indexes to speed up listing and seller-profile queries
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_flow_events_event_name ON flow_events(event_name)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_flow_events_wallet ON flow_events(wallet_involved)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_flow_events_timestamp ON flow_events(timestamp_iso)")
         conn.commit()
     # Ensure evaluations and seller profile related schema (views, reputation history) exists
     initialise_evaluations_schema(db_path)
@@ -296,6 +354,10 @@ def initialise_seller_profile_schema(db_path: str | Path | None = None) -> None:
             """
         )
 
+        # Index reputation history by seller and recorded_at for fast lookups
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_reputation_history_seller ON reputation_score_history(seller_wallet)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_reputation_history_recorded_at ON reputation_score_history(recorded_at)")
+
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS seller_trust_summary_cache (
@@ -307,6 +369,7 @@ def initialise_seller_profile_schema(db_path: str | Path | None = None) -> None:
             )
             """
         )
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_seller_trust_updated_at ON seller_trust_summary_cache(updated_at)")
 
         conn.execute(
             """

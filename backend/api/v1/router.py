@@ -20,8 +20,20 @@ from .responses import success_response, error_response
 from backend.utils.flow_tracer import tracer
 from backend.utils.runtime_env import normalize_network_env
 from backend.utils.transaction_utils import AtomicGroupResult, execute_with_simulation
+from backend.utils.algorand_async import algod_suggested_params
+from cachetools import TTLCache
 
 router = APIRouter(prefix="/api/v1", tags=["Mercator API v1"], dependencies=[Depends(verify_api_key), Depends(check_rate_limit), Depends(log_request)])
+
+# Small TTL cache for listings endpoint
+_listings_cache: TTLCache = TTLCache(maxsize=8, ttl=60)
+
+
+def invalidate_listings_cache() -> None:
+    try:
+        _listings_cache.clear()
+    except Exception:
+        pass
 
 
 class SearchAndPurchaseRequest(BaseModel):
@@ -123,6 +135,12 @@ async def listings(min_reputation: int = 0, max_price: float = 10.0, limit: int 
     if not (0 <= min_reputation <= 100):
         raise HTTPException(status_code=400, detail=error_response("INVALID_REPUTATION", "min_reputation must be between 0 and 100", request_id))
 
+    # Cache key depends on filters/pagination
+    cache_key = f"{min_reputation}:{max_price}:{limit}:{source_type}:{offset}"
+    cached = _listings_cache.get(cache_key)
+    if cached is not None:
+        return success_response(cached, request_id)
+
     # For demo: use RECENT_LISTINGS from main if available, otherwise return empty
     try:
         from backend.main import RECENT_LISTINGS
@@ -138,6 +156,10 @@ async def listings(min_reputation: int = 0, max_price: float = 10.0, limit: int 
     page = filtered[offset : offset + limit]
 
     data = {"listings": page, "total_count": total, "has_more": offset + limit < total}
+    try:
+        _listings_cache[cache_key] = data
+    except Exception:
+        pass
     return success_response(data, request_id)
 
 
@@ -194,7 +216,7 @@ async def subscribe_atomically(buyer_wallet: str, months: int, buyer_private_key
     atc = AtomicTransactionComposer()
 
     # Group index 0: USDC payment to the subscription app address.
-    payment_sp = algod.suggested_params()
+    payment_sp = await algod_suggested_params(algod)
     payment_txn = transaction.AssetTransferTxn(
         sender=buyer_wallet,
         index=usdc_asset_id,
@@ -205,7 +227,7 @@ async def subscribe_atomically(buyer_wallet: str, months: int, buyer_private_key
     atc.add_transaction(TransactionWithSigner(payment_txn, signer))
 
     # Group index 1: subscribe(uint64) method call.
-    subscribe_sp = algod.suggested_params()
+    subscribe_sp = await algod_suggested_params(algod)
     subscribe_sp.fee = 2000
     subscribe_sp.flat_fee = True
     atc.add_method_call(
@@ -294,8 +316,11 @@ async def list_insight(body: ListInsightRequest, request: Request):
     # Reuse listing creation service if available
     try:
         from backend.services.listings import create_listing
-
         listing = create_listing(body.insight_text, body.price_usdc, body.seller_wallet, body.seller_user_id)
+        try:
+            invalidate_listings_cache()
+        except Exception:
+            pass
         data = {
             "listing_id": listing.get("listing_id"),
             "tx_id": listing.get("tx_id"),

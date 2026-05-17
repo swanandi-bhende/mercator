@@ -103,6 +103,14 @@ from backend.api.v1.router import router as api_v1_router
 from backend.api.v1.auth import seed_demo_key
 from backend.api.v1.responses import error_response
 from backend.utils.health_checker import HealthChecker
+from backend.utils.http_client import startup_http_client, shutdown_http_client
+from backend.utils.algorand_async import (
+    algod_account_info,
+    algod_send_raw_transaction,
+    algod_status,
+    algod_suggested_params,
+)
+from backend.utils.algorand_async import algod_application_info
 from backend.utils.seller_profile import SellerProfileService, build_trust_summary
 import uuid as _uuid
 
@@ -257,6 +265,66 @@ async def _run_startup_hooks() -> None:
         except RuntimeError as exc:
             logger.warning("Scheduler start skipped: %s", exc)
 
+    # Perform an initial ANALYZE on startup to populate sqlite_stat tables
+    try:
+        import sqlite3
+
+        with sqlite3.connect(str(get_db_path())) as conn:
+            conn.execute("ANALYZE sqlite_master;")
+            try:
+                conn.execute("PRAGMA optimize;")
+            except Exception:
+                pass
+        logger.info("Initial SQLite ANALYZE and PRAGMA optimize completed")
+    except Exception:
+        logger.exception("Failed to run initial SQLite ANALYZE/optimize")
+
+    # Schedule periodic PRAGMA optimize (daily) to keep sqlite stats fresh
+    try:
+        def _sqlite_optimize_job() -> None:
+            import sqlite3
+
+            try:
+                with sqlite3.connect(str(get_db_path())) as conn:
+                    conn.execute("ANALYZE sqlite_master;")
+                    try:
+                        conn.execute("PRAGMA optimize;")
+                    except Exception:
+                        pass
+            except Exception:
+                logger.exception("Scheduled SQLite optimize failed")
+
+        scheduler.add_job(
+            _sqlite_optimize_job,
+            "interval",
+            hours=int(os.getenv("CURATOR_DB_OPTIMIZE_HOURS", "24") or 24),
+            id="sqlite_optimize",
+            replace_existing=True,
+        )
+        logger.info("Scheduled SQLite optimize job")
+    except Exception:
+        logger.exception("Failed to schedule SQLite optimize job")
+    # Optionally schedule an hourly optimize job for heavy-write workloads
+    try:
+        hourly_flag = os.getenv("CURATOR_DB_OPTIMIZE_HOURLY", "").lower()
+        if hourly_flag in ("1", "true", "yes"):
+            scheduler.add_job(
+                _sqlite_optimize_job,
+                "interval",
+                hours=1,
+                id="sqlite_optimize_hourly",
+                replace_existing=True,
+            )
+            logger.info("Scheduled SQLite hourly optimize job (CURATOR_DB_OPTIMIZE_HOURLY=true)")
+    except Exception:
+        logger.exception("Failed to schedule SQLite hourly optimize job")
+    # Start shared HTTP client for outbound requests
+    try:
+        await startup_http_client()
+        logger.info("Shared httpx.AsyncClient started")
+    except Exception:
+        logger.exception("Failed to start shared HTTP client")
+
 
 async def _run_shutdown_hooks() -> None:
     global health_checker
@@ -271,6 +339,13 @@ async def _run_shutdown_hooks() -> None:
     
     if scheduler.running:
         scheduler.shutdown(wait=False)
+
+    # Shutdown shared HTTP client
+    try:
+        await shutdown_http_client()
+        logger.info("Shared httpx.AsyncClient shut down")
+    except Exception:
+        logger.exception("Error shutting down shared HTTP client")
 
 
 def startup_checks() -> None:
@@ -740,7 +815,7 @@ def _decode_global_state_entry(entry: dict[str, object]) -> tuple[str, object | 
     return key, None
 
 
-def _fetch_fee_config_state() -> dict[str, object]:
+async def _fetch_fee_config_state() -> dict[str, object]:
     """Fetch fee config fields from on-chain global state.
 
     Micropayment role: powers the operations panel and listing split previews.
@@ -758,7 +833,13 @@ def _fetch_fee_config_state() -> dict[str, object]:
 
     app_id = int(fee_config_app_raw)
     client = _get_algod_client()
-    app_payload = client.application_info(app_id)
+    try:
+        app_payload = await algod_application_info(app_id, client)
+    except Exception:
+        try:
+            app_payload = client.application_info(app_id)
+        except Exception:
+            app_payload = {}
     app_obj = app_payload.get("params", {}) if isinstance(app_payload, dict) else {}
     global_state = app_obj.get("global-state", []) if isinstance(app_obj, dict) else []
 
@@ -903,7 +984,7 @@ def _recent_listing_matches(query: str, limit: int = 8) -> list[dict[str, object
         return sender, AccountTransactionSigner(private_key)
 
 
-    def _execute_abi_call(
+    async def _execute_abi_call(
         app_id: int,
         method_signature: str,
         method_args: list[object],
@@ -911,13 +992,14 @@ def _recent_listing_matches(query: str, limit: int = 8) -> list[dict[str, object
         sender: str | None = None,
         signer: AccountTransactionSigner | None = None,
         payment_txn: transaction.Transaction | None = None,
+        sp: object | None = None,
     ) -> tuple[object | None, list[str]]:
         client = _get_algod_client()
         if sender is None or signer is None:
             sender, signer = _get_subscription_signer()
 
         composer = AtomicTransactionComposer()
-        params = client.suggested_params()
+        params = sp if sp is not None else await algod_suggested_params(client)
         method = abi.Method.from_signature(method_signature)
 
         if payment_txn is not None:
@@ -931,7 +1013,8 @@ def _recent_listing_matches(query: str, limit: int = 8) -> list[dict[str, object
             signer=signer,
             method_args=method_args,
         )
-        result = composer.execute(client, 4)
+        # composer.execute is blocking; run in thread
+        result = await asyncio.to_thread(composer.execute, client, 4)
         return_value = None
         if getattr(result, "abi_results", None):
             first_result = result.abi_results[0]
@@ -940,25 +1023,26 @@ def _recent_listing_matches(query: str, limit: int = 8) -> list[dict[str, object
         return return_value, tx_ids
 
 
-    def _current_round() -> int:
+    async def _current_round() -> int:
         client = _get_algod_client()
-        return _safe_int(client.status().get("last-round", 0), 0)
+        status = await algod_status(client)
+        return _safe_int(status.get("last-round", 0), 0)
 
 
-    def _subscription_status_payload(wallet: str) -> dict[str, object]:
+    async def _subscription_status_payload(wallet: str) -> dict[str, object]:
         subscription_app_id = _get_subscription_manager_app_id()
-        active_value, _ = _execute_abi_call(
+        active_value, _ = await _execute_abi_call(
             subscription_app_id,
             "is_active(address)bool",
             [wallet],
         )
-        subscription_record, _ = _execute_abi_call(
+        subscription_record, _ = await _execute_abi_call(
             subscription_app_id,
             "get_subscription(address)(uint64,uint64,uint64,uint64,uint64,string)",
             [wallet],
         )
 
-        current_round = _current_round()
+        current_round = await _current_round()
         rounds_per_month = _safe_int(os.getenv("SUBSCRIPTION_ROUNDS_PER_MONTH", "17280"), 17280)
 
         if isinstance(subscription_record, (tuple, list)) and len(subscription_record) >= 6:
@@ -1126,15 +1210,6 @@ class ListingRequest(BaseModel):
     seller_wallet: str
     source_type: str | None = None
 
-
-class DemoPurchaseRequest(BaseModel):
-    user_query: str
-    buyer_address: str | None = None
-    user_approval_input: str = "approve"
-    force_buy_for_test: bool = True
-    target_listing_id: int | None = None
-    user_id: str | None = None
-    session_token: str | None = None
 
 
 class DiscoverRequest(BaseModel):
@@ -1401,11 +1476,14 @@ def _get_indexer_client() -> indexer.IndexerClient:
     return indexer.IndexerClient(indexer_token=token, indexer_address=indexer_url)
 
 
-def _fetch_wallet_balances_micro(address: str) -> tuple[int, int]:
-    """Fetch ALGO and USDC micro-unit balances for an address from TestNet indexer."""
-    response = requests.get(f"https://testnet-idx.algonode.cloud/v2/accounts/{address}", timeout=12)
-    response.raise_for_status()
-    payload = response.json()
+async def _fetch_wallet_balances_micro(address: str) -> tuple[int, int]:
+    """Fetch ALGO and USDC micro-unit balances for an address from TestNet indexer using shared httpx client."""
+    from backend.utils.http_client import get_http_client
+
+    client = await get_http_client()
+    r = await client.get(f"https://testnet-idx.algonode.cloud/v2/accounts/{address}", timeout=12)
+    r.raise_for_status()
+    payload = r.json()
     account_data = payload.get("account", {}) if isinstance(payload, dict) else {}
 
     algo_balance_micro = int(account_data.get("amount", 0) or 0)
@@ -1486,7 +1564,7 @@ def _resolve_signer_for_wallet(requested_wallet: str) -> tuple[str, str, bool]:
     )
 
 
-def _ensure_listing_app_funded(app_id: int, preferred_sender: str = "") -> None:
+async def _ensure_listing_app_funded(app_id: int, preferred_sender: str = "") -> None:
     """Top up InsightListing app contract account to cover state box storage.
 
     Target: min_balance + 300K micro-Algo (box storage buffer).
@@ -1494,7 +1572,7 @@ def _ensure_listing_app_funded(app_id: int, preferred_sender: str = "") -> None:
     """
     client = _get_algod_client()
     app_address = get_application_address(app_id)
-    app_info = client.account_info(app_address)
+    app_info = await algod_account_info(app_address, client)
 
     min_balance = int(app_info.get("min-balance", 0))
     balance = int(app_info.get("amount", 0))
@@ -1534,7 +1612,7 @@ def _ensure_listing_app_funded(app_id: int, preferred_sender: str = "") -> None:
         try:
             cand_private_key = mnemonic.to_private_key(candidate)
             cand_sender = account.address_from_private_key(cand_private_key)
-            info = client.account_info(cand_sender)
+            info = await algod_account_info(cand_sender, client)
             cand_balance = int(info.get("amount", 0) or 0)
             cand_min = int(info.get("min-balance", 0) or 0)
             spendable = max(0, cand_balance - cand_min)
@@ -1572,15 +1650,15 @@ def _ensure_listing_app_funded(app_id: int, preferred_sender: str = "") -> None:
             ),
         )
 
-    params = client.suggested_params()
+    params = await algod_suggested_params(client)
     pay_txn = transaction.PaymentTxn(
         sender=sender,
         sp=params,
         receiver=app_address,
         amt=top_up,
     )
-    tx_id = client.send_transaction(pay_txn.sign(private_key))
-    transaction.wait_for_confirmation(client, tx_id, 4)
+    tx_id = await algod_send_raw_transaction(pay_txn.sign(private_key), client)
+    await asyncio.to_thread(transaction.wait_for_confirmation, client, tx_id, 4)
 
 
 def _is_transient_chain_error(err: Exception) -> bool:
@@ -1601,11 +1679,11 @@ def _is_transient_chain_error(err: Exception) -> bool:
     return any(token in message for token in transient_tokens)
 
 
-def _build_health_update_payload() -> dict[str, object]:
+async def _build_health_update_payload() -> dict[str, object]:
     now = datetime.now(timezone.utc)
     started = time.perf_counter()
-    algorand = _collect_algorand_status(now)
-    ipfs = _collect_ipfs_health(now)
+    algorand = await _collect_algorand_status(now)
+    ipfs = await _collect_ipfs_health(now)
     backend_latency_ms = round((time.perf_counter() - started) * 1000, 2)
 
     return {
@@ -1619,7 +1697,7 @@ def _build_health_update_payload() -> dict[str, object]:
 
 async def _send_heartbeat() -> None:
     await ws_manager.broadcast("ping", {})
-    await ws_manager.broadcast("health_update", _build_health_update_payload())
+    await ws_manager.broadcast("health_update", await _build_health_update_payload())
 
 
 @app.websocket("/ws")
@@ -1877,14 +1955,22 @@ def _tail_file(path: str, max_lines: int = 250) -> list[str]:
         return []
 
 
-def _probe_gateway(url: str, *, timeout: int = 8, headers: dict[str, str] | None = None) -> dict[str, object]:
+async def _probe_gateway(url: str, *, timeout: int = 8, headers: dict[str, str] | None = None) -> dict[str, object]:
     """Execute HTTP probe against gateway/service and return status summary.
 
     Micropayment role: monitors IPFS/pinata connectivity for listing and delivery reliability.
     """
+    # Async probe using shared httpx client
+    from backend.utils.http_client import get_http_client
+
     started = time.perf_counter()
     try:
-        response = requests.get(url, timeout=timeout, headers=headers or {})
+        async def _inner_probe():
+            client = await get_http_client()
+            return await client.get(url, timeout=timeout, headers=headers or {})
+
+        # run probe in coroutine
+        response = await _inner_probe()
         latency_ms = round((time.perf_counter() - started) * 1000, 2)
         ok = response.status_code < 500
         return {
@@ -1905,7 +1991,7 @@ def _probe_gateway(url: str, *, timeout: int = 8, headers: dict[str, str] | None
         }
 
 
-def _collect_ipfs_health(now: datetime) -> dict[str, object]:
+async def _collect_ipfs_health(now: datetime) -> dict[str, object]:
     """Aggregate IPFS gateway and upload health metrics.
 
     Micropayment role: operator visibility into content storage/delivery readiness.
@@ -1919,9 +2005,9 @@ def _collect_ipfs_health(now: datetime) -> dict[str, object]:
 
     jwt = os.getenv("PINATA_JWT", "").strip()
     pinata_headers = {"Authorization": f"Bearer {jwt}"} if jwt else {}
-    pinata_probe = _probe_gateway(f"{PINATA_BASE_URL}/data/testAuthentication", headers=pinata_headers)
+    pinata_probe = await _probe_gateway(f"{PINATA_BASE_URL}/data/testAuthentication", headers=pinata_headers)
 
-    gateway_checks = [_probe_gateway(url) for url in gateways[:6]]
+    gateway_checks = await asyncio.gather(*[_probe_gateway(url) for url in gateways[:6]])
 
     recent = [entry for entry in list(IPFS_HEALTH_WINDOW) if isinstance(entry.get("timestamp"), str)]
     recent = sorted(recent, key=lambda e: str(e.get("timestamp", "")), reverse=True)[:40]
@@ -1967,7 +2053,7 @@ def _collect_ipfs_health(now: datetime) -> dict[str, object]:
     }
 
 
-def _collect_algorand_status(now: datetime) -> dict[str, object]:
+async def _collect_algorand_status(now: datetime) -> dict[str, object]:
     """Collect Algorand node sync, latency, and fee telemetry.
 
     Micropayment role: confirms chain readiness for x402 payments and contract calls.
@@ -1975,8 +2061,10 @@ def _collect_algorand_status(now: datetime) -> dict[str, object]:
     started = time.perf_counter()
     try:
         client = _get_algod_client()
-        status = client.status()
-        params = client.suggested_params()
+        status, params = await asyncio.gather(
+            algod_status(client),
+            algod_suggested_params(client),
+        )
         latency_ms = round((time.perf_counter() - started) * 1000, 2)
 
         last_round = _safe_int(status.get("last-round"), 0)
@@ -2485,7 +2573,7 @@ def _build_contract_card(name: str, env_key: str, idx: indexer.IndexerClient) ->
         }
 
 
-def _collect_environment_panel() -> dict[str, object]:
+async def _collect_environment_panel() -> dict[str, object]:
     """Collect redacted environment and wallet balance panel for ops UI.
 
     Micropayment role: gives operators a safe runtime snapshot without leaking secrets.
@@ -2510,7 +2598,7 @@ def _collect_environment_panel() -> dict[str, object]:
         algo_balance = None
         if algod_client:
             try:
-                account_info = algod_client.account_info(address)
+                account_info = await algod_account_info(address, algod_client)
                 algo_balance = round((_safe_int(account_info.get("amount"), 0) / 1_000_000), 6)
             except Exception:
                 algo_balance = None
@@ -2627,10 +2715,10 @@ async def ops_overview(request: Request, verify_on_chain: bool = True) -> dict[s
 
     health_payload = health()
     request_metrics = _collect_request_metrics(now)
-    environment = _collect_environment_panel()
+    environment = await _collect_environment_panel()
     events = _collect_system_events(now)
-    ipfs_health = _collect_ipfs_health(now)
-    algorand_status = _collect_algorand_status(now)
+    ipfs_health = await _collect_ipfs_health(now)
+    algorand_status = await _collect_algorand_status(now)
     endpoint_heatmap = _build_endpoint_heatmap(now)
 
     contracts: list[dict[str, object]] = []
@@ -2719,7 +2807,7 @@ async def ops_ipfs_health(request: Request) -> dict[str, object]:
     return {
         "success": True,
         "timestamp": now.isoformat(),
-        "ipfs": _collect_ipfs_health(now),
+        "ipfs": await _collect_ipfs_health(now),
     }
 
 
@@ -2779,7 +2867,7 @@ async def ops_algorand_status(request: Request) -> dict[str, object]:
     return {
         "success": True,
         "timestamp": now.isoformat(),
-        "algorand": _collect_algorand_status(now),
+        "algorand": await _collect_algorand_status(now),
     }
 
 
@@ -2791,7 +2879,7 @@ async def ops_algorand_test(request: Request) -> dict[str, object]:
     """
     _require_operator(request)
     now = datetime.now(timezone.utc)
-    status = _collect_algorand_status(now)
+    status = await _collect_algorand_status(now)
     return {
         "success": True,
         "timestamp": now.isoformat(),
@@ -2910,7 +2998,7 @@ async def create_listing(request: ListingRequest) -> dict[str, object]:
                 request.seller_wallet,
             )
 
-        _ensure_listing_app_funded(listing_app_id, preferred_sender=signer_address)
+        await _ensure_listing_app_funded(listing_app_id, preferred_sender=signer_address)
 
         prepared = await create_listing_prepared(
             insight_text=request.insight_text,
@@ -2995,7 +3083,7 @@ async def create_listing(request: ListingRequest) -> dict[str, object]:
         logger.error("Unexpected /list failure | error=%s", err, exc_info=True)
         return _error_response(500, f"Transaction failed: {err}")
 
-    fee_state = _fetch_fee_config_state()
+    fee_state = await _fetch_fee_config_state()
     fee_rate_bps = _safe_int(fee_state.get("fee_rate_bps", 250), 250)
     platform_fee_micro = _calculate_fee_preview(micro_price, fee_rate_bps)
     seller_net_micro = max(0, micro_price - platform_fee_micro)
@@ -3025,7 +3113,7 @@ async def get_fee_config() -> dict[str, object]:
     Micropayment role: Operations dashboard poll target for fee rate + treasury + revenue.
     """
     try:
-        state = _fetch_fee_config_state()
+        state = await _fetch_fee_config_state()
     except Exception as err:
         logger.error("Failed to fetch fee config state | error=%s", err, exc_info=True)
         return {
@@ -3063,7 +3151,7 @@ async def get_subscription_status(wallet: str) -> dict[str, object]:
         raise HTTPException(status_code=400, detail="wallet must be a valid Algorand address")
 
     try:
-        payload = _subscription_status_payload(wallet)
+        payload = await _subscription_status_payload(wallet)
         return {
             "success": True,
             **payload,
@@ -3107,7 +3195,7 @@ async def subscribe(request: SubscriptionRequest) -> dict[str, object]:
     app_address = get_application_address(subscription_app_id)
 
     algod_client = _get_algod_client()
-    params = algod_client.suggested_params()
+    params = await algod_suggested_params(algod_client)
     payment_txn = transaction.AssetTransferTxn(
         sender=request.buyer_wallet,
         sp=params,
@@ -3117,13 +3205,14 @@ async def subscribe(request: SubscriptionRequest) -> dict[str, object]:
     )
 
     try:
-        _, tx_ids = _execute_abi_call(
+        _, tx_ids = await _execute_abi_call(
             subscription_app_id,
             "subscribe(uint64)void",
             [request.months],
             sender=request.buyer_wallet,
             signer=buyer_signer,
             payment_txn=payment_txn,
+            sp=params,
         )
         payload = _subscription_status_payload(request.buyer_wallet)
         await ws_manager.broadcast(
@@ -3173,7 +3262,7 @@ async def release_for_subscriber(request: SubscriptionReleaseRequest) -> dict[st
         )
 
     try:
-        _, tx_ids = _execute_abi_call(
+        _, tx_ids = await _execute_abi_call(
             int(escrow_app_id_raw),
             "release_for_subscriber(address,uint64)bool",
             [request.buyer_wallet, request.listing_id],
@@ -3232,7 +3321,9 @@ async def onboard(request: OnboardRequest) -> dict[str, object]:
     funding_status = "pending"
 
     try:
-        funding_result = fund_new_wallet(wallet.algo_address)
+        from backend.utils.custodial_wallet import fund_new_wallet
+
+        funding_result = await fund_new_wallet(wallet.algo_address)
         algo_balance_micro = int(funding_result.get("algo_balance", 0) or 0)
         usdc_balance_micro = int(funding_result.get("usdc_balance", 0) or 0)
         funding_status = "funded" if bool(funding_result.get("funding_confirmed", False)) else "pending"
@@ -3275,7 +3366,7 @@ async def wallet_balance(address: str = Query(..., description="Algorand wallet 
         return JSONResponse(status_code=400, content={"error": "Invalid wallet address"})
 
     try:
-        algo_balance_micro, usdc_balance_micro = _fetch_wallet_balances_micro(address)
+        algo_balance_micro, usdc_balance_micro = await _fetch_wallet_balances_micro(address)
     except Exception as exc:
         logger.error("Wallet balance lookup failed for %s: %s", address, exc, exc_info=True)
         return JSONResponse(status_code=502, content={"error": "Balance lookup failed"})
@@ -3292,6 +3383,34 @@ async def wallet_balance(address: str = Query(..., description="Algorand wallet 
 async def wallet_is_custodial(address: str = Query(..., description="Algorand wallet address")) -> dict[str, object]:
     if not encoding.is_valid_address(address):
         return JSONResponse(status_code=400, content={"error": "Invalid wallet address"})
+
+
+@app.get("/admin/cache/stats")
+async def admin_cache_stats() -> dict[str, object]:
+    """Return basic cache stats for monitoring and debugging."""
+    try:
+        from backend.utils.seller_profile import _profile_cache, _reputation_cache
+    except Exception:
+        _profile_cache = None
+        _reputation_cache = None
+    try:
+        from backend.api.v1.router import _listings_cache
+    except Exception:
+        _listings_cache = None
+
+    def _stats(cache):
+        if cache is None:
+            return {"present": False}
+        try:
+            return {"present": True, "size": len(cache), "maxsize": getattr(cache, "maxsize", None)}
+        except Exception:
+            return {"present": True}
+
+    return {
+        "profile_cache": _stats(_profile_cache),
+        "reputation_cache": _stats(_reputation_cache),
+        "listings_cache": _stats(_listings_cache),
+    }
 
     custodial = is_custodial_address(address)
     user_id = get_user_id_by_address(address) if custodial else None

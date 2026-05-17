@@ -244,7 +244,7 @@ async def execute_with_simulation(
     
     # Simulate BEFORE execute
     try:
-        sim_result = atc.simulate(algod_client)
+        sim_result = await asyncio.to_thread(atc.simulate, algod_client)
     except Exception as exc:
         logger.error("Simulation setup failed for %s: %s", context_description, exc, exc_info=True)
         raise TransactionSimulationError(
@@ -301,7 +301,7 @@ async def execute_with_simulation(
     logger.info("Broadcasting atomic group: %s", context_description)
     
     try:
-        result = atc.execute(algod_client, wait_rounds=4)
+        result = await asyncio.to_thread(atc.execute, algod_client, 4)
     except Exception as exc:
         logger.error("Execution failed for %s: %s", context_description, exc, exc_info=True)
         tracer.record(
