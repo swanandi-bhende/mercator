@@ -4,6 +4,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { api } from '../utils/api'
 import type { SellerProfileResponse, ListingHistoryEntry, ReputationHistoryEntry } from '../types'
 import './SellerProfile.css'
+import '../styles/listing.css'
 
 /**
  * Get reputation badge color
@@ -321,24 +322,30 @@ export const SellerProfilePage: React.FC<SellerProfilePageProps> = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {listings.map((listing) => (
-                    <tr key={listing.listing_id}>
-                      <td className="price-cell">${listing.price_usdc ? listing.price_usdc.toFixed(2) : 'N/A'}</td>
-                      <td className="purchases-cell">{listing.purchase_count}</td>
-                      <td className="date-cell">
-                        {new Date(listing.timestamp_iso).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                        })}
-                      </td>
-                      <td className="action-cell">
-                        <button className="view-button" title={`View listing ${listing.listing_id}`}>
-                          View
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {listings.map((listing) => {
+                    const state = (listing.state || listing.status || '').toLowerCase()
+                    const rowClass = state === 'expired' ? 'listing-expired' : state === 'sold' ? 'listing-sold' : ''
+                    return (
+                      <tr key={listing.listing_id} className={rowClass}>
+                        <td className="price-cell">${listing.price_usdc ? listing.price_usdc.toFixed(2) : 'N/A'}</td>
+                        <td className="purchases-cell">{listing.purchase_count}</td>
+                        <td className="date-cell">
+                          {new Date(listing.timestamp_iso).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </td>
+                        <td className="action-cell">
+                          {state === 'sold' && <span className="insight-state-pill insight-state-pill--sold">✓ Sold</span>}
+                          {state === 'expired' && <span className="insight-state-pill insight-state-pill--expired">⏰ Expired</span>}
+                          <button className="view-button" title={`View listing ${listing.listing_id}`}>
+                            View
+                          </button>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>

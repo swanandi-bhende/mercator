@@ -98,6 +98,7 @@ class RawListing:
     source_type: str = "unknown"
     active: bool = True
     retrieved_at: float = field(default_factory=time.time)
+    expiry_round: int = 0
 
 
 # Purpose: Cached seller reputation lookup value with the time it was fetched.
@@ -162,6 +163,9 @@ SEARCH_CONFIG = SearchConfig()
 _CACHE_TTL_SECONDS = SEARCH_CONFIG.query_cache_ttl_seconds
 _QUERY_CACHE_KEY = "__semantic_search__"
 _LISTING_CACHE_KEY = "active_listings"
+
+# How many rounds before expiry to exclude from search results (prevents near-expiry listings)
+EXPIRY_BUFFER_ROUNDS = int(os.getenv("EXPIRY_BUFFER_ROUNDS", "100"))
 
 _query_cache: dict[str, tuple[float, str]] = {}
 _listing_cache: TTLCache[str, list[RawListing]] = TTLCache(maxsize=1, ttl=SEARCH_CONFIG.listing_cache_ttl_seconds)
@@ -486,6 +490,7 @@ async def fetch_all_active_listings() -> list[RawListing]:
             price_micro_usdc = int(getattr(listing, "price", 0))
             asa_id = int(getattr(listing, "asa_id", 0))
             listing_numeric_id = int(listing_id)
+            expiry_round = int(getattr(listing, "expiry_round", getattr(listing, "expiry", 0)) or 0)
         except Exception:
             return None
 
@@ -498,14 +503,66 @@ async def fetch_all_active_listings() -> list[RawListing]:
             text=text,
             source_type=_listing_source_type(listing),
             active=True,
+            expiry_round=expiry_round,
         )
 
     hydrated_listings = await asyncio.gather(
         *(_hydrate_listing(listing_id, listing) for listing_id, listing in listing_map.items())
     )
     active_listings = [listing for listing in hydrated_listings if listing is not None]
-    _listing_cache[cache_key] = active_listings
-    return active_listings
+    # Further filter by on-chain state and expiry buffer using InsightListing client
+    try:
+        insight_client = get_insight_listing_client()
+    except Exception:
+        insight_client = None
+
+    # Fetch current round
+    try:
+        algod_client = get_algorand_client()
+        status = await asyncio.to_thread(algod_client.client.algod.status)
+        current_round = int(status.get("last-round", 0) or 0)
+    except Exception:
+        current_round = 0
+
+    filtered: list[RawListing] = []
+    if insight_client is None:
+        filtered = active_listings
+    else:
+        semaphore2 = asyncio.Semaphore(8)
+
+        async def _check_state(listing: RawListing) -> RawListing | None:
+            async with semaphore2:
+                try:
+                    res = await asyncio.to_thread(insight_client.call.get_listing_state, listing.listing_id)
+                except Exception:
+                    return None
+                # Normalize returned state
+                state = None
+                try:
+                    if isinstance(res, str):
+                        state = res
+                    else:
+                        state = getattr(res, "native", None) or getattr(res, "value", None) or str(res)
+                    state = str(state).strip().lower()
+                except Exception:
+                    state = None
+
+                if state != "active":
+                    return None
+
+                # Buffer check: exclude listings that will expire within EXPIRY_BUFFER_ROUNDS
+                expiry = int(getattr(listing, "expiry_round", 0) or 0)
+                if current_round and expiry:
+                    if (expiry - current_round) < EXPIRY_BUFFER_ROUNDS:
+                        return None
+
+                return listing
+
+        checked = await asyncio.gather(*(_check_state(l) for l in active_listings))
+        filtered = [l for l in checked if l is not None]
+
+    _listing_cache[cache_key] = filtered
+    return filtered
 
 
 async def _fetch_reputation_for_seller(seller_wallet: str) -> float:

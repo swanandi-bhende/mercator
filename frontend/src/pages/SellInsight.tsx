@@ -22,6 +22,7 @@ export default function SellInsightPage() {
   const [wallet, setWallet] = useState('')
   const [touched, setTouched] = useState({ insight: false, price: false, wallet: false })
   const [isLoading, setIsLoading] = useState(false)
+  const [expiryHours, setExpiryHours] = useState<number>(48)
   const [stage, setStage] = useState<PublishStage>('draft')
   const [receipt, setReceipt] = useState<{
     txId?: string
@@ -135,7 +136,15 @@ export default function SellInsightPage() {
       await new Promise((resolve) => setTimeout(resolve, 300))
       setStage('uploading')
 
-      const response = await api.listInsight(insight, price, wallet.toUpperCase())
+      const roundsMap: Record<number, number> = {
+        6: 21600,
+        12: 43200,
+        24: 86400,
+        48: 172800,
+      }
+      const customRounds = roundsMap[expiryHours] || roundsMap[48]
+
+      const response = await api.listInsight(insight, price, wallet.toUpperCase(), customRounds)
 
       if (!response.success || !response.txId) {
         throw new Error(response.error || 'No transaction ID returned from server.')
@@ -346,6 +355,16 @@ export default function SellInsightPage() {
                 <div>
                   <span>Wallet status</span>
                   <strong>{walletPattern.test(wallet.trim().toUpperCase()) ? 'Verified format' : 'Pending verification'}</strong>
+                </div>
+                <div>
+                  <span>Expiry window</span>
+                  <select value={expiryHours} onChange={(e) => setExpiryHours(Number(e.target.value))}>
+                    <option value={6}>6 hours (21,600 rounds)</option>
+                    <option value={12}>12 hours (43,200 rounds)</option>
+                    <option value={24}>24 hours (86,400 rounds)</option>
+                    <option value={48}>48 hours (172,800 rounds)</option>
+                  </select>
+                  <small>Your insight will be available for purchase for approximately {expiryHours} hours ({expiryHours === 48 ? '172,800' : expiryHours === 24 ? '86,400' : expiryHours === 12 ? '43,200' : '21,600'} rounds)</small>
                 </div>
               </div>
 

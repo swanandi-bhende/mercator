@@ -67,6 +67,18 @@ class SellerProfileResponse:
     reputation_history: list[dict[str, Any]]
     trust_summary: str
 
+    @property
+    def total_purchases(self) -> int:
+        return int(self.seller_stats.total_purchases or 0)
+
+    @property
+    def total_usdc_earned_micro(self) -> float:
+        return float(self.seller_stats.total_usdc_earned_micro or 0.0)
+
+    @property
+    def avg_price_usdc(self) -> Optional[float]:
+        return self.seller_stats.avg_price_usdc
+
 
 def _db_connection(db_path: str | None = None) -> sqlite3.Connection:
     conn = sqlite3.connect(db_path or str(get_db_path()))

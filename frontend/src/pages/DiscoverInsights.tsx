@@ -5,6 +5,8 @@ import { api, ApiError } from '../utils/api'
 import type { DiscoverMatch, ListingsFeedItem } from '../types'
 import VerifiedBadge from '../components/shared/VerifiedBadge'
 import { SellerCard } from '../components/SellerCard'
+import ExpiryCountdown from '../components/ExpiryCountdown'
+import '../styles/listing.css'
 import type { LayoutOutletContext } from '../components/Layout'
 
 type SearchPhase = 'idle' | 'fetching' | 'evaluating' | 'ready'
@@ -27,6 +29,8 @@ type RankedInsight = {
   cid: string
   listingId: string
   asaId: string
+  state?: string
+  expiry_round?: number
 }
 
 type LiveListing = {
@@ -39,6 +43,8 @@ type LiveListing = {
   ipfs_cid: string
   listing_tx_id: string
   reputation_score: number
+  state?: string
+  expiry_round?: number
 }
 
 const DEMO_INSIGHTS: RankedInsight[] = [
@@ -162,6 +168,8 @@ function toLiveListing(item: ListingsFeedItem): LiveListing {
     ipfs_cid: item.cid,
     listing_tx_id: item.tx_id,
     reputation_score: Number(item.seller_reputation || 0),
+    state: (item.state || 'active'),
+    expiry_round: Number(item.expiry_round || 0),
   }
 }
 
@@ -234,6 +242,7 @@ export default function DiscoverInsightsPage() {
   const [subscriptionLoading, setSubscriptionLoading] = useState(false)
   const [subscriptionError, setSubscriptionError] = useState<string | null>(null)
   const [listings, setListings] = useState<LiveListing[]>([])
+  const [currentRound, setCurrentRound] = useState<number>(0)
   const [newListingIds, setNewListingIds] = useState<string[]>([])
   const [agentBadges, setAgentBadges] = useState<Record<string, string>>({})
   const [reputationOverrides, setReputationOverrides] = useState<Record<string, number>>({})
@@ -477,6 +486,21 @@ export default function DiscoverInsightsPage() {
       }, 2000)
     }
 
+    if (latestWsEvent.event_type === 'listing.expired') {
+      const payload = latestWsEvent.payload
+      const listingId = String(payload.listing_id || '')
+      if (listingId) {
+        setListings((prev) => prev.map((it) => (it.listing_id === listingId ? { ...it, state: 'expired' } : it)))
+        setRawInsights((prev) => prev.map((it) => (it.listingId === `L-${listingId}` ? { ...it, listingStatus: 'expired', state: 'expired' } : it)))
+      }
+    }
+
+    if (latestWsEvent.event_type === 'health_update') {
+      const payload = latestWsEvent.payload as Record<string, unknown>
+      const round = Number(payload.current_round || payload.last_round || 0)
+      if (round && round > 0) setCurrentRound(round)
+    }
+
     if (latestWsEvent.event_type === 'autonomous_decision') {
       const payload = latestWsEvent.payload
       const listingId = String(payload.listing_id || '')
@@ -595,6 +619,8 @@ export default function DiscoverInsightsPage() {
           cid: match.cid,
           listingId: `L-${match.listing_id}`,
           asaId: String(match.asa_id),
+          state: String(match.state || match.listing_state || 'active'),
+          expiry_round: Number(match.expiry_round || match.expiry || 0),
         }
       })
 
@@ -913,7 +939,7 @@ export default function DiscoverInsightsPage() {
             {insightsWithLiveReputation.map((insight, index) => (
               <article
                 key={insight.id}
-                className={`discover-result-card ${newListingIds.includes(insight.listingId) ? 'listing-card-new' : ''}`}
+                className={`discover-result-card ${newListingIds.includes(insight.listingId) ? 'listing-card-new' : ''} ${(insight.state || insight.listingStatus || '').toLowerCase() === 'expired' ? 'listing-expired' : ''} ${(insight.state || insight.listingStatus || '').toLowerCase() === 'sold' ? 'listing-sold' : ''}`}
               >
                 {agentBadges[insight.listingId] && (
                   <div className="discover-agent-badge" role="status" aria-live="polite">
@@ -946,7 +972,7 @@ export default function DiscoverInsightsPage() {
                 </div>
 
                 <div className="discover-trust-cues">
-                  <span className="discover-status-chip">Listing {insight.listingStatus}</span>
+                  <span className="discover-status-chip">Listing {insight.listingStatus || (insight.state || 'active')}</span>
                   <span className={`discover-risk-chip ${insight.reputation < 75 ? 'is-risk' : ''}`}>
                     {insight.reputation < 75 ? 'Below trust threshold' : insight.riskSignal}
                   </span>
@@ -959,9 +985,20 @@ export default function DiscoverInsightsPage() {
                   </p>
                 </div>
 
-                <button onClick={() => handleSelectInsight(insight)} className="discover-evaluate-btn">
-                  Choose This Insight
-                </button>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <ExpiryCountdown
+                    expiry_round={Number(insight.expiry_round || 0)}
+                    current_round={currentRound}
+                    state={(insight.state || insight.listingStatus || '').toLowerCase()}
+                    onExpired={() => {
+                      // visually update this insight to expired
+                      setRawInsights((prev) => prev.map((it) => (it.id === insight.id ? { ...it, listingStatus: 'expired', state: 'expired' } : it)))
+                    }}
+                  />
+                  <button onClick={() => handleSelectInsight(insight)} className="discover-evaluate-btn">
+                    Choose This Insight
+                  </button>
+                </div>
               </article>
             ))}
           </div>

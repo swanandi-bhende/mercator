@@ -144,6 +144,77 @@ Example prices:
 - `source_type` must always be `"subscription"` so Escrow can reject manually crafted Box entries.
 - `is_active` treats a subscription expiring on the current round as expired because the comparison is strictly greater-than.
 
+**InsightListing State Machine**
+
+- **States:** `ACTIVE`, `SOLD`, `EXPIRED`.
+- **Overview:** Each listing moves through a single lifecycle: created (`NONE` → `ACTIVE`), possibly purchased (`ACTIVE` → `SOLD`), or expired (`ACTIVE` → `EXPIRED`). A sold listing never expires (no `SOLD` → `EXPIRED` transition). An expired listing cannot be reactivated.
+
+Transitions (each transition lists: Trigger, Guard(s), Side effects, and explicit revert messages):
+
+- **Transition 1 — Creation: `NONE` → `ACTIVE`**
+  - Trigger: `create_listing()` app call.
+  - Guards:
+    - Caller must be registered in `AgentRegistry` — revert message: "Unregistered agent — call AgentRegistry.register() first".
+    - `price_micro_usdc` must be > 0 — revert message: "Price must be greater than zero".
+    - `ipfs_cid` must be non-empty (CIDv0 length check) — revert message: "IPFS CID must be at least 46 characters".
+    - `source_type` must be either "curator_agent" or "human" — revert message: "source_type must be curator_agent or human".
+  - Side effects:
+    - `expiry_round = Global.round() + expiry_rounds` where `expiry_rounds` is `custom_expiry_rounds` if >0 else `default_expiry_rounds`.
+    - `listing_count` / `total_active_listings` increments.
+    - Emit `ListingCreated(listing_id, seller_wallet, expiry_round, source_type)` log.
+    - Return the `listing_id` to the caller.
+
+- **Transition 2 — Purchase: `ACTIVE` → `SOLD`**
+  - Trigger: `mark_sold(listing_id, buyer)` invoked by Escrow.
+  - Guards (checked in exact order):
+    - Caller must be the registered `Escrow` app: revert message: "Only Escrow can mark a listing as sold".
+    - The listing Box must exist: revert message: "Listing not found".
+    - Listing must be in `ACTIVE` state: revert message: "Listing not in ACTIVE state".
+    - Listing must not be expired: `Global.round() <= expiry_round` — revert message: "Listing has expired — purchase window closed".
+  - Side effects:
+    - `buyer_wallet = buyer`.
+    - `sold_at_round = Global.round()`.
+    - `state = SOLD`.
+    - `total_active_listings` decremented, `total_sold_listings` incremented.
+    - Emit `ListingSold(listing_id, buyer_wallet, sold_at_round)`.
+    - Call `Reputation.record_purchase(seller_wallet, buyer_wallet, listing_id)` (inner-call from Escrow/mark_sold flow).
+
+- **Transition 2b — Subscriber Purchase (subscription listings): `ACTIVE` → `ACTIVE`**
+  - Trigger: `mark_sold_to_subscriber(listing_id, buyer)` invoked by Escrow for subscription purchases.
+  - Guards:
+    - Listing Box must exist: revert message: "Listing not found".
+    - Listing must be in `ACTIVE` state: revert message: "Listing not in ACTIVE state".
+    - Listing must not be expired: revert message: "Listing has expired — purchase window closed".
+  - Side effects:
+    - Increment `subscription_purchase_count` on the ListingRecord.
+    - Append buyer address to `subscriber_purchases` storage (or Box array keyed by listing_id).
+    - Emit `ListingSubscriberPurchase(listing_id, buyer_wallet, Global.round())`.
+    - Do NOT change listing `state` or global active/sold counters.
+
+- **Transition 3 — Expiry: `ACTIVE` → `EXPIRED`**
+  - Trigger: `check_and_expire(listing_id)` (any caller may invoke).
+  - Guards / Behavior:
+    - If Box does not exist: revert message: "Listing not found".
+    - If state != `ACTIVE`: no-op and return silently (do not revert) — calling this on `SOLD` or `EXPIRED` is a harmless noop.
+    - Require `Global.round() > expiry_round` to perform expiry; otherwise no-op.
+  - Side effects:
+    - `state = EXPIRED`.
+    - `expired_at_round = Global.round()`.
+    - Decrement `total_active_listings`, increment `total_expired_listings`.
+    - Emit `ListingExpired(listing_id, expired_at_round)`.
+
+Guard failure messages (exact strings shown here are used for on-chain revert logs and frontend error display):
+
+- "Listing has expired — purchase window closed"
+- "Listing already sold to {buyer}"
+- "Listing not in ACTIVE state"
+
+Notes and implications:
+
+- `Global.round()` inside a contract method reflects the confirmation round of the transaction being processed, not the round the transaction was submitted. Frontend timers MUST add a safety buffer (recommend +10 rounds) to account for TestNet congestion.
+- `Global.round()` is available only in contract code; off-chain tests must use the Algod client (`algod.Status()["last-round"]`) when constructing fixtures.
+- Define state string constants at module level and use constants (not inline string literals) in equality checks to get compile-time safety against typos.
+
 ## Escrow
 
 Schema for Escrow contract (payment settlement and buyer access unlock):

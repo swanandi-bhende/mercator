@@ -1,0 +1,54 @@
+/* Listing state visual styles */
+.listing-expired {
+  opacity: 0.6;
+  filter: grayscale(60%);
+  transition: opacity 420ms ease, transform 420ms ease, filter 420ms ease;
+  transform-origin: center center;
+  transform: scale(0.995);
+}
+
+.listing-sold {
+  opacity: 0.9;
+  background-color: rgba(16, 185, 129, 0.06);
+  transition: opacity 300ms ease, background-color 300ms ease;
+}
+
+.listing-fade-enter {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.995);
+}
+.listing-fade-enter-active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition: opacity 260ms ease, transform 260ms ease;
+}
+
+.insight-state-pill--expired {
+  background: #9ca3af;
+  color: #ffffff;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.insight-state-pill--sold {
+  background: #10b981;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+/* Specific cards and rows */
+.insight-focus-card.listing-expired,
+.discover-result-card.listing-expired,
+tr.listing-expired {
+  transform: translateY(4px) scale(0.997);
+  opacity: 0.62;
+}
+
+.insight-focus-card.listing-sold,
+.discover-result-card.listing-sold,
+tr.listing-sold {
+  box-shadow: none;
+}

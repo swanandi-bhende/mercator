@@ -2,6 +2,8 @@ import { useMemo, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
 import { SellerCard } from '../components/SellerCard'
+import ExpiryCountdown from '../components/ExpiryCountdown'
+import '../styles/listing.css'
 import useWebSocket, { WebSocketEvent } from '../hooks/useWebSocket'
 
 type TrustBand = 'trusted' | 'borderline' | 'below'
@@ -31,6 +33,8 @@ export default function InsightDetailPage() {
       : null
   )
   const [showAboutSeller, setShowAboutSeller] = useState(false)
+  const [currentRound, setCurrentRound] = useState<number>(0)
+  const [isExpiredVisual, setIsExpiredVisual] = useState(false)
 
   useWebSocket((event: WebSocketEvent) => {
     try {
@@ -48,6 +52,11 @@ export default function InsightDetailPage() {
             step_scores: Array.isArray(payload.step_scores) ? payload.step_scores as number[] : [],
           })
         }
+      }
+      if (event.event_type === 'health_update') {
+        const payload = event.payload as any
+        const round = Number(payload.current_round || payload.last_round || 0)
+        if (round && round > 0) setCurrentRound(round)
       }
     } catch (err) {
       // ignore malformed ws payloads
@@ -138,6 +147,8 @@ export default function InsightDetailPage() {
   const marketContext = selectedInsight.market_context || 'General market context'
   const sellerIdentity = sellerMetadata?.address || selectedInsight.seller_wallet
   const listingStatus = sellerMetadata?.listingStatus || 'Active'
+  const listingState = (selectedInsight.state || selectedInsight.listing_status || listingStatus || 'active').toLowerCase()
+  const expiryRound = Number(selectedInsight.expiry_round || sellerMetadata?.expiry_round || 0)
 
   const rationaleLines = [
     `Relevance scored ${relevanceScore}% against your query intent.`,
@@ -167,13 +178,26 @@ export default function InsightDetailPage() {
     <div className="insight-decision-page">
       <section className="insight-decision-hero">
         <div className="home-wrap insight-decision-layout">
-          <article className="insight-focus-card">
+          <article className={`insight-focus-card ${listingState === 'expired' || isExpiredVisual ? 'listing-expired' : listingState === 'sold' ? 'listing-sold' : ''}`}>
             <p className="home-kicker">Decision Screen</p>
             <h1>Is this insight worth buying right now?</h1>
 
-            <div className="insight-summary-head">
+                <div className={`insight-summary-head`}>
               <h2>{selectedInsight.insight_text}</h2>
               <p>{synopsis}</p>
+                  <div style={{ marginTop: 8 }} className={`${listingState === 'expired' || isExpiredVisual ? 'listing-expired' : listingState === 'sold' ? 'listing-sold' : ''}`}>
+                <span className={`insight-state-pill insight-state-pill--${listingState}`}>{listingState.toUpperCase()}</span>
+                {listingState === 'active' && (
+                  <div style={{ float: 'right' }}>
+                    <ExpiryCountdown expiry_round={expiryRound} current_round={currentRound} state={listingState} onExpired={() => { setIsExpiredVisual(true) }} />
+                  </div>
+                )}
+                {listingState === 'sold' && <div>Sold at round {selectedInsight.sold_at_round || 'N/A'} to {selectedInsight.buyer_wallet || 'unknown'}</div>}
+                {listingState === 'expired' && <div>Expired at round {selectedInsight.expired_at_round || 'N/A'}</div>}
+                {listingState === 'active' && expiryRound && currentRound && ((expiryRound - currentRound) * 4.5) <= 30 * 60 && (
+                  <div className="insight-urgency">Purchase before expiry</div>
+                )}
+              </div>
             </div>
 
             <div className="insight-anchor-grid">

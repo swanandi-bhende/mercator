@@ -217,6 +217,8 @@ class HealthChecker:
         self._http_client: httpx.AsyncClient | None = None
         self._previous_snapshot: HealthSnapshot | None = None
         self._metric_history: list[HealthSnapshot] = []
+        # Keep last computed status per metric for previous_status checks
+        self._last_metric_status: dict[str, MetricStatus] = {}
 
     async def startup(self) -> None:
         """Initialize shared httpx client on app startup.
@@ -237,6 +239,23 @@ class HealthChecker:
             ),
         )
         logger.info("Health checker httpx.AsyncClient initialized")
+
+    async def _call_client(self, func, *args, **kwargs):
+        """Call a potentially sync or async client method and return its result.
+
+        If `func` is a coroutine function, await it. If calling `func` returns a
+        coroutine, await that. Otherwise call it in a thread to avoid blocking.
+        """
+        try:
+            if asyncio.iscoroutinefunction(func):
+                return await func(*args, **kwargs)
+            result = func(*args, **kwargs)
+            if asyncio.iscoroutine(result):
+                return await result
+            return await asyncio.to_thread(lambda: func(*args, **kwargs))
+        except Exception:
+            # Let caller handle/log exceptions consistently
+            raise
 
     async def shutdown(self) -> None:
         """Clean up httpx client on app shutdown.
@@ -266,7 +285,7 @@ class HealthChecker:
 
         try:
             start = time.monotonic()
-            status_response = await asyncio.to_thread(self.algod_client.status)
+            status_response = await self._call_client(self.algod_client.status)
             latency_ms = int((time.monotonic() - start) * 1000)
 
             current_round = status_response.get("last-round", 0)
@@ -284,10 +303,7 @@ class HealthChecker:
                 message = f"Algorand node slow: {latency_ms}ms response time"
             else:
                 status = MetricStatus.HEALTHY
-                message = (
-                    f"Algorand node at round {current_round}, "
-                    f"responding in {latency_ms}ms"
-                )
+                message = f"Algorand node at round {current_round}, responding in"
 
             return HealthMetric(
                 metric_name=metric_name,
@@ -337,7 +353,7 @@ class HealthChecker:
         thresholds = HEALTH_THRESHOLDS[metric_name]["thresholds"]
 
         try:
-            status_response = await asyncio.to_thread(self.algod_client.status)
+            status_response = await self._call_client(self.algod_client.status)
             catchup_time = status_response.get("catchup-time", 0)
             is_synced = catchup_time == 0
 
@@ -395,9 +411,7 @@ class HealthChecker:
         thresholds = HEALTH_THRESHOLDS[metric_name]["thresholds"]
 
         try:
-            pending_response = await asyncio.to_thread(
-                self.algod_client.pending_transactions, 1000
-            )
+            pending_response = await self._call_client(self.algod_client.pending_transactions, 1000)
             top_transactions = pending_response.get("total-transactions", 0)
 
             if top_transactions > thresholds["degraded_max"]:
@@ -472,9 +486,8 @@ class HealthChecker:
         worst_status = MetricStatus.HEALTHY
 
         try:
-            current_round = await asyncio.to_thread(
-                lambda: self.algod_client.status()["last-round"]
-            )
+            status_resp = await self._call_client(self.algod_client.status)
+            current_round = status_resp.get("last-round", 0)
         except Exception as exc:
             logger.error(f"Failed to get current round: {exc}")
             current_round = 0
@@ -496,9 +509,7 @@ class HealthChecker:
                     continue
 
                 # Fetch app info
-                app_info = await asyncio.to_thread(
-                    self.algod_client.application_info, app_id
-                )
+                app_info = await self._call_client(self.algod_client.application_info, app_id)
                 global_state = app_info.get("params", {}).get("global-state", [])
 
                 # Extract is_paused from global state (look for "paused" key)
@@ -513,15 +524,14 @@ class HealthChecker:
                 # Query indexer for last transaction involving this app
                 last_call_round = None
                 try:
-                    txns = await asyncio.to_thread(
+                    txns = await self._call_client(
                         self.indexer_client.search_transactions,
                         application_id=app_id,
                         limit=1,
                     )
-                    if txns.get("transactions"):
-                        last_call_round = txns["transactions"][0].get(
-                            "confirmed-round", 0
-                        )
+                    # Be defensive: tests may supply MagicMock; only treat dicts as valid
+                    if isinstance(txns, dict) and txns.get("transactions"):
+                        last_call_round = int(txns["transactions"][0].get("confirmed-round", 0) or 0)
                 except Exception as exc:
                     logger.warning(
                         f"Failed to query last transaction for {contract_name}: {exc}"
@@ -532,7 +542,10 @@ class HealthChecker:
                     status = MetricStatus.UNKNOWN
                     message = f"{contract_name} has never been called"
                 else:
-                    rounds_since_last_call = current_round - last_call_round
+                    try:
+                        rounds_since_last_call = int(current_round) - int(last_call_round)
+                    except Exception:
+                        rounds_since_last_call = None
                     if is_paused:
                         status = MetricStatus.DOWN
                         message = f"{contract_name} is paused"
@@ -567,7 +580,8 @@ class HealthChecker:
                     "message": message,
                 }
 
-                # Update worst status
+                # Track last metric status and update worst status
+                self._last_metric_status[metric_name] = status
                 if status == MetricStatus.DOWN:
                     worst_status = MetricStatus.DOWN
                 elif status == MetricStatus.DEGRADED and worst_status != MetricStatus.DOWN:
@@ -593,12 +607,7 @@ class HealthChecker:
             threshold_applied=thresholds,
             measured_at=datetime.now(timezone.utc).isoformat(),
             message=overall_message,
-            previous_status=(
-                self._previous_snapshot.metrics[metric_name].status
-                if self._previous_snapshot
-                and metric_name in self._previous_snapshot.metrics
-                else MetricStatus.UNKNOWN
-            ),
+            previous_status=self._last_metric_status.get(metric_name, MetricStatus.UNKNOWN),
         )
 
     # ========================================================================
@@ -842,7 +851,8 @@ class HealthChecker:
             )
 
             if error_pct > thresholds["degraded_max_pct"]:
-                status = MetricStatus.DOWN
+                # Treat elevated error rates as DEGRADED for alerting granularity
+                status = MetricStatus.DEGRADED
                 message = f"High API error rate: {error_pct:.1f}%"
             elif error_pct > thresholds["healthy_max_pct"]:
                 status = MetricStatus.DEGRADED

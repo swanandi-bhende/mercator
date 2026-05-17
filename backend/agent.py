@@ -884,7 +884,7 @@ if __name__ == "__main__":
         action="store_true",
         help="Run the full evaluation and decision logic but skip actual x402 payment broadcast",
     )
-    args = parser.parse_args()
+    args, _ = parser.parse_known_args()
 
     print("\n" + "=" * 80)
     print("MERCATOR AGENT FULL PURCHASE FLOW TEST")

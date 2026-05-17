@@ -31,6 +31,11 @@ from backend.utils.db import (
     record_curator_error,
     record_curator_run,
 )
+from backend.tools.semantic_search import get_insight_listing_client, invalidate_listing_cache
+from backend.utils.runtime_env import normalize_network_env
+from backend.utils.flow_tracer import tracer
+import sqlite3
+import os
 from backend.utils.runtime_env import load_repo_env_files, normalize_network_env
 from backend.utils.ws_manager import ws_manager
 from backend.utils.flow_tracer import tracer
@@ -310,6 +315,88 @@ async def run_full_cycle() -> list[CuratorRunResult]:
     )
     tracer.export_json()
     return results
+
+
+async def expire_stale_listings() -> None:
+    """Background job: find listings created long ago with no sold/expired event and call check_and_expire.
+
+    This queries the local flow_events DB for 'listing.asa_creation_completed' events older than
+    EXPIRY_HOURS (env) and without a corresponding 'listing.sold' or 'listing.expired' event.
+    For each stale listing found, call the on-chain `check_and_expire(listing_id)` method as a
+    separate transaction. Limit to 20 expirations per run.
+    """
+    normalize_network_env()
+    expiry_hours = int(os.getenv("EXPIRY_HOURS", "48"))
+    max_per_run = int(os.getenv("EXPIRY_EXPIRATIONS_PER_RUN", "20"))
+
+    db_path = tracer.db_path
+    try:
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        sql = f"""
+            SELECT DISTINCT json_extract(metadata, '$.listing_id') AS listing_id
+            FROM flow_events
+            WHERE event_name = 'listing.asa_creation_completed'
+            AND timestamp_iso < datetime('now', '-{expiry_hours} hours')
+            AND json_extract(metadata, '$.listing_id') NOT IN (
+                SELECT json_extract(metadata, '$.listing_id') FROM flow_events WHERE event_name IN ('listing.sold', 'listing.expired')
+            )
+            LIMIT ?
+        """
+        rows = conn.execute(sql, (max_per_run,)).fetchall()
+        listing_ids = [int(row['listing_id']) for row in rows if row['listing_id'] is not None]
+    except Exception as exc:
+        logger.exception("Failed to query flow_events for stale listings: %s", exc)
+        listing_ids = []
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
+
+    if not listing_ids:
+        return
+
+    client = None
+    try:
+        client = get_insight_listing_client()
+    except Exception:
+        logger.exception("InsightListing client unavailable for expiry job")
+
+    expirations = 0
+    for lid in listing_ids:
+        if expirations >= max_per_run:
+            break
+        try:
+            if client is None:
+                logger.warning("Skipping expiry for %s: no client", lid)
+                continue
+            # Call check_and_expire as a separate transaction
+            try:
+                await asyncio.to_thread(client.send.check_and_expire, lid)
+            except Exception:
+                # Some clients expose synchronous send methods; try calling directly
+                try:
+                    client.send.check_and_expire(lid)
+                except Exception as exc:
+                    logger.exception("Failed to submit check_and_expire for %s: %s", lid, exc)
+                    continue
+
+            tracer.record(
+                "listing.expired",
+                "success",
+                plain_english_description=f"Expired listing {lid} marked expired by maintenance job",
+                metadata={"listing_id": lid},
+            )
+            expirations += 1
+        except Exception as exc:
+            logger.exception("Error expiring listing %s: %s", lid, exc)
+
+    if expirations > 0:
+        try:
+            invalidate_listing_cache()
+        except Exception:
+            logger.exception("Failed to invalidate listing cache after expirations")
 
 
 def curator_status_snapshot(scheduler: Any | None = None) -> dict[str, Any]:

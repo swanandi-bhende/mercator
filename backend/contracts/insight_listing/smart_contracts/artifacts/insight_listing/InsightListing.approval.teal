@@ -3,37 +3,33 @@
 
 // algopy.arc4.ARC4Contract.approval_program() -> uint64:
 main:
-    intcblock 0 1
-    bytecblock "next_listing_id"
+    intcblock 0 1 2 8
+    bytecblock 0x6c697374696e675f "total_active_listings" 0x151f7c75 "" 0x00 "active" "default_expiry_rounds" "registry_app_id" 0x737562705f "total_sold_listings" "reputation_app_id" "total_expired_listings"
     txn ApplicationID
     bnz main_after_if_else@2
-    // smart_contracts/insight_listing/contract.py:13
-    // self.next_listing_id = UInt64(0)
-    bytec_0 // "next_listing_id"
-    intc_0 // 0
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:86-87
+    // # Set deployment-time default expiry value (default ~3 days)
+    // self.default_expiry_rounds.value = arc4.UInt64(17280)
+    bytec 6 // "default_expiry_rounds"
+    pushbytes 0x0000000000004380
     app_global_put
 
 main_after_if_else@2:
-    // smart_contracts/insight_listing/contract.py:11
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:52
     // class InsightListing(ARC4Contract):
     txn NumAppArgs
-    bz main___algopy_default_create@7
-    pushbytes 0x35b836d6 // method "create_listing(uint64,address,string)uint64"
-    txna ApplicationArgs 0
-    match main_create_listing_route@5
-    err
-
-main_create_listing_route@5:
-    // smart_contracts/insight_listing/contract.py:16
-    // @arc4.abimethod()
+    bz main___algopy_default_create@16
     txn OnCompletion
     !
-    txn ApplicationID
-    &&
     assert
-    b create_listing
+    txn ApplicationID
+    assert
+    pushbytess 0xffa1951b 0xbde0e9b5 0x871b1249 0xa5ec2a9b 0x3eeefbdb 0x2e7f7116 0x8c7493f3 // method "create_listing(uint64,string,string,uint64)uint64", method "get_listing_state(uint64)string", method "get_seller(uint64)address", method "mark_sold_to_subscriber(uint64,address)void", method "mark_sold(uint64,address)void", method "is_sold_to_subscriber(uint64,address)bool", method "check_and_expire(uint64)void"
+    txna ApplicationArgs 0
+    match create_listing get_listing_state get_seller mark_sold_to_subscriber mark_sold is_sold_to_subscriber check_and_expire
+    err
 
-main___algopy_default_create@7:
+main___algopy_default_create@16:
     txn OnCompletion
     !
     txn ApplicationID
@@ -44,162 +40,1035 @@ main___algopy_default_create@7:
 
 // smart_contracts.insight_listing.contract.InsightListing.create_listing[routing]() -> void:
 create_listing:
-    // smart_contracts/insight_listing/contract.py:16
+    bytec_3 // ""
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:89
     // @arc4.abimethod()
     txna ApplicationArgs 1
     dup
     len
-    pushint 8
+    intc_3 // 8
     ==
     assert // invalid number of bytes for arc4.uint64
     txna ApplicationArgs 2
-    dup
-    len
-    pushint 32
-    ==
-    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
-    txna ApplicationArgs 3
-    dup
+    dupn 2
     intc_0 // 0
     extract_uint16 // on error: invalid array length header
-    pushint 2
+    intc_2 // 2
     +
-    dig 1
+    swap
     len
+    dup
+    uncover 2
     ==
     assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>
-    // smart_contracts/insight_listing/contract.py:23
-    // listing_id = self.next_listing_id
+    txna ApplicationArgs 3
+    dupn 2
     intc_0 // 0
-    bytec_0 // "next_listing_id"
+    extract_uint16 // on error: invalid array length header
+    intc_2 // 2
+    +
+    swap
+    len
+    dup
+    uncover 2
+    ==
+    assert // invalid number of bytes for arc4.dynamic_array<arc4.uint8>
+    txna ApplicationArgs 4
+    dup
+    len
+    intc_3 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:124-126
+    // # Guards (exact messages required by spec)
+    // # AgentRegistry registration check
+    // if self.registry_app_id.value.native != 0:
+    intc_0 // 0
+    bytec 7 // "registry_app_id"
     app_global_get_ex
-    assert // check self.next_listing_id exists
-    // smart_contracts/insight_listing/contract.py:25-38
-    // # Mint one ASA for this listing and store its id with listing metadata.
-    // asset_result = itxn.AssetConfig(
-    //     total=UInt64(1),
-    //     decimals=UInt64(0),
-    //     default_frozen=False,
-    //     unit_name="INSIGHT",
-    //     asset_name="Mercator Insight",
-    //     url=ipfs_hash.native,
-    //     manager=seller.native,
-    //     reserve=seller.native,
-    //     freeze=seller.native,
-    //     clawback=seller.native,
-    //     fee=UInt64(1000),
-    // ).submit()
-    itxn_begin
-    // smart_contracts/insight_listing/contract.py:32
-    // url=ipfs_hash.native,
-    dig 1
-    extract 2 0
-    dig 3
-    itxn_field ConfigAssetClawback
-    dig 3
-    itxn_field ConfigAssetFreeze
-    dig 3
-    itxn_field ConfigAssetReserve
-    dig 3
-    itxn_field ConfigAssetManager
-    itxn_field ConfigAssetURL
-    // smart_contracts/insight_listing/contract.py:31
-    // asset_name="Mercator Insight",
-    pushbytes "Mercator Insight"
-    itxn_field ConfigAssetName
-    // smart_contracts/insight_listing/contract.py:30
-    // unit_name="INSIGHT",
-    pushbytes "INSIGHT"
-    itxn_field ConfigAssetUnitName
-    // smart_contracts/insight_listing/contract.py:29
-    // default_frozen=False,
-    intc_0 // 0
-    itxn_field ConfigAssetDefaultFrozen
-    // smart_contracts/insight_listing/contract.py:28
-    // decimals=UInt64(0),
-    intc_0 // 0
-    itxn_field ConfigAssetDecimals
-    // smart_contracts/insight_listing/contract.py:27
-    // total=UInt64(1),
-    intc_1 // 1
-    itxn_field ConfigAssetTotal
-    // smart_contracts/insight_listing/contract.py:25-26
-    // # Mint one ASA for this listing and store its id with listing metadata.
-    // asset_result = itxn.AssetConfig(
-    pushint 3 // acfg
-    itxn_field TypeEnum
-    // smart_contracts/insight_listing/contract.py:37
-    // fee=UInt64(1000),
-    pushint 1000
-    itxn_field Fee
-    // smart_contracts/insight_listing/contract.py:25-38
-    // # Mint one ASA for this listing and store its id with listing metadata.
-    // asset_result = itxn.AssetConfig(
-    //     total=UInt64(1),
-    //     decimals=UInt64(0),
-    //     default_frozen=False,
-    //     unit_name="INSIGHT",
-    //     asset_name="Mercator Insight",
-    //     url=ipfs_hash.native,
-    //     manager=seller.native,
-    //     reserve=seller.native,
-    //     freeze=seller.native,
-    //     clawback=seller.native,
-    //     fee=UInt64(1000),
-    // ).submit()
-    itxn_submit
-    itxn CreatedAssetID
-    // smart_contracts/insight_listing/contract.py:45
-    // asa_id=arc4.UInt64(asa_id),
-    itob
-    // smart_contracts/insight_listing/contract.py:41-46
-    // self.listings[arc4.UInt64(listing_id)] = Listing(
-    //     price=price,
-    //     seller=seller,
-    //     ipfs_hash=ipfs_hash,
-    //     asa_id=arc4.UInt64(asa_id),
+    assert // check self.registry_app_id exists
+    btoi
+    bz create_listing_after_if_else@4
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:127-131
+    // is_registered, registration_check_txn = arc4.abi_call[arc4.Bool](
+    //     "is_registered(address)bool",
+    //     Txn.sender,
+    //     app_id=self.registry_app_id.value.native,
     // )
-    uncover 4
-    uncover 4
+    itxn_begin
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:129
+    // Txn.sender,
+    txn Sender
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:130
+    // app_id=self.registry_app_id.value.native,
+    intc_0 // 0
+    bytec 7 // "registry_app_id"
+    app_global_get_ex
+    assert // check self.registry_app_id exists
+    btoi
+    itxn_field ApplicationID
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:127-131
+    // is_registered, registration_check_txn = arc4.abi_call[arc4.Bool](
+    //     "is_registered(address)bool",
+    //     Txn.sender,
+    //     app_id=self.registry_app_id.value.native,
+    // )
+    pushbytes 0x919c02df // method "is_registered(address)bool"
+    itxn_field ApplicationArgs
+    itxn_field ApplicationArgs
+    pushint 6 // appl
+    itxn_field TypeEnum
+    intc_0 // 0
+    itxn_field Fee
+    itxn_submit
+    itxn LastLog
+    dup
+    extract 0 4
+    bytec_2 // 0x151f7c75
+    ==
+    assert // application log value is not the result of an ABI return
+    extract 4 0
+    dup
+    len
+    intc_1 // 1
+    ==
+    assert // invalid number of bytes for arc4.bool
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:132
+    // assert is_registered, "Unregistered agent — call AgentRegistry.register() first"
+    bytec 4 // 0x00
+    !=
+    assert // Unregistered agent — call AgentRegistry.register() first
+
+create_listing_after_if_else@4:
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:134
+    // assert price_micro_usdc.native > 0, "Price must be greater than zero"
+    dig 5
+    btoi
+    assert // Price must be greater than zero
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:135
+    // assert ipfs_cid.native.bytes.length >= 46, "IPFS CID must be at least 46 characters"
+    dig 4
+    extract 2 0
+    len
+    pushint 46
+    >=
+    assert // IPFS CID must be at least 46 characters
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:136
+    // assert source_type == "curator_agent" or source_type == "human", "source_type must be curator_agent or human"
+    dig 2
+    pushbytes 0x000d63757261746f725f6167656e74
+    ==
+    bnz create_listing_bool_true@6
+    dig 2
+    pushbytes 0x000568756d616e
+    ==
+    bz create_listing_bool_false@7
+
+create_listing_bool_true@6:
+    intc_1 // 1
+
+create_listing_bool_merge@8:
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:136
+    // assert source_type == "curator_agent" or source_type == "human", "source_type must be curator_agent or human"
+    assert // source_type must be curator_agent or human
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:138-139
+    // # Determine expiry rounds
+    // expiry_rounds = custom_expiry_rounds.native if custom_expiry_rounds.native > 0 else self.default_expiry_rounds.value.native
+    dup
+    btoi
+    dup
+    bury 8
+    bz create_listing_ternary_false@10
+    dig 6
+
+create_listing_ternary_merge@11:
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:140
+    // assert expiry_rounds <= 1_000_000, "Expiry cannot exceed 1,000,000 rounds (~115 days)"
+    dup
+    pushint 1000000
+    <=
+    assert // Expiry cannot exceed 1,000,000 rounds (~115 days)
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:142-143
+    // # Use confirmation round inside contract
+    // now_round = Global.round
+    global Round
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:144
+    // expiry_round = arc4.UInt64(now_round + expiry_rounds)
+    dup
+    uncover 2
+    +
+    itob
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:146-147
+    // # Deterministic listing_id: sha256(Txn.sender || itob(now_round)) -> first 8 bytes -> btoi -> UInt64
+    // digest = op.sha256(op.concat(Txn.sender, op.itob(now_round)))
+    txn Sender
+    uncover 2
+    itob
+    swap
+    dig 1
     concat
-    pushbytes 0x0032
+    sha256
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:148
+    // first8 = op.substring(digest, 0, 8)
+    substring 0 8
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:149
+    // listing_id = op.btoi(first8)
+    btoi
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:153
+    // seller_wallet=arc4.Address(Txn.sender),
+    txn Sender
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:151-164
+    // # Create and write ListingRecord
+    // rec = ListingRecord(
+    //     seller_wallet=arc4.Address(Txn.sender),
+    //     price_micro_usdc=price_micro_usdc,
+    //     ipfs_cid=ipfs_cid,
+    //     source_type=source_type,
+    //     state=arc4.String(STATE_ACTIVE),
+    //     created_round=arc4.UInt64(now_round),
+    //     expiry_round=expiry_round,
+    //     sold_at_round=arc4.UInt64(0),
+    //     buyer_wallet=arc4.Address(Bytes(b"\x00" * 32)),
+    //     expired_at_round=arc4.UInt64(0),
+    //     subscription_purchase_count=arc4.UInt64(0),
+    // )
+    dig 9
+    concat
+    pushbytes 0x0076
+    concat
+    pushint 118
+    dig 8
+    +
+    dup
+    itob
+    extract 6 2
+    uncover 2
+    swap
     concat
     swap
+    dig 6
+    +
+    itob
+    extract 6 2
     concat
     uncover 2
     concat
-    // smart_contracts/insight_listing/contract.py:41
-    // self.listings[arc4.UInt64(listing_id)] = Listing(
-    dig 1
+    dig 2
+    concat
+    pushbytes 0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+    concat
+    dig 7
+    concat
+    dig 5
+    dup
+    cover 2
+    concat
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:157
+    // state=arc4.String(STATE_ACTIVE),
+    pushbytes 0x0006616374697665
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:151-164
+    // # Create and write ListingRecord
+    // rec = ListingRecord(
+    //     seller_wallet=arc4.Address(Txn.sender),
+    //     price_micro_usdc=price_micro_usdc,
+    //     ipfs_cid=ipfs_cid,
+    //     source_type=source_type,
+    //     state=arc4.String(STATE_ACTIVE),
+    //     created_round=arc4.UInt64(now_round),
+    //     expiry_round=expiry_round,
+    //     sold_at_round=arc4.UInt64(0),
+    //     buyer_wallet=arc4.Address(Bytes(b"\x00" * 32)),
+    //     expired_at_round=arc4.UInt64(0),
+    //     subscription_purchase_count=arc4.UInt64(0),
+    // )
+    concat
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:166
+    // self.listings[listing_id] = rec.copy()
+    uncover 2
     itob
-    pushbytes 0x6c697374696e67
+    bytec_0 // 0x6c697374696e675f
     dig 1
     concat
-    // smart_contracts/insight_listing/contract.py:41-46
-    // self.listings[arc4.UInt64(listing_id)] = Listing(
-    //     price=price,
-    //     seller=seller,
-    //     ipfs_hash=ipfs_hash,
-    //     asa_id=arc4.UInt64(asa_id),
-    // )
     dup
     box_del
     pop
     uncover 2
     box_put
-    // smart_contracts/insight_listing/contract.py:47
-    // self.next_listing_id = listing_id + UInt64(1)
-    swap
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:167-168
+    // # Update counters
+    // self.total_active_listings.value = arc4.UInt64(self.total_active_listings.value.native + 1)
+    intc_0 // 0
+    bytec_1 // "total_active_listings"
+    app_global_get_ex
+    assert // check self.total_active_listings exists
+    btoi
     intc_1 // 1
     +
-    bytec_0 // "next_listing_id"
+    itob
+    bytec_1 // "total_active_listings"
     swap
     app_global_put
-    // smart_contracts/insight_listing/contract.py:16
-    // @arc4.abimethod()
-    pushbytes 0x151f7c75
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:170-171
+    // # Emit compact ListingCreated log
+    // arc4.emit("ListingCreated", listing_id, arc4.Address(Txn.sender), expiry_round, source_type)
+    dup
+    txn Sender
+    concat
+    uncover 3
+    concat
+    pushbytes 0x0032
+    concat
+    uncover 2
+    concat
+    pushbytes 0x687196e7 // method "ListingCreated(uint64,address,uint64,string)"
     swap
     concat
     log
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:89
+    // @arc4.abimethod()
+    bytec_2 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return
+
+create_listing_ternary_false@10:
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:138-139
+    // # Determine expiry rounds
+    // expiry_rounds = custom_expiry_rounds.native if custom_expiry_rounds.native > 0 else self.default_expiry_rounds.value.native
+    intc_0 // 0
+    bytec 6 // "default_expiry_rounds"
+    app_global_get_ex
+    assert // check self.default_expiry_rounds exists
+    btoi
+    b create_listing_ternary_merge@11
+
+create_listing_bool_false@7:
+    intc_0 // 0
+    b create_listing_bool_merge@8
+
+
+// smart_contracts.insight_listing.contract.InsightListing.get_listing_state[routing]() -> void:
+get_listing_state:
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:175
+    // @arc4.abimethod(readonly=True)
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_3 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:177
+    // exists = self.listings.maybe(listing_id)[1]
+    itob
+    bytec_0 // 0x6c697374696e675f
+    swap
+    concat
+    dup
+    box_len
+    bury 1
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:178
+    // if not exists:
+    bnz get_listing_state_after_if_else@3
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:179
+    // return arc4.String("missing")
+    pushbytes 0x00076d697373696e67
+
+get_listing_state_after_inlined_smart_contracts.insight_listing.contract.InsightListing.get_listing_state@4:
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:175
+    // @arc4.abimethod(readonly=True)
+    bytec_2 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return
+
+get_listing_state_after_if_else@3:
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:180-181
+    // rec = self.listings[listing_id].copy()
+    // return rec.state
+    dupn 2
+    pushint 44
+    intc_2 // 2
+    box_extract
+    btoi
+    dup2
+    intc_2 // 2
+    box_extract
+    btoi
+    intc_2 // 2
+    +
+    box_extract
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:175
+    // @arc4.abimethod(readonly=True)
+    b get_listing_state_after_inlined_smart_contracts.insight_listing.contract.InsightListing.get_listing_state@4
+
+
+// smart_contracts.insight_listing.contract.InsightListing.get_seller[routing]() -> void:
+get_seller:
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:183
+    // @arc4.abimethod(readonly=True)
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_3 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:185
+    // exists = self.listings.maybe(listing_id)[1]
+    itob
+    bytec_0 // 0x6c697374696e675f
+    swap
+    concat
+    dup
+    box_len
+    bury 1
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:186
+    // assert exists, "Listing not found"
+    assert // Listing not found
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:187
+    // return self.listings[listing_id].copy().seller_wallet
+    intc_0 // 0
+    pushint 32
+    box_extract // on error: index out of bounds
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:183
+    // @arc4.abimethod(readonly=True)
+    bytec_2 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return
+
+
+// smart_contracts.insight_listing.contract.InsightListing.mark_sold_to_subscriber[routing]() -> void:
+mark_sold_to_subscriber:
+    bytec_3 // ""
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:189
+    // @arc4.abimethod()
+    txna ApplicationArgs 1
+    dupn 2
+    len
+    intc_3 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    txna ApplicationArgs 2
+    dup
+    cover 2
+    len
+    pushint 32
+    ==
+    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:191
+    // exists = self.listings.maybe(listing_id)[1]
+    itob
+    bytec_0 // 0x6c697374696e675f
+    dig 1
+    concat
+    dup
+    cover 2
+    dup
+    box_len
+    bury 1
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:192
+    // assert exists, "Listing not found"
+    assert // Listing not found
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:193
+    // rec = self.listings[listing_id].copy()
+    dup
+    box_get
+    pop
+    cover 2
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:194-195
+    // # Guard: must be active
+    // assert rec.state.native == STATE_ACTIVE, "Listing not in ACTIVE state"
+    dup
+    pushint 44
+    intc_2 // 2
+    box_extract
+    btoi
+    dup2
+    intc_2 // 2
+    box_extract
+    btoi
+    intc_2 // 2
+    +
+    dig 2
+    cover 2
+    box_extract
+    extract 2 0
+    bytec 5 // "active"
+    ==
+    assert // Listing not in ACTIVE state
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:196-197
+    // # Guard: not expired
+    // assert rec.expiry_round.native >= Global.round, "Listing has expired — purchase window closed"
+    pushint 54
+    intc_3 // 8
+    box_extract // on error: index out of bounds
+    btoi
+    global Round
+    >=
+    assert // Listing has expired — purchase window closed
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:199-200
+    // # Update subscriber_purchases box (initialize if needed)
+    // sl_exists = self.subscriber_purchases.maybe(listing_id)[1]
+    bytec 8 // 0x737562705f
+    swap
+    concat
+    dup
+    box_len
+    bury 1
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:201
+    // if not sl_exists:
+    bnz mark_sold_to_subscriber_else_body@3
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:203-214
+    // sl = arc4.StaticArray[arc4.Address, Literal[100]](
+    //     zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr,
+    //     zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr,
+    //     zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr,
+    //     zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr,
+    //     zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr,
+    //     zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr,
+    //     zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr,
+    //     zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr,
+    //     zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr,
+    //     zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr, zero_addr,
+    // )
+    pushbytes 0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:215
+    // sl[0] = buyer
+    dig 4
+    replace2 0 // on error: index access is out of bounds
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:216
+    // self.subscriber_purchases[listing_id] = sl.copy()
+    dig 1
+    swap
+    box_put
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:217
+    // rec.subscription_purchase_count = arc4.UInt64(1)
+    dig 1
+    pushbytes 0x0000000000000001
+    replace2 110
+    bury 2
+
+mark_sold_to_subscriber_after_if_else@6:
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:226-227
+    // # write back listing record (state remains ACTIVE)
+    // self.listings[listing_id] = rec.copy()
+    dig 2
+    dup
+    box_del
+    pop
+    dig 2
+    box_put
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:228
+    // arc4.emit("ListingSubscriberPurchase", listing_id, buyer, arc4.UInt64(Global.round))
+    global Round
+    itob
+    dig 5
+    dig 5
+    concat
+    swap
+    concat
+    pushbytes 0xb5c45352 // method "ListingSubscriberPurchase(uint64,address,uint64)"
+    swap
+    concat
+    log
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:189
+    // @arc4.abimethod()
+    intc_1 // 1
+    return
+
+mark_sold_to_subscriber_else_body@3:
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:220
+    // idx = rec.subscription_purchase_count.native
+    dig 2
+    pushint 110
+    intc_3 // 8
+    box_extract // on error: index out of bounds
+    btoi
+    dup
+    bury 7
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:221
+    // if idx < 100:
+    pushint 100
+    <
+    bz mark_sold_to_subscriber_after_if_else@6
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:223
+    // rec.subscription_purchase_count = arc4.UInt64(idx + 1)
+    dig 5
+    dup
+    intc_1 // 1
+    +
+    itob
+    dig 3
+    swap
+    replace2 110
+    bury 3
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:222
+    // sl[idx] = buyer
+    pushint 32
+    *
+    dig 1
+    swap
+    dig 5
+    box_replace // on error: index out of bounds
+    b mark_sold_to_subscriber_after_if_else@6
+
+
+// smart_contracts.insight_listing.contract.InsightListing.mark_sold[routing]() -> void:
+mark_sold:
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:230
+    // @arc4.abimethod()
+    txna ApplicationArgs 1
+    dupn 2
+    len
+    intc_3 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    dup
+    btoi
+    txna ApplicationArgs 2
+    dup
+    cover 3
+    dup
+    len
+    pushint 32
+    ==
+    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:232-233
+    // # Escrow-only guard
+    // assert Global.caller_application_id == self.escrow_app_id.value.native, "Only Escrow can mark a listing as sold"
+    global CallerApplicationID
+    intc_0 // 0
+    pushbytes "escrow_app_id"
+    app_global_get_ex
+    assert // check self.escrow_app_id exists
+    btoi
+    ==
+    assert // Only Escrow can mark a listing as sold
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:235
+    // exists = self.listings.maybe(listing_id)[1]
+    swap
+    itob
+    bytec_0 // 0x6c697374696e675f
+    swap
+    concat
+    dup
+    box_len
+    bury 1
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:236
+    // assert exists, "Listing not found"
+    assert // Listing not found
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:237
+    // rec = self.listings[listing_id].copy()
+    dup
+    box_get
+    pop
+    swap
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:237-238
+    // rec = self.listings[listing_id].copy()
+    // assert rec.state.native == STATE_ACTIVE, "Listing not in ACTIVE state"
+    dup
+    pushint 44
+    intc_2 // 2
+    box_extract
+    btoi
+    dup2
+    intc_2 // 2
+    box_extract
+    btoi
+    intc_2 // 2
+    +
+    dig 2
+    cover 2
+    box_extract
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:238
+    // assert rec.state.native == STATE_ACTIVE, "Listing not in ACTIVE state"
+    extract 2 0
+    bytec 5 // "active"
+    ==
+    assert // Listing not in ACTIVE state
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:239
+    // assert rec.expiry_round.native >= Global.round, "Listing has expired — purchase window closed"
+    dup
+    pushint 54
+    intc_3 // 8
+    box_extract // on error: index out of bounds
+    btoi
+    global Round
+    >=
+    assert // Listing has expired — purchase window closed
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:241-242
+    // # Update record
+    // rec.state = arc4.String(STATE_SOLD)
+    dig 1
+    pushint 44
+    extract_uint16
+    uncover 2
+    intc_0 // 0
+    uncover 2
+    extract3
+    pushbytes 0x0004736f6c64
+    concat
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:243
+    // rec.buyer_wallet = buyer
+    dig 2
+    replace2 70
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:244
+    // rec.sold_at_round = arc4.UInt64(Global.round)
+    global Round
+    itob
+    replace2 62
+    dup
+    cover 4
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:245
+    // self.listings[listing_id] = rec.copy()
+    dig 1
+    box_del
+    pop
+    swap
+    dig 1
+    box_put
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:247-248
+    // # Update counters
+    // self.total_active_listings.value = arc4.UInt64(self.total_active_listings.value.native - 1)
+    intc_0 // 0
+    bytec_1 // "total_active_listings"
+    app_global_get_ex
+    assert // check self.total_active_listings exists
+    btoi
+    intc_1 // 1
+    -
+    itob
+    bytec_1 // "total_active_listings"
+    swap
+    app_global_put
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:249
+    // self.total_sold_listings.value = arc4.UInt64(self.total_sold_listings.value.native + 1)
+    intc_0 // 0
+    bytec 9 // "total_sold_listings"
+    app_global_get_ex
+    assert // check self.total_sold_listings exists
+    btoi
+    intc_1 // 1
+    +
+    itob
+    bytec 9 // "total_sold_listings"
+    swap
+    app_global_put
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:251
+    // arc4.emit("ListingSold", listing_id, buyer, rec.sold_at_round)
+    extract 62 8
+    cover 2
+    concat
+    swap
+    concat
+    pushbytes 0x2375c08a // method "ListingSold(uint64,address,uint64)"
+    swap
+    concat
+    log
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:253-254
+    // # Notify Reputation contract if configured (best-effort)
+    // if self.reputation_app_id.value.native != 0:
+    intc_0 // 0
+    bytec 10 // "reputation_app_id"
+    app_global_get_ex
+    assert // check self.reputation_app_id exists
+    btoi
+    bz mark_sold_after_if_else@4
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:255-261
+    // arc4.abi_call(
+    //     "record_purchase(address,address,uint64)void",
+    //     rec.seller_wallet,
+    //     buyer,
+    //     listing_id,
+    //     app_id=self.reputation_app_id.value.native,
+    // )
+    itxn_begin
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:257
+    // rec.seller_wallet,
+    dup
+    extract 0 32
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:260
+    // app_id=self.reputation_app_id.value.native,
+    intc_0 // 0
+    bytec 10 // "reputation_app_id"
+    app_global_get_ex
+    assert // check self.reputation_app_id exists
+    btoi
+    itxn_field ApplicationID
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:255-261
+    // arc4.abi_call(
+    //     "record_purchase(address,address,uint64)void",
+    //     rec.seller_wallet,
+    //     buyer,
+    //     listing_id,
+    //     app_id=self.reputation_app_id.value.native,
+    // )
+    pushbytes 0xdbd91c95 // method "record_purchase(address,address,uint64)void"
+    itxn_field ApplicationArgs
+    itxn_field ApplicationArgs
+    dig 1
+    itxn_field ApplicationArgs
+    dig 2
+    itxn_field ApplicationArgs
+    pushint 6 // appl
+    itxn_field TypeEnum
+    intc_0 // 0
+    itxn_field Fee
+    itxn_submit
+
+mark_sold_after_if_else@4:
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:230
+    // @arc4.abimethod()
+    intc_1 // 1
+    return
+
+
+// smart_contracts.insight_listing.contract.InsightListing.is_sold_to_subscriber[routing]() -> void:
+is_sold_to_subscriber:
+    intc_0 // 0
+    bytec_3 // ""
+    dup
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:263
+    // @arc4.abimethod(readonly=True)
+    txna ApplicationArgs 1
+    dup
+    len
+    intc_3 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    txna ApplicationArgs 2
+    dup
+    cover 2
+    len
+    pushint 32
+    ==
+    assert // invalid number of bytes for arc4.static_array<arc4.uint8, 32>
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:265
+    // sl_exists = self.subscriber_purchases.maybe(listing_id)[1]
+    itob
+    dup
+    bytec 8 // 0x737562705f
+    swap
+    concat
+    dup
+    box_len
+    bury 1
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:266
+    // if not sl_exists:
+    bnz is_sold_to_subscriber_after_if_else@3
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:267
+    // return arc4.Bool(False)
+    bytec 4 // 0x00
+
+is_sold_to_subscriber_after_inlined_smart_contracts.insight_listing.contract.InsightListing.is_sold_to_subscriber@10:
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:263
+    // @arc4.abimethod(readonly=True)
+    bytec_2 // 0x151f7c75
+    swap
+    concat
+    log
+    intc_1 // 1
+    return
+
+is_sold_to_subscriber_after_if_else@3:
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:268
+    // sl = self.subscriber_purchases[listing_id].copy()
+    dup
+    box_get
+    swap
+    bury 7
+    assert // check self.subscriber_purchases entry exists
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:269
+    // count = self.listings[listing_id].copy().subscription_purchase_count.as_uint64()
+    bytec_0 // 0x6c697374696e675f
+    dig 2
+    concat
+    pushint 110
+    intc_3 // 8
+    box_extract // on error: index out of bounds
+    btoi
+    bury 5
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:270
+    // for i in urange(count):
+    intc_0 // 0
+    bury 4
+
+is_sold_to_subscriber_for_header@4:
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:270
+    // for i in urange(count):
+    dig 3
+    dig 5
+    <
+    bz is_sold_to_subscriber_after_for@9
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:271
+    // if sl[i] == buyer:
+    dig 3
+    pushint 32
+    *
+    dig 6
+    swap
+    pushint 32
+    extract3 // on error: index access is out of bounds
+    dig 3
+    ==
+    bz is_sold_to_subscriber_after_if_else@7
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:272
+    // return arc4.Bool(True)
+    pushbytes 0x80
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:263
+    // @arc4.abimethod(readonly=True)
+    b is_sold_to_subscriber_after_inlined_smart_contracts.insight_listing.contract.InsightListing.is_sold_to_subscriber@10
+
+is_sold_to_subscriber_after_if_else@7:
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:270
+    // for i in urange(count):
+    dig 3
+    intc_1 // 1
+    +
+    bury 4
+    b is_sold_to_subscriber_for_header@4
+
+is_sold_to_subscriber_after_for@9:
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:273
+    // return arc4.Bool(False)
+    bytec 4 // 0x00
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:263
+    // @arc4.abimethod(readonly=True)
+    b is_sold_to_subscriber_after_inlined_smart_contracts.insight_listing.contract.InsightListing.is_sold_to_subscriber@10
+
+
+// smart_contracts.insight_listing.contract.InsightListing.check_and_expire[routing]() -> void:
+check_and_expire:
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:275
+    // @arc4.abimethod()
+    txna ApplicationArgs 1
+    dupn 2
+    len
+    intc_3 // 8
+    ==
+    assert // invalid number of bytes for arc4.uint64
+    btoi
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:277-278
+    // # Anyone may call this; expiry is a public operation
+    // exists = self.listings.maybe(listing_id)[1]
+    itob
+    bytec_0 // 0x6c697374696e675f
+    swap
+    concat
+    dupn 2
+    box_len
+    bury 1
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:279
+    // if not exists:
+    assert // Listing not found
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:282
+    // rec = self.listings[listing_id].copy()
+    dup
+    box_get
+    pop
+    swap
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:283-284
+    // # If not active, no-op (silent) per spec
+    // if rec.state.native != STATE_ACTIVE:
+    dup
+    pushint 44
+    intc_2 // 2
+    box_extract
+    btoi
+    dup2
+    intc_2 // 2
+    box_extract
+    btoi
+    intc_2 // 2
+    +
+    box_extract
+    extract 2 0
+    bytec 5 // "active"
+    !=
+    bnz check_and_expire_after_inlined_smart_contracts.insight_listing.contract.InsightListing.check_and_expire@8
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:286
+    // if rec.expiry_round.native >= Global.round:
+    dig 1
+    pushint 54
+    intc_3 // 8
+    box_extract // on error: index out of bounds
+    btoi
+    global Round
+    >=
+    bnz check_and_expire_after_inlined_smart_contracts.insight_listing.contract.InsightListing.check_and_expire@8
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:288
+    // rec.state = arc4.String(STATE_EXPIRED)
+    dupn 2
+    pushint 44
+    extract_uint16
+    intc_0 // 0
+    swap
+    extract3
+    pushbytes 0x000765787069726564
+    concat
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:289
+    // rec.expired_at_round = arc4.UInt64(Global.round)
+    global Round
+    itob
+    replace2 102
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:290
+    // self.listings[listing_id] = rec.copy()
+    dig 2
+    dup
+    box_del
+    pop
+    dig 1
+    box_put
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:292-293
+    // # Update counters
+    // self.total_active_listings.value = arc4.UInt64(self.total_active_listings.value.native - 1)
+    intc_0 // 0
+    bytec_1 // "total_active_listings"
+    app_global_get_ex
+    assert // check self.total_active_listings exists
+    btoi
+    intc_1 // 1
+    -
+    itob
+    bytec_1 // "total_active_listings"
+    swap
+    app_global_put
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:294
+    // self.total_expired_listings.value = arc4.UInt64(self.total_expired_listings.value.native + 1)
+    intc_0 // 0
+    bytec 11 // "total_expired_listings"
+    app_global_get_ex
+    assert // check self.total_expired_listings exists
+    btoi
+    intc_1 // 1
+    +
+    itob
+    bytec 11 // "total_expired_listings"
+    swap
+    app_global_put
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:296
+    // arc4.emit("ListingExpired", listing_id, rec.expired_at_round)
+    extract 102 8
+    dig 3
+    swap
+    concat
+    pushbytes 0x153cb97c // method "ListingExpired(uint64,uint64)"
+    swap
+    concat
+    log
+
+check_and_expire_after_inlined_smart_contracts.insight_listing.contract.InsightListing.check_and_expire@8:
+    // backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py:275
+    // @arc4.abimethod()
     intc_1 // 1
     return

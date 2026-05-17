@@ -76,12 +76,13 @@ export const api = {
   /**
    * List a new insight (seller flow)
    */
-  listInsight: async (insightText: string, price: number | string, sellerWallet: string) => {
+  listInsight: async (insightText: string, price: number | string, sellerWallet: string, custom_expiry_rounds?: number) => {
     try {
       const response = await client.post<ListResponse>('/list', {
         insight_text: insightText.trim(),
         price: typeof price === 'string' ? parseFloat(price) : price,
         seller_wallet: sellerWallet.trim(),
+        ...(typeof custom_expiry_rounds === 'number' ? { custom_expiry_rounds } : {}),
       })
       return response.data
     } catch (error) {

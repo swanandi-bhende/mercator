@@ -31,8 +31,15 @@ def _connect() -> sqlite3.Connection:
     return conn
 
 
-def initialise_curator_schema() -> None:
-    with _connect() as conn:
+def initialise_curator_schema(db_path: str | Path | None = None) -> None:
+    if db_path:
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        close_conn = True
+    else:
+        conn = _connect()
+        close_conn = False
+    with conn:
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS curator_runs (
@@ -114,9 +121,22 @@ def initialise_curator_schema() -> None:
             )
             """
         )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS flow_events (
+                event_name TEXT,
+                timestamp_iso TEXT,
+                wallet_involved TEXT,
+                metadata TEXT
+            )
+            """
+        )
         conn.commit()
-    # Ensure seller profile related schema (views, reputation history) exists
-    initialise_seller_profile_schema()
+    # Ensure evaluations and seller profile related schema (views, reputation history) exists
+    initialise_evaluations_schema(db_path)
+    initialise_seller_profile_schema(db_path)
+    if close_conn:
+        conn.close()
 
 
 def _utc_now_iso() -> str:
@@ -173,8 +193,15 @@ def record_curator_run(row: dict[str, Any]) -> None:
         conn.commit()
 
 
-def initialise_evaluations_schema() -> None:
-    with _connect() as conn:
+def initialise_evaluations_schema(db_path: str | Path | None = None) -> None:
+    if db_path:
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        close_conn = True
+    else:
+        conn = _connect()
+        close_conn = False
+    with conn:
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS evaluations (
@@ -208,88 +235,98 @@ def initialise_evaluations_schema() -> None:
         conn.execute("CREATE INDEX IF NOT EXISTS idx_evaluations_listing_id ON evaluations(listing_id)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_evaluations_evaluated_at ON evaluations(evaluated_at)")
         conn.commit()
-    conn.commit()
+    if close_conn:
+        conn.close()
 
 
-    def initialise_seller_profile_schema() -> None:
-        """Create views and tables used by the seller profile APIs.
+def initialise_seller_profile_schema(db_path: str | Path | None = None) -> None:
+    """Create views and tables used by the seller profile APIs.
 
-        Adds:
-        - seller_stats view: pre-aggregated seller stats from flow_events
-        - seller_leaderboard view: ordered leaderboard by earnings
-        - reputation_score_history table: stores recent reputation score changes
-        - seller_trust_summary_cache table: stores deterministic profile summaries
-        - trigger to keep at most 50 history rows per seller
-        """
-        with _connect() as conn:
-            conn.execute(
-                """
-                CREATE VIEW IF NOT EXISTS seller_stats AS
-                SELECT
-                    wallet_involved AS seller_wallet,
-                    COUNT(*) AS total_purchases,
-                    SUM(CAST(json_extract(metadata, '$.amount_usdc') AS REAL)) AS total_usdc_earned,
-                    AVG(CAST(json_extract(metadata, '$.amount_usdc') AS REAL)) AS avg_price_usdc,
-                    MIN(timestamp_iso) AS first_listing_date,
-                    MAX(timestamp_iso) AS last_purchase_date
-                FROM flow_events
-                WHERE event_name = 'escrow.release_completed' AND wallet_involved IS NOT NULL
-                GROUP BY wallet_involved
-                """
+    Adds:
+    - seller_stats view: pre-aggregated seller stats from flow_events
+    - seller_leaderboard view: ordered leaderboard by earnings
+    - reputation_score_history table: stores recent reputation score changes
+    - seller_trust_summary_cache table: stores deterministic profile summaries
+    - trigger to keep at most 50 history rows per seller
+    """
+    if db_path:
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        close_conn = True
+    else:
+        conn = _connect()
+        close_conn = False
+    with conn:
+        conn.execute(
+            """
+            CREATE VIEW IF NOT EXISTS seller_stats AS
+            SELECT
+                wallet_involved AS seller_wallet,
+                COUNT(*) AS total_purchases,
+                SUM(CAST(json_extract(metadata, '$.amount_usdc') AS REAL)) AS total_usdc_earned,
+                AVG(CAST(json_extract(metadata, '$.amount_usdc') AS REAL)) AS avg_price_usdc,
+                MIN(timestamp_iso) AS first_listing_date,
+                MAX(timestamp_iso) AS last_purchase_date
+            FROM flow_events
+            WHERE event_name = 'escrow.release_completed' AND wallet_involved IS NOT NULL
+            GROUP BY wallet_involved
+            """
+        )
+
+        conn.execute(
+            """
+            CREATE VIEW IF NOT EXISTS seller_leaderboard AS
+            SELECT seller_wallet, total_purchases, total_usdc_earned, avg_price_usdc, last_purchase_date
+            FROM seller_stats
+            ORDER BY total_usdc_earned DESC
+            """
+        )
+
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS reputation_score_history (
+                history_id TEXT PRIMARY KEY,
+                seller_wallet TEXT,
+                score_before INTEGER,
+                score_after INTEGER,
+                change INTEGER,
+                triggered_by_listing_id TEXT,
+                recorded_at TEXT
             )
+            """
+        )
 
-            conn.execute(
-                """
-                CREATE VIEW IF NOT EXISTS seller_leaderboard AS
-                SELECT seller_wallet, total_purchases, total_usdc_earned, avg_price_usdc, last_purchase_date
-                FROM seller_stats
-                ORDER BY total_usdc_earned DESC
-                """
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS seller_trust_summary_cache (
+                seller_wallet TEXT PRIMARY KEY,
+                trust_summary TEXT NOT NULL,
+                reputation_score INTEGER,
+                avg_eval_score REAL,
+                updated_at TEXT NOT NULL
             )
+            """
+        )
 
-            conn.execute(
-                """
-                CREATE TABLE IF NOT EXISTS reputation_score_history (
-                    history_id TEXT PRIMARY KEY,
-                    seller_wallet TEXT,
-                    score_before INTEGER,
-                    score_after INTEGER,
-                    change INTEGER,
-                    triggered_by_listing_id TEXT,
-                    recorded_at TEXT
-                )
-                """
-            )
-
-            conn.execute(
-                """
-                CREATE TABLE IF NOT EXISTS seller_trust_summary_cache (
-                    seller_wallet TEXT PRIMARY KEY,
-                    trust_summary TEXT NOT NULL,
-                    reputation_score INTEGER,
-                    avg_eval_score REAL,
-                    updated_at TEXT NOT NULL
-                )
-                """
-            )
-
-            conn.execute(
-                """
-                CREATE TRIGGER IF NOT EXISTS trg_reputation_score_history_prune
-                AFTER INSERT ON reputation_score_history
-                BEGIN
-                    DELETE FROM reputation_score_history
+        conn.execute(
+            """
+            CREATE TRIGGER IF NOT EXISTS trg_reputation_score_history_prune
+            AFTER INSERT ON reputation_score_history
+            BEGIN
+                DELETE FROM reputation_score_history
+                WHERE seller_wallet = NEW.seller_wallet
+                AND history_id NOT IN (
+                    SELECT history_id FROM reputation_score_history
                     WHERE seller_wallet = NEW.seller_wallet
-                    AND history_id NOT IN (
-                        SELECT history_id FROM reputation_score_history
-                        WHERE seller_wallet = NEW.seller_wallet
-                        ORDER BY recorded_at DESC
-                        LIMIT 50
-                    );
-                END;
-                """
-            )
-            conn.commit()
+                    ORDER BY recorded_at DESC
+                    LIMIT 50
+                );
+            END;
+            """
+        )
+        conn.commit()
+    if close_conn:
+        conn.close()
 
 
 def record_evaluation(row: dict[str, Any]) -> None:

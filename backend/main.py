@@ -234,6 +234,20 @@ async def _run_startup_hooks() -> None:
             replace_existing=True,
         )
         logger.info("Health checker job scheduled every 10 seconds")
+
+    # Schedule background expiry job for stale listings (every 10 minutes)
+    try:
+        scheduler.add_job(
+            curator_agent.expire_stale_listings,
+            "interval",
+            minutes=10,
+            id="listing_expiry",
+            executor="asyncio",
+            replace_existing=True,
+        )
+        logger.info("Listing expiry job scheduled every 10 minutes")
+    except Exception:
+        logger.exception("Failed to schedule listing expiry job")
     
     if not scheduler.running:
         try:
@@ -310,7 +324,7 @@ def _validate_wallet_or_400(wallet: str, request_id: str = "") -> None:
 
 
 @app.get("/sellers/leaderboard")
-async def get_seller_leaderboard(limit: int = Query(10, ge=1, le=50), request: Request | None = None):
+async def get_seller_leaderboard(limit: int = Query(10, ge=1, le=50), request: Request = None):
     request_id = getattr(request.state, "request_id", "") if request else ""
     cache_key = f"leaderboard:{limit}"
     cached = seller_leaderboard_cache.get(cache_key)
@@ -350,7 +364,7 @@ async def get_seller_profile(wallet: str, request: Request):
 
 
 @app.get("/sellers/{wallet}/listings")
-async def get_seller_listings(wallet: str, page: int = Query(1, ge=1), page_size: int = Query(10, ge=1, le=50), request: Request | None = None):
+async def get_seller_listings(wallet: str, page: int = Query(1, ge=1), page_size: int = Query(10, ge=1, le=50), request: Request = None):
     request_id = getattr(request.state, "request_id", "") if request else ""
     _validate_wallet_or_400(wallet, request_id)
     service = _get_seller_profile_service()
@@ -396,7 +410,7 @@ async def get_seller_reputation_history(wallet: str, request: Request):
 
 
 @app.get("/sellers/{wallet}/evaluations")
-async def get_seller_evaluations(wallet: str, limit: int = Query(10, ge=1, le=50), request: Request | None = None):
+async def get_seller_evaluations(wallet: str, limit: int = Query(10, ge=1, le=50), request: Request = None):
     request_id = getattr(request.state, "request_id", "") if request else ""
     _validate_wallet_or_400(wallet, request_id)
 
