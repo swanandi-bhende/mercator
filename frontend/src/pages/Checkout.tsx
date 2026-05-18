@@ -123,6 +123,7 @@ export default function CheckoutPage() {
     selectedInsight,
     sellerMetadata,
     buyerWallet,
+    paymentState,
     hasReviewedEvaluation,
     setBuyerWallet,
     setPaymentState,
@@ -445,7 +446,7 @@ export default function CheckoutPage() {
         setLastTransactionId(finalPaymentTx)
       }
       setStatusMessage('Payment approved, confirmed, and delivery finalized.')
-      navigate('/transaction')
+      navigate('/receipt')
     } catch (error) {
       const message =
         error instanceof ApiError
@@ -619,6 +620,30 @@ export default function CheckoutPage() {
                   </strong>
                 </div>
               </div>
+              {paymentState && (
+                <div className="checkout-atomic-summary">
+                  <strong>Atomic status</strong>
+                  <p>
+                    {paymentState.stage === 'completed'
+                      ? 'Payment confirmed and delivery finalized. Receipt links are ready.'
+                      : paymentState.stage === 'failed'
+                        ? 'Atomic checkout failed before final delivery completed.'
+                        : 'Checkout is progressing through payment, confirmation, and escrow release.'}
+                  </p>
+                  <div className="checkout-atomic-links">
+                    {paymentState.explorerPaymentUrl && (
+                      <a href={paymentState.explorerPaymentUrl} target="_blank" rel="noreferrer">
+                        View payment on explorer
+                      </a>
+                    )}
+                    {paymentState.explorerEscrowUrl && (
+                      <a href={paymentState.explorerEscrowUrl} target="_blank" rel="noreferrer">
+                        View escrow release on explorer
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -673,7 +698,7 @@ export default function CheckoutPage() {
           </div>
 
           {deliveryOutcome?.status === 'success' && (
-            <button onClick={() => navigate('/transaction')} className="checkout-btn checkout-btn--secondary">
+            <button onClick={() => navigate('/receipt')} className="checkout-btn checkout-btn--secondary">
               Open Transaction Receipt
             </button>
           )}

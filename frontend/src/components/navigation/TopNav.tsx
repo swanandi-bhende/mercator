@@ -49,7 +49,7 @@ export default function TopNav({ connectionStatus }: { connectionStatus: Connect
   useEffect(() => {
     if (location.pathname.includes('/sell')) {
       setCurrentJourney('seller')
-    } else if (['/discover', '/evaluate', '/checkout', '/transaction'].includes(location.pathname)) {
+    } else if (['/discover', '/evaluate', '/checkout', '/transaction', '/receipt', '/subscription', '/agents', '/agents/registered'].includes(location.pathname)) {
       setCurrentJourney('buyer')
     } else if (location.pathname === '/') {
       setCurrentJourney('home')
@@ -146,6 +146,16 @@ export default function TopNav({ connectionStatus }: { connectionStatus: Connect
                 label="Find Insight"
               />
               <NavLink
+                href="/subscription"
+                active={isActive('/subscription')}
+                label="Subscription"
+              />
+              <NavLink
+                href="/agents"
+                active={isActive('/agents') || isActive('/agents/registered')}
+                label="Agents"
+              />
+              <NavLink
                 href="/activity"
                 active={isActive('/activity')}
                 label="Activity"
@@ -196,9 +206,17 @@ export default function TopNav({ connectionStatus }: { connectionStatus: Connect
                 </div>
               </>
             ) : (
-              <button className="home-btn home-btn--primary" onClick={() => navigate('/onboard')}>
-                Sign Up Free
-              </button>
+              <div className="flex items-center gap-2">
+                <button className="home-btn home-btn--secondary" onClick={() => navigate('/login')}>
+                  Sign In
+                </button>
+                <button className="home-btn home-btn--primary" onClick={() => navigate('/onboard')}>
+                  Sign Up Free
+                </button>
+                <button className="home-btn home-btn--secondary hidden sm:inline-flex" onClick={() => navigate('/wallet')}>
+                  Wallet
+                </button>
+              </div>
             )}
 
             {/* Flow Switcher - Visible on all sizes */}
@@ -255,11 +273,39 @@ export default function TopNav({ connectionStatus }: { connectionStatus: Connect
                 List Insight
               </Link>
               <Link
+                to="/login"
+                className="block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
+                onClick={() => setMenuOpen(false)}
+              >
+                Sign In
+              </Link>
+              <Link
                 to="/discover"
                 className="block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
                 onClick={() => setMenuOpen(false)}
               >
                 Find Insight
+              </Link>
+              <Link
+                to="/wallet"
+                className="block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
+                onClick={() => setMenuOpen(false)}
+              >
+                Wallet Tools
+              </Link>
+              <Link
+                to="/subscription"
+                className="block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
+                onClick={() => setMenuOpen(false)}
+              >
+                Subscription
+              </Link>
+              <Link
+                to="/agents"
+                className="block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
+                onClick={() => setMenuOpen(false)}
+              >
+                Agents
               </Link>
               <Link
                 to="/activity"

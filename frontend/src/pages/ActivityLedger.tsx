@@ -79,7 +79,11 @@ export default function ActivityLedgerPage() {
       try {
         const response = await api.tracesLatest(20)
         if (cancelled || !response.success) return
-        const mapped = (response.events || [])
+        const latestSession = response.sessions?.[0]
+        if (!latestSession) return
+        const traceResponse = await api.traceSession(latestSession.session_id)
+        if (cancelled || !traceResponse.success) return
+        const mapped = (traceResponse.events || [])
           .map((event, index) => toActivityEvent(event, index))
           .filter((event): event is ActivityEvent => Boolean(event))
         setEvents(mapped)

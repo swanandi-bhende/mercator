@@ -31,6 +31,7 @@ type RankedInsight = {
   asaId: string
   state?: string
   expiry_round?: number
+  sourceType?: string
 }
 
 type LiveListing = {
@@ -154,6 +155,7 @@ function buildFeaturedListingInsight(listingInsight: ReturnType<typeof useAppCon
     cid: listingInsight.cid || '',
     listingId: listingInsight.listing_id || '',
     asaId: listingInsight.asa_id || '',
+    sourceType: 'listing',
   } satisfies RankedInsight
 }
 
@@ -164,7 +166,7 @@ function toLiveListing(item: ListingsFeedItem): LiveListing {
     seller_name: item.seller_wallet.slice(0, 8),
     price_usdc: Number(item.price_usdc || 0),
     insight_preview: item.insight_text,
-    source_type: 'listing',
+    source_type: item.source_type || 'listing',
     ipfs_cid: item.cid,
     listing_tx_id: item.tx_id,
     reputation_score: Number(item.seller_reputation || 0),
@@ -191,6 +193,7 @@ function mapLiveListingToRankedInsight(item: LiveListing): RankedInsight {
     cid: item.ipfs_cid,
     listingId: String(item.listing_id),
     asaId: '0',
+    sourceType: item.source_type || 'listing',
   }
 }
 
@@ -206,6 +209,7 @@ export default function DiscoverInsightsPage() {
   const [categoryFilter, setCategoryFilter] = useState('All')
   const [priceFilter, setPriceFilter] = useState('Any')
   const [reputationFilter, setReputationFilter] = useState('Any')
+  const [sourceTypeFilter, setSourceTypeFilter] = useState('Any')
   const [recencyFilter, setRecencyFilter] = useState('Any')
   const [phase, setPhase] = useState<SearchPhase>(() => {
     if (typeof window === 'undefined') return 'idle'
@@ -256,6 +260,14 @@ export default function DiscoverInsightsPage() {
   const queryTokens = useMemo(() => tokenize(query), [query])
   const featuredListing = useMemo(() => buildFeaturedListingInsight(listingInsight), [listingInsight])
   const liveInsights = useMemo(() => listings.map(mapLiveListingToRankedInsight), [listings])
+  const makeIpfsUrl = (cid: string) => (cid ? `https://gateway.pinata.cloud/ipfs/${cid}` : '')
+  const sourceTypeOptions = useMemo(() => {
+    const options = new Set<string>(['Any'])
+    ;[...rawInsights, ...liveInsights, ...(featuredListing ? [featuredListing] : [])].forEach((insight) => {
+      options.add((insight as RankedInsight).sourceType || 'semantic')
+    })
+    return Array.from(options)
+  }, [rawInsights, liveInsights, featuredListing])
 
   const recencyInHours = (recency: string) => {
     if (recency.includes('h')) return Number.parseInt(recency, 10)
@@ -296,6 +308,8 @@ export default function DiscoverInsightsPage() {
       reputationFilter === 'Any' ||
       (reputationFilter === '70+' && insight.reputation >= 70) ||
       (reputationFilter === '85+' && insight.reputation >= 85)
+    const matchesSourceType =
+      sourceTypeFilter === 'Any' || (insight.sourceType || 'semantic') === sourceTypeFilter
 
     const ageHours = recencyInHours(insight.recency)
     const matchesRecency =
@@ -303,7 +317,7 @@ export default function DiscoverInsightsPage() {
       (recencyFilter === 'Under 6h' && ageHours <= 6) ||
       (recencyFilter === 'Under 24h' && ageHours <= 24)
 
-    return matchesCategory && matchesPrice && matchesReputation && matchesRecency
+    return matchesCategory && matchesPrice && matchesReputation && matchesSourceType && matchesRecency
   }
 
   const baseInsights = hasSearched
@@ -621,6 +635,7 @@ export default function DiscoverInsightsPage() {
           asaId: String(match.asa_id),
           state: String(match.state || match.listing_state || 'active'),
           expiry_round: Number(match.expiry_round || match.expiry || 0),
+          sourceType: String(match.source_type || 'semantic'),
         }
       })
 
@@ -772,6 +787,10 @@ export default function DiscoverInsightsPage() {
                   Renew
                 </button>
               )}
+
+              <button type="button" className="discover-side-link" onClick={() => navigate('/subscription')}>
+                Open Subscription Manager
+              </button>
             </div>
 
             <div className="discover-search-console">
@@ -881,6 +900,16 @@ export default function DiscoverInsightsPage() {
                 </select>
               </label>
               <label>
+                <span>Source Type</span>
+                <select value={sourceTypeFilter} onChange={(event) => setSourceTypeFilter(event.target.value)}>
+                  {sourceTypeOptions.map((sourceType) => (
+                    <option key={sourceType} value={sourceType}>
+                      {sourceType === 'Any' ? 'Any' : sourceType}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
                 <span>Recency</span>
                 <select value={recencyFilter} onChange={(event) => setRecencyFilter(event.target.value)}>
                   <option>Any</option>
@@ -979,13 +1008,28 @@ export default function DiscoverInsightsPage() {
                   <VerifiedBadge walletAddress={insight.wallet} compact={true} />
                 </div>
 
+                <div className="discover-preview-strip">
+                  <div>
+                    <span>CID</span>
+                    <strong>{insight.cid ? `${insight.cid.slice(0, 12)}...` : 'Unavailable'}</strong>
+                  </div>
+                  <div>
+                    <span>TX</span>
+                    <strong>{insight.txId && insight.txId !== 'Pending reveal' ? `${insight.txId.slice(0, 10)}...` : 'Pending'}</strong>
+                  </div>
+                  <div>
+                    <span>Status</span>
+                    <strong>{(insight.state || insight.listingStatus || 'active').toLowerCase()}</strong>
+                  </div>
+                </div>
+
                 <div className="discover-logic">
                   <p>
                     <strong>Why ranked here:</strong> {insight.reason}.
                   </p>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="discover-card-actions">
                   <ExpiryCountdown
                     expiry_round={Number(insight.expiry_round || 0)}
                     current_round={currentRound}
@@ -995,9 +1039,18 @@ export default function DiscoverInsightsPage() {
                       setRawInsights((prev) => prev.map((it) => (it.id === insight.id ? { ...it, listingStatus: 'expired', state: 'expired' } : it)))
                     }}
                   />
-                  <button onClick={() => handleSelectInsight(insight)} className="discover-evaluate-btn">
-                    Choose This Insight
-                  </button>
+                  <div className="discover-card-action-row">
+                    {insight.cid ? (
+                      <a className="discover-preview-link" href={makeIpfsUrl(insight.cid)} target="_blank" rel="noreferrer">
+                        Open IPFS
+                      </a>
+                    ) : (
+                      <span className="discover-preview-link is-disabled">No IPFS preview</span>
+                    )}
+                    <button onClick={() => handleSelectInsight(insight)} className="discover-evaluate-btn">
+                      Choose This Insight
+                    </button>
+                  </div>
                 </div>
               </article>
             ))}

@@ -409,6 +409,99 @@
   border-radius: 8px;
 }
 
+/* Section 2b: Earnings Overview */
+.seller-profile-earnings .section-title,
+.seller-profile-purchases .section-title {
+  margin-bottom: 20px;
+}
+
+.earnings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.earnings-card {
+  padding: 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.earnings-card--primary {
+  border-color: #0066cc;
+  box-shadow: 0 4px 14px rgba(0, 102, 204, 0.1);
+}
+
+.earnings-label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+.earnings-card strong {
+  display: block;
+  font-size: 24px;
+  color: #0066cc;
+}
+
+.earnings-card p {
+  margin: 10px 0 0;
+  color: #666;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+/* Section 4b: Purchase History */
+.purchase-history-list {
+  display: grid;
+  gap: 12px;
+}
+
+.purchase-history-item {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 18px;
+  border-radius: 10px;
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+}
+
+.purchase-history-main {
+  display: grid;
+  gap: 4px;
+}
+
+.purchase-history-main strong {
+  color: #333;
+  font-size: 15px;
+}
+
+.purchase-history-main span,
+.purchase-history-meta {
+  color: #666;
+  font-size: 13px;
+}
+
+.purchase-history-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.purchase-history-note {
+  margin: 8px 0 0;
+  color: #666;
+  font-size: 13px;
+}
+
 /* Section 4: Listing History */
 .listings-table-container {
   overflow-x: auto;
@@ -626,6 +719,11 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .earnings-grid,
+  .purchase-history-item {
+    grid-template-columns: 1fr;
+  }
+
   .listings-table {
     font-size: 12px;
   }
@@ -689,6 +787,10 @@
 
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+
+  .purchase-history-meta {
+    justify-content: flex-start;
   }
 
   .section-title {

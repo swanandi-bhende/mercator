@@ -6,6 +6,8 @@ import type {
   OpsEvent,
   OpsSyntheticResult,
   OpsEndpointHeatCell,
+  OpsCacheStatsResponse,
+  TraceSessionSummary,
 } from '../types'
 import { useAppContext } from '../context/AppContext'
 import { useOutletContext } from 'react-router-dom'
@@ -124,6 +126,7 @@ export default function OperationsPage() {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('24h')
   const [apiKeyInput, setApiKeyInput] = useState<string>(typeof window !== 'undefined' ? localStorage.getItem('operatorKey') || '' : '')
   const [activeApiKey, setActiveApiKey] = useState<string>(typeof window !== 'undefined' ? localStorage.getItem('operatorKey') || '' : '')
+  const [adminKeyInput, setAdminKeyInput] = useState<string>(typeof window !== 'undefined' ? localStorage.getItem('adminKey') || '' : '')
   const [authorized, setAuthorized] = useState(false)
   const [accessMessage, setAccessMessage] = useState('')
   const [sessionExpiresAt, setSessionExpiresAt] = useState<number>(typeof window !== 'undefined' ? Number(localStorage.getItem('operatorSessionUntil') || 0) : 0)
@@ -134,6 +137,25 @@ export default function OperationsPage() {
   const [debugMode, setDebugMode] = useState(false)
   const [frontendErrors, setFrontendErrors] = useState<string[]>([])
   const [opsNotes, setOpsNotes] = useState<string>(typeof window !== 'undefined' ? localStorage.getItem('opsOperatorNotes') || '' : '')
+  const [cacheStats, setCacheStats] = useState<OpsCacheStatsResponse | null>(null)
+  const [cacheStatsLoading, setCacheStatsLoading] = useState(false)
+  const [traceSessions, setTraceSessions] = useState<TraceSessionSummary[]>([])
+  const [traceSessionsLoading, setTraceSessionsLoading] = useState(false)
+  const [traceSessionsError, setTraceSessionsError] = useState<string | null>(null)
+  const [curatorTriggerLoading, setCuratorTriggerLoading] = useState(false)
+  const [curatorTriggerMessage, setCuratorTriggerMessage] = useState<string | null>(null)
+  const [curatorTriggerResults, setCuratorTriggerResults] = useState<Array<Record<string, unknown>>>([])
+  const [apiKeyOwnerName, setApiKeyOwnerName] = useState('')
+  const [apiKeyOwnerEmail, setApiKeyOwnerEmail] = useState('')
+  const [apiKeyTier, setApiKeyTier] = useState('developer')
+  const [apiKeyPlaintext, setApiKeyPlaintext] = useState('')
+  const [generatedApiKey, setGeneratedApiKey] = useState<{
+    keyId: string
+    plaintextKey: string
+    ownerName: string
+    ownerEmail: string
+    tier: string
+  } | null>(null)
 
   // Health Metrics State
   const [healthSnapshot, setHealthSnapshot] = useState<HealthSnapshot | null>(null)
@@ -167,6 +189,17 @@ export default function OperationsPage() {
     setAccessMessage('Logged out. Operator access has been revoked for this browser session.')
   }
 
+  const persistAdminKey = (nextKey: string) => {
+    setAdminKeyInput(nextKey)
+    if (typeof window !== 'undefined') {
+      if (nextKey.trim()) {
+        localStorage.setItem('adminKey', nextKey.trim())
+      } else {
+        localStorage.removeItem('adminKey')
+      }
+    }
+  }
+
   const checkAccess = async (apiKey?: string) => {
     try {
       const response = await api.operationsAccessCheck(apiKey)
@@ -194,7 +227,6 @@ export default function OperationsPage() {
   }
 
   const loadOverview = async (verifyOnChain = true) => {
-    if (!authorized || !isSessionValid) return
     setLoading(true)
     setError(null)
     try {
@@ -211,12 +243,38 @@ export default function OperationsPage() {
     }
   }
 
+  const loadCacheStats = async () => {
+    try {
+      setCacheStatsLoading(true)
+      const response = await api.adminCacheStats()
+      setCacheStats(response)
+    } catch (err) {
+      setError(err instanceof ApiError ? err.userMessage : 'Failed to load cache stats')
+    } finally {
+      setCacheStatsLoading(false)
+    }
+  }
+
+  const loadTraceSessions = async () => {
+    try {
+      setTraceSessionsLoading(true)
+      setTraceSessionsError(null)
+      const response = await api.tracesLatest(8)
+      setTraceSessions(response.sessions || [])
+    } catch (err) {
+      setTraceSessions([])
+      setTraceSessionsError(err instanceof ApiError ? err.userMessage : 'Failed to load trace sessions')
+    } finally {
+      setTraceSessionsLoading(false)
+    }
+  }
+
   useEffect(() => {
     let active = true
     const init = async () => {
       const ok = await checkAccess(activeApiKey || undefined)
       if (!active || !ok) return
-      await loadOverview(true)
+      await Promise.all([loadOverview(true), loadCacheStats(), loadTraceSessions()])
       try {
         const history = await api.operationsSyntheticHistory(activeApiKey || undefined)
         if (active) setSyntheticHistory(history.results)
@@ -452,6 +510,63 @@ export default function OperationsPage() {
     }
   }
 
+  const refreshAdminState = async () => {
+    await Promise.all([loadOverview(true), loadCacheStats(), loadTraceSessions()])
+  }
+
+  const downloadTraceSession = (sessionId: string) => {
+    const url = api.traceDownloadUrl(sessionId)
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }
+
+  const triggerCuratorNow = async () => {
+    if (!authorized || !isSessionValid) return
+    setCuratorTriggerLoading(true)
+    setCuratorTriggerMessage(null)
+    try {
+      const response = await api.adminCuratorTriggerNow(adminKeyInput || undefined)
+      setCuratorTriggerResults(response.results || [])
+      setCuratorTriggerMessage(`Curator trigger completed with ${response.results?.length || 0} result(s).`)
+      await refreshAdminState()
+    } catch (err) {
+      setCuratorTriggerResults([])
+      setCuratorTriggerMessage(err instanceof ApiError ? err.userMessage : 'Curator trigger failed')
+    } finally {
+      setCuratorTriggerLoading(false)
+    }
+  }
+
+  const generateApiKey = async () => {
+    if (!authorized || !isSessionValid) return
+    if (!apiKeyOwnerName.trim() || !apiKeyOwnerEmail.trim()) {
+      setError('Owner name and email are required to generate an API key.')
+      return
+    }
+
+    try {
+      const response = await api.adminGenerateApiKey(
+        {
+          owner_name: apiKeyOwnerName.trim(),
+          owner_email: apiKeyOwnerEmail.trim(),
+          tier: apiKeyTier,
+          ...(apiKeyPlaintext.trim() ? { plaintext_key: apiKeyPlaintext.trim() } : {}),
+        },
+        adminKeyInput || undefined,
+      )
+      setGeneratedApiKey({
+        keyId: response.key_id,
+        plaintextKey: response.plaintext_key,
+        ownerName: response.owner_name,
+        ownerEmail: response.owner_email,
+        tier: response.tier,
+      })
+      setError(null)
+      setAccessMessage(`Generated API key for ${response.owner_name}.`)
+    } catch (err) {
+      setError(err instanceof ApiError ? err.userMessage : 'API key generation failed')
+    }
+  }
+
   const copyConfig = async () => {
     const blob = buildConfigBlob(overview)
     if (!blob) return
@@ -540,6 +655,132 @@ export default function OperationsPage() {
             </div>
             {lastUpdated && <div className="activity-sync-note"><strong>Last update</strong><span>{lastUpdated} (auto-refresh every 15s)</span></div>}
             {error && <div className="activity-empty"><h3>Operations warning</h3><p>{error}</p></div>}
+          </article>
+
+          <article className="ops-admin-card">
+            <p className="home-kicker">Admin / Operator Tools</p>
+            <h3>Trigger curator, inspect cache health, and mint API keys.</h3>
+
+            <div className="ops-admin-keybar">
+              <label>
+                <span>Admin key</span>
+                <input
+                  type="password"
+                  placeholder="Enter X-Admin-Key"
+                  value={adminKeyInput}
+                  onChange={(event) => persistAdminKey(event.target.value)}
+                />
+              </label>
+              <div className="activity-report-actions">
+                <button className="activity-action-btn is-primary" onClick={triggerCuratorNow} disabled={curatorTriggerLoading}>
+                  {curatorTriggerLoading ? 'Triggering...' : 'Trigger Curator Now'}
+                </button>
+                <button className="activity-action-btn" onClick={loadCacheStats} disabled={cacheStatsLoading}>
+                  {cacheStatsLoading ? 'Loading Cache Stats...' : 'Refresh Cache Stats'}
+                </button>
+                <button className="activity-action-btn" onClick={refreshAdminState}>
+                  Refresh Ops Data
+                </button>
+              </div>
+            </div>
+
+            {curatorTriggerMessage && <div className="ops-admin-message">{curatorTriggerMessage}</div>}
+
+            {curatorTriggerResults.length > 0 && (
+              <div className="ops-admin-result-list">
+                {curatorTriggerResults.slice(0, 5).map((result, index) => (
+                  <article key={`curator-${index}`} className="ops-admin-result-item">
+                    <strong>Result {index + 1}</strong>
+                    <pre>{JSON.stringify(result, null, 2)}</pre>
+                  </article>
+                ))}
+              </div>
+            )}
+
+            <div className="ops-cache-grid">
+              {(['profile_cache', 'reputation_cache', 'listings_cache'] as const).map((key) => {
+                const stat = cacheStats?.[key]
+                return (
+                  <article key={key} className="ops-cache-card">
+                    <span>{key.replace('_', ' ')}</span>
+                    <strong>{stat?.present ? 'Present' : 'Missing'}</strong>
+                    <p>
+                      Size: {typeof stat?.size === 'number' ? stat.size : 'n/a'} · Max size: {typeof stat?.maxsize === 'number' ? stat.maxsize : 'n/a'}
+                    </p>
+                  </article>
+                )
+              })}
+            </div>
+
+            <div className="ops-trace-downloads">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="home-kicker">Telemetry Traces</p>
+                  <h4>Download recent flow traces</h4>
+                </div>
+                <button className="activity-action-btn" onClick={loadTraceSessions} disabled={traceSessionsLoading}>
+                  {traceSessionsLoading ? 'Loading Traces...' : 'Refresh Traces'}
+                </button>
+              </div>
+              {traceSessionsError && <div className="ops-admin-message">{traceSessionsError}</div>}
+              <div className="ops-trace-list">
+                {traceSessions.length === 0 && !traceSessionsLoading ? (
+                  <div className="activity-empty">
+                    <h3>No trace sessions found</h3>
+                    <p>Run a purchase or listing flow to generate downloadable traces.</p>
+                  </div>
+                ) : (
+                  traceSessions.map((session) => (
+                    <article key={session.session_id} className="ops-trace-card">
+                      <div>
+                        <strong>{session.session_id}</strong>
+                        <p>
+                          {session.event_count} event{session.event_count === 1 ? '' : 's'} · {toLocal(session.last_event)}
+                        </p>
+                      </div>
+                      <button className="activity-action-btn is-primary" onClick={() => downloadTraceSession(session.session_id)}>
+                        Download Trace
+                      </button>
+                    </article>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="ops-api-key-form">
+              <label>
+                <span>Owner name</span>
+                <input value={apiKeyOwnerName} onChange={(event) => setApiKeyOwnerName(event.target.value)} placeholder="Curator Team" />
+              </label>
+              <label>
+                <span>Owner email</span>
+                <input value={apiKeyOwnerEmail} onChange={(event) => setApiKeyOwnerEmail(event.target.value)} placeholder="ops@mercator.io" />
+              </label>
+              <label>
+                <span>Tier</span>
+                <select value={apiKeyTier} onChange={(event) => setApiKeyTier(event.target.value)}>
+                  <option value="demo">demo</option>
+                  <option value="developer">developer</option>
+                  <option value="enterprise">enterprise</option>
+                </select>
+              </label>
+              <label>
+                <span>Optional plaintext key</span>
+                <input value={apiKeyPlaintext} onChange={(event) => setApiKeyPlaintext(event.target.value)} placeholder="Leave blank to auto-generate" />
+              </label>
+              <button className="activity-action-btn is-primary" onClick={generateApiKey}>
+                Generate API Key
+              </button>
+            </div>
+
+            {generatedApiKey && (
+              <div className="ops-api-key-result">
+                <h4>Generated API key</h4>
+                <p><strong>Owner:</strong> {generatedApiKey.ownerName} · {generatedApiKey.ownerEmail} · {generatedApiKey.tier}</p>
+                <p><strong>Key ID:</strong> {generatedApiKey.keyId}</p>
+                <p><strong>Plaintext key:</strong> {generatedApiKey.plaintextKey}</p>
+              </div>
+            )}
           </article>
 
           {/* ===== HEALTH METRICS DASHBOARD ===== */}

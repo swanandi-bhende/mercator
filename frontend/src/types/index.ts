@@ -69,6 +69,19 @@ export interface LoginResponse {
   message: string
 }
 
+export interface WalletCustodialResponse {
+  is_custodial: boolean
+  user_id?: string | null
+  address?: string
+  message?: string
+  error?: string
+}
+
+export interface WalletExportResponse {
+  mnemonic: string
+  warning: string
+}
+
 export interface WalletBalanceResponse {
   algo_balance_micro: number
   usdc_balance_micro: number
@@ -108,6 +121,59 @@ export interface DemoPurchaseResponse {
   message?: string
 }
 
+export interface SubscriptionReleaseResponse {
+  success: boolean
+  tx_id: string
+  buyer_wallet: string
+  listing_id: number
+  payment_method: string
+  subscription_access_granted: boolean
+}
+
+export interface SubscriptionStatusResponse {
+  success: boolean
+  active: boolean
+  expiry_round: number
+  expiry_approx_date: string
+  months_remaining: number
+  total_months_paid: number
+  total_usdc_paid_micro: number
+  source_type?: string
+  error?: string
+}
+
+export interface FeeConfigResponse {
+  success: boolean
+  app_id?: number
+  fee_rate_bps?: number
+  fee_rate_display?: string
+  treasury_address?: string
+  total_fees_collected?: number
+  usdc_asset_id?: number
+  error?: string
+}
+
+export interface AtomicSubscribeResponse {
+  success: boolean
+  data?: {
+    payment_tx_id?: string
+    subscription_tx_id?: string
+    tx_ids?: string[]
+    group_id?: string
+    confirmed_round?: number
+    all_confirmed?: boolean
+    months?: number
+    buyer_wallet?: string
+  }
+  error?: {
+    code?: string
+    message?: string
+    details?: Record<string, unknown>
+  }
+  request_id?: string
+  timestamp?: string
+}
+
 export interface DiscoverMatch {
   listing_id: number
   price_micro_usdc: number
@@ -119,6 +185,7 @@ export interface DiscoverMatch {
   insight_preview: string
   seller_wallet?: string
   listing_status?: string
+  source_type?: string
 }
 
 export interface DiscoverResponse {
@@ -145,6 +212,7 @@ export interface ListingsFeedItem {
   price_usdc: number
   insight_text: string
   seller_reputation?: number
+  source_type?: string
 }
 
 export interface ListingsFeedResponse {
@@ -159,8 +227,21 @@ export interface TraceEvent {
   payload: Record<string, unknown>
 }
 
+export interface TraceSessionSummary {
+  session_id: string
+  last_event: string
+  event_count: number
+}
+
 export interface TracesLatestResponse {
   success: boolean
+  sessions: TraceSessionSummary[]
+}
+
+export interface TraceSessionResponse {
+  success: boolean
+  session_id: string
+  count: number
   events: TraceEvent[]
 }
 
@@ -414,6 +495,32 @@ export interface OpsDiagnosticsResponse {
   }
 }
 
+export interface OpsCacheStat {
+  present: boolean
+  size?: number
+  maxsize?: number
+}
+
+export interface OpsCacheStatsResponse {
+  profile_cache: OpsCacheStat
+  reputation_cache: OpsCacheStat
+  listings_cache: OpsCacheStat
+}
+
+export interface AdminGenerateApiKeyResponse {
+  success: boolean
+  key_id: string
+  plaintext_key: string
+  owner_name: string
+  owner_email: string
+  tier: string
+}
+
+export interface AdminCuratorTriggerResponse {
+  success: boolean
+  results: Array<Record<string, unknown>>
+}
+
 export interface LedgerRecord {
   id: string
   timestampIso: string
@@ -493,6 +600,15 @@ export interface RegisteredAgent {
   total_transactions: number
 }
 
+export interface RegisteredAgentsResponse {
+  success: boolean
+  agents: RegisteredAgent[]
+  count: number
+  source?: string
+  error?: string
+  degraded?: boolean
+}
+
 // Seller Profile Types
 export interface DecayInfo {
   last_updated_at: string | null
@@ -569,6 +685,30 @@ export interface SellerLeaderboardEntry {
   total_purchases: number
   total_usdc_earned: number
   avg_price_usdc: number | null
+}
+
+export interface SellerReputationResponse {
+  wallet: string
+  effective_score: number
+  raw_score: number
+  total_purchases: number
+  decay_info: DecayInfo
+}
+
+export interface SellerPurchaseHistoryEntry {
+  buyer_wallet: string
+  listing_id: string | number
+  purchase_round: number | null
+  purchase_approx_date: string | null
+}
+
+export interface SellerPurchaseHistoryResponse {
+  success: boolean
+  wallet: string
+  purchase_history: SellerPurchaseHistoryEntry[]
+  count?: number
+  note?: string
+  error?: string
 }
 
 export interface ListingHistoryResponse {

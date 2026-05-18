@@ -1,4 +1,5 @@
 import { FormEvent, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { api, ApiError } from '../utils/api'
 
@@ -111,6 +112,14 @@ export default function OnboardPage() {
       <section className="onboard-card">
         <p className="onboard-kicker">Start Free</p>
         <h1>Create your Mercator wallet</h1>
+        <div className="mt-3 flex flex-wrap gap-3 text-sm">
+          <Link to="/login" className="font-semibold text-[#7d474f] underline underline-offset-4">
+            Already onboarded? Sign in.
+          </Link>
+          <Link to="/wallet" className="font-semibold text-[#1f707f] underline underline-offset-4">
+            Need wallet export/import tools?
+          </Link>
+        </div>
         <form onSubmit={handleSubmit} className="onboard-form">
           <label>
             Display name

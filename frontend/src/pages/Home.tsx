@@ -1,9 +1,17 @@
+import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
 
 export default function HomePage() {
   const navigate = useNavigate()
   const { setCurrentJourney } = useAppContext()
+  const [quickSearch, setQuickSearch] = useState('NIFTY breakout setup for today')
+
+  const quickPrompts = [
+    'NIFTY breakout setup for today',
+    'banking sector earnings surprise',
+    'macro view on USDC and rates',
+  ]
 
   const handleSellerMode = () => {
     setCurrentJourney('seller')
@@ -15,46 +23,108 @@ export default function HomePage() {
     navigate('/discover')
   }
 
+  const handleQuickSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const query = quickSearch.trim()
+    if (!query) return
+
+    sessionStorage.setItem('discover:lastQuery', query)
+    sessionStorage.removeItem('discover:lastResults')
+    setCurrentJourney('buyer')
+    navigate('/discover')
+  }
+
+  const usePrompt = (prompt: string) => {
+    setQuickSearch(prompt)
+    sessionStorage.setItem('discover:lastQuery', prompt)
+    sessionStorage.removeItem('discover:lastResults')
+    setCurrentJourney('buyer')
+    navigate('/discover')
+  }
+
   return (
     <div className="home-page">
       <section className="home-hero">
         <div className="home-hero-glow home-hero-glow--left" aria-hidden="true" />
         <div className="home-hero-glow home-hero-glow--right" aria-hidden="true" />
 
-        <div className="home-wrap">
-          <p className="home-kicker">AI-Powered Insight Exchange</p>
-          <h1 className="home-title">
-            Trade market intelligence with on-chain proof and buyer-side AI evaluation.
-          </h1>
-          <p className="home-subtitle">
-            Mercator is a two-sided marketplace for financial insights. Sellers publish analysis,
-            buyers discover and evaluate it, and every critical step is verified through Algorand,
-            IPFS, escrow logic, and reputation checks.
-          </p>
+        <div className="home-wrap home-hero-grid">
+          <div className="home-hero-copy">
+            <p className="home-kicker">AI-Powered Insight Exchange</p>
+            <h1 className="home-title">
+              Trade market intelligence with on-chain proof and buyer-side AI evaluation.
+            </h1>
+            <p className="home-subtitle">
+              Mercator is a two-sided marketplace for financial insights. Sellers publish analysis,
+              buyers discover and evaluate it, and every critical step is verified through Algorand,
+              IPFS, escrow logic, and reputation checks.
+            </p>
 
-          <div className="home-cta-row">
-            <button type="button" className="home-btn home-btn--primary" onClick={handleSellerMode}>
-              Sell an Insight
-            </button>
-            <button type="button" className="home-btn home-btn--secondary" onClick={handleBuyerMode}>
-              Discover Insights
-            </button>
+            <div className="home-cta-row">
+              <button type="button" className="home-btn home-btn--primary" onClick={handleSellerMode}>
+                Start Selling
+              </button>
+              <button type="button" className="home-btn home-btn--secondary" onClick={handleBuyerMode}>
+                Browse Insights
+              </button>
+            </div>
+
+            <div className="home-answer-grid" aria-label="Mercator quick answers">
+              <article className="home-answer-card">
+                <h2>What it is</h2>
+                <p>A working marketplace for paid market insights, not a static dashboard.</p>
+              </article>
+              <article className="home-answer-card">
+                <h2>Why it matters</h2>
+                <p>AI-assisted evaluation plus transparent settlement reduces trust friction.</p>
+              </article>
+              <article className="home-answer-card">
+                <h2>Where to go next</h2>
+                <p>Choose seller mode to publish insights or buyer mode to evaluate and purchase.</p>
+              </article>
+            </div>
           </div>
 
-          <div className="home-answer-grid" aria-label="Mercator quick answers">
-            <article className="home-answer-card">
-              <h2>What it is</h2>
-              <p>A working marketplace for paid market insights, not a static dashboard.</p>
-            </article>
-            <article className="home-answer-card">
-              <h2>Why it matters</h2>
-              <p>AI-assisted evaluation plus transparent settlement reduces trust friction.</p>
-            </article>
-            <article className="home-answer-card">
-              <h2>Where to go next</h2>
-              <p>Choose seller mode to publish insights or buyer mode to evaluate and purchase.</p>
-            </article>
-          </div>
+          <aside className="home-search-card" aria-label="Quick market search">
+            <p className="home-kicker">Quick Search</p>
+            <h2>Find a live insight from the landing page.</h2>
+            <p>
+              Jump straight into discovery with a market question, then review ranked answers by relevance,
+              trust, and price.
+            </p>
+
+            <form className="home-search-form" onSubmit={handleQuickSearch}>
+              <label className="home-search-field">
+                <span>Search prompt</span>
+                <input
+                  type="text"
+                  value={quickSearch}
+                  onChange={(event) => setQuickSearch(event.target.value)}
+                  placeholder="Ask a market question"
+                />
+              </label>
+              <button type="submit" className="home-btn home-btn--primary home-btn--full">
+                Search the Market
+              </button>
+            </form>
+
+            <div className="home-search-pills" aria-label="Suggested search prompts">
+              {quickPrompts.map((prompt) => (
+                <button key={prompt} type="button" className="home-search-pill" onClick={() => usePrompt(prompt)}>
+                  {prompt}
+                </button>
+              ))}
+            </div>
+
+            <div className="home-search-note">
+              <strong>Buyer flow:</strong>
+              <span>Search, rank, evaluate, purchase.</span>
+            </div>
+            <div className="home-search-note">
+              <strong>Seller flow:</strong>
+              <span>List, verify, publish, settle.</span>
+            </div>
+          </aside>
         </div>
       </section>
 
@@ -80,6 +150,10 @@ export default function HomePage() {
             <li>
               <strong>x402 Payments</strong>
               <span>Programmatic approval model with explicit buyer confirmation.</span>
+            </li>
+            <li>
+              <strong>Fast Discovery</strong>
+              <span>Jump into buyer search from the home page with prefilled queries.</span>
             </li>
           </ul>
         </div>

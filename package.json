@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "recharts": "^3.8.1",
     "typescript": "^6.0.3"
   }
 }

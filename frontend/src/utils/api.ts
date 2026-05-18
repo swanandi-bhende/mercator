@@ -8,6 +8,8 @@ import type {
   LoginRequest,
   LoginResponse,
   WalletBalanceResponse,
+  WalletCustodialResponse,
+  WalletExportResponse,
   HealthResponse,
   DiscoverResponse,
   LedgerResponse,
@@ -20,21 +22,21 @@ import type {
   OpsAlgorandStatusResponse,
   OpsPingResponse,
   OpsDiagnosticsResponse,
+  OpsCacheStatsResponse,
+  AdminGenerateApiKeyResponse,
+  AdminCuratorTriggerResponse,
   ListingsFeedResponse,
   TracesLatestResponse,
+  TraceSessionResponse,
+  SellerReputationResponse,
+  SellerPurchaseHistoryResponse,
+  SubscriptionReleaseResponse,
+  SubscriptionStatusResponse,
+  FeeConfigResponse,
+  AtomicSubscribeResponse,
+  RegisteredAgentsResponse,
 } from '../types'
 import type { RegisteredAgent } from '../types'
-
-type SubscriptionStatusResponse = {
-  success: boolean
-  active: boolean
-  expiry_round: number
-  expiry_approx_date: string
-  months_remaining: number
-  total_months_paid: number
-  total_usdc_paid_micro: number
-  source_type?: string
-}
 
 type SubscribeResponse = {
   success: boolean
@@ -61,6 +63,10 @@ const paymentClient = axios.create({
 
 function opsHeaders(apiKey?: string) {
   return apiKey?.trim() ? { 'x-api-key': apiKey.trim() } : undefined
+}
+
+function adminHeaders(adminKey?: string) {
+  return adminKey?.trim() ? { 'x-admin-key': adminKey.trim() } : undefined
 }
 
 // Error message mapping for user-friendly display
@@ -146,6 +152,29 @@ export const api = {
     }
   },
 
+  walletIsCustodial: async (address: string) => {
+    try {
+      const response = await client.get<WalletCustodialResponse>('/wallet/is_custodial', {
+        params: { address: address.trim() },
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('Failed to check custodial wallet status', error)
+    }
+  },
+
+  walletExport: async (userId: string, password: string) => {
+    try {
+      const response = await client.post<WalletExportResponse>('/wallet/export', {
+        user_id: userId.trim(),
+        password,
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('Failed to export wallet', error)
+    }
+  },
+
   walletBalance: async (address: string) => {
     try {
       const response = await client.get<WalletBalanceResponse>('/wallet/balance', {
@@ -179,6 +208,22 @@ export const api = {
     }
   },
 
+  traceSession: async (sessionId: string, params?: { status?: string; eventName?: string }) => {
+    try {
+      const response = await client.get<TraceSessionResponse>(`/traces/${encodeURIComponent(sessionId)}`, {
+        params: {
+          status: params?.status,
+          event_name: params?.eventName,
+        },
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('Failed to fetch trace session', error)
+    }
+  },
+
+  traceDownloadUrl: (sessionId: string) => `${API_BASE}/traces/${encodeURIComponent(sessionId)}/download`,
+
   subscriptionStatus: async (wallet: string) => {
     try {
       const response = await client.get<SubscriptionStatusResponse>('/subscription/status', {
@@ -202,9 +247,31 @@ export const api = {
     }
   },
 
+  subscribeAtomically: async (buyerWallet: string, months: number, buyerPrivateKey?: string) => {
+    try {
+      const response = await client.post<AtomicSubscribeResponse>('/api/v1/subscribe_atomically', {
+        buyer_wallet: buyerWallet.trim(),
+        months,
+        ...(buyerPrivateKey?.trim() ? { buyer_private_key: buyerPrivateKey.trim() } : {}),
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('Atomic subscription purchase failed', error)
+    }
+  },
+
+  feeConfig: async () => {
+    try {
+      const response = await client.get<FeeConfigResponse>('/fee_config')
+      return response.data
+    } catch (error) {
+      throw new ApiError('Failed to fetch fee config', error)
+    }
+  },
+
   releaseForSubscriber: async (buyerWallet: string, listingId: number) => {
     try {
-      const response = await client.post('/escrow/release_for_subscriber', {
+      const response = await client.post<SubscriptionReleaseResponse>('/escrow/release_for_subscriber', {
         buyer_wallet: buyerWallet.trim(),
         listing_id: listingId,
       })
@@ -383,13 +450,44 @@ export const api = {
     }
   },
 
+  adminCuratorTriggerNow: async (adminKey?: string) => {
+    try {
+      const response = await client.post<AdminCuratorTriggerResponse>('/admin/curator/trigger_now', {}, {
+        headers: adminHeaders(adminKey),
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('Failed to trigger curator cycle', error)
+    }
+  },
+
+  adminCacheStats: async () => {
+    try {
+      const response = await client.get<OpsCacheStatsResponse>('/admin/cache/stats')
+      return response.data
+    } catch (error) {
+      throw new ApiError('Failed to fetch cache stats', error)
+    }
+  },
+
+  adminGenerateApiKey: async (payload: { owner_name: string; owner_email: string; tier: string; plaintext_key?: string }, adminKey?: string) => {
+    try {
+      const response = await client.post<AdminGenerateApiKeyResponse>('/admin/api-keys/generate', payload, {
+        headers: adminHeaders(adminKey),
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError('Failed to generate API key', error)
+    }
+  },
+
   /**
    * Fetch the list of verified agents from AgentRegistry
    */
   verifiedAgents: async () => {
     try {
-      const response = await client.get<RegisteredAgent[]>('/agents/registered')
-      return response.data
+      const response = await client.get<RegisteredAgentsResponse>('/agents/registered')
+      return response.data.agents || []
     } catch (error) {
       throw new ApiError('Failed to fetch verified agents', error)
     }
@@ -446,6 +544,26 @@ export const api = {
       return response.data
     } catch (error) {
       throw new ApiError(`Failed to fetch seller reputation history for ${wallet}`, error)
+    }
+  },
+
+  sellerReputation: async (wallet: string) => {
+    try {
+      const response = await client.get<SellerReputationResponse>(`/sellers/${wallet.trim()}/reputation`)
+      return response.data
+    } catch (error) {
+      throw new ApiError(`Failed to fetch seller reputation for ${wallet}`, error)
+    }
+  },
+
+  sellerPurchaseHistory: async (wallet: string, limit = 20) => {
+    try {
+      const response = await client.get<SellerPurchaseHistoryResponse>(`/sellers/${wallet.trim()}/purchase_history`, {
+        params: { limit },
+      })
+      return response.data
+    } catch (error) {
+      throw new ApiError(`Failed to fetch seller purchase history for ${wallet}`, error)
     }
   },
 

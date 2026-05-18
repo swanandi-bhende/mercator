@@ -2,7 +2,13 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { api } from '../utils/api'
-import type { SellerProfileResponse, ListingHistoryEntry, ReputationHistoryEntry } from '../types'
+import type {
+  SellerProfileResponse,
+  ListingHistoryEntry,
+  ReputationHistoryEntry,
+  SellerPurchaseHistoryEntry,
+  SellerReputationResponse,
+} from '../types'
 import './SellerProfile.css'
 import '../styles/listing.css'
 
@@ -57,6 +63,9 @@ export const SellerProfilePage: React.FC<SellerProfilePageProps> = () => {
   const [profile, setProfile] = useState<SellerProfileResponse | null>(null)
   const [listings, setListings] = useState<ListingHistoryEntry[]>([])
   const [reputationHistory, setReputationHistory] = useState<ReputationHistoryEntry[]>([])
+  const [purchaseHistory, setPurchaseHistory] = useState<SellerPurchaseHistoryEntry[]>([])
+  const [reputationSummary, setReputationSummary] = useState<SellerReputationResponse | null>(null)
+  const [purchaseNote, setPurchaseNote] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
@@ -74,9 +83,29 @@ export const SellerProfilePage: React.FC<SellerProfilePageProps> = () => {
       const profileData = await api.sellerProfile(wallet)
       setProfile(profileData)
 
+      try {
+        const reputationData = await api.sellerReputation(wallet)
+        setReputationSummary(reputationData)
+      } catch {
+        setReputationSummary(null)
+      }
+
       // Fetch reputation history for sparkline
-      const reputationData = await api.sellerReputationHistory(wallet)
-      setReputationHistory(reputationData.history || [])
+      try {
+        const reputationData = await api.sellerReputationHistory(wallet)
+        setReputationHistory(reputationData.history || [])
+      } catch {
+        setReputationHistory(profileData.reputation_history || [])
+      }
+
+      try {
+        const purchaseData = await api.sellerPurchaseHistory(wallet, 20)
+        setPurchaseHistory(purchaseData.purchase_history || [])
+        setPurchaseNote(purchaseData.note || null)
+      } catch {
+        setPurchaseHistory([])
+        setPurchaseNote(null)
+      }
 
       // Fetch listings for current page
       const listingsData = await api.sellerListings(wallet, currentPage, pageSize)
@@ -130,9 +159,15 @@ export const SellerProfilePage: React.FC<SellerProfilePageProps> = () => {
   const avatarColor = getAvatarColor(wallet)
   const displayName = profile.display_name || 'Anonymous Seller'
   const isRegisteredAgent = profile.registered_agent_role && profile.registered_agent_name
+  const effectiveReputation = reputationSummary?.effective_score ?? profile.reputation_score_effective
+  const rawReputation = reputationSummary?.raw_score ?? profile.reputation_score_raw
+  const totalPurchases = reputationSummary?.total_purchases ?? profile.total_purchases
+  const totalEarnedUsdc = formatUsdc(profile.total_usdc_earned_micro)
+  const averagePrice = profile.avg_price_usdc ? profile.avg_price_usdc.toFixed(2) : 'N/A'
+  const sparklineSource = reputationHistory.length > 0 ? reputationHistory : profile.reputation_history
 
   // Prepare reputation sparkline data
-  const sparklineData = reputationHistory.map((entry) => ({
+  const sparklineData = sparklineSource.map((entry) => ({
     score: entry.score_after,
     timestamp: new Date(entry.recorded_at).toLocaleDateString('en-US', {
       month: 'short',
@@ -175,8 +210,8 @@ export const SellerProfilePage: React.FC<SellerProfilePageProps> = () => {
           </div>
         </div>
 
-        <div className={`header-reputation ${getReputationBadgeClass(profile.reputation_score_effective)}`}>
-          <div className="reputation-score">{profile.reputation_score_effective}</div>
+        <div className={`header-reputation ${getReputationBadgeClass(effectiveReputation)}`}>
+          <div className="reputation-score">{effectiveReputation}</div>
           <div className="reputation-label">Score</div>
         </div>
       </section>
@@ -186,19 +221,17 @@ export const SellerProfilePage: React.FC<SellerProfilePageProps> = () => {
         <div className="stats-grid">
           <div className="stat-card">
             <div className="stat-label">Total Insights Sold</div>
-            <div className="stat-value">{profile.total_purchases}</div>
+            <div className="stat-value">{totalPurchases}</div>
           </div>
 
           <div className="stat-card">
             <div className="stat-label">Total USDC Earned</div>
-            <div className="stat-value">${formatUsdc(profile.total_usdc_earned_micro)}</div>
+            <div className="stat-value">${totalEarnedUsdc}</div>
           </div>
 
           <div className="stat-card">
             <div className="stat-label">Average Price</div>
-            <div className="stat-value">
-              ${profile.avg_price_usdc ? profile.avg_price_usdc.toFixed(2) : 'N/A'}
-            </div>
+            <div className="stat-value">${averagePrice}</div>
           </div>
 
           <div className="stat-card">
@@ -212,6 +245,30 @@ export const SellerProfilePage: React.FC<SellerProfilePageProps> = () => {
                 : '0'}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Section 2b: Earnings Overview */}
+      <section className="seller-profile-section seller-profile-earnings">
+        <h2 className="section-title">Earnings Overview</h2>
+        <div className="earnings-grid">
+          <article className="earnings-card earnings-card--primary">
+            <span className="earnings-label">Total Earned</span>
+            <strong>${totalEarnedUsdc}</strong>
+            <p>Verified from seller profile revenue totals and aligned to purchase activity.</p>
+          </article>
+
+          <article className="earnings-card">
+            <span className="earnings-label">Average Sale</span>
+            <strong>${averagePrice}</strong>
+            <p>Helpful for spotting how the seller prices insights over time.</p>
+          </article>
+
+          <article className="earnings-card">
+            <span className="earnings-label">Latest Purchase</span>
+            <strong>{profile.last_purchase_date ? new Date(profile.last_purchase_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'None'}</strong>
+            <p>Most recent on-chain purchase date from the seller profile payload.</p>
+          </article>
         </div>
       </section>
 
@@ -233,7 +290,7 @@ export const SellerProfilePage: React.FC<SellerProfilePageProps> = () => {
               </div>
               <div className="score-detail-item">
                 <span className="detail-label">Raw Score:</span>
-                <span className="detail-value">{profile.reputation_score_raw}</span>
+                <span className="detail-value">{rawReputation}</span>
               </div>
               {profile.decay_info?.decay_points_applied !== undefined &&
                 profile.decay_info.decay_points_applied > 0 && (
@@ -375,6 +432,43 @@ export const SellerProfilePage: React.FC<SellerProfilePageProps> = () => {
           </>
         ) : (
           <div className="no-data-message">No listings found for this seller</div>
+        )}
+      </section>
+
+      {/* Section 4b: Purchase History */}
+      <section className="seller-profile-section seller-profile-purchases">
+        <h2 className="section-title">Purchase History</h2>
+
+        {purchaseHistory.length > 0 ? (
+          <div className="purchase-history-list">
+            {purchaseHistory.map((purchase, index) => (
+              <article key={`${purchase.buyer_wallet}-${purchase.listing_id}-${index}`} className="purchase-history-item">
+                <div className="purchase-history-main">
+                  <strong>{truncateWallet(purchase.buyer_wallet)}</strong>
+                  <span>Listing {purchase.listing_id}</span>
+                </div>
+                <div className="purchase-history-meta">
+                  <span>Round {purchase.purchase_round ?? 'N/A'}</span>
+                  <span>
+                    {purchase.purchase_approx_date
+                      ? new Date(purchase.purchase_approx_date).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })
+                      : 'Date unavailable'}
+                  </span>
+                </div>
+              </article>
+            ))}
+
+            {purchaseNote && <p className="purchase-history-note">{purchaseNote}</p>}
+          </div>
+        ) : (
+          <div className="no-data-message">
+            No purchase history available yet
+            {purchaseNote ? <p>{purchaseNote}</p> : null}
+          </div>
         )}
       </section>
 

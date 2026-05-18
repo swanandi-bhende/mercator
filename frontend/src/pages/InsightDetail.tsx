@@ -149,6 +149,23 @@ export default function InsightDetailPage() {
   const listingStatus = sellerMetadata?.listingStatus || 'Active'
   const listingState = (selectedInsight.state || selectedInsight.listing_status || listingStatus || 'active').toLowerCase()
   const expiryRound = Number(selectedInsight.expiry_round || sellerMetadata?.expiry_round || 0)
+  const ipfsCid = String(selectedInsight.cid || '').trim()
+  const ipfsPreviewUrl = useMemo(() => (ipfsCid ? `https://gateway.pinata.cloud/ipfs/${ipfsCid}` : ''), [ipfsCid])
+
+  const handleBuyNow = () => {
+    setHasReviewedEvaluation(true)
+    navigate('/checkout')
+  }
+
+  const copyIpfsCid = async () => {
+    if (!ipfsCid) return
+
+    try {
+      await navigator.clipboard.writeText(ipfsCid)
+    } catch {
+      // Clipboard access is best effort.
+    }
+  }
 
   const rationaleLines = [
     `Relevance scored ${relevanceScore}% against your query intent.`,
@@ -212,6 +229,55 @@ export default function InsightDetailPage() {
               <div>
                 <span>Your query</span>
                 <strong>{queryText}</strong>
+              </div>
+            </div>
+
+            <div className="insight-ipfs-panel">
+              <div className="insight-ipfs-header">
+                <div>
+                  <p className="home-kicker">IPFS Preview</p>
+                  <h2>View the content exactly as pinned by the seller.</h2>
+                </div>
+                <span className={`insight-state-pill insight-state-pill--${ipfsCid ? 'active' : 'expired'}`}>
+                  {ipfsCid ? 'CID available' : 'CID unavailable'}
+                </span>
+              </div>
+
+              {ipfsPreviewUrl ? (
+                <iframe
+                  className="insight-ipfs-frame"
+                  src={ipfsPreviewUrl}
+                  title="IPFS insight preview"
+                />
+              ) : (
+                <div className="insight-ipfs-empty">
+                  <h3>No IPFS preview is available yet.</h3>
+                  <p>The listing is still readable, but the CID has not been surfaced for inline preview.</p>
+                </div>
+              )}
+
+              <div className="insight-ipfs-meta">
+                <div>
+                  <span>CID</span>
+                  <strong>{ipfsCid || 'Unavailable'}</strong>
+                </div>
+                <div>
+                  <span>Preview link</span>
+                  <strong>{ipfsPreviewUrl || 'Unavailable'}</strong>
+                </div>
+              </div>
+
+              <div className="insight-ipfs-actions">
+                {ipfsPreviewUrl ? (
+                  <a href={ipfsPreviewUrl} target="_blank" rel="noreferrer" className="insight-ipfs-link">
+                    Open IPFS
+                  </a>
+                ) : (
+                  <span className="insight-ipfs-link is-disabled">Open IPFS</span>
+                )}
+                <button type="button" onClick={copyIpfsCid} className="insight-ipfs-copy">
+                  Copy CID
+                </button>
               </div>
             </div>
           </article>
@@ -413,10 +479,10 @@ export default function InsightDetailPage() {
           {recommendation.tone === 'go' ? (
             <>
               <button
-                onClick={handleContinueToCheckout}
+                onClick={handleBuyNow}
                 className="insight-decision-btn insight-decision-btn--primary"
               >
-                Continue to Checkout
+                Buy This Insight
               </button>
               <button
                 onClick={() => navigate('/trust')}
@@ -434,10 +500,10 @@ export default function InsightDetailPage() {
           ) : (
             <>
               <button
-                onClick={() => navigate('/discover')}
+                onClick={handleBuyNow}
                 className="insight-decision-btn insight-decision-btn--primary"
               >
-                Refine Query in Discover
+                Buy Anyway
               </button>
               <button
                 onClick={() => navigate('/trust')}

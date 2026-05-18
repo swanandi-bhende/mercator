@@ -325,7 +325,7 @@ export default function TrustPage() {
               View Audit Activity
             </button>
             {paymentState?.stage === 'completed' && (
-              <button className="trust-btn trust-btn--secondary" onClick={() => navigate('/transaction')}>
+              <button className="trust-btn trust-btn--secondary" onClick={() => navigate('/receipt')}>
                 Open Receipt / Unlock
               </button>
             )}

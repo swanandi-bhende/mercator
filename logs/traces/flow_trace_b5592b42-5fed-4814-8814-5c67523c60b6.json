@@ -1,0 +1,46 @@
+{
+  "export_version": "1.0",
+  "session_id": "b5592b42-5fed-4814-8814-5c67523c60b6",
+  "exported_at": "2026-05-17T15:51:10.219926+00:00",
+  "total_events": 2,
+  "session_duration_ms": 3,
+  "success_count": 2,
+  "failure_count": 0,
+  "skipped_count": 0,
+  "events": [
+    {
+      "event_id": "60fcc4bf-9902-436d-a0e8-6b83ca3cf6b3",
+      "session_id": "b5592b42-5fed-4814-8814-5c67523c60b6",
+      "event_name": "session.started",
+      "timestamp_iso": "2026-05-17T15:47:29.820Z",
+      "status": "success",
+      "duration_ms": null,
+      "wallet_involved": null,
+      "tx_id": null,
+      "ipfs_cid": null,
+      "error_code": null,
+      "error_message": null,
+      "plain_english_description": "New curator_cycle session started",
+      "metadata": {
+        "session_type": "curator_cycle"
+      },
+      "exported": 0
+    },
+    {
+      "event_id": "c0293312-7ba2-47d3-b454-03d4f13d7b36",
+      "session_id": "b5592b42-5fed-4814-8814-5c67523c60b6",
+      "event_name": "curator.cycle_started",
+      "timestamp_iso": "2026-05-17T15:47:29.823Z",
+      "status": "success",
+      "duration_ms": null,
+      "wallet_involved": null,
+      "tx_id": null,
+      "ipfs_cid": null,
+      "error_code": null,
+      "error_message": null,
+      "plain_english_description": "Curator cycle started",
+      "metadata": null,
+      "exported": 0
+    }
+  ]
+}

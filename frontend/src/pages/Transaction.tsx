@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
+import { ApiError, api } from '../utils/api'
 
 export default function TransactionPage() {
   const navigate = useNavigate()
-  const { paymentState, selectedInsight } = useAppContext()
+  const { paymentState, selectedInsight, buyerWallet, setPaymentState, setLastTransactionId } = useAppContext()
   const [copied, setCopied] = useState(false)
+  const [isReleasing, setIsReleasing] = useState(false)
+  const [releaseMessage, setReleaseMessage] = useState<string | null>(null)
 
   const paymentTxId = paymentState?.paymentTxId || paymentState?.txId || ''
   const escrowTxId = paymentState?.escrowTxId || ''
@@ -44,6 +47,10 @@ export default function TransactionPage() {
   const ipfsRecordUrl = cid ? `https://ipfs.io/ipfs/${cid}` : ''
 
   const escrowReleased = paymentState?.escrowReleased ?? Boolean(escrowTxId)
+  const releaseExplorerUrl =
+    paymentState?.explorerEscrowUrl || (escrowTxId ? `https://lora.algokit.io/testnet/tx/${escrowTxId}` : '')
+  const listingIdNumber = Number(listingId)
+  const canReleaseEscrow = Boolean(buyerWallet && Number.isFinite(listingIdNumber) && !escrowReleased)
 
   const timeline = [
     {
@@ -93,6 +100,46 @@ export default function TransactionPage() {
       setTimeout(() => setCopied(false), 1500)
     } catch {
       setCopied(false)
+    }
+  }
+
+  const handleReleaseEscrow = async () => {
+    if (!buyerWallet || !Number.isFinite(listingIdNumber)) {
+      setReleaseMessage('Buyer wallet and listing ID are required to release escrow.')
+      return
+    }
+
+    setIsReleasing(true)
+    setReleaseMessage(null)
+
+    try {
+      const response = await api.releaseForSubscriber(buyerWallet, listingIdNumber)
+      const txId = response.tx_id || ''
+      const explorerUrl = txId ? `https://lora.algokit.io/testnet/tx/${txId}` : releaseExplorerUrl
+
+      if (paymentState) {
+        setPaymentState({
+          ...paymentState,
+          escrowReleased: true,
+          escrowTxId: txId || paymentState.escrowTxId,
+          explorerEscrowUrl: explorerUrl || paymentState.explorerEscrowUrl,
+          stage: 'completed',
+        })
+      }
+      if (txId) {
+        setLastTransactionId(txId)
+      }
+      setReleaseMessage('Escrow release submitted successfully.')
+    } catch (error) {
+      const message =
+        error instanceof ApiError
+          ? error.userMessage
+          : error instanceof Error
+            ? error.message
+            : 'Escrow release failed.'
+      setReleaseMessage(message)
+    } finally {
+      setIsReleasing(false)
     }
   }
 
@@ -161,6 +208,13 @@ export default function TransactionPage() {
           <article className="receipt-proof-card">
             <p className="home-kicker">Transaction Summary</p>
             <h2>On-chain proof elements</h2>
+            <p className={`receipt-atomic-state ${escrowReleased ? 'is-complete' : 'is-pending'}`}>
+              {paymentTxId
+                ? escrowReleased
+                  ? 'Atomic status: payment confirmed, escrow release completed, and receipt proof is available.'
+                  : 'Atomic status: payment confirmed, awaiting manual escrow release.'
+                : 'Atomic status: waiting on payment confirmation.'}
+            </p>
             <div className="receipt-proof-grid">
               <div>
                 <span>Payment tx ID</span>
@@ -202,6 +256,7 @@ export default function TransactionPage() {
                 <strong>{escrowReleased ? 'Released to seller' : 'Pending or failed'}</strong>
               </div>
             </div>
+            {releaseMessage && <p className="receipt-release-note">{releaseMessage}</p>}
           </article>
 
           <article className="receipt-trust-card">
@@ -228,6 +283,17 @@ export default function TransactionPage() {
           <div className="receipt-actions">
             <button className="receipt-btn receipt-btn--primary" onClick={() => navigate('/activity')}>
               View Full Activity Log
+            </button>
+            <button
+              className="receipt-btn receipt-btn--primary"
+              onClick={handleReleaseEscrow}
+              disabled={!canReleaseEscrow || isReleasing}
+            >
+              {isReleasing
+                ? 'Releasing Escrow...'
+                : escrowReleased
+                  ? 'Escrow Already Released'
+                  : 'Release Escrow Now'}
             </button>
             <button
               className="receipt-btn receipt-btn--secondary"

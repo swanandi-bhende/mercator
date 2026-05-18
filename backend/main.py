@@ -100,7 +100,7 @@ from backend.utils.failure_simulator import trigger_scenario, list_scenarios, ac
 from backend.utils.error_handler import AlgorandError, ErrorCode as EH_ErrorCode
 from backend.utils.ws_manager import ws_manager
 from backend.api.v1.router import router as api_v1_router
-from backend.api.v1.auth import seed_demo_key
+from backend.api.v1.auth import seed_demo_key, generate_api_key
 from backend.api.v1.responses import error_response
 from backend.utils.health_checker import HealthChecker
 from backend.utils.http_client import startup_http_client, shutdown_http_client
@@ -1096,6 +1096,7 @@ def _recent_listing_matches(query: str, limit: int = 8) -> list[dict[str, object
                 "insight_preview": str(entry.get("insight_text", ""))[:180],
                 "seller_wallet": str(entry.get("seller_wallet", "")),
                 "listing_status": "Recent",
+                "source_type": str(entry.get("source_type", "listing")),
             }
         )
 
@@ -1240,6 +1241,13 @@ class SubscriptionRequest(BaseModel):
 class SubscriptionReleaseRequest(BaseModel):
     buyer_wallet: str
     listing_id: int
+
+
+class AdminGenerateApiKeyRequest(BaseModel):
+    owner_name: str
+    owner_email: str
+    tier: str = "developer"
+    plaintext_key: str | None = None
 
 
 class OnboardRequest(BaseModel):
@@ -3044,6 +3052,7 @@ async def create_listing(request: ListingRequest) -> dict[str, object]:
                 "price_usdc": round(float(request.price), 6),
                 "insight_text": request.insight_text,
                 "seller_reputation": 0,
+                "source_type": request.source_type or "listing",
             }
         )
         try:
@@ -3384,6 +3393,14 @@ async def wallet_is_custodial(address: str = Query(..., description="Algorand wa
     if not encoding.is_valid_address(address):
         return JSONResponse(status_code=400, content={"error": "Invalid wallet address"})
 
+    custodial = is_custodial_address(address)
+    user_id = get_user_id_by_address(address) if custodial else None
+    return {
+        "is_custodial": custodial,
+        "user_id": user_id,
+        "address": address,
+    }
+
 
 @app.get("/admin/cache/stats")
 async def admin_cache_stats() -> dict[str, object]:
@@ -3411,6 +3428,38 @@ async def admin_cache_stats() -> dict[str, object]:
         "reputation_cache": _stats(_reputation_cache),
         "listings_cache": _stats(_listings_cache),
     }
+
+
+@app.post("/admin/api-keys/generate")
+async def admin_generate_api_key(request: Request, body: AdminGenerateApiKeyRequest) -> dict[str, object]:
+    configured_key = os.getenv("ADMIN_KEY", "").strip()
+    provided_key = request.headers.get("x-admin-key", "").strip()
+    if not configured_key or provided_key != configured_key:
+        raise HTTPException(status_code=403, detail="Invalid X-Admin-Key")
+
+    owner_name = body.owner_name.strip()
+    owner_email = body.owner_email.strip()
+    tier = body.tier.strip() or "developer"
+    plaintext_key = body.plaintext_key.strip() if isinstance(body.plaintext_key, str) and body.plaintext_key.strip() else None
+
+    if not owner_name:
+        raise HTTPException(status_code=400, detail="owner_name is required")
+    if not owner_email:
+        raise HTTPException(status_code=400, detail="owner_email is required")
+
+    try:
+        generated_key, key_id = generate_api_key(owner_name, owner_email, tier, plaintext_key=plaintext_key)
+        return {
+            "success": True,
+            "key_id": key_id,
+            "plaintext_key": generated_key,
+            "owner_name": owner_name,
+            "owner_email": owner_email,
+            "tier": tier,
+        }
+    except Exception as err:
+        logger.error("API key generation failed | owner=%s email=%s error=%s", owner_name, owner_email, err, exc_info=True)
+        raise HTTPException(status_code=500, detail=str(err))
 
     custodial = is_custodial_address(address)
     user_id = get_user_id_by_address(address) if custodial else None

@@ -32,6 +32,26 @@ cd frontend && npm install
 
 ---
 
+## Frontend Development
+
+From the `frontend/` directory:
+
+```bash
+npm install
+npm run dev
+```
+
+Useful local commands:
+
+```bash
+npm run build
+npm run test
+```
+
+The dev server runs on Vite's default port `5173`. Set `VITE_API_BASE_URL` if you need to point the UI at a non-local backend.
+
+---
+
 ## Documentation
 
 The project is documented across the following primary guides:
@@ -96,7 +116,7 @@ React Frontend    ←→    FastAPI Backend    ←→    Algorand Contracts
 ```
 
 **Key Components**:
-- `frontend/src/`: React + Vite UI (SellInsight, DiscoverInsights, Checkout, Receipt, Ledger, Trust pages)
+- `frontend/src/`: React + Vite UI (SellInsight, DiscoverInsights, Agents, Login, WalletTools, Checkout, Receipt, Ledger, Trust pages)
 - `backend/main.py`: FastAPI routing and orchestration
 - `backend/tools/x402_payment.py`: Atomic payment execution
 - `backend/tools/post_payment_flow.py`: Content delivery and reputation update
@@ -111,6 +131,10 @@ React Frontend    ←→    FastAPI Backend    ←→    Algorand Contracts
 | POST | `/list` | Seller creates insight listing |
 | GET | `/discover` | Buyer discovers insights by query |
 | POST | `/demo_purchase` | Execute autonomous purchase flow |
+| POST | `/auth/login` | Authenticate an existing buyer session |
+| GET | `/wallet/is_custodial` | Check whether a wallet is custodial |
+| POST | `/wallet/export` | Export a custodial wallet mnemonic |
+| GET | `/agents/registered` | List registered AgentRegistry entries |
 | GET | `/ledger` | View activity audit trail |
 | GET | `/reputation/{address}` | Query seller reputation score |
 
@@ -153,6 +177,9 @@ mercator/
 │     ├─ SellInsight.tsx       # Seller listing interface
 │     ├─ pages/
 │     │  ├─ DiscoverInsights.tsx
+│     │  ├─ Agents.tsx
+│     │  ├─ Login.tsx
+│     │  ├─ WalletTools.tsx
 │     │  ├─ Checkout.tsx
 │     │  ├─ Receipt.tsx
 │     │  ├─ ActivityLedger.tsx
