@@ -110,25 +110,6 @@ class SellerProfileService:
         self.db_path = db_path
         initialise_seller_profile_schema()
 
-# Module-level caches for hot-path seller lookups
-_profile_cache: TTLCache = TTLCache(maxsize=200, ttl=30)
-_reputation_cache: TTLCache = TTLCache(maxsize=200, ttl=30)
-
-
-def invalidate_profile_cache(wallet: str) -> None:
-    """Invalidate cached seller profile for `wallet`."""
-    try:
-        _profile_cache.pop(wallet, None)
-    except Exception:
-        pass
-
-
-def invalidate_reputation_cache(wallet: str) -> None:
-    try:
-        _reputation_cache.pop(wallet, None)
-    except Exception:
-        pass
-
     async def get_profile_tier1_tier2(self, wallet: str) -> SellerProfileResponse:
         # Return cached profile when available to reduce indexer/sqlite load
         cached = _profile_cache.get(wallet)
@@ -471,6 +452,26 @@ def invalidate_reputation_cache(wallet: str) -> None:
             return fetch_insight_from_ipfs(cid)
         except Exception:
             return None
+
+
+# Module-level caches for hot-path seller lookups
+_profile_cache: TTLCache = TTLCache(maxsize=200, ttl=30)
+_reputation_cache: TTLCache = TTLCache(maxsize=200, ttl=30)
+
+
+def invalidate_profile_cache(wallet: str) -> None:
+    """Invalidate cached seller profile for `wallet`."""
+    try:
+        _profile_cache.pop(wallet, None)
+    except Exception:
+        pass
+
+
+def invalidate_reputation_cache(wallet: str) -> None:
+    try:
+        _reputation_cache.pop(wallet, None)
+    except Exception:
+        pass
 
 
 async def build_trust_summary(profile: SellerProfileResponse) -> str:
