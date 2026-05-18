@@ -55,9 +55,49 @@ export const SellerCard: React.FC<SellerCardProps> = ({ wallet, expanded = false
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Check if this is a demo wallet (from demo data or testing)
+  const isDemoWallet = wallet.includes('...') || wallet.startsWith('MKT') || wallet.startsWith('EQL')
+
   const fetchProfile = useMemo(() => {
     return async () => {
-      // Check cache first
+      // Skip fetching for demo wallets - show mock profile instead
+      if (isDemoWallet) {
+        const mockProfile: SellerProfileResponse = {
+          seller_wallet: wallet,
+          display_name: wallet.replace('...', ' '),
+          seller_stats: {
+            seller_wallet: wallet,
+            total_purchases: 0,
+            total_usdc_earned_micro: 0,
+            avg_price_usdc: null,
+            first_listing_date: null,
+            last_purchase_date: null,
+            recent_evaluations_avg_score: null,
+            display_name: wallet.replace('...', ' '),
+            registered_agent_name: null,
+            registered_agent_role: null,
+            registered_at_round: null,
+            trust_summary: 'Demo seller profile',
+          },
+          reputation_score_effective: 0,
+          reputation_score_raw: 0,
+          decay_info: {
+            last_updated_at: null,
+            decay_rate: null,
+            decay_points_applied: 0,
+          },
+          registered_agent_name: null,
+          registered_agent_role: null,
+          registered_at_round: null,
+          reputation_history: [],
+          trust_summary: 'Demo seller profile',
+        }
+        setProfile(mockProfile)
+        setLoading(false)
+        return
+      }
+
+      // Check cache first for real wallets
       const cached = sellerCardCache.get(wallet)
       if (cached && Date.now() - cached.fetchedAt < 30000) {
         // Cache hit - within 30 seconds
@@ -80,11 +120,11 @@ export const SellerCard: React.FC<SellerCardProps> = ({ wallet, expanded = false
         setLoading(false)
       }
     }
-  }, [wallet])
+  }, [wallet, isDemoWallet])
 
   useEffect(() => {
     fetchProfile()
-  }, [wallet, fetchProfile])
+  }, [wallet, fetchProfile, isDemoWallet])
 
   if (loading) {
     return (
