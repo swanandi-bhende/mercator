@@ -707,7 +707,7 @@ export default function CheckoutPage() {
             Checkout is the trust climax: you can verify what is being paid for, why it was selected,
             how x402 progresses, and what delivery outcome was reached.
             {' '}
-            <a href="/trust">Open Trust / Reputation.</a>
+            <button className="checkout-trust-link" onClick={() => navigate('/trust')}>Open Trust / Reputation.</button>
           </p>
         </div>
       </section>

@@ -1059,7 +1059,9 @@ export default function DiscoverInsightsPage() {
           <div className="discover-footer-note">
             <p>
               Mercator is ranking the insights, not just listing them.{' '}
-              <a href="/trust">Learn how reputation and skip logic affect ranking.</a>
+              <button className="discover-footer-link" onClick={() => navigate('/trust')}>
+                Learn how reputation and skip logic affect ranking.
+              </button>
             </p>
           </div>
         </div>

@@ -7,7 +7,7 @@ type Props = {
   state?: string
 }
 
-const SECONDS_PER_ROUND = Number(process.env.REACT_APP_SECONDS_PER_ROUND || 4.5)
+const SECONDS_PER_ROUND = Number((import.meta as any).env?.VITE_SECONDS_PER_ROUND ?? 4.5)
 const CONFIRMATION_BUFFER_ROUNDS = 10
 
 function formatDisplay(secondsRemaining: number) {

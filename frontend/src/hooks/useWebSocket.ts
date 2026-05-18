@@ -19,20 +19,39 @@ export default function useWebSocket(onMessage: (event: WebSocketEvent) => void,
   const intentionalCloseRef = useRef<boolean>(false)
   const onMessageRef = useRef(onMessage)
   const optionsRef = useRef<UseWebSocketOptions | undefined>(options)
+  const disabledRef = useRef(false)
 
   onMessageRef.current = onMessage
   optionsRef.current = options
 
   const connect = () => {
-    const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws'
-    const host = (import.meta as any).env?.VITE_WS_BASE || window.location.host
-    const url = `${scheme}://${host}/ws`
+    if (disabledRef.current) {
+      return
+    }
+
+    const env = import.meta as any
+    const wsBase = (env?.env?.VITE_WS_BASE || env?.env?.VITE_API_BASE_URL || '').trim()
+
+    if (!wsBase) {
+      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      if (!isLocalhost) {
+        disabledRef.current = true
+        optionsRef.current?.onClose?.(new CloseEvent('close', { code: 1000, reason: 'WebSocket endpoint not configured' }))
+        return
+      }
+    }
+
+    const baseUrl = wsBase || window.location.origin
+    const normalizedBase = baseUrl.startsWith('http://') || baseUrl.startsWith('https://')
+      ? baseUrl
+      : `${window.location.protocol}//${baseUrl}`
+    const url = new URL('/ws', normalizedBase.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:')).toString()
 
     let ws: WebSocket | null = null
     try {
       ws = new WebSocket(url)
     } catch (err) {
-      console.error('[WS] Failed to construct WebSocket', err)
+      console.warn('[WS] WebSocket disabled', err)
       optionsRef.current?.onError?.(err as Event)
       // Don't throw — fail gracefully so app can render without realtime connection.
       socketRef.current = null
@@ -86,7 +105,7 @@ export default function useWebSocket(onMessage: (event: WebSocketEvent) => void,
     }
 
     ws.onerror = (error: Event) => {
-      console.error("[WS] Error", error)
+      console.warn("[WS] Error", error)
       optionsRef.current?.onError?.(error)
     }
   }

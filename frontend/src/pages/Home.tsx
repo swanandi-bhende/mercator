@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
 
 export default function HomePage() {
@@ -271,12 +271,12 @@ export default function HomePage() {
           </section>
 
           <nav className="home-footer-links" aria-label="Footer navigation">
-            <a href="/sell">Seller Route</a>
-            <a href="/discover">Buyer Route</a>
-            <a href="/trust">Trust & Reputation</a>
-            <a href="/activity">Activity & Proof</a>
-            <a href="/operations">Operations</a>
-            <a href="/about">About Mercator</a>
+            <Link to="/sell">Seller Route</Link>
+            <Link to="/discover">Buyer Route</Link>
+            <Link to="/trust">Trust & Reputation</Link>
+            <Link to="/activity">Activity & Proof</Link>
+            <Link to="/operations">Operations</Link>
+            <Link to="/about">About Mercator</Link>
           </nav>
         </div>
       </footer>

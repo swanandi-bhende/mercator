@@ -3,6 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
 import { ApiError, api } from '../utils/api'
 
+function parseListingId(value: string) {
+  const digits = value.match(/\d+/)?.[0]
+  if (!digits) return undefined
+  const parsed = Number.parseInt(digits, 10)
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined
+}
+
 export default function TransactionPage() {
   const navigate = useNavigate()
   const { paymentState, selectedInsight, buyerWallet, setPaymentState, setLastTransactionId } = useAppContext()
@@ -49,8 +56,8 @@ export default function TransactionPage() {
   const escrowReleased = paymentState?.escrowReleased ?? Boolean(escrowTxId)
   const releaseExplorerUrl =
     paymentState?.explorerEscrowUrl || (escrowTxId ? `https://lora.algokit.io/testnet/tx/${escrowTxId}` : '')
-  const listingIdNumber = Number(listingId)
-  const canReleaseEscrow = Boolean(buyerWallet && Number.isFinite(listingIdNumber) && !escrowReleased)
+  const listingIdNumber = parseListingId(listingId)
+  const canReleaseEscrow = Boolean(buyerWallet && listingIdNumber !== undefined && !escrowReleased)
 
   const timeline = [
     {
@@ -104,7 +111,7 @@ export default function TransactionPage() {
   }
 
   const handleReleaseEscrow = async () => {
-    if (!buyerWallet || !Number.isFinite(listingIdNumber)) {
+    if (!buyerWallet || listingIdNumber === undefined) {
       setReleaseMessage('Buyer wallet and listing ID are required to release escrow.')
       return
     }

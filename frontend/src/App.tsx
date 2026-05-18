@@ -8,6 +8,7 @@ import InsightDetailPage from './pages/InsightDetail'
 import SellerProfilePage from './pages/SellerProfile'
 import CheckoutPage from './pages/Checkout'
 import TransactionPage from './pages/Transaction'
+import ReceiptPage from './pages/Receipt'
 import SubscriptionManagerPage from './pages/SubscriptionManager'
 import TrustPage from './pages/Trust'
 import ActivityLedgerPage from './pages/ActivityLedger'
@@ -39,7 +40,7 @@ export default function App() {
 
             {/* Shared Transaction Route (seller listing success, buyer purchase success) */}
             <Route path="/transaction" element={<TransactionPage />} />
-            <Route path="/receipt" element={<TransactionPage />} />
+            <Route path="/receipt" element={<ReceiptPage />} />
 
             {/* Shared Routes */}
             <Route path="/onboard" element={<OnboardPage />} />

@@ -81,11 +81,17 @@ export default function InsightDetailPage() {
               >
                 Back to Discover
               </button>
+              <button
+                onClick={handleContinueToCheckout}
+                className="insight-decision-btn insight-decision-btn--secondary"
+              >
+                Trust / Reputation Guide
+              </button>
             </div>
           </div>
         </section>
       </div>
-    )
+    );
   }
 
   const queryText = selectedInsight.query_text?.trim() || 'your latest market query'
@@ -515,7 +521,7 @@ export default function InsightDetailPage() {
           )}
           <p>
             Next step is explicit: {recommendation.tone === 'go' ? 'approve this path and move to checkout, or compare alternatives.' : 'refine the query or inspect trust policy before retrying.'}{' '}
-            <a href="/trust">Review trust logic and ranking rules.</a>
+            <button className="insight-link" onClick={() => navigate('/trust')}>Review trust logic and ranking rules.</button>
           </p>
         </div>
       </section>

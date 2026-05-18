@@ -8,7 +8,7 @@ type ConnectionStatus = 'connecting' | 'connected' | 'disconnected'
 function connectionLabel(status: ConnectionStatus) {
   if (status === 'connected') return 'Live'
   if (status === 'connecting') return 'Connecting...'
-  return 'Reconnecting...'
+  return 'Offline'
 }
 
 export default function TopNav({ connectionStatus }: { connectionStatus: ConnectionStatus }) {
@@ -248,7 +248,7 @@ export default function TopNav({ connectionStatus }: { connectionStatus: Connect
               to="/operations"
               className="hidden text-xs font-medium text-gray-500 hover:text-gray-900 md:inline"
             >
-              Ops
+              Operations
             </Link>
 
             {/* Mobile Menu Toggle */}
@@ -326,7 +326,7 @@ export default function TopNav({ connectionStatus }: { connectionStatus: Connect
                 className="block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
                 onClick={() => setMenuOpen(false)}
               >
-                System Status
+                Operations
               </Link>
             </div>
           </div>
