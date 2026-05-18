@@ -231,6 +231,32 @@ mercator/
 
 See [Setup.md](docs/Setup.md) for complete configuration.
 
+### Environment variables (quick reference)
+
+Front-end (Vite): set these in Vercel under Project → Settings → Environment Variables. Prefixed with `VITE_` so they are exposed to the client bundle.
+
+Example `frontend/.env` (or Vercel env):
+
+```
+VITE_API_BASE_URL=https://mercator-reka.onrender.com
+VITE_WS_BASE=mercator-reka.onrender.com
+```
+
+Back-end: set these in Render (or your host) as service environment variables.
+
+Example `backend/.env`:
+
+```
+FRONTEND_ORIGIN=https://mercator-algorand.vercel.app
+API_PUBLIC_URL=https://mercator-reka.onrender.com
+ADMIN_SIM_KEY=changeme
+```
+
+Notes:
+- After changing frontend env vars you must rebuild the frontend (`npm run build`) for production to pick up new `VITE_` values.
+- For local development you can create `frontend/.env.local` and `backend/.env` from the provided `.env.example` files.
+- To avoid CORS in dev, the project config includes a Vite dev `proxy` (see `frontend/vite.config.ts`) that forwards `/api`, `/ws` and related paths to `http://localhost:8000`.
+
 ---
 
 ## Deploy to Public URL

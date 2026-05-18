@@ -24,7 +24,21 @@ export default function useWebSocket(onMessage: (event: WebSocketEvent) => void,
   optionsRef.current = options
 
   const connect = () => {
-    const ws = new WebSocket(`ws://${window.location.host}/ws`)
+    const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws'
+    const host = (import.meta as any).env?.VITE_WS_BASE || window.location.host
+    const url = `${scheme}://${host}/ws`
+
+    let ws: WebSocket | null = null
+    try {
+      ws = new WebSocket(url)
+    } catch (err) {
+      console.error('[WS] Failed to construct WebSocket', err)
+      optionsRef.current?.onError?.(err as Event)
+      // Don't throw — fail gracefully so app can render without realtime connection.
+      socketRef.current = null
+      return
+    }
+
     socketRef.current = ws
 
     ws.onopen = () => {

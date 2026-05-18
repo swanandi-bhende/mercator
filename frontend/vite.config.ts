@@ -10,6 +10,19 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    open: true
+    open: true,
+    proxy: {
+      // Proxy API requests to local backend during development to avoid CORS
+      '/api': 'http://localhost:8000',
+      '/ops': 'http://localhost:8000',
+      '/traces': 'http://localhost:8000',
+      '/ws': {
+        target: 'ws://localhost:8000',
+        ws: true,
+      },
+      // Backend root endpoints
+      '/auth': 'http://localhost:8000',
+      '/wallet': 'http://localhost:8000',
+    },
   }
 })
