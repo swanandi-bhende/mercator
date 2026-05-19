@@ -454,7 +454,7 @@ def _store_cid_in_listing_core(
             app_id=listing_app_id,
             default_sender=getattr(signer, "address", seller_address),
         )
-            call_params = CommonAppCallParams()
+        call_params = CommonAppCallParams()
         result = app_client.send.create_listing(
             (listing_price, cid, "human", custom_expiry_rounds),
             params=call_params,
