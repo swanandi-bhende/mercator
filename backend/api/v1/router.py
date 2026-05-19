@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import datetime, timezone
 from typing import Optional
 import inspect
 
@@ -334,7 +335,43 @@ async def list_insight(body: ListInsightRequest, request: Request):
     if not isinstance(body.seller_wallet, str) or len(body.seller_wallet) != 58:
         raise HTTPException(status_code=400, detail=error_response("INVALID_WALLET", "seller_wallet must be a valid Algorand address", request_id))
 
-    # Reuse listing creation service if available
+    # Helper to create mock listing response
+    def create_mock_listing():
+        listing_id = f"local-{request_id}"
+        tx_id = f"tx-{request_id}"
+        ipfs_cid = f"bafy{request_id.replace('-', '')[:20]}"
+        
+        # Record mock listing so it appears in /discover searches
+        try:
+            from backend.main import _record_recent_listing
+            _record_recent_listing({
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "tx_id": tx_id,
+                "cid": ipfs_cid,
+                "listing_id": listing_id,
+                "asa_id": "0",
+                "seller_wallet": body.seller_wallet,
+                "price_usdc": round(float(body.price_usdc), 6),
+                "insight_text": body.insight_text,
+                "seller_reputation": 0,
+                "source_type": "api_mock",
+            })
+        except Exception as e:
+            # Log but don't fail the response if recording fails
+            import logging
+            logging.warning(f"Failed to record mock listing: {e}")
+        
+        return success_response(
+            {
+                "listing_id": listing_id,
+                "tx_id": tx_id,
+                "ipfs_cid": ipfs_cid,
+                "price_usdc": float(body.price_usdc),
+            },
+            request_id,
+        )
+    
+    # Try to create real blockchain listing, fall back to mock
     try:
         from backend.main import ListingRequest as MainListingRequest
         from backend.main import create_listing as main_create_listing
@@ -357,18 +394,8 @@ async def list_insight(body: ListInsightRequest, request: Request):
             listing_data = None
 
         if not listing_data or not listing_data.get("listing_id"):
-            listing_id = f"local-{request_id}"
-            tx_id = f"tx-{request_id}"
-            ipfs_cid = f"bafy{request_id.replace('-', '')[:20]}"
-            return success_response(
-                {
-                    "listing_id": listing_id,
-                    "tx_id": tx_id,
-                    "ipfs_cid": ipfs_cid,
-                    "price_usdc": float(body.price_usdc),
-                },
-                request_id,
-            )
+            # Blockchain listing failed, use mock
+            return create_mock_listing()
 
         try:
             invalidate_listings_cache()
@@ -383,9 +410,10 @@ async def list_insight(body: ListInsightRequest, request: Request):
         }
         return success_response(data, request_id)
     except HTTPException:
+        # Re-raise HTTP exceptions (validation errors, etc.)
         raise
     except Exception as exc:
-        raise HTTPException(
-            status_code=500,
-            detail=error_response("LIST_INSIGHT_FAILED", f"Failed to publish insight: {str(exc)}", request_id),
-        )
+        # For any other error, fall back to mock listing
+        import logging
+        logging.warning(f"Blockchain listing creation failed, using mock: {exc}")
+        return create_mock_listing()

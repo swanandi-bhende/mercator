@@ -23,11 +23,6 @@ export default function InsightDetailPage() {
     navigate('/checkout')
   }
 
-  const handleContinueToCheckout = () => {
-    setHasReviewedEvaluation(true)
-    navigate('/checkout')
-  }
-
   const copyIpfsCid = async (ipfsCid: string) => {
     if (!ipfsCid) return
 
@@ -103,7 +98,7 @@ export default function InsightDetailPage() {
                 Back to Discover
               </button>
               <button
-                onClick={handleContinueToCheckout}
+                onClick={() => navigate('/trust')}
                 className="insight-decision-btn insight-decision-btn--secondary"
               >
                 Trust / Reputation Guide

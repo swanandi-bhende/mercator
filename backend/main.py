@@ -713,6 +713,12 @@ frontend_origin_regex = os.getenv("FRONTEND_ORIGIN_REGEX", r"^https://.*\.vercel
 allowed_origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://localhost:5175",
+    "http://127.0.0.1:5175",
+    "http://localhost:5176",
+    "http://127.0.0.1:5176",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     # Allow the official Vercel frontend by default to ensure deployed CORS works
@@ -741,6 +747,74 @@ METRIC_ENDPOINTS = {
     "/ops/ipfs/health",
     "/ops/algorand/status",
 }
+
+
+def _initialize_demo_listings() -> None:
+    """Populate RECENT_LISTINGS with demo data for testing if empty.
+    
+    Purpose: Enable testing of discover workflow without requiring real listings.
+    """
+    if len(RECENT_LISTINGS) > 0:
+        return  # Already populated
+    
+    now = datetime.now(timezone.utc)
+    demo_listings = [
+        {
+            "timestamp": (now - timedelta(hours=2)).isoformat(),
+            "tx_id": "4SWT4P6VQ6A2B6PC4RGYQG7R",
+            "cid": "QmExampleCID1TestListing",
+            "listing_id": 1,
+            "asa_id": 10458941,
+            "seller_wallet": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HVY",
+            "price_usdc": 2.5,
+            "insight_text": "NIFTY 50 expected to test strong resistance at 24500 level today. Banking sector showing bullish divergence with higher lows. Strong support exists at 24300. Volume analysis suggests momentum continuation in morning session.",
+            "seller_reputation": 87,
+            "source_type": "listing",
+            "state": "active",
+            "expiry_round": 50000000,
+        },
+        {
+            "timestamp": (now - timedelta(hours=5)).isoformat(),
+            "tx_id": "B8R7S3Q1M6J9N4C2X5T1Z8L0",
+            "cid": "QmExampleCID2TestListing",
+            "listing_id": 2,
+            "asa_id": 10458941,
+            "seller_wallet": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB5HVY",
+            "price_usdc": 1.5,
+            "insight_text": "Best short-term bank index setup this session. Banking sector consolidation with potential breakout. Nifty Bank index showing strong correlation with main index.",
+            "seller_reputation": 72,
+            "source_type": "listing",
+            "state": "active",
+            "expiry_round": 49999000,
+        },
+        {
+            "timestamp": (now - timedelta(hours=1)).isoformat(),
+            "tx_id": "X2Y3Z4A5B6C7D8E9F0G1H2I3",
+            "cid": "QmExampleCID3TestListing",
+            "listing_id": 3,
+            "asa_id": 10458941,
+            "seller_wallet": "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC5HVY",
+            "price_usdc": 3.0,
+            "insight_text": "Macro insight: RBI rate decision impact analysis. Expected volatility patterns and sector rotation opportunities post announcement.",
+            "seller_reputation": 92,
+            "source_type": "listing",
+            "state": "active",
+            "expiry_round": 50001000,
+        },
+    ]
+    
+    for listing in demo_listings:
+        RECENT_LISTINGS.appendleft(listing)
+    
+    logger.info(f"Initialized {len(demo_listings)} demo listings for testing")
+
+
+# Initialize demo listings on module load if configured
+try:
+    if os.getenv("ENABLE_DEMO_LISTINGS", "true").lower() in ("true", "1", "yes"):
+        _initialize_demo_listings()
+except Exception as e:
+    logger.warning(f"Could not initialize demo listings: {e}")
 
 
 # ============================================================================
@@ -943,6 +1017,7 @@ def _recent_listing_matches(query: str, limit: int = 8) -> list[dict[str, object
     Returns top matches scored by: 0.75 * lexical_relevance + 0.25 * recency_bonus.
     Purpose: Fast discovery of freshly listed insights without waiting for semantic embedding service.
     """
+    logger.info(f"_recent_listing_matches called with query='{query}', RECENT_LISTINGS has {len(RECENT_LISTINGS)} entries")
     now = datetime.now(timezone.utc)
     query_tokens = _tokenize_for_match(query)
 
@@ -1087,15 +1162,19 @@ def _recent_listing_matches(query: str, limit: int = 8) -> list[dict[str, object
         }
     for score, entry in scored[:limit]:
         listing_id = entry.get("listing_id", "")
+        
+        # Support both string IDs (mock listings) and integer IDs (blockchain listings)
         try:
             listing_id_int = int(listing_id)
-        except Exception:
-            continue
+        except (ValueError, TypeError):
+            # For string IDs, use hash as integer
+            import hashlib
+            listing_id_int = int(hashlib.md5(str(listing_id).encode()).hexdigest()[:8], 16)
 
         price_micro = int(float(entry.get("price_usdc", 0.0) or 0.0) * 1_000_000)
         matches.append(
             {
-                "listing_id": listing_id_int,
+                "listing_id": listing_id,
                 "price_micro_usdc": price_micro,
                 "price_usdc": round(float(entry.get("price_usdc", 0.0) or 0.0), 6),
                 "reputation": int(entry.get("seller_reputation", 0) or 0),
@@ -3636,18 +3715,8 @@ async def discover_insights(request: DiscoverRequest) -> dict[str, object]:
             try:
                 parsed = json.loads(raw)
             except json.JSONDecodeError:
-                return {
-                    "success": True,
-                    "query": user_query,
-                    "embedding_fallback": False,
-                    "matches": [],
-                    "message": raw,
-                    "degraded": False,
-                    "diagnostics": {
-                        "code": "OK",
-                        "detail": raw,
-                    },
-                }
+                # Semantic search returned plain error string; still try fallback
+                parsed = {"query": user_query, "matches": [], "message": raw}
         elif isinstance(raw, dict):
             parsed = raw
         else:
