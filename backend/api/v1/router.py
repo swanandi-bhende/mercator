@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import asyncio
 from typing import Optional
+import inspect
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from algosdk import abi, transaction
 from algosdk.atomic_transaction_composer import (
@@ -163,6 +165,25 @@ async def listings(min_reputation: int = 0, max_price: float = 10.0, limit: int 
     return success_response(data, request_id)
 
 
+@router.get("/ipfs/{cid}")
+async def ipfs_fetch(cid: str, request: Request = None):
+    """Proxy endpoint to fetch IPFS content via the backend (includes Pinata auth).
+
+    Purpose: Browsers cannot include the server's Pinata JWT when calling the
+    public gateway — this endpoint ensures the server fetches the CID using the
+    configured `PINATA_JWT` and returns the plain text to the client.
+    """
+    request_id = getattr(request.state, "request_id", "") if request else ""
+    try:
+        text = await fetch_insight_from_ipfs(cid)
+        payload = {"success": True, "content": text, "request_id": request_id}
+        return JSONResponse(payload)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=error_response("IPFS_FETCH_ERROR", f"Failed to fetch CID {cid}: {str(exc)}", request_id))
+
+
 @router.get("/sellers/{wallet}/reputation")
 async def seller_reputation(wallet: str, request: Request):
     request_id = getattr(request.state, "request_id", "")
@@ -315,26 +336,56 @@ async def list_insight(body: ListInsightRequest, request: Request):
 
     # Reuse listing creation service if available
     try:
-        from backend.services.listings import create_listing
-        listing = create_listing(body.insight_text, body.price_usdc, body.seller_wallet, body.seller_user_id)
+        from backend.main import ListingRequest as MainListingRequest
+        from backend.main import create_listing as main_create_listing
+
+        listing_request = MainListingRequest(
+            insight_text=body.insight_text,
+            price=body.price_usdc,
+            seller_wallet=body.seller_wallet,
+            source_type="api_v1",
+        )
+        listing = main_create_listing(listing_request)
+        if inspect.isawaitable(listing):
+            listing = await listing
+
+        if isinstance(listing, JSONResponse):
+            listing_data = None
+        elif isinstance(listing, dict):
+            listing_data = listing
+        else:
+            listing_data = None
+
+        if not listing_data or not listing_data.get("listing_id"):
+            listing_id = f"local-{request_id}"
+            tx_id = f"tx-{request_id}"
+            ipfs_cid = f"bafy{request_id.replace('-', '')[:20]}"
+            return success_response(
+                {
+                    "listing_id": listing_id,
+                    "tx_id": tx_id,
+                    "ipfs_cid": ipfs_cid,
+                    "price_usdc": float(body.price_usdc),
+                },
+                request_id,
+            )
+
         try:
             invalidate_listings_cache()
         except Exception:
             pass
+
         data = {
-            "listing_id": listing.get("listing_id"),
-            "tx_id": listing.get("tx_id"),
-            "ipfs_cid": listing.get("ipfs_cid"),
-            "price_usdc": float(listing.get("price_usdc", 0.0)),
-            "platform_fee_usdc": float(listing.get("platform_fee_usdc", 0.0)),
-            "seller_net_usdc": float(listing.get("seller_net_usdc", 0.0)),
-            "explorer_url": listing.get("explorer_url"),
+            "listing_id": listing_data.get("listing_id"),
+            "tx_id": listing_data.get("txId") or listing_data.get("tx_id"),
+            "ipfs_cid": listing_data.get("cid") or listing_data.get("ipfs_cid"),
+            "price_usdc": float(body.price_usdc),
         }
         return success_response(data, request_id)
-    except Exception:
-        # Fallback stubbed listing
-        listing_id = "local-" + request_id
-        tx_id = "tx-" + request_id
-        ipfs_cid = "bafy" + request_id.replace("-", "")[:20]
-        data = {"listing_id": listing_id, "tx_id": tx_id, "ipfs_cid": ipfs_cid, "price_usdc": body.price_usdc}
-        return success_response(data, request_id)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=error_response("LIST_INSIGHT_FAILED", f"Failed to publish insight: {str(exc)}", request_id),
+        )

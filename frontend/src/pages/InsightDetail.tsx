@@ -17,6 +17,27 @@ export default function InsightDetailPage() {
   const navigate = useNavigate()
   const { selectedInsight, sellerMetadata, setHasReviewedEvaluation } = useAppContext()
 
+  // Define handlers early to avoid initialization errors in early returns
+  const handleBuyNow = () => {
+    setHasReviewedEvaluation(true)
+    navigate('/checkout')
+  }
+
+  const handleContinueToCheckout = () => {
+    setHasReviewedEvaluation(true)
+    navigate('/checkout')
+  }
+
+  const copyIpfsCid = async (ipfsCid: string) => {
+    if (!ipfsCid) return
+
+    try {
+      await navigator.clipboard.writeText(ipfsCid)
+    } catch {
+      // Clipboard access is best effort.
+    }
+  }
+
   // Agent evaluation panel state
   const [agentEvaluation, setAgentEvaluation] = useState<null | {
     listing_id: string
@@ -156,22 +177,41 @@ export default function InsightDetailPage() {
   const listingState = (selectedInsight.state || selectedInsight.listing_status || listingStatus || 'active').toLowerCase()
   const expiryRound = Number(selectedInsight.expiry_round || sellerMetadata?.expiry_round || 0)
   const ipfsCid = String(selectedInsight.cid || '').trim()
-  const ipfsPreviewUrl = useMemo(() => (ipfsCid ? `https://gateway.pinata.cloud/ipfs/${ipfsCid}` : ''), [ipfsCid])
+  const [ipfsContent, setIpfsContent] = useState<string | null>(null)
+  const [ipfsLoading, setIpfsLoading] = useState(false)
+  const [ipfsError, setIpfsError] = useState<string | null>(null)
 
-  const handleBuyNow = () => {
-    setHasReviewedEvaluation(true)
-    navigate('/checkout')
-  }
+  const apiBase = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')
+  const ipfsPreviewUrl = ipfsCid ? `${apiBase}/api/v1/ipfs/${encodeURIComponent(ipfsCid)}` : ''
 
-  const copyIpfsCid = async () => {
+  useEffect(() => {
+    let cancelled = false
     if (!ipfsCid) return
+    setIpfsLoading(true)
+    setIpfsError(null)
+    setIpfsContent(null)
 
-    try {
-      await navigator.clipboard.writeText(ipfsCid)
-    } catch {
-      // Clipboard access is best effort.
+    void (async () => {
+      try {
+        const url = ipfsPreviewUrl
+        const resp = await fetch(url, { method: 'GET' })
+        if (!resp.ok) throw new Error(`Failed to fetch IPFS preview: ${resp.status}`)
+        const data = await resp.json()
+        if (cancelled) return
+        if (data && data.success && typeof data.content === 'string') setIpfsContent(data.content)
+        else throw new Error(data?.message || 'No content returned')
+      } catch (err: any) {
+        if (cancelled) return
+        setIpfsError(String(err?.message || err))
+      } finally {
+        if (!cancelled) setIpfsLoading(false)
+      }
+    })()
+
+    return () => {
+      cancelled = true
     }
-  }
+  }, [ipfsCid, ipfsPreviewUrl])
 
   const rationaleLines = [
     `Relevance scored ${relevanceScore}% against your query intent.`,
@@ -191,11 +231,6 @@ export default function InsightDetailPage() {
   ]
 
   const shouldShowRiskRecovery = recommendation.tone !== 'go'
-
-  const handleContinueToCheckout = () => {
-    setHasReviewedEvaluation(true)
-    navigate('/checkout')
-  }
 
   return (
     <div className="insight-decision-page">
@@ -249,12 +284,18 @@ export default function InsightDetailPage() {
                 </span>
               </div>
 
-              {ipfsPreviewUrl ? (
-                <iframe
-                  className="insight-ipfs-frame"
-                  src={ipfsPreviewUrl}
-                  title="IPFS insight preview"
-                />
+              {ipfsCid ? (
+                <div className="insight-ipfs-frame" style={{ whiteSpace: 'pre-wrap', maxHeight: 420, overflow: 'auto', padding: 12, background: '#fff' }}>
+                  {ipfsLoading && <div>Loading IPFS preview…</div>}
+                  {ipfsError && (
+                    <div>
+                      <h3>IPFS preview unavailable</h3>
+                      <p className="muted">{ipfsError}</p>
+                      <p>Open the raw record in a new tab using the link below.</p>
+                    </div>
+                  )}
+                  {ipfsContent && <div>{ipfsContent}</div>}
+                </div>
               ) : (
                 <div className="insight-ipfs-empty">
                   <h3>No IPFS preview is available yet.</h3>
@@ -281,7 +322,7 @@ export default function InsightDetailPage() {
                 ) : (
                   <span className="insight-ipfs-link is-disabled">Open IPFS</span>
                 )}
-                <button type="button" onClick={copyIpfsCid} className="insight-ipfs-copy">
+                <button type="button" onClick={() => copyIpfsCid(ipfsCid)} className="insight-ipfs-copy">
                   Copy CID
                 </button>
               </div>

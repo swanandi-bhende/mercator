@@ -40,13 +40,13 @@ export default function SellInsight() {
     setIsLoading(true)
 
     try {
-      const response = await axios.post('http://localhost:8000/list', {
+      const response = await axios.post('http://localhost:8000/api/v1/list_insight', {
         insight_text: insight.trim(),
-        price,
+        price_usdc: typeof price === 'string' ? parseFloat(price) : price,
         seller_wallet: wallet.trim(),
       })
 
-      const txId = response?.data?.txId ?? response?.data?.tx_id
+      const txId = response?.data?.data?.tx_id ?? response?.data?.data?.txId ?? response?.data?.tx_id ?? response?.data?.txId
       if (!txId) {
         throw new Error('No transaction ID returned from server.')
       }

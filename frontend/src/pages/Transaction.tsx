@@ -51,7 +51,8 @@ export default function TransactionPage() {
   const escrowExplorerUrl =
     paymentState?.explorerEscrowUrl ||
     (escrowTxId ? `https://lora.algokit.io/testnet/tx/${escrowTxId}` : '')
-  const ipfsRecordUrl = cid ? `https://ipfs.io/ipfs/${cid}` : ''
+  const apiBase = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')
+  const ipfsRecordUrl = cid ? `${apiBase}/api/v1/ipfs/${encodeURIComponent(cid)}` : ''
 
   const escrowReleased = paymentState?.escrowReleased ?? Boolean(escrowTxId)
   const releaseExplorerUrl =

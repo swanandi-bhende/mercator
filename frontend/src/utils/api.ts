@@ -49,6 +49,12 @@ type SubscribeResponse = {
 }
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL?.trim() || 'http://localhost:8000'
+const DEFAULT_API_KEY = import.meta.env.VITE_API_KEY?.trim() || 'mercator_demo_key_algobharat_round3'
+
+function getApiKey() {
+  if (typeof window === 'undefined') return DEFAULT_API_KEY
+  return window.localStorage.getItem('operatorKey')?.trim() || DEFAULT_API_KEY
+}
 
 const client = axios.create({
   baseURL: API_BASE,
@@ -59,6 +65,24 @@ const client = axios.create({
 const paymentClient = axios.create({
   baseURL: API_BASE,
   timeout: 180000, // 180 seconds - gives headroom for transient testnet latency
+})
+
+client.interceptors.request.use((config) => {
+  const headers = (config.headers || {}) as Record<string, string>
+  if (!headers['x-api-key']) {
+    headers['x-api-key'] = getApiKey()
+  }
+  config.headers = headers
+  return config
+})
+
+paymentClient.interceptors.request.use((config) => {
+  const headers = (config.headers || {}) as Record<string, string>
+  if (!headers['x-api-key']) {
+    headers['x-api-key'] = getApiKey()
+  }
+  config.headers = headers
+  return config
 })
 
 function opsHeaders(apiKey?: string) {
@@ -84,9 +108,9 @@ export const api = {
    */
   listInsight: async (insightText: string, price: number | string, sellerWallet: string, custom_expiry_rounds?: number) => {
     try {
-      const response = await client.post<ListResponse>('/list', {
+      const response = await client.post<ListResponse>('/api/v1/list_insight', {
         insight_text: insightText.trim(),
-        price: typeof price === 'string' ? parseFloat(price) : price,
+        price_usdc: typeof price === 'string' ? parseFloat(price) : price,
         seller_wallet: sellerWallet.trim(),
         ...(typeof custom_expiry_rounds === 'number' ? { custom_expiry_rounds } : {}),
       })

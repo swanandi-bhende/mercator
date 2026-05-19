@@ -260,7 +260,8 @@ export default function DiscoverInsightsPage() {
   const queryTokens = useMemo(() => tokenize(query), [query])
   const featuredListing = useMemo(() => buildFeaturedListingInsight(listingInsight), [listingInsight])
   const liveInsights = useMemo(() => listings.map(mapLiveListingToRankedInsight), [listings])
-  const makeIpfsUrl = (cid: string) => (cid ? `https://gateway.pinata.cloud/ipfs/${cid}` : '')
+  const apiBase = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')
+  const makeIpfsUrl = (cid: string) => (cid ? `${apiBase}/api/v1/ipfs/${encodeURIComponent(cid)}` : '')
   const sourceTypeOptions = useMemo(() => {
     const options = new Set<string>(['Any'])
     ;[...rawInsights, ...liveInsights, ...(featuredListing ? [featuredListing] : [])].forEach((insight) => {

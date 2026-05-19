@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import base64
 import asyncio
+import inspect
 import json
 import logging
 import os
@@ -150,6 +151,12 @@ health_checker: HealthChecker | None = None
 seller_profile_cache: TTLCache[str, dict[str, Any]] = TTLCache(maxsize=100, ttl=30)
 seller_leaderboard_cache: TTLCache[str, list[dict[str, Any]]] = TTLCache(maxsize=20, ttl=60)
 _seller_profile_service: SellerProfileService | None = None
+
+
+async def _await_if_needed(result: object) -> object:
+    if inspect.isawaitable(result):
+        return await result
+    return result
 
 
 def _configure_logging() -> None:
@@ -708,6 +715,8 @@ allowed_origins = [
     "http://127.0.0.1:5173",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    # Allow the official Vercel frontend by default to ensure deployed CORS works
+    "https://mercator-algorand.vercel.app",
 ]
 for origin in frontend_origins:
     if origin not in allowed_origins:
@@ -2819,6 +2828,21 @@ async def ops_ipfs_health(request: Request) -> dict[str, object]:
     }
 
 
+@app.get("/ipfs/{cid}")
+async def public_ipfs_fetch(cid: str) -> JSONResponse:
+    """Fetch IPFS content by CID via backend gateways and return plain text.
+
+    Purpose: Allow the frontend to preview IPFS content without embedding external
+    gateways that prevent framing or have restrictive CORS/X-Frame settings.
+    """
+    try:
+        text = await fetch_insight_from_ipfs(cid)
+        return JSONResponse(status_code=200, content={"success": True, "cid": cid, "content": text})
+    except Exception as exc:
+        logger.exception("Failed to fetch IPFS CID %s: %s", cid, exc)
+        return JSONResponse(status_code=502, content={"success": False, "error": "IPFS_FETCH_FAILED", "message": str(exc)})
+
+
 @app.post("/ops/ipfs/test-upload")
 async def ops_ipfs_test_upload(request: Request, payload: OpsIpfsUploadRequest) -> dict[str, object]:
     """Run on-demand IPFS upload probe and record latency/result.
@@ -3006,7 +3030,7 @@ async def create_listing(request: ListingRequest) -> dict[str, object]:
                 request.seller_wallet,
             )
 
-        await _ensure_listing_app_funded(listing_app_id, preferred_sender=signer_address)
+        await _await_if_needed(_ensure_listing_app_funded(listing_app_id, preferred_sender=signer_address))
 
         prepared = await create_listing_prepared(
             insight_text=request.insight_text,

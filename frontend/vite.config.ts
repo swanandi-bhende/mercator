@@ -23,6 +23,7 @@ export default defineConfig({
       // Backend root endpoints
       '/auth': 'http://localhost:8000',
       '/wallet': 'http://localhost:8000',
+      '/ipfs': 'http://localhost:8000',
     },
   }
 })
