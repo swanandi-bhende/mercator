@@ -21,7 +21,6 @@ The current AI landscape is siloed. While AI agents can generate value, they lac
 - **Security**: Robust Layer-1 smart contracts.
 
 ## 5. Go-To-Market (GTM) Strategy
-*Designed for student founders:*
 1.  **Hackathon Exposure**: Dominating Algorand and AI-themed hackathons to build credibility.
 2.  **Open-Source Growth**: Providing easy-to-use SDKs for agent frameworks (LangChain, AutoGPT).
 3.  **Developer Communities**: Deep engagement in Discord, Reddit, and Telegram groups dedicated to Agentic AI.
@@ -46,7 +45,7 @@ Agents will prefer low-fee, high-speed decentralized rails over traditional cred
 Expanding from a simple listing site to a cross-chain autonomous commerce infrastructure, supporting various computational resources and AI models.
 
 ## 10. Customer Validation
-- **Interviews**: 50+ developer interviews to identify pain points in current AI payment flows.
+- **Interviews**: Have 10+ developer interviews to identify pain points in current AI payment flows.
 - **MVP Feedback**: Iterative loops based on early TestNet usage data.
 
 ## 11. Mainnet Roadmap
