@@ -1,58 +1,62 @@
 # Troubleshooting Guide
 
-Common issues and solutions when setting up, running, and testing Mercator.
+Quick solutions for common issues when developing, testing, and deploying Mercator.
 
-## Setup and Installation
+---
 
-### "ModuleNotFoundError: No module named 'backend'"
+## Setup & Environment
 
-**Symptom**: Python scripts crash with import errors
+### `ModuleNotFoundError: No module named 'backend'`
+
+**Problem**: Python can't find the backend module
 
 **Solution**:
 ```bash
 # Set PYTHONPATH before running
 export PYTHONPATH=$(pwd)
 
-# Or run Python with -path
-cd backend && python -m uvicorn main:app --reload
-
-# Or from project root
-PYTHONPATH=. python -m pytest backend/tests/
+# Then run your command
+pytest backend/tests/
 ```
 
-### "pip install: command not found"
+Or use the virtual environment Python:
+```bash
+.venv/bin/python -m pytest backend/tests/
+```
 
-**Symptom**: `pip: command not found` when installing dependencies
+### `pip install: command not found`
+
+**Problem**: pip not available or not in PATH
 
 **Solution**:
 ```bash
-# Use python module form
+# Use Python module form
 python3 -m pip install -r backend/requirements.txt
 
-# Or ensure virtualenv is activated
+# Or ensure virtual env is activated
 source .venv/bin/activate
 pip install -r backend/requirements.txt
 ```
 
-### "ModuleNotFoundError: No module named 'uvicorn'"
+### `ModuleNotFoundError: No module named 'uvicorn'`
 
-**Symptom**: FastAPI won't start, missing uvicorn
+**Problem**: FastAPI server won't start
 
 **Solution**:
 ```bash
-# Install missing dependency
+# Install specific dependency
 pip install uvicorn
 
-# Or reinstall full requirements
+# Or reinstall all requirements
 pip install -r backend/requirements.txt
 
-# Then run backend
-python -m uvicorn backend.main:app --reload
+# Start backend with correct path
+PYTHONPATH=. python -m uvicorn backend.main:app --reload
 ```
 
-### "No such file or directory: .env.testnet"
+### `.env.testnet file not found`
 
-**Symptom**: application crashes saying .env.testnet missing
+**Problem**: Application crashes with missing environment file
 
 **Solution**:
 ```bash
@@ -69,619 +73,511 @@ REPUTATION_APP_ID=1234569
 USDC_ASA_ID=10458941
 USDC_DECIMALS=6
 
-DEPLOYER_MNEMONIC="your 25 word mnemonic here"
-DEPLOYER_ADDRESS="your algorand address"
-BUYER_MNEMONIC="buyer mnemonic"
-BUYER_ADDRESS="buyer address"
+SELLER_ADDRESS="your-testnet-address"
+SELLER_MNEMONIC="your-25-word-seed"
 
-GEMINI_API_KEY="your gemini key"
-PINATA_JWT="your pinata jwt"
+GEMINI_API_KEY="your-api-key"
+PINATA_JWT="your-jwt-token"
 EOF
+```
 
-# Verify it exists
-cat .env.testnet
+### `error: No such file or directory: 'npm'`
+
+**Problem**: Node.js/npm not installed
+
+**Solution**:
+```bash
+# Verify Node.js is installed
+node --version  # Should be v18+
+
+# If not installed:
+# macOS: brew install node
+# Linux: apt install nodejs npm
+# Windows: Download from nodejs.org
 ```
 
 ---
 
-## Algorand Network Issues
+## Algorand & Wallet Issues
 
-### "ConnectionError: cannot connect to Algorand node"
+### `ConnectionError: Cannot connect to ALGOD_URL`
 
-**Symptom**: 
-```
-ConnectionError: Cannot connect to https://testnet-api.algonode.cloud
-```
+**Problem**: Backend can't reach Algorand node
 
-**Causes**:
-- Network is down
-- Incorrect node URL
-- Firewall blocking
-
-**Solutions**:
-
-1. **Test node connectivity**:
+**Solution**:
 ```bash
-curl -s https://testnet-api.algonode.cloud/health | jq .
-# Should show {"round": 12345678, "statusMessage": "OK", ...}
+# Verify endpoint is accessible
+curl https://testnet-api.algonode.cloud/health
+
+# Check .env.testnet has correct URL
+# Should be: ALGOD_URL=https://testnet-api.algonode.cloud
+
+# Not localhost unless you're running a local node
+# Not http:// (must be https://)
 ```
 
-2. **Try alternative node**:
+### `Error: USDC balance = 0`
+
+**Problem**: TestNet USDC not available
+
+**Solution**:
 ```bash
-# In .env.testnet, try:
-ALGOD_URL=https://api.testnet.algoexplorer.io
-# or
-ALGOD_URL=https://testnet-api.k1.jup.ag
+# 1. Get TestNet ALGO first
+Visit: https://bank.testnet.algorand.org
+Enter: Your wallet address
+Get: 10+ ALGO
+
+# 2. Opt-in to USDC ASA (10458941)
+# Use Pera Wallet:
+# - Open Pera Wallet
+# - Search ASA #10458941
+# - Click "Add asset"
+
+# 3. Ask for USDC on Discord
+Discord: https://discord.gg/algorand
+Channel: #testnet
+Message: "Need TestNet USDC, here's my address: ..."
+
+# 4. Create second test account
+# Transfer ALGO to second account
+# Opt-in to USDC on second account
 ```
 
-3. **Check internet connection**:
+### `Error: Invalid Algorand address`
+
+**Problem**: Address format is wrong
+
+**Solution**:
 ```bash
-# Simple connectivity test
-curl https://www.google.com
+# Valid TestNet address format:
+# 58 characters
+# Starts with letter (not 0)
+# Alphanumeric only
+# Includes checksum
+
+# Example valid address:
+IXPLWQSP5D7K2F4BLXNWY3PR6KKXVG44DAESMMZ2H27VYZQNXGVQZNWVM4
+
+# Common mistakes:
+# - 0x prefix (Ethereum format): [Invalid]
+# - Too short (< 58 chars): [Invalid]
+# - Special characters: [Invalid]
+# - Invalid checksum: [Invalid]
 ```
 
-### "App ID not found" or "Application index not found in account state"
+### `Error: App ID not found`
 
-**Symptom**:
-```
-IndexError: Application index [1234567] not found
-```
+**Problem**: Smart contract not deployed or wrong app ID
 
-**Causes**:
-- Contract not deployed
-- Wrong app ID in .env.testnet
-- App ID belongs to different network
-
-**Solutions**:
-
-1. **Verify contracts are deployed**:
+**Solution**:
 ```bash
-# Check if app ID exists on-chain
-curl "https://testnet-idx.algonode.cloud/v2/applications/1234567"
-# Should return detailed app info, not 404
+# Verify app exists on-chain
+curl "https://testnet-idx.algonode.cloud/v2/applications/{APP_ID}"
+
+# If 404: Contract not deployed
+# Deploy contract and get app ID:
+PYTHONPATH=. python backend/contracts/insight_listing.py
+
+# Save returned app ID
+# Update .env.testnet with correct ID
+
+# Verify network matches:
+# TestNet contracts have IDs < 1,000,000
+# MainNet contracts have IDs > 1,000,000
 ```
 
-2. **Redeploy contracts**:
+### `Transaction group size exceeded (16 max)`
+
+**Problem**: Too many transactions in atomic group
+
+**Solution**:
 ```bash
-cd backend/contracts/insight_listing/smart_contracts
-python -m smart_contracts
-# Note the returned app ID
+# Mercator uses 3 transactions per payment:
+# 1. ASA Transfer (USDC)
+# 2. Escrow Release
+# 3. Reputation Update
 
-# Update .env.testnet with new ID
-INSIGHT_LISTING_APP_ID=<new-app-id>
+# If error, check that:
+# - Not adding extra transactions
+# - Not reusing same group multiple times
+# - Atomic group properly closed
+
+# Max 16 transactions per group, so Mercator is well under
 ```
-
-3. **Verify you're on TestNet**:
-```bash
-# Check network setting
-grep NETWORK .env.testnet
-# Should be: NETWORK=testnet
-```
-
-### "Insufficient balance for this account"
-
-**Symptom**: Transaction fails at simulation
-```
-Transaction simulation failed: insufficient balance for this account
-```
-
-**Solutions**:
-
-1. **Fund your account**:
-   - Visit [TestNet Dispenser](https://dispenser.testnet.algoexplorerapi.io/)
-   - Enter your wallet address
-   - Request funds (typically 10 Algo each)
-   - Wait 1-2 minutes for confirmation
-
-2. **Check balance**:
-```bash
-curl "https://testnet-idx.algonode.cloud/v2/accounts/${YOUR_ADDRESS}"
-# Look for "amount" field (in microunits)
-```
-
-3. **Opt-in to USDC**:
-   - Open Pera Wallet or Algosigner
-   - Search for USDC asset (10458941)
-   - Click "Opt-in"
-   - Confirm the transaction
 
 ---
 
-## Frontend Issues
+## Payment & Transaction Issues
 
-### "http://localhost:5173 refused to connect"
+### `Payment rejected: insufficient balance`
 
-**Symptom**: Browser shows "Cannot connect to server"
+**Problem**: Buyer doesn't have enough USDC
 
-**Solutions**:
-
-1. **Check if frontend is running**:
+**Solution**:
 ```bash
-# Terminal 2
-cd frontend
+# Check current USDC balance
+# In Pera Wallet: See Assets tab
+
+# Get more USDC:
+# 1. Get TestNet ALGO (see above)
+# 2. Trade ALGO for USDC on testnet exchange (if available)
+# 3. Ask Discord for USDC transfer
+
+# For testing with unlimited balance:
+# Set in .env.testnet during development
+# (Don't use in production)
+```
+
+### `Error: User approval required. Type 'approve'`
+
+**Problem**: User didn't confirm payment
+
+**Cause**: This is expected behavior, not an error!
+
+**Solution**:
+```bash
+# When prompted for payment, type exactly:
+approve
+
+# Not:
+# - "Approve" (capital A)
+# - "yes" or "ok"
+# - Empty input
+
+# Only exact match "approve" proceeds to payment
+```
+
+### `Transaction timeout (did not confirm in 4 blocks)`
+
+**Problem**: Transaction was submitted but didn't finalize
+
+**Solution**:
+```bash
+# This is rare on TestNet
+# Try again - the transaction may be in mempool
+
+# If repeats:
+# 1. Check Algorand TestNet status
+#    https://status.algorand.org
+
+# 2. Wait a few minutes and retry
+
+# 3. If using local node, check node health
+#    curl http://localhost:4001/health
+
+# 4. Check transaction on explorer
+#    https://testnet.algoexplorer.io/
+```
+
+### `Escrow release failed`
+
+**Problem**: Escrow contract call failed
+
+**Solution**:
+```bash
+# Check error message for details:
+# Common causes:
+# 1. App not opted into USDC asset
+#    → Smart contract needs: "asset 10458941" in foreign assets
+
+# 2. Seller address not passed to app
+#    → Ensure seller address in Accounts field
+
+# 3. Amount validation failed
+#    → Check amount > 0 and < MAX_PAYMENT (5.0 USDC)
+
+# Debug: View transaction on explorer
+https://testnet.algoexplorer.io/tx/{TX_ID}
+```
+
+---
+
+## Frontend & Browser Issues
+
+### `Error: VITE_API_BASE not set`
+
+**Problem**: Frontend can't connect to backend
+
+**Solution**:
+```bash
+# Create .env.local in frontend/ directory:
+VITE_API_BASE=http://localhost:8000
+VITE_WS_BASE=ws://localhost:8000
+
+# Or use production API for testing:
+VITE_API_BASE=https://mercator-reka.onrender.com
+VITE_WS_BASE=wss://mercator-reka.onrender.com
+
+# Restart frontend dev server
 npm run dev
-
-# Wait for: "Local: http://localhost:5173"
 ```
 
-2. **Check if port 5173 is in use**:
-```bash
-# See what's using port 5173
-lsof -i :5173
+### `Blank page or "Cannot GET /"`
 
-# Kill if needed
-kill -9 <PID>
-```
+**Problem**: Frontend not running or wrong port
 
-3. **Install dependencies**:
+**Solution**:
 ```bash
-cd frontend
-npm install
+# Verify frontend is running
 npm run dev
+# Should show: "VITE v5.x.x ready in 123ms"
+
+# Check port 5173 is accessible
+# http://localhost:5173 in browser
+
+# If not working:
+# 1. Kill any process on port 5173
+#    lsof -i :5173
+#    kill -9 <PID>
+
+# 2. Clear vite cache
+#    rm -rf frontend/node_modules/.vite
+
+# 3. Restart dev server
+#    npm run dev
 ```
 
-### "npm: command not found"
+### `Wallet connection failed`
 
-**Symptom**: `npm` not installed or not in PATH
-
-**Solutions**:
-
-1. **Install Node.js**:
-   - macOS: `brew install node`
-   - Linux: See https://nodejs.org/
-
-2. **Verify installation**:
-```bash
-node --version   # Should show v18+
-npm --version    # Should show 9.0.0+
-```
-
-### React component errors (console shows red errors)
-
-**Symptom**: Browser console shows React errors like:
-```
-TypeError: Cannot read property 'map' of undefined
-```
-
-**Solutions**:
-
-1. **Check backend is running**:
-```bash
-curl http://localhost:8000/health
-# Should return {"status": "healthy"}
-
-# If not, in Terminal 1:
-python -m uvicorn backend.main:app --reload
-```
-
-2. **Check smart contract IDs**:
-```bash
-grep APP_ID .env.testnet
-# All three should have values, not blanks
-```
-
-3. **Restart frontend**:
-```bash
-# Ctrl+C in frontend terminal
-npm run dev
-```
-
-4. **Check browser console**:
-   - Open DevTools (F12)
-   - Click "Console" tab
-   - Look for specific error message
-   - Share the error in logs (next section)
-
----
-
-## Backend API Issues
-
-### "Connection refused" on http://localhost:8000
-
-**Symptom**: Cannot reach backend API
-
-**Solutions**:
-
-1. **Start backend**:
-```bash
-# Terminal 1
-source .venv/bin/activate
-cd backend
-python -m uvicorn main:app --reload --port 8000
-
-# Wait for: "Uvicorn running on http://0.0.0.0:8000"
-```
-
-2. **Check port availability**:
-```bash
-lsof -i :8000
-# If in use, kill or use different port
-python -m uvicorn main:app --port 8001
-```
-
-3. **Verify backend health**:
-```bash
-curl http://localhost:8000/health
-# Should return {"status": "ok"}
-```
-
-### "CORS error" in browser console
-
-**Symptom**:
-```
-Access to XMLHttpRequest from origin 'http://localhost:5173' has been blocked by CORS policy
-```
-
-**Solution**:
-The backend should have CORS enabled. Check `backend/main.py` has:
-
-```python
-from fastapi.middleware.cors import CORSMiddleware
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-```
-
-If missing, add it above the route definitions.
-
-### "No such file or directory: backend/contracts/..."
-
-**Symptom**: Backend crashes with import error for contracts
+**Problem**: Cannot connect to Pera Wallet
 
 **Solution**:
 ```bash
-# Ensure you're in project root
-pwd
-# Should show: /path/to/mercator
+# 1. Install Pera Wallet browser extension
+#    https://www.perawallet.app/
 
-# Check contract files exist
-ls backend/contracts/insight_listing/smart_contracts/insight_listing/contract.py
-ls backend/contracts/escrow/smart_contracts/escrow/contract.py
-ls backend/contracts/reputation/smart_contracts/reputation/contract.py
+# 2. Create TestNet account in wallet
+#    (Select "TestNet" in wallet settings)
 
-# If missing, they weren't deployed. See "Deploy Smart Contracts" in SETUP.md
+# 3. Reload browser page
+#    wallet connection should work
+
+# 4. If still failing:
+#    - Check browser console (F12)
+#    - Look for specific error message
+#    - Try incognito window
 ```
 
----
+### `Transaction appears to hang after "approve"`
 
-## Payment and Transaction Issues
-
-### "PAYMENT_LIMIT_EXCEEDED"
-
-**Symptom**: Payment rejected with message "exceeds maximum micropayment limit"
-
-**Cause**: Attempting to pay more than 5.0 USDC
+**Problem**: UI doesn't update after typing "approve"
 
 **Solution**:
 ```bash
-# Check MAX_MICROPAYMENT_USDC in x402_payment.py
-grep MAX_MICROPAYMENT_USDC backend/tools/x402_payment.py
+# Check backend logs for errors
+# Terminal where you ran: python -m uvicorn backend.main:app
 
-# If you need to change limit:
-# Edit backend/tools/x402_payment.py
-# Change: MAX_MICROPAYMENT_USDC = 5.0
-# To: MAX_MICROPAYMENT_USDC = 10.0
-```
+# If no error logs:
+# 1. Verify backend is running on port 8000
+#    curl http://localhost:8000/health
 
-### "PAYMENT_EXECUTION_FAILED - insufficient balance"
+# 2. Check browser console (F12 → Console tab)
+#    Look for network errors
 
-**Symptom**: Payment fails, "insufficient balance for this account"
-
-**Solution**:
-1. Fund buyer wallet from [TestNet Dispenser](https://dispenser.testnet.algoexplorerapi.io/)
-2. Ensure buyer has opted-in to USDC ASA (10458941)
-3. For testing, ensure at least 1 Algo + price in USDC
-
-```bash
-# Check buyer balance
-curl "https://testnet-idx.algonode.cloud/v2/accounts/${BUYER_ADDRESS}"
-```
-
-### "INVALID_ADDRESS"
-
-**Symptom**: "Payment failed: invalid buyer address format"
-
-**Cause**: Wallet address not valid Algorand format
-
-**Solution**:
-```bash
-# Valid Algorand address is:
-# - 58 characters long
-# - Starts with a letter (not a number)
-# - Uses base32 encoding (A-Z, 2-7)
-
-# Example: 
-# IXPLWQSP5D7K2F4BLXNWY3PR6KKXVG44DAESMMZ2H27VYZQNXGVQZNWVM4
-
-# Get valid address from wallet app:
-# - Pera Wallet: Click "Copy Address"
-# - Algosigner: Select account, copy address
-```
-
-### "CID must start with 'Qm'"
-
-**Symptom**: Listing creation fails, "LISTING_STORE_ERROR: CID must start with 'Qm'"
-
-**Cause**: IPFS upload failed, returned invalid CID
-
-**Solutions**:
-
-1. **Check Pinata JWT**:
-```bash
-grep PINATA_JWT .env.testnet
-# Should have value, not blank
-```
-
-2. **Verify Pinata JWT is valid**:
-```bash
-# Get your JWT from https://pinata.cloud/keys
-# Update .env.testnet with correct JWT
-```
-
-3. **Check internet connection** to Pinata:
-```bash
-curl -X POST "https://api.pinata.cloud/data/testAuthentication" \
-  -H "Authorization: Bearer YOUR_JWT"
+# 3. Clear browser cache
+#    Ctrl+Shift+Delete (Windows)
+#    Cmd+Shift+Delete (Mac)
+#    Select "All time" → Clear data
 ```
 
 ---
 
 ## Test Failures
 
-### pytest: command not found
+### `pytest: command not found`
 
-**Symptom**: `pytest: command not found`
+**Problem**: pytest not installed or not in PATH
 
 **Solution**:
 ```bash
 # Install pytest
-pip install pytest
+pip install pytest pytest-asyncio
 
-# Or use Python module form
+# Then run tests
+PYTHONPATH=. pytest backend/tests/ -v
+
+# If still not found:
+# Use Python module form
 python -m pytest backend/tests/ -v
 ```
 
-### "test_micropayment_cycle.py: No such file or directory"
+### `Test passes locally but fails in CI/CD`
 
-**Symptom**: Cannot find test file
+**Problem**: Environment difference between local and CI
+
+**Common causes**:
+- Different Python version
+- Missing environment variables
+- OS-specific file path issues
+
+**Solution**:
+```bash
+# 1. Match Python version to CI
+#    CI uses Python 3.12
+#    Check: python --version
+
+# 2. Set all env vars CI uses
+#    Check: .github/workflows/test.yml
+
+# 3. Run full CI simulation locally
+#    docker run -v $(pwd):/app -w /app python:3.12 bash
+#    Then: pip install -r backend/requirements.txt && pytest backend/tests/
+```
+
+### `Test hangs indefinitely`
+
+**Problem**: Test process doesn't finish
 
 **Solution**:
 ```bash
-# Ensure you're in project root
-pwd
-# Check test file exists
-ls backend/tests/test_micropayment_cycle.py
+# Kill hanging test with timeout
+timeout 30 pytest backend/tests/test_file.py
 
-# Run from project root
-python -m pytest backend/tests/test_micropayment_cycle.py -v
-```
+# If hangs: Probably waiting for async operation
+# Check for:
+# - Missing await keyword
+# - Infinite loops
+# - Unclosed connections
 
-### Tests hang or timeout
-
-**Symptom**: Test runs but never completes, hangs for > 30 seconds
-
-**Causes**:
-- Slow network to TestNet node
-- Agent semantic search taking too long
-- IPFS upload stalled
-
-**Solutions**:
-
-1. **Run with timeout**:
-```bash
-pytest backend/tests/test_micropayment_cycle.py -v --timeout=60
-```
-
-2. **Check network latency**:
-```bash
-# Test node speed
-time curl https://testnet-api.algonode.cloud/health
-
-# If > 2 seconds, network is slow
-# Try alternative node (see "ConnectionError" section above)
-```
-
-3. **Run specific fast test**:
-```bash
-# Run just the payment limit test (very fast)
-pytest backend/tests/test_critical_path_coverage.py::test_payment_decline_exceeding_limit -v
-```
-
-### "GEMINI_API_KEY not configured"
-
-**Symptom**: Test or agent fails with "GEMINI_API_KEY not found"
-
-**Cause**: Missing Gemini API key for LangChain agent
-
-**Solution**:
-1. Get key from [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Add to `.env.testnet`:
-```bash
-GEMINI_API_KEY=your_key_here
-```
-3. Restart backend/tests
-
----
-
-## Debugging Deep Dives
-
-### Enable Verbose Logging
-
-```bash
-# Run backend with debug logging
-PYTHONPATH=. python -m uvicorn backend.main:app --reload --log-level debug
-
-# Run tests with verbose output
-pytest backend/tests/ -vv -s --log-cli-level=DEBUG
-
-# Check logs
-tail -f backend.log
-tail -f agent_demo.log
-```
-
-### Use Python Debugger
-
-```python
-# Add to any Python file where you want to pause
-import pdb; pdb.set_trace()
-
-# Run and it will pause at breakpoint
-# Type 'c' to continue, 'n' for next line, 'p variable' to print
-```
-
-### Check Transaction Status
-
-```bash
-# Get full transaction details from explorer
-TX_ID="6RHL36IPWJDCZOYQ73VSCGRFGG5WPVT5XFWFZSGNXL63ZWHD6LKQ"
-curl "https://testnet-idx.algonode.cloud/v2/transactions/${TX_ID}"
-
-# Check if confirmed
-curl "https://testnet-idx.algonode.cloud/v2/transactions/${TX_ID}" | grep -o '"confirmed-round":[0-9]*'
-```
-
-### Inspect Smart Contract State
-
-```bash
-# Get app state for listing contract
-APP_ID=1234567
-curl "https://testnet-idx.algonode.cloud/v2/applications/${APP_ID}"
-
-# Check specific listing
-curl "https://testnet-idx.algonode.cloud/v2/applications/${APP_ID}/box?name=listing_47"
+# Run with verbose output to see where it hangs
+pytest backend/tests/ -v -s
 ```
 
 ---
 
-## Performance Issues
+## Deployment Issues (Vercel/Render)
 
-### Slow API responses (> 5 seconds)
+### `Build failed on Vercel: npm install error`
 
-**Causes**:
-- Slow Algorand node
-- Slow IPFS upload
-- Slow semantic search (Gemini API)
+**Problem**: Frontend dependencies won't install
 
-**Solutions**:
-
-1. **Profile the slow operation**:
+**Solution**:
 ```bash
-# Add timing to backend/main.py
-import time
-start = time.time()
-# ... operation ...
-elapsed = time.time() - start
-print(f"Operation took {elapsed:.2f}s")
+# 1. Check package.json for typos
+#    Verify all dependencies are valid npm packages
+
+# 2. Clear Vercel cache
+#    Vercel dashboard → Settings → Caching
+#    Click "Clear All"
+
+# 3. Redeploy
+#    Vercel dashboard → Redeploy
+
+# 4. If still fails, test locally
+#    rm -rf node_modules package-lock.json
+#    npm install
+#    npm run build
 ```
 
-2. **Use faster node**:
-```bash
-# Try AlgoNode (usually fastest)
-ALGOD_URL=https://testnet-api.algonode.cloud
+### `Backend deployment fails: Cannot import backend`
 
-# Or try K1 Finance:
-ALGOD_URL=https://testnet-api.k1.jup.ag
+**Problem**: Render can't find Python modules
+
+**Solution**:
+```bash
+# Check Dockerfile has correct PYTHONPATH
+FROM python:3.12
+
+WORKDIR /app
+COPY . .
+
+ENV PYTHONPATH=/app  # Must be set
+
+# Test Dockerfile locally
+docker build -t mercator .
+docker run -e PYTHONPATH=/app mercator python -m uvicorn backend.main:app
 ```
 
-3. **Cache IPFS CIDs locally** (if building):
-```python
-# Instead of uploading same file twice, cache CID
-cid_cache = {}
-if content_hash not in cid_cache:
-    cid_cache[content_hash] = upload_to_ipfs(content)
+### `Environment variables not working in production`
+
+**Problem**: API returns 500 errors with missing env var
+
+**Solution**:
+```bash
+# 1. Verify env vars set in Render dashboard
+#    Render dashboard → Environment
+
+# 2. Restart service after adding env vars
+#    Render dashboard → Manual deploy
+
+# 3. Check if env var names match code
+#    Code: os.getenv('ALGOD_URL')
+#    Render: Must be exactly: ALGOD_URL
+
+# 4. Never include in start command
+#    Don't do: CMD python -c "os.environ['VAR']='value'"
+#    Do: Set in Render dashboard
 ```
 
 ---
 
-## Environment Variable Issues
+## FAQ
 
-### "Unrecognized env var: SOMETHING"
+### Q: How do I get TestNet USDC?
 
-**Symptom**: Backend starts but complains about unknown variable
+A: See [Algorand & Wallet Issues](#algorand--wallet-issues) section above.
 
-**Solution**:
+### Q: Can I run tests without spending USDC?
+
+A: Yes! Most tests use mock transactions. Only enable real transactions with:
 ```bash
-# Check which vars are required
-grep "getenv\|environ" backend/utils/runtime_env.py
-
-# Make sure .env.testnet has all required vars
-# See SETUP.md for complete list
+TEST_REAL_TRANSACTIONS=true pytest backend/tests/
 ```
 
-### ".env.testnet not loaded"
+### Q: How do I check if a transaction succeeded?
 
-**Symptom**: Variables are empty, env not loaded
-
-**Solutions**:
-
-1. **Verify file exists**:
-```bash
-ls -la .env.testnet
+A: View on explorer:
+```
+https://testnet.algoexplorer.io/tx/{TRANSACTION_ID}
 ```
 
-2. **Check format** (should have no spaces around =):
-```bash
-# Correct:
-ALGOD_URL=https://testnet-api.algonode.cloud
+### Q: My balance isn't updating after a purchase
 
-# Incorrect:
-ALGOD_URL = https://testnet-api.algonode.cloud
+A: Wait 5-10 seconds for block confirmation. Then:
+```bash
+# Refresh on explorer
+curl https://testnet-idx.algonode.cloud/v2/accounts/{ADDRESS}
 ```
 
-3. **Manually load in Python**:
-```bash
-# In Python shell or script:
-import os
-from dotenv import load_dotenv
-load_dotenv('.env.testnet')
-print(os.getenv('ALGOD_URL'))
+### Q: Can I reset TestNet accounts?
+
+A: TestNet can reset monthly. Check Algorand status page:
 ```
+https://status.algorand.org
+```
+
+### Q: How do I report a bug?
+
+A: Create a GitHub issue with:
+- Error message (full stack trace)
+- Steps to reproduce
+- Your `.env.testnet` (without secrets)
+- Python/Node version
 
 ---
 
 ## Getting Help
 
-### Collect Debug Information
+**Documentation**:
+- [Setup.md](Setup.md) - Initial setup
+- [Demo.md](Demo.md) - How to run the app
+- [Algorand_Implementation.md](Algorand_Implementation.md) - Blockchain details
+- [Deploy.md](Deploy.md) - Production deployment
 
-Before asking for help, gather:
-
-```bash
-# System info
-python3 --version
-node --version
-npm --version
-
-# Environment
-cat .env.testnet | grep -v MNEMONIC  # Hide secrets
-
-# Check if services running
-lsof -i :8000  # Backend
-lsof -i :5173  # Frontend
-
-# Recent errors
-tail -50 backend.log
-tail -50 frontend.log
-
-# Contract state
-curl "https://testnet-idx.algonode.cloud/v2/applications/${INSIGHT_LISTING_APP_ID}"
-```
-
-### Resources
-
-- **Algorand Docs**: https://developer.algorand.org/
+**Community**:
 - **Algorand Discord**: https://discord.gg/algorand
-- **TestNet Dispenser**: https://dispenser.testnet.algoexplorerapi.io/
-- **TestNet Explorer**: https://explorer.perawallet.app/
-- **AlgoKit Docs**: https://github.com/algorandfoundation/algokit-cli
+- **GitHub Issues**: Post bugs with full context
+- **Email**: Contact development team
 
----
+**Advanced Debugging**:
+```bash
+# Enable verbose logging
+export LOG_LEVEL=DEBUG
+python -m uvicorn backend.main:app --reload
 
-## Next Steps
+# Print all environment variables
+python -c "import os; print({k: v for k, v in os.environ.items() if 'ALGO' in k or 'USDC' in k})"
 
-- Return to [DEMO.md](DEMO.md) for UI walkthrough
-- See [SETUP.md](SETUP.md) if not yet set up
-- Check [TESTS.md](TESTS.md) for test examples
+# Check if contract state accessible
+PYTHONPATH=. python -c "from backend.utils.algorand_async import get_app_state; import asyncio; print(asyncio.run(get_app_state(APP_ID)))"
+```

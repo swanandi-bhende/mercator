@@ -16,7 +16,10 @@ _shared_client: Optional[httpx.AsyncClient] = None
 async def get_http_client() -> httpx.AsyncClient:
     global _shared_client
     if _shared_client is None:
-        raise RuntimeError("HTTP client not initialised — call startup_http_client() first")
+        # Lazily initialize the shared client for environments/tests that do not
+        # call `startup_http_client()` explicitly. This keeps startup simpler
+        # and avoids requiring the full application lifecycle during unit tests.
+        await startup_http_client()
     return _shared_client
 
 

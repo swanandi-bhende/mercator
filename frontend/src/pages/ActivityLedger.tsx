@@ -130,16 +130,16 @@ export default function ActivityLedgerPage() {
   }, [events, activeFilter])
 
   return (
-    <div className="activity-page">
+    <div className="activity-page mercator-themed-page">
       <section className="activity-hero">
         <div className="home-wrap activity-shell">
-          <div className="activity-head-card">
+          <div className="activity-head-card mercator-elevated-card">
             <p className="home-kicker">Live Activity Ledger</p>
             <h1>Realtime event timeline</h1>
             <p>Historical events are loaded first, then live websocket updates stream in without page refresh.</p>
           </div>
 
-          <div className="activity-filter-bar" role="toolbar" aria-label="Activity event filters">
+          <div className="activity-filter-bar mercator-chip-row" role="toolbar" aria-label="Activity event filters">
             <button
               type="button"
               className={`activity-filter-btn ${activeFilter === 'all' ? 'is-active' : ''}`}
@@ -161,7 +161,7 @@ export default function ActivityLedgerPage() {
 
           <div className="activity-live-list">
             {filteredEvents.length === 0 && (
-              <article className="activity-live-card activity-live-card--default">
+              <article className="activity-live-card activity-live-card--default mercator-elevated-card">
                 <h2>No events yet</h2>
                 <p>Waiting for live websocket activity.</p>
               </article>

@@ -1,279 +1,266 @@
-# Project Setup Guide
+# Setup Guide
 
-This guide covers all steps required to set up Mercator for development, testing, and deployment.
+Get Mercator running locally in under 15 minutes. This guide covers environment setup, smart contract deployment, and local development.
 
-## Supported Environments
+## What You'll Set Up
 
-- **OS**: macOS, Linux
-- **Python**: 3.12 or higher
-- **Node.js**: 18 or higher
-- **Network**: Algorand TestNet (recommended for development)
+- **Backend**: FastAPI server (port 8000) with agent, x402 payments, and Algorand contracts
+- **Frontend**: React + Vite app (port 5173) with wallet integration
+- **Contracts**: Three ARC4 smart contracts on Algorand TestNet
+- **Payment Flow**: End-to-end x402 micropayment pipeline
 
 ## Prerequisites
 
-Ensure the following tools are installed on your system:
+You'll need these tools installed on macOS or Linux:
 
-```bash
-# Verify Python installation
-python3 --version  # Should be 3.12+
+- **Python 3.12+** (`python3 --version`)
+- **Node.js 18+** and npm (`node --version`)
+- **Git** (`git --version`)
 
-# Verify Node.js installation
-node --version     # Should be 18+
-npm --version
+For Algorand TestNet testing:
+- An Algorand wallet (use [Pera Wallet](https://www.perawallet.app/))
+- TestNet ALGO: Get from the [faucet](https://bank.testnet.algorand.org/)
+- TestNet USDC (ASA 10458941): Request testnet USDC or ask on the [Algorand Discord](https://discord.gg/algorand)
 
-# Verify Git
-git --version
-```
+---
 
-## Quick Start (5-10 minutes)
+## Quick Start (15 minutes)
 
-### 1. Clone the Repository
+### 1. Clone and Install
 
 ```bash
 git clone https://github.com/yourusername/mercator.git
 cd mercator
-```
 
-### 2. Create and Activate Python Virtual Environment
-
-```bash
-# Create virtual environment
+# Create Python virtual environment
 python3 -m venv .venv
-
-# Activate it
 source .venv/bin/activate
 
-# Upgrade pip
-pip install --upgrade pip
-```
-
-### 3. Install Python Dependencies
-
-```bash
-# Install backend dependencies
+# Install backend + contracts
 pip install -r backend/requirements.txt
 
-# Install contract development dependencies (optional)
-pip install -r backend/contracts/escrow/requirements.txt
+# Install frontend
+cd frontend && npm install && cd ..
 ```
 
-### 4. Install Frontend Dependencies
+### 2. Configure Environment
+
+Create `.env.testnet` in the project root:
 
 ```bash
-cd frontend
-npm install
-cd ..
-```
-
-### 5. Configure Environment Variables
-
-Create a `.env.testnet` file in the project root with the following variables:
-
-```bash
-# Algorand Configuration
+# Algorand TestNet (algonode is free and reliable)
 ALGOD_URL=https://testnet-api.algonode.cloud
 INDEXER_URL=https://testnet-idx.algonode.cloud
 NETWORK=testnet
 
-# Smart Contract App IDs (obtain after deployment)
-INSIGHT_LISTING_APP_ID=<your-app-id>
-ESCROW_APP_ID=<your-app-id>
-REPUTATION_APP_ID=<your-app-id>
+# Smart Contract App IDs
+# Get these AFTER deploying contracts (see "Deploy Contracts" section)
+INSIGHT_LISTING_APP_ID=<deployment-app-id>
+ESCROW_APP_ID=<deployment-app-id>
+REPUTATION_APP_ID=<deployment-app-id>
+FEE_CONFIG_APP_ID=<deployment-app-id>
 
-# USDC Configuration
+# USDC on TestNet
 USDC_ASA_ID=10458941
 USDC_DECIMALS=6
 
-# Wallets and Mnemonics (TestNet accounts only)
-DEPLOYER_MNEMONIC="<25-word-mnemonic>"
-DEPLOYER_ADDRESS=<algorand-address>
-BUYER_MNEMONIC="<25-word-mnemonic>"
-BUYER_WALLET=<algorand-address>
-BUYER_ADDRESS=<algorand-address>
+# Seller wallet (can be same as deployer for testing)
+SELLER_ADDRESS=<your-testnet-algorand-address>
+SELLER_MNEMONIC="<25-word-recovery-phrase>"
 
-# API Keys (optional for full agent features)
-GEMINI_API_KEY=<your-google-gemini-key>
-PINATA_JWT=<your-pinata-jwt-token>
+# Buyer wallet (must be different for testing)
+BUYER_MNEMONIC="<25-word-recovery-phrase>"
+BUYER_WALLET=<buyer-algorand-address>
+BUYER_ADDRESS=<buyer-algorand-address>
 
-# Operator Access Control (optional)
-OPERATOR_API_KEY=<optional-operator-key>
+# AI & Storage APIs (optional - demo mode works without)
+GEMINI_API_KEY=<get-from-https://aistudio.google.com>
+PINATA_JWT=<get-from-https://pinata.cloud>
 
-# x402 Payment Configuration
-X402_PRIVATE_KEY=<optional-private-key-for-payment>
+# Operator API (optional)
+OPERATOR_API_KEY=optional-key
 ```
 
-**Important**: Never commit `.env.*` files. They are already listed in `.gitignore`.
+### 3. Start Services
 
-### 6. Fund Your TestNet Accounts
-
-Before running any transactions, fund your accounts with TestNet Algo:
-
-1. Visit [Algorand TestNet Dispenser](https://dispenser.testnet.algoexplorerapi.io/)
-2. Enter your deployer and buyer wallet addresses
-3. Request funds (typically 10 Algo each for development)
-
-### 7. Deploy Smart Contracts
-
-Deploy the three ARC4 contracts required by the system:
-
-```bash
-# Navigate to each contract directory and deploy
-
-cd backend/contracts/insight_listing/smart_contracts
-python -m smart_contracts
-
-cd ../../escrow/smart_contracts
-python -m smart_contracts
-
-cd ../../reputation/smart_contracts
-python -m smart_contracts
-```
-
-After deployment, update your `.env.testnet` with the returned app IDs:
-
-```bash
-INSIGHT_LISTING_APP_ID=<returned-app-id>
-ESCROW_APP_ID=<returned-app-id>
-REPUTATION_APP_ID=<returned-app-id>
-```
-
-### 8. Verify Setup
-
-Run the setup verification script:
-
+**Terminal 1 - Backend (port 8000):**
 ```bash
 source .venv/bin/activate
-cd backend
-python -c "from utils.runtime_env import load_env_file; load_env_file(); print('Environment loaded successfully')"
+PYTHONPATH=. python -m uvicorn backend.main:app --reload --port 8000
 ```
 
-Expected output: `Environment loaded successfully`
-
-## Environment Variables Reference
-
-### Algorand Network
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `ALGOD_URL` | Node RPC endpoint | `https://testnet-api.algonode.cloud` |
-| `INDEXER_URL` | Indexer API endpoint | `https://testnet-idx.algonode.cloud` |
-| `NETWORK` | Network name | `testnet` or `mainnet` |
-
-### Smart Contracts
-
-| Variable | Description | 
-|----------|-------------|
-| `INSIGHT_LISTING_APP_ID` | InsightListing contract app ID (obtained after deployment) |
-| `ESCROW_APP_ID` | Escrow contract app ID (obtained after deployment) |
-| `REPUTATION_APP_ID` | Reputation contract app ID (obtained after deployment) |
-
-### USDC Configuration
-
-| Variable | Description | Value |
-|----------|-------------|-------|
-| `USDC_ASA_ID` | Algorand USDC token ID | `10458941` (TestNet) |
-| `USDC_DECIMALS` | USDC decimal places | `6` |
-
-### Wallet Credentials (TestNet Only)
-
-| Variable | Description |
-|----------|-------------|
-| `DEPLOYER_MNEMONIC` | 25-word recovery phrase for deployer account |
-| `DEPLOYER_ADDRESS` | Algorand address of deployer account |
-| `BUYER_MNEMONIC` | 25-word recovery phrase for buyer account |
-| `BUYER_WALLET` | Algorand address of buyer account |
-| `BUYER_ADDRESS` | Alternative name for buyer wallet |
-
-### External APIs
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `GEMINI_API_KEY` | Google Gemini API key for LangChain agent | Yes (for agent features) |
-| `PINATA_JWT` | Pinata authentication token for IPFS uploads | Yes (for content storage) |
-
-### Optional Configuration
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `OPERATOR_API_KEY` | API key for operator-only endpoints | None |
-| `X402_PRIVATE_KEY` | Private key for x402 payment signer | None |
-| `MAX_MICROPAYMENT_USDC` | Maximum single micropayment in USDC | `5.0` |
-
-## Troubleshooting Setup Issues
-
-### "ModuleNotFoundError: No module named 'backend'"
-
-Ensure you have `PYTHONPATH` set correctly:
-
-```bash
-export PYTHONPATH=$(pwd)
-python backend/main.py
-```
-
-Or use the virtual environment Python directly:
-
-```bash
-.venv/bin/python backend/main.py
-```
-
-### "ConnectionError: cannot connect to Algorand node"
-
-Verify `ALGOD_URL` is correct and accessible:
-
-```bash
-curl https://testnet-api.algonode.cloud/health
-```
-
-### "App ID not found" Error
-
-Ensure:
-1. Contracts have been deployed
-2. App IDs are correctly set in `.env.testnet`
-3. You are on the correct network (TestNet vs MainNet)
-
-### Package Installation Failures
-
-If pip install fails, try:
-
-```bash
-# Clear pip cache
-pip install --no-cache-dir -r backend/requirements.txt
-
-# Or install with verbose output for debugging
-pip install -v -r backend/requirements.txt
-```
-
-## Development Workflow
-
-### Running the Backend
-
-```bash
-source .venv/bin/activate
-cd backend
-python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
-
-Backend will be available at `http://localhost:8000`
-
-### Running the Frontend
-
+**Terminal 2 - Frontend (port 5173):**
 ```bash
 cd frontend
 npm run dev
 ```
 
-Frontend will be available at `http://localhost:5173`
-
-### Running Tests
-
+**Terminal 3 - Tests:**
 ```bash
 source .venv/bin/activate
+# Run all tests
 pytest backend/tests/ -v
+
+# Or run specific test
+PYTHONPATH=. pytest backend/tests/test_payment_flow.py -v -s
 ```
+
+Visit [http://localhost:5173](http://localhost:5173) to see the app.
+
+---
+
+## How the System Works (Architecture Overview)
+
+```
+┌──────────────────────────────────────────────────────────┐
+│ React Frontend (Port 5173)                               │
+│ - Sell Insight: Seller lists trading ideas              │
+│ - Discover: Buyer searches insights                      │
+│ - Checkout: x402 micropayment                            │
+│ - Receipt: View transaction on explorer                  │
+└────────────────┬─────────────────────────────────────────┘
+                 │ HTTP/JSON
+┌────────────────▼─────────────────────────────────────────┐
+│ FastAPI Backend (Port 8000)                              │
+│ - Agent: AI evaluates insights                           │
+│ - x402: Micropayment execution                           │
+│ - Smart Contracts: Escrow & Reputation                   │
+└────────────────┬────────────────┬───────────────────────┘
+                 │                │
+    ┌────────────▼────────┐    ┌──▼───────────────┐
+    │ Algorand TestNet    │    │ IPFS (Pinata)    │
+    │ 3 Contracts         │    │ Content Storage  │
+    │ USDC Transfers      │    │                  │
+    └─────────────────────┘    └──────────────────┘
+```
+
+### The Payment Flow
+
+1. **Seller** lists an insight with price and content
+2. **Backend** stores content on IPFS, listing on Algorand
+3. **Agent** searches insights and evaluates relevance + reputation
+4. **Buyer** sees recommendations and clicks "Buy"
+5. **Buyer** types "approve" to trigger x402 payment
+6. **Backend** simulates, then atomically transfers USDC + releases content
+7. **Reputation** increases +10 for verified seller
+
+---
+
+## Full Setup with Smart Contracts
+
+### Deploy Smart Contracts (First Time Only)
+
+If you want to deploy your own contracts to TestNet:
+
+```bash
+# Set up deployer wallet in .env.testnet first
+
+# Deploy all three contracts
+PYTHONPATH=. python -c "
+from backend.contracts.insight_listing import deploy_insight_listing
+from backend.contracts.escrow import deploy_escrow  
+from backend.contracts.reputation import deploy_reputation
+
+insight_app_id = deploy_insight_listing()
+escrow_app_id = deploy_escrow()
+reputation_app_id = deploy_reputation()
+
+print(f'Update .env.testnet with:')
+print(f'INSIGHT_LISTING_APP_ID={insight_app_id}')
+print(f'ESCROW_APP_ID={escrow_app_id}')
+print(f'REPUTATION_APP_ID={reputation_app_id}')
+"
+```
+
+### Use Pre-Deployed Contracts (Easier)
+
+We provide pre-deployed app IDs for testing. Contact the team or check the [README](../README.md) for current TestNet contract IDs.
+
+---
+
+## Folder Structure
+
+```
+mercator/
+├── backend/
+│   ├── main.py              # FastAPI entry point
+│   ├── agent.py             # AI agent (Gemini evaluator)
+│   ├── contracts/           # Smart contract source + deployment
+│   │   ├── insight_listing.py
+│   │   ├── escrow.py
+│   │   └── reputation.py
+│   ├── tools/
+│   │   ├── x402_payment.py  # Micropayment execution
+│   │   └── semantic_search.py
+│   ├── utils/               # Helper modules
+│   └── tests/               # Pytest suite (~15 test files)
+├── frontend/
+│   ├── src/
+│   │   ├── App.tsx
+│   │   ├── SellInsight.tsx  # Listing form
+│   │   ├── DiscoverInsights.tsx  # Search
+│   │   ├── Checkout.tsx     # Payment UI
+│   │   └── Receipt.tsx      # Confirmation
+│   └── package.json
+└── docs/                    # Documentation
+```
+
+---
+
+## Development Workflow
+
+1. **Make changes** to Python backend or React frontend
+2. **Reload** automatically (both have hot reload)
+3. **Test** with `pytest backend/tests/`
+4. **Check Explorer** at [testnet.algoexplorer.io](https://testnet.algoexplorer.io)
+
+### Run Full Demo (One Command)
+
+```bash
+# Requires .env.testnet configured
+./demo.sh
+```
+
+This runs tests, starts both services, and executes a complete purchase scenario.
+
+---
+
+## Common Setup Issues
+
+### `ModuleNotFoundError: No module named 'backend'`
+```bash
+export PYTHONPATH=$(pwd)  # Must set PYTHONPATH before running
+pytest backend/tests/
+```
+
+### `pip install: command not found`
+```bash
+# Use Python module form
+python3 -m pip install -r backend/requirements.txt
+```
+
+### TestNet Faucet Error
+Visit [bank.testnet.algorand.org](https://bank.testnet.algorand.org/) directly instead of using code automation.
+
+### `Error: Cannot connect to ALGOD_URL`
+Verify your .env.testnet has correct endpoints:
+- `ALGOD_URL=https://testnet-api.algonode.cloud` (Correct)
+- NOT localhost unless you're running a local node
+
+### `USDC Balance = 0`
+TestNet USDC is limited. Ask in the [Algorand Discord](https://discord.gg/algorand) or create a secondary account with faucet ALGO and do ASA opt-in.
+
+---
 
 ## Next Steps
 
-- See [DEMO.md](DEMO.md) for walkthrough of the user interface and features
-- See [TESTS.md](TESTS.md) for comprehensive testing guidance
-- See [ALGORAND.md](ALGORAND.md) for technical details on the Algorand integration
-- See [COMPONENTS.md](COMPONENTS.md) for architectural details and proof artifacts
+- **First run**: Follow [Demo.md](Demo.md) for a guided walkthrough
+- **Integration**: See [x402_Implementation.md](x402_Implementation.md) for payment architecture
+- **Smart contracts**: Read [contracts.md](contracts.md) for on-chain details
+- **Troubleshooting**: Check [Troubleshooting.md](Troubleshooting.md) for common errors
+
+## Get Help
+
+- **GitHub Issues**: Post setup questions with `.env.testnet` (no secrets)
+- **Discord**: Algorand community [here](https://discord.gg/algorand)
+- **Docs**: Check [Troubleshooting.md](Troubleshooting.md) first

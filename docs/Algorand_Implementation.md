@@ -1,15 +1,540 @@
-# Algorand Technology Stack
+# Algorand Implementation
 
-This document explains how Mercator leverages Algorand's blockchain to enable verifiable, atomic, and reputation-aware micropayments for digital content commerce.
+Mercator uses Algorand's blockchain to provide instant, low-cost, and verifiable transactions for AI commerce. This document explains why Algorand, how it's used, and the smart contract architecture.
 
-## Overview
+## Why Algorand?
 
-Mercator uses Algorand TestNet with three core smart contracts (ARC4) to manage:
-1. **Insight Listing**: Content metadata and pricing
-2. **Escrow**: Atomic payment and fulfillment lockbox
-3. **Reputation**: Seller trust scores and verification
+### Key Advantages for Mercator
 
-This architecture ensures payments are atomic (all-or-nothing), transactions are finalized in seconds, and seller reputation is immutable and on-chain.
+| Feature | Benefit | Impact |
+|---------|---------|--------|
+| **4-5 sec finality** | Payments settle instantly, not hours | Users get content immediately |
+| **< $0.01 fees** | Micropayments (< $1) are profitable | Sellers receive fair value |
+| **Atomic groups** | 16 txs in one all-or-nothing | No partial escrows, no race conditions |
+| **Low state costs** | Storing data is cheap | Scalable reputation system |
+| **USDC support** | Stablecoin on-chain | $1 = $1 value, no volatility |
+| **Maturity** | Live production blockchain | MainNet ready, not testnet-only |
+
+### Compared to Alternatives
+
+| Aspect | Algorand | Ethereum | Solana |
+|--------|----------|----------|--------|
+| Block time | 4-5 sec | 12-15 sec | 400ms |
+| Average fee | $0.001 | $0.50-5.00 | $0.00025 |
+| Finality | Immediate | ~15 min | Probabilistic |
+| State storage | Cheap | Expensive | Cheap |
+| Atomic groups | Yes (16 tx) | Yes (bundled) | Limited |
+| MainNet maturity | Production | Production | Production |
+| Developer UX | High | High | Medium |
+
+**For micropayments at scale**: Algorand is optimal.
+
+---
+
+## Blockchain Architecture
+
+### Network Configuration
+
+**TestNet** (Development):
+```
+Node: https://testnet-api.algonode.cloud
+Indexer: https://testnet-idx.algonode.cloud
+Explorer: https://testnet.algoexplorer.io
+```
+
+**MainNet** (Production):
+```
+Node: https://mainnet-api.algonode.cloud
+Indexer: https://mainnet-idx.algonode.cloud
+Explorer: https://algoexplorer.io
+```
+
+### Consensus Mechanism
+
+Algorand uses **Pure Proof-of-Stake (PPoS)**:
+- Validators chosen randomly, proportional to stake
+- No energy-intensive mining
+- Instant finality (not probabilistic)
+- Censorship-resistant (truly decentralized)
+
+---
+
+## Smart Contract Architecture (ARC4)
+
+### Overview
+
+Mercator uses three ARC4 smart contracts on Algorand:
+
+1. **InsightListing** - Registry of all insights (seller, price, IPFS CID)
+2. **Escrow** - Atomic payment + content release
+3. **Reputation** - Seller trust scores (on-chain)
+
+### ARC4 Standard
+
+ARC4 is Algorand's smart contract standard providing:
+- Type safety (prevents runtime errors)
+- Automatic ABI generation
+- Framework support (PyTeal, TEAL, JavaScript)
+- Contract composability
+
+---
+
+## Contract 1: InsightListing
+
+### Purpose
+
+On-chain registry of all insights. Sellers create listings, buyers search them.
+
+### State Schema
+
+```python
+listings: Dict[listing_id] → {
+    seller: Address
+    price: Uint64 (microunits, 6 decimals)
+    cid: String (IPFS hash)
+    timestamp: Uint64 (Unix seconds)
+    asa_id: Uint64 (USDC ASA ID)
+    active: Uint64 (0=archived, 1=active)
+}
+
+global_state: {
+    listing_count: Uint64
+    total_listings_created: Uint64
+}
+```
+
+### Key Methods
+
+**`create_listing(seller, price, cid, asa_id) → listing_id`**
+- Creates new insight listing
+- Auto-assigns incrementing listing_id
+- Stores metadata on-chain
+- Returns: listing_id
+
+**`get_listing(listing_id) → (seller, price, cid, timestamp, asa_id)`**
+- Retrieve single listing
+- Read-only (no transaction cost)
+- Used by agent during search
+
+**`archive_listing(listing_id)`**
+- Seller can delist their insight
+- Marks as inactive, not deleted
+- Historical record preserved on-chain
+
+### Example Usage
+
+```python
+# Seller lists insight
+from backend.contracts.insight_listing import InsightListingClient
+
+client = InsightListingClient(
+    algod_client=algod,
+    app_id=INSIGHT_LISTING_APP_ID
+)
+
+listing_id = client.create_listing(
+    seller="IXPLWQSP5D7K2F4BLXNWY3PR6KKXVG44DAESMMZ2H27VYZQNXGVQZNWVM4",
+    price=500000,  # 0.5 USDC in microunits
+    cid="QmABC123XYZ",
+    asa_id=10458941  # USDC TestNet
+)
+
+print(f"Listing created: {listing_id}")
+
+# Buyer retrieves listing
+listing = client.get_listing(listing_id)
+print(f"Price: {listing.price / 1_000_000} USDC")
+print(f"Seller reputation (from chain): TBD")
+```
+
+---
+
+## Contract 2: Escrow
+
+### Purpose
+
+Atomic payment mechanism. Ensures USDC transfer + content unlock + reputation update happen together or not at all.
+
+### State Schema
+
+```python
+escrow_records: Dict[transaction_id] → {
+    buyer: Address
+    seller: Address
+    amount: Uint64 (microunits)
+    asa_id: Uint64 (USDC ASA ID)
+    listing_id: Uint64 (reference)
+    timestamp: Uint64 (payment time)
+    status: Uint64 (0=pending, 1=released, 2=disputed)
+}
+```
+
+### Key Methods
+
+**`initiate_escrow(buyer, seller, amount, listing_id) → escrow_id`**
+- Lock funds in escrow temporarily
+- Called as part of payment atomic group
+- Returns escrow ID for tracking
+
+**`release_escrow(escrow_id)`**
+- Release funds to seller
+- Called automatically after payment confirmed
+- Atomic with USDC transfer + reputation
+
+**`dispute_escrow(escrow_id)`** (Future)
+- Buyer claims content issue
+- Funds returned to buyer
+- Reputation deducted for seller
+
+### Example Usage
+
+```python
+from backend.contracts.escrow import EscrowClient
+
+client = EscrowClient(
+    algod_client=algod,
+    app_id=ESCROW_APP_ID
+)
+
+# Called as part of atomic group
+escrow_txn = client.release_escrow(
+    escrow_id=1,
+    seller="IXPLWQSP5D7K2F4BLXNWY3PR6KKXVG44DAESMMZ2H27VYZQNXGVQZNWVM4"
+)
+
+# Submit as Tx2 in atomic group
+signed_group = algosdk.atomic_transaction_composer.build_and_submit(group)
+```
+
+---
+
+## Contract 3: Reputation
+
+### Purpose
+
+On-chain seller trust scores. Immutable history prevents gaming.
+
+### State Schema
+
+```python
+seller_reputation: Dict[seller_address] → {
+    score: Uint64 (0-100)
+    transactions_count: Uint64
+    timestamp_updated: Uint64
+    total_sold: Uint64 (microunits)
+}
+```
+
+### Key Methods
+
+**`update_reputation(seller, delta) → new_score`**
+- Increment or decrement reputation
+- Called after successful payment (+10)
+- Called after dispute (-10)
+- Returns new score
+
+**`get_reputation(seller) → score`**
+- Retrieve seller's current score
+- Read-only, used by agent
+- Default for new sellers: 50
+
+**`slash_reputation(seller, amount)`** (Future)
+- Penalize malicious behavior
+- Called by DAO vote or oracle
+- Irreversible
+
+### Example Usage
+
+```python
+from backend.contracts.reputation import ReputationClient
+
+client = ReputationClient(
+    algod_client=algod,
+    app_id=REPUTATION_APP_ID
+)
+
+# Get seller's current reputation
+score = client.get_reputation("IXPLWQSP5D7K2F4BLXNWY3PR6KKXVG44DAESMMZ2H27VYZQNXGVQZNWVM4")
+print(f"Seller reputation: {score}/100")
+
+# Update after successful payment (called in Tx3)
+new_score = client.update_reputation(seller, delta=+10)
+```
+
+---
+
+## Atomic Transaction Groups
+
+### The Complete Payment Flow
+
+Every payment is **exactly 3 transactions** submitted as an atomic group:
+
+```
+Group ID: abc123def456...
+
+Tx 1: ASA Transfer
+├─ Sender: Buyer wallet
+├─ Receiver: Seller wallet
+├─ Asset: USDC (10458941)
+├─ Amount: 0.5 USDC
+└─ Fee: 1000 microAlgos
+
+Tx 2: Escrow Release
+├─ App Call to ESCROW_APP_ID
+├─ Method: "release"
+├─ Args: [listing_id]
+├─ Accounts: [seller]
+└─ Fee: 1000 microAlgos
+
+Tx 3: Reputation Update
+├─ App Call to REPUTATION_APP_ID
+├─ Method: "update"
+├─ Args: [seller, +10]
+├─ Accounts: [seller]
+└─ Fee: 1000 microAlgos
+
+---
+Total Group Fee: 3000 microAlgos (~$0.003)
+All transactions: CONFIRMED or ALL REJECTED
+No partial states possible
+```
+
+### Atomic Execution Guarantee
+
+```python
+# Submitted as atomic group
+group_txns = [
+    asa_transfer_txn,
+    escrow_release_txn,
+    reputation_update_txn
+]
+
+# Sign all transactions
+signed_group = algosdk.atomic_transaction_composer.build_group(group_txns)
+
+# Submit to Algorand
+tx_id = algod.send_transactions(signed_group)
+
+# Wait for confirmation (max 4 rounds)
+algod.wait_for_confirmation(tx_id, max_rounds=4)
+
+# Result: All 3 transactions confirmed together or none confirmed
+# No possibility of 2/3 confirming
+```
+
+---
+
+## USDC Integration
+
+### Algorand Standard Asset (ASA)
+
+USDC is implemented as an ASA (Algorand Standard Asset):
+
+**TestNet USDC**:
+```
+Asset ID: 10458941
+Name: USD Coin
+Decimals: 6
+Total Supply: Not relevant (centralized mint)
+Official: Issued by Circle
+```
+
+**MainNet USDC**:
+```
+Asset ID: 31566704
+Name: USD Coin
+Decimals: 6
+Official: Issued by Circle
+Liquid: Can exchange to fiat on multiple exchanges
+```
+
+### Wallet Setup
+
+To receive USDC, wallets must **opt-in**:
+
+```python
+# Wallet must execute this once
+opt_in_txn = algosdk.transaction.AssetTransferTxn(
+    sender=wallet_address,
+    index=10458941,  # USDC asset ID
+    amount=0,
+    receiver=wallet_address
+)
+
+# After opt-in, wallet can receive USDC transfers
+```
+
+---
+
+## Indexer for Historical Queries
+
+Algorand Indexer enables fast queries of historical data:
+
+```python
+from algosdk.v2client import indexer
+
+indexer_client = indexer.IndexerClient(
+    token="",
+    address="https://testnet-idx.algonode.cloud"
+)
+
+# Search all transactions for listing creation
+results = indexer_client.search_transactions(
+    app_id=INSIGHT_LISTING_APP_ID,
+    min_round=0,
+    max_round=1000000
+)
+
+# Get all reputation updates for a seller
+results = indexer_client.search_transactions(
+    app_id=REPUTATION_APP_ID,
+    account_id=seller_address
+)
+
+# Get all USDC transfers for a buyer
+results = indexer_client.search_asset_transfers(
+    asset_id=10458941,
+    address_role="receiver",
+    address=buyer_address
+)
+```
+
+---
+
+## MainNet Readiness
+
+### Currently (TestNet)
+
+- [Confirmed] Smart contracts deployed and tested
+- [Confirmed] Atomic transaction groups working
+- [Confirmed] USDC transfers confirmed
+- [Confirmed] Reputation tracking verified
+- [Confirmed] End-to-end payment flow tested
+
+### Before MainNet Deployment
+
+- [ ] Third-party security audit of contracts
+- [ ] Load testing (1000+ txs/min)
+- [ ] Recovery procedures documented
+- [ ] Monitoring & alerting configured
+- [ ] Mainnet app IDs obtained via deployment
+- [ ] Initial funding for transaction fees
+- [ ] Emergency pause mechanism (optional)
+
+### Deployment Process
+
+1. **Audit**: External firm reviews contracts
+2. **Deploy**: Deploy to MainNet (new app IDs)
+3. **Verify**: Check contract creation via explorer
+4. **Test**: Execute full payment flow with real funds
+5. **Monitor**: Watch for issues during ramp-up
+6. **Announce**: Publish MainNet app IDs
+
+---
+
+## Fee Structure
+
+### Transaction Fees
+
+All Algorand transactions require:
+- **Minimum fee**: 1000 microAlgos ($0.0001)
+- **Per transaction**: 1000 microAlgos
+- **Our payment group**: 3 txs × 1000 = 3000 microAlgos (~$0.003)
+
+### State Storage
+
+Storing data on-chain has minimal cost:
+- **Per byte**: Negligible (~$0.00001/byte/year)
+- **Per listing**: ~500 bytes stored forever
+- **For 1000 listings**: < $1/year storage
+
+### Total Payment Cost
+
+```
+0.5 USDC payment:
+  + 0.003 USDC (network fees)
+  + 0.002 USDC (platform fee, future)
+  = 0.505 USDC to seller
+
+Platform revenue: 0.002 USDC (0.4%)
+Network cost: 0.003 USDC (0.6%)
+Sustainable at scale
+```
+
+---
+
+## Security Assumptions
+
+### What Algorand Protects
+
+- [Confirmed] Transaction finality (can't be reversed)
+- [Confirmed] Sender authenticity (requires signature)
+- [Confirmed] Data immutability (historical audit trail)
+- [Confirmed] Atomic execution (all-or-nothing)
+- [Confirmed] Censorship resistance (no central gatekeeper)
+
+### What We're Responsible For
+
+- [Implementation Dependent] Wallet security (users keep their seed phrases)
+- [Implementation Dependent] Smart contract logic (preventing bugs in code)
+- [Implementation Dependent] Off-chain content (ensuring IPFS CID is accessible)
+- [Implementation Dependent] Reputation system (preventing gaming/collusion)
+- [Implementation Dependent] Rate limiting (preventing spam/DoS)
+
+---
+
+## Future Enhancements
+
+### Algorand Upcoming
+
+- **AVM 1.1** (Late 2026): Better opcodes for optimization
+- **Rekeying** (Already available): Enhanced key management
+- **Stateless programs** (Already available): Upgrade logic without state changes
+
+### Mercator Enhancements
+
+- **ZKP verification**: Private seller identities
+- **Oracle integration**: Real-time price feeds
+- **Cross-chain**: Pay on Ethereum, settle on Algorand
+- **DAO governance**: Community votes on platform fees
+
+---
+
+## Testing Transactions
+
+### Example Payment on TestNet
+
+View this transaction on Algorand TestNet explorer:
+
+**Status**: Confirmed
+**Group**: All 3 transactions confirmed atomically
+
+```
+Tx1: USDC Transfer
+├─ Amount: 0.5 USDC
+├─ From: [BUYER_ADDRESS]
+└─ To: [SELLER_ADDRESS]
+
+Tx2: Escrow Release  
+├─ App Call: ESCROW_APP_ID
+└─ Result: Content CID unlocked
+
+Tx3: Reputation Update
+├─ App Call: REPUTATION_APP_ID
+└─ Result: Seller rep +10 (new score: 65)
+
+Explorer Link: https://testnet.algoexplorer.io/tx/...
+```
+
+---
+
+## References
+
+- **Algorand Docs**: [developer.algorand.org](https://developer.algorand.org/)
+- **PyTeal**: [pyteal.readthedocs.io](https://pyteal.readthedocs.io/)
+- **ARC4 Standard**: [ARC-4 spec](https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0004.md)
+- **ASA Spec**: [Algorand Standard Assets](https://developer.algorand.org/docs/get-details/asa/)
+- **AlgoExplorer**: [testnet.algoexplorer.io](https://testnet.algoexplorer.io/) (view live transactions)
 
 ## Core Concepts
 

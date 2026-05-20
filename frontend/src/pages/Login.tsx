@@ -39,9 +39,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(1000px_520px_at_0%_0%,rgba(203,137,107,0.22),transparent_58%),radial-gradient(860px_460px_at_100%_0%,rgba(83,121,141,0.18),transparent_54%),linear-gradient(180deg,#fffaf4_0%,#f9fdff_100%)] px-4 py-10 text-slate-900 md:px-6">
+    <div className="mercator-themed-page min-h-screen bg-[radial-gradient(1000px_520px_at_0%_0%,rgba(220,176,153,0.22),transparent_58%),radial-gradient(860px_460px_at_100%_0%,rgba(111,57,70,0.14),transparent_54%),linear-gradient(180deg,#fff8f4_0%,#fffdf8_100%)] px-4 py-10 text-slate-900 md:px-6">
       <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] md:p-8">
+        <section className="mercator-elevated-card rounded-3xl border border-slate-200 bg-white p-6 md:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-700">Sign In</p>
           <h1 className="mt-3 text-4xl font-black tracking-tight text-slate-950">Return to your buyer session.</h1>
           <p className="mt-4 max-w-xl text-base leading-7 text-slate-600">
@@ -101,7 +101,7 @@ export default function LoginPage() {
         </section>
 
         <aside className="grid gap-4">
-          <section className="rounded-3xl border border-slate-200 bg-slate-950 p-6 text-white shadow-[0_24px_80px_rgba(15,23,42,0.18)]">
+          <section className="mercator-elevated-card rounded-3xl border border-slate-200 bg-slate-950 p-6 text-white">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">New here?</p>
             <h2 className="mt-2 text-2xl font-black tracking-tight">Create a custodial wallet first.</h2>
             <p className="mt-3 text-sm leading-6 text-slate-300">
@@ -115,21 +115,21 @@ export default function LoginPage() {
             </Link>
           </section>
 
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <section className="mercator-elevated-card rounded-3xl border border-slate-200 bg-white p-6">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Wallet Tools</p>
             <h3 className="mt-2 text-xl font-black text-slate-950">Export, import, or verify custody.</h3>
             <p className="mt-3 text-sm leading-6 text-slate-600">
               If you already have a wallet, use the wallet center to check whether it is custodial and export the mnemonic for migration.
             </p>
             <Link
-              to="/wallet"
+              to="/wallet-tools"
               className="mt-5 inline-flex rounded-full border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-950 hover:text-slate-950"
             >
               Open wallet tools
             </Link>
           </section>
 
-          <section className="rounded-3xl border border-amber-200 bg-amber-50 p-6 text-amber-900">
+          <section className="mercator-elevated-card rounded-3xl border border-amber-200 bg-amber-50 p-6 text-amber-900">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-700">Backend path</p>
             <p className="mt-2 text-sm leading-6">
               This form calls the server&apos;s <span className="font-semibold">POST /auth/login</span> endpoint directly.

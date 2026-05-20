@@ -46,7 +46,7 @@ export default function App() {
             <Route path="/onboard" element={<OnboardPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/auth/login" element={<LoginPage />} />
-            <Route path="/wallet" element={<WalletToolsPage />} />
+            <Route path="/wallet-tools" element={<WalletToolsPage />} />
             <Route path="/trust" element={<TrustPage />} />
             <Route path="/activity" element={<ActivityLedgerPage />} />
             <Route path="/agents" element={<AgentsPage />} />

@@ -258,6 +258,9 @@ class ErrorHandler:
         if PydanticValidationError is not None:
             mapping.append((lambda e: isinstance(e, PydanticValidationError), ErrorCode.VALIDATION_ERROR, SystemError))
 
+        # Simulation-specific mapping: runtime errors mentioning 'simulation' should map to payment simulation failure
+        mapping.append((lambda e: isinstance(e, Exception) and "simulation" in str(e).lower(), ErrorCode.PAYMENT_SIMULATION_FAILED, PaymentError))
+
         # sqlite
         mapping.append((lambda e: isinstance(e, sqlite3.Error), ErrorCode.DATABASE_ERROR, SystemError))
 

@@ -1,0 +1,2653 @@
+...............ss.ss.......F..F.F.....F......F.....F.................... [ 20%]
+......................................F...FF...FFFFF............FF...... [ 41%]
+...FF...FFFFFFFFFFFF............F.FFF.FF.F......F....................... [ 62%]
+........................................................................ [ 82%]
+....F...................................FFF.F............FF              [100%]
+=================================== FAILURES ===================================
+______________ test_simulation_failure_aborts_autonomous_payment _______________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x12931d6d0>
+
+    @pytest.mark.asyncio
+    async def test_simulation_failure_aborts_autonomous_payment(monkeypatch):
+        listing = SimpleNamespace(seller=os.environ["DEPLOYER_ADDRESS"], price=200_000, ipfs_hash="QmCID")
+        listing_client = SimpleNamespace(
+            state=SimpleNamespace(box=SimpleNamespace(listings=SimpleNamespace(get_value=MagicMock(return_value=listing))))
+        )
+    
+        class FakeReputationClient:
+            def __init__(self):
+                self.state = SimpleNamespace(
+                    box=SimpleNamespace(seller_scores=SimpleNamespace(get_value=MagicMock(return_value=80)))
+                )
+    
+        class FakeX402Client:
+            instances: list["FakeX402Client"] = []
+    
+            def __init__(self, _algorand, usdc_asset_id=None, decimals=None):
+                self.simulate_payment = AsyncMock(side_effect=RuntimeError("simulation failed"))
+                self.send_micropayment = AsyncMock(return_value="NEVER")
+                self.send_atomic_payment_and_redeem = AsyncMock(return_value=("PAY", "REDEEM"))
+                self.ensure_asset_opt_in = MagicMock(return_value=None)
+                FakeX402Client.instances.append(self)
+    
+        monkeypatch.setattr(x402_module, "get_insight_listing_client", lambda: listing_client)
+        monkeypatch.setattr(x402_module, "get_algorand_client", lambda: MagicMock())
+        monkeypatch.setattr(x402_module, "get_reputation_client", lambda: FakeReputationClient())
+        monkeypatch.setattr(x402_module, "X402Client", FakeX402Client)
+    
+        response = await x402_module.trigger_x402_payment.ainvoke(
+            {
+                "listing_id": 7,
+                "buyer_address": os.environ["DEPLOYER_ADDRESS"],
+                "amount_usdc": 0.2,
+                "user_approval_input": "approve",
+                "autonomous_mode": True,
+                "relevance_score": 90,
+                "reputation_score": 80,
+                "price_usdc": 0.2,
+            }
+        )
+        payload = json.loads(response)
+    
+        assert payload["success"] is False
+>       assert payload["error"] == "SIMULATION_ERROR" or payload["error"] == "AUTO_ABORTED"
+E       AssertionError: assert ('INVALID_ADDRESS' == 'SIMULATION_ERROR'
+E         
+E         - SIMULATION_ERROR
+E         + INVALID_ADDRESS or 'INVALID_ADDRESS' == 'AUTO_ABORTED'
+E         
+E         - AUTO_ABORTED
+E         + INVALID_ADDRESS)
+
+backend/tests/test_autonomous_mode.py:165: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-05-20 20:52:52,503 | WARNING | backend.tools.x402_payment | Subscription status check failed for ADDR: <urlopen error [Errno 61] Connection refused>
+2026-05-20 20:52:52,503 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-20 20:52:52,503 | INFO | backend.tools.x402_payment | Autonomous mode enabled; skipping explicit approval gate
+2026-05-20 20:52:52,503 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-20 20:52:52,503 | INFO | demo.flow | Payment approved
+2026-05-20 20:52:52,504 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 7
+2026-05-20 20:52:52,504 | INFO | backend.tools.x402_payment | Buyer: ADDR, Amount: 0.2 USDC
+2026-05-20 20:52:52,504 | ERROR | backend.tools.x402_payment | Invalid buyer address: ADDR
+------------------------------ Captured log call -------------------------------
+WARNING  backend.tools.x402_payment:config.py:25 Subscription status check failed for ADDR: <urlopen error [Errno 61] Connection refused>
+INFO     backend.tools.x402_payment:config.py:25 Checking user approval...
+INFO     backend.tools.x402_payment:config.py:25 Autonomous mode enabled; skipping explicit approval gate
+INFO     backend.tools.x402_payment:config.py:25 ✓ User approval confirmed: 'approve'
+INFO     demo.flow:config.py:25 Payment approved
+INFO     backend.tools.x402_payment:config.py:25 Initiating x402 payment for listing 7
+INFO     backend.tools.x402_payment:config.py:25 Buyer: ADDR, Amount: 0.2 USDC
+ERROR    backend.tools.x402_payment:config.py:25 Invalid buyer address: ADDR
+________________________ test_main_funding_and_signing _________________________
+
+main_module = <module 'backend.main' from '/Users/swanandibhende/Documents/Projects/mercator/backend/main.py'>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1293c7200>
+
+    def test_main_funding_and_signing(main_module, monkeypatch):
+        client = MagicMock()
+        client.account_info.return_value = {"min-balance": 100_000, "amount": 0}
+        client.suggested_params.return_value = SimpleNamespace(flat_fee=False)
+        client.send_transaction.return_value = "TX"
+    
+        monkeypatch.setattr(main_module, "_get_algod_client", lambda: client)
+        monkeypatch.setattr(main_module, "get_application_address", lambda app_id: "APPADDR")
+        monkeypatch.setattr(main_module.mnemonic, "to_private_key", lambda m: "PRIV")
+        monkeypatch.setattr(main_module.transaction, "PaymentTxn", MagicMock(return_value=SimpleNamespace(sign=lambda _: "SIGNED")))
+        monkeypatch.setattr(main_module.transaction, "wait_for_confirmation", MagicMock(return_value={"confirmed-round": 1}))
+    
+        monkeypatch.delenv("DEPLOYER_MNEMONIC", raising=False)
+>       with pytest.raises(HTTPException):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'fastapi.exceptions.HTTPException'>
+
+backend/tests/test_critical_path_coverage.py:121: Failed
+______________ test_main_demo_purchase_and_invalid_listing_paths _______________
+
+main_module = <module 'backend.main' from '/Users/swanandibhende/Documents/Projects/mercator/backend/main.py'>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x129476690>
+
+    @pytest.mark.asyncio
+    async def test_main_demo_purchase_and_invalid_listing_paths(main_module, monkeypatch):
+        payload = main_module.DemoPurchaseRequest(user_query="q")
+        monkeypatch.setattr(main_module, "run_agent", AsyncMock(return_value={"success": True, "payment_status": {"post_payment_output": "ok"}}))
+        out = await main_module.demo_purchase(payload)
+        assert out["success"] is True
+    
+        req = main_module.ListingRequest(
+            insight_text="hello",
+            price=1.0,
+            seller_wallet=os.getenv("DEPLOYER_ADDRESS", "M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM"),
+        )
+    
+        monkeypatch.setattr(main_module, "_ensure_listing_app_funded", MagicMock())
+        monkeypatch.setattr(main_module, "upload_insight_to_ipfs", AsyncMock(return_value="cid"))
+        monkeypatch.setattr(main_module, "store_cid_in_listing", MagicMock(return_value=(1, 2)))
+        monkeypatch.setattr(main_module, "_poll_for_listing_confirmation", AsyncMock(return_value="tx"))
+        monkeypatch.setattr(main_module, "_get_signing_mnemonic", lambda: "m")
+        monkeypatch.setattr(main_module.mnemonic, "to_private_key", lambda _m: "p")
+        monkeypatch.setattr(main_module.account, "address_from_private_key", lambda _p: req.seller_wallet)
+    
+        original_getenv = os.getenv
+        monkeypatch.setattr(main_module.os, "getenv", lambda key, default="": "" if key == "INSIGHT_LISTING_APP_ID" else original_getenv(key, default))
+>       with pytest.raises(HTTPException):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'fastapi.exceptions.HTTPException'>
+
+backend/tests/test_critical_path_coverage.py:193: Failed
+----------------------------- Captured stderr call -----------------------------
+2026-05-20 20:52:54,655 | INFO | mercator.backend | Incoming /list request: seller_wallet=ADDR, price=1.0, insight_len=5
+------------------------------ Captured log call -------------------------------
+INFO     mercator.backend:config.py:25 Incoming /list request: seller_wallet=ADDR, price=1.0, insight_len=5
+____________________ test_agent_module_import_time_branches ____________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1294769f0>
+
+    def test_agent_module_import_time_branches(monkeypatch):
+        module_path = REPO_ROOT / "backend" / "agent.py"
+        backup = dict(sys.modules)
+    
+        fake_agents = SimpleNamespace(
+            create_tool_calling_agent=lambda *_a, **_k: "agent",
+            AgentExecutor=lambda **_k: "exec",
+            create_agent=lambda **_k: "compat",
+        )
+        sys.modules["langchain.agents"] = fake_agents  # type: ignore[assignment]
+    
+        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+        spec = importlib.util.spec_from_file_location("agent_missing_key", str(module_path))
+        module = importlib.util.module_from_spec(spec)
+        assert spec and spec.loader
+>       spec.loader.exec_module(module)
+
+backend/tests/test_critical_path_coverage.py:333: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+<frozen importlib._bootstrap_external>:999: in exec_module
+    ???
+<frozen importlib._bootstrap>:488: in _call_with_frames_removed
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    """Autonomous trading insight buyer agent using LangChain + Gemini LLM.
+    
+    Purpose: Implements AI buyer logic for semantic search → evaluation → x402 micropayment.
+    Uses chain-of-thought reasoning (CoT) with on-chain reputation checks and value heuristics
+    to autonomously decide whether to purchase trading insights and execute x402 payments.
+    
+    Key Components:
+    - SYSTEM_PROMPT: Agent instructions (search, evaluate, BUY/SKIP decision, x402 payment logic).
+    - semantic_search_tool: Finds top 3 insights by relevance + reputation score.
+    - evaluate_insights: 2-step evaluation (relevance check, reputation gate, value-for-price).
+    - trigger_x402_payment: Simulates and executes Algorand micropayment + escrow release + content delivery.
+    - run_agent: Main orchestration - chains tool calls and returns decision + payment status.
+    """
+    
+    from dotenv import load_dotenv
+    import argparse
+    import asyncio
+    import os
+    import logging
+    import warnings
+    from typing import Any
+    from dataclasses import dataclass
+    
+    warnings.filterwarnings(
+        "ignore",
+        message="'_UnionGenericAlias' is deprecated and slated for removal in Python 3.17",
+        category=DeprecationWarning,
+        module=r"google\.genai\.types",
+    )
+    
+    from langchain_google_genai import ChatGoogleGenerativeAI
+    from langchain_core.prompts import ChatPromptTemplate
+    from langchain_core.tools import tool
+    from langchain_core.messages import SystemMessage
+    
+    try:
+        from langchain.agents import create_tool_calling_agent, AgentExecutor  # type: ignore
+    except ImportError:
+        create_tool_calling_agent = None
+        AgentExecutor = None
+    
+    try:
+        from langchain.agents import create_agent
+    except Exception:
+        create_agent = None
+    
+    from contracts.insight_listing import InsightListingClient
+    from backend.contracts.escrow.smart_contracts.artifacts.escrow.escrow_client import EscrowClient
+    from backend.contracts.reputation.smart_contracts.artifacts.reputation.reputation_client import ReputationClient
+    from backend.tools.semantic_search import semantic_search as semantic_search_tool
+    from backend.tools.x402_payment import trigger_x402_payment, validate_x402_payment
+    from backend.utils.evaluation_result import EvaluationResult, build_evaluation_prompt, parse_evaluation_result
+    from backend.utils.error_handler import low_reputation, payment_rejected, ErrorHandler, ErrorCode, AgentError, MercatorError
+    try:
+        from google.api_core import exceptions as google_exceptions
+    except Exception:
+        google_exceptions = None
+    import json as _json
+    from backend.utils.flow_tracer import export_json, record_event, start_session
+    from backend.utils.runtime_env import configure_demo_logging, normalize_network_env
+    
+    
+    normalize_network_env()
+    demo_logger = configure_demo_logging()
+    if not os.getenv("GEMINI_API_KEY"):
+        load_dotenv(".env.testnet", override=True)
+    
+    AUTO_MIN_RELEVANCE = int(os.getenv("AUTO_MIN_RELEVANCE", "85"))
+    AUTO_MIN_REPUTATION = int(os.getenv("AUTO_MIN_REPUTATION", "70"))
+    AUTO_MAX_PRICE_USDC = float(os.getenv("AUTO_MAX_PRICE_USDC", "0.30"))
+    
+    if not 0 <= AUTO_MIN_RELEVANCE <= 100:
+        raise ValueError("AUTO_MIN_RELEVANCE must be between 0 and 100")
+    if not 0 <= AUTO_MIN_REPUTATION <= 100:
+        raise ValueError("AUTO_MIN_REPUTATION must be between 0 and 100")
+    if not 0.01 <= AUTO_MAX_PRICE_USDC <= 10.0:
+        raise ValueError("AUTO_MAX_PRICE_USDC must be between 0.01 and 10.0")
+    
+    from backend.utils.auto_approval import check_auto_conditions
+    
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+        handlers=[
+            logging.StreamHandler(),
+            logging.FileHandler("mercator.log", mode="a"),
+        ],
+        force=True,
+    )
+    logger = logging.getLogger(__name__)
+    
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+    ALGOD_URL = os.getenv("ALGOD_URL")
+    GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+    ROUND_INTERVAL = float(os.getenv("ROUND_INTERVAL", "10"))
+    
+    if not GEMINI_API_KEY:
+>       raise ValueError("GEMINI_API_KEY not found in .env")
+E       ValueError: GEMINI_API_KEY not found in .env
+
+backend/agent.py:98: ValueError
+____________________ test_x402_client_methods_and_validate _____________________
+
+x402_module = <module 'backend.tools.x402_payment' from '/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py'>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1293aec90>
+
+    @pytest.mark.asyncio
+    async def test_x402_client_methods_and_validate(x402_module, monkeypatch):
+        algod_client = MagicMock()
+        algod_client.account_info.return_value = {"assets": []}
+        algod_client.suggested_params.return_value = SimpleNamespace(flat_fee=True)
+        algod_client.send_transaction.return_value = "TX"
+    
+        client = x402_module.X402Client(SimpleNamespace(client=SimpleNamespace(algod=algod_client)))
+    
+        with pytest.raises(ValueError):
+            client._resolve_private_key_for_sender("")
+    
+        monkeypatch.setenv("BUYER_MNEMONIC", "m")
+        monkeypatch.setenv("BUYER_WALLET", "ADDR")
+        monkeypatch.setenv("DEPLOYER_ADDRESS", "ADDR")
+        monkeypatch.setenv("DEPLOYER_MNEMONIC", "m")
+        monkeypatch.setattr(x402_module.algo_mnemonic, "to_private_key", lambda _m: "PRIV")
+        monkeypatch.setattr(x402_module.algo_account, "address_from_private_key", lambda _p: "ADDR")
+        assert client._resolve_private_key_for_sender("ADDR") == "PRIV"
+    
+        monkeypatch.setattr(x402_module.algo_account, "address_from_private_key", lambda _p: "OTHER")
+        with pytest.raises(ValueError):
+            client._resolve_private_key_for_sender("ADDR")
+    
+        monkeypatch.setenv("BUYER_MNEMONIC", "")
+        monkeypatch.setenv("BUYER_WALLET", "ADDR")
+        monkeypatch.setenv("DEPLOYER_MNEMONIC", "")
+        monkeypatch.setenv("DEPLOYER_ADDRESS", "")
+        with pytest.raises(ValueError):
+            client._resolve_private_key_for_sender("ADDR")
+    
+        monkeypatch.setenv("BUYER_MNEMONIC", "m")
+        monkeypatch.setenv("BUYER_WALLET", "OTHER_ADDR")
+        monkeypatch.setenv("DEPLOYER_MNEMONIC", "")
+        monkeypatch.setenv("DEPLOYER_ADDRESS", "")
+        with pytest.raises(ValueError):
+            client._resolve_private_key_for_sender("ADDR")
+    
+        monkeypatch.setenv("DEPLOYER_ADDRESS", "ADDR")
+        monkeypatch.setenv("DEPLOYER_MNEMONIC", "m")
+    
+        monkeypatch.setattr(x402_module.transaction, "AssetTransferTxn", MagicMock(return_value=SimpleNamespace(sign=lambda _pk: "SIGNED")))
+        monkeypatch.setattr(x402_module.transaction, "wait_for_confirmation", MagicMock(return_value={"confirmed-round": 1}))
+>       assert client.ensure_asset_opt_in("ADDR", 1) == "TX"
+E       AssertionError: assert <coroutine object X402Client.ensure_asset_opt_in at 0x1292270f0> == 'TX'
+E        +  where <coroutine object X402Client.ensure_asset_opt_in at 0x1292270f0> = ensure_asset_opt_in('ADDR', 1)
+E        +    where ensure_asset_opt_in = <backend.tools.x402_payment.X402Client object at 0x1293c4e00>.ensure_asset_opt_in
+
+backend/tests/test_critical_path_coverage.py:552: AssertionError
+_______________________ test_post_payment_wait_and_tool ________________________
+
+post_module = <module 'backend.tools.post_payment_flow' from '/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py'>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x12944e180>
+
+    @pytest.mark.asyncio
+    async def test_post_payment_wait_and_tool(post_module, monkeypatch):
+        post_module.indexer_client = SimpleNamespace(transaction=lambda _tx: {"transaction": {"confirmed-round": "7"}})
+        assert await post_module._wait_for_confirmation("TX", timeout_seconds=1) == 7
+    
+        post_module.indexer_client = SimpleNamespace(transaction=lambda _tx: {"transaction": {"confirmed-round": 0}})
+        sleep_mock = AsyncMock(return_value=None)
+        monkeypatch.setattr(post_module.asyncio, "sleep", sleep_mock)
+    
+        with pytest.raises(RuntimeError):
+>           await post_module._wait_for_confirmation("TX", timeout_seconds=0)
+
+backend/tests/test_critical_path_coverage.py:742: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tx_id = 'TX', timeout_seconds = 0
+
+    async def _wait_for_confirmation(tx_id: str, timeout_seconds: int = 30) -> int:
+        """Poll indexer until transaction is confirmed.
+    
+        Inputs: tx_id and timeout_seconds.
+        Output: confirmed round number.
+        Micropayment role: synchronization barrier before escrow release/content delivery.
+        """
+        start = time.time()
+        while time.time() - start < timeout_seconds:
+            try:
+                tx_info = indexer_client.transaction(tx_id).get("transaction", {})
+                confirmed_round = tx_info.get("confirmed-round")
+                if confirmed_round:
+                    return int(confirmed_round)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("Indexer lookup retry | tx_id=%s error=%s", tx_id, exc)
+            await asyncio.sleep(0.5)
+>       raise AlgorandError(ErrorCode.PAYMENT_BROADCAST_FAILED, context={"tx_id": tx_id})
+E       backend.utils.error_handler.AlgorandError: [ErrorCode.PAYMENT_BROADCAST_FAILED] Payment was submitted but confirmation timed out
+
+backend/tools/post_payment_flow.py:376: AlgorandError
+____________________________ test_startup_shutdown _____________________________
+
+health_checker = <backend.utils.health_checker.HealthChecker object at 0x1299d3380>
+
+    @pytest.mark.asyncio
+    async def test_startup_shutdown(health_checker):
+        """Test that startup and shutdown properly initialize/cleanup httpx client."""
+        assert health_checker._http_client is None
+    
+>       await health_checker.startup()
+
+backend/tests/test_health_checker.py:57: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/utils/health_checker.py:231: in startup
+    self._http_client = await get_http_client()
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def get_http_client() -> httpx.AsyncClient:
+        global _shared_client
+        if _shared_client is None:
+>           raise RuntimeError("HTTP client not initialised — call startup_http_client() first")
+E           RuntimeError: HTTP client not initialised — call startup_http_client() first
+
+backend/utils/http_client.py:19: RuntimeError
+______________________ test_check_ipfs_gateway_successful ______________________
+
+health_checker = <backend.utils.health_checker.HealthChecker object at 0x129913500>
+
+    @pytest.mark.asyncio
+    async def test_check_ipfs_gateway_successful(health_checker):
+        """Test ipfs_gateway returns HEALTHY for successful test CID fetch."""
+>       await health_checker.startup()
+
+backend/tests/test_health_checker.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/utils/health_checker.py:231: in startup
+    self._http_client = await get_http_client()
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def get_http_client() -> httpx.AsyncClient:
+        global _shared_client
+        if _shared_client is None:
+>           raise RuntimeError("HTTP client not initialised — call startup_http_client() first")
+E           RuntimeError: HTTP client not initialised — call startup_http_client() first
+
+backend/utils/http_client.py:19: RuntimeError
+___________________ test_ipfs_gateway_wrong_content_is_down ____________________
+
+health_checker = <backend.utils.health_checker.HealthChecker object at 0x1299b6390>
+
+    @pytest.mark.asyncio
+    async def test_ipfs_gateway_wrong_content_is_down(health_checker):
+        """Test ipfs_gateway returns DOWN for status 200 but wrong content."""
+>       await health_checker.startup()
+
+backend/tests/test_health_checker.py:133: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/utils/health_checker.py:231: in startup
+    self._http_client = await get_http_client()
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def get_http_client() -> httpx.AsyncClient:
+        global _shared_client
+        if _shared_client is None:
+>           raise RuntimeError("HTTP client not initialised — call startup_http_client() first")
+E           RuntimeError: HTTP client not initialised — call startup_http_client() first
+
+backend/utils/http_client.py:19: RuntimeError
+____________________ test_status_change_triggers_broadcast _____________________
+
+health_checker = <backend.utils.health_checker.HealthChecker object at 0x1299130b0>
+mock_algod_client = <MagicMock id='4992487968'>
+mock_ws_manager = <AsyncMock id='4992348384'>
+
+    @pytest.mark.asyncio
+    async def test_status_change_triggers_broadcast(
+        health_checker, mock_algod_client, mock_ws_manager
+    ):
+        """Test that status changes trigger WebSocket broadcasts."""
+>       await health_checker.startup()
+
+backend/tests/test_health_checker.py:242: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/utils/health_checker.py:231: in startup
+    self._http_client = await get_http_client()
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def get_http_client() -> httpx.AsyncClient:
+        global _shared_client
+        if _shared_client is None:
+>           raise RuntimeError("HTTP client not initialised — call startup_http_client() first")
+E           RuntimeError: HTTP client not initialised — call startup_http_client() first
+
+backend/utils/http_client.py:19: RuntimeError
+_________________ test_alert_banner_not_shown_when_all_healthy _________________
+
+health_checker = <backend.utils.health_checker.HealthChecker object at 0x129911280>
+mock_algod_client = <MagicMock id='4991033968'>
+mock_ws_manager = <AsyncMock id='4992631104'>
+
+    @pytest.mark.asyncio
+    async def test_alert_banner_not_shown_when_all_healthy(
+        health_checker, mock_algod_client, mock_ws_manager
+    ):
+        """Test that system_alert is not broadcast when all metrics healthy."""
+>       await health_checker.startup()
+
+backend/tests/test_health_checker.py:290: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/utils/health_checker.py:231: in startup
+    self._http_client = await get_http_client()
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def get_http_client() -> httpx.AsyncClient:
+        global _shared_client
+        if _shared_client is None:
+>           raise RuntimeError("HTTP client not initialised — call startup_http_client() first")
+E           RuntimeError: HTTP client not initialised — call startup_http_client() first
+
+backend/utils/http_client.py:19: RuntimeError
+_____________________ test_snapshot_history_rolling_window _____________________
+
+health_checker = <backend.utils.health_checker.HealthChecker object at 0x1299d0980>
+mock_algod_client = <MagicMock id='4993129296'>
+mock_ws_manager = <AsyncMock id='4990139136'>
+
+    @pytest.mark.asyncio
+    async def test_snapshot_history_rolling_window(
+        health_checker, mock_algod_client, mock_ws_manager
+    ):
+        """Test that snapshot history maintains 60-entry rolling window."""
+>       await health_checker.startup()
+
+backend/tests/test_health_checker.py:320: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/utils/health_checker.py:231: in startup
+    self._http_client = await get_http_client()
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def get_http_client() -> httpx.AsyncClient:
+        global _shared_client
+        if _shared_client is None:
+>           raise RuntimeError("HTTP client not initialised — call startup_http_client() first")
+E           RuntimeError: HTTP client not initialised — call startup_http_client() first
+
+backend/utils/http_client.py:19: RuntimeError
+_____________________ test_get_health_history_with_minutes _____________________
+
+health_checker = <backend.utils.health_checker.HealthChecker object at 0x129afc3b0>
+mock_algod_client = <MagicMock id='4993628832'>
+mock_ws_manager = <AsyncMock id='4994352000'>
+
+    @pytest.mark.asyncio
+    async def test_get_health_history_with_minutes(
+        health_checker, mock_algod_client, mock_ws_manager
+    ):
+        """Test get_health_history returns snapshots for specified minutes."""
+>       await health_checker.startup()
+
+backend/tests/test_health_checker.py:353: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/utils/health_checker.py:231: in startup
+    self._http_client = await get_http_client()
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def get_http_client() -> httpx.AsyncClient:
+        global _shared_client
+        if _shared_client is None:
+>           raise RuntimeError("HTTP client not initialised — call startup_http_client() first")
+E           RuntimeError: HTTP client not initialised — call startup_http_client() first
+
+backend/utils/http_client.py:19: RuntimeError
+_________________ test_health_metric_previous_status_tracking __________________
+
+health_checker = <backend.utils.health_checker.HealthChecker object at 0x129ae0f50>
+mock_algod_client = <MagicMock id='4994236544'>
+
+    @pytest.mark.asyncio
+    async def test_health_metric_previous_status_tracking(
+        health_checker, mock_algod_client
+    ):
+        """Test that previous_status is properly tracked for status change detection."""
+>       await health_checker.startup()
+
+backend/tests/test_health_checker.py:384: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/utils/health_checker.py:231: in startup
+    self._http_client = await get_http_client()
+                        ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def get_http_client() -> httpx.AsyncClient:
+        global _shared_client
+        if _shared_client is None:
+>           raise RuntimeError("HTTP client not initialised — call startup_http_client() first")
+E           RuntimeError: HTTP client not initialised — call startup_http_client() first
+
+backend/utils/http_client.py:19: RuntimeError
+______________________ test_orphan_prevention_audit_trail ______________________
+
+    @pytest.mark.asyncio
+    async def test_orphan_prevention_audit_trail():
+        """Audit trail tracks all attempts including orphan prevention."""
+        initialise_listing_preparation_schema()
+    
+        with patch('backend.utils.ipfs.upload_insight_to_ipfs') as mock_upload, \
+             patch('backend.utils.ipfs.unpin_cid') as mock_unpin, \
+             patch('backend.utils.ipfs.AlgorandClient') as mock_algorand, \
+             patch('backend.utils.ipfs._load_insight_listing_client_class') as mock_loader:
+    
+            mock_upload.return_value = "QmOrphanTest"
+            mock_unpin.return_value = None
+    
+            # Mock ATC with failed simulation
+            mock_atc = MagicMock()
+            sim_result = MagicMock()
+            sim_result.failure_message = "Invalid price"
+            sim_result.failed_at = [0]
+            mock_atc.simulate.return_value = sim_result
+    
+            mock_client = MagicMock()
+            mock_client.get_method.return_value = MagicMock()
+            mock_loader.return_value = MagicMock(return_value=mock_client)
+    
+            with patch('algosdk.atomic_transaction_composer.AtomicTransactionComposer', return_value=mock_atc):
+                with pytest.raises(ListingStoreError):
+                    await create_listing_prepared(
+                        insight_text="test insight for orphan prevention",
+                        price_usdc=-100.0,  # Invalid price
+                        seller_wallet="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                        listing_app_id=123,
+                        signer_mnemonic="test mnemonic",
+                    )
+    
+            # Verify the audit log has the failure recorded
+            import sqlite3
+            db_path = get_db_path()
+            conn = sqlite3.connect(db_path)
+            conn.row_factory = sqlite3.Row
+    
+            # Get the most recent entry
+            row = conn.execute(
+                "SELECT * FROM listing_preparation_log WHERE cid_pinned = ? ORDER BY created_at DESC LIMIT 1",
+                ("QmOrphanTest",)
+            ).fetchone()
+    
+            assert row is not None
+            assert row['cid_pinned'] == "QmOrphanTest"
+>           assert row['simulation_success'] == 0  # Simulation failed
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           assert 1 == 0
+
+backend/tests/test_listing_preparation.py:350: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-05-20 20:53:10,001 | INFO | backend.utils.ipfs | Starting listing preparation: preparation_id=8a22489b-0fc0-4c74-9ec9-f2ea4a3879e0 seller=AAAAAAAA price=-100.0
+2026-05-20 20:53:10,001 | INFO | backend.utils.ipfs | Phase 1: Uploading insight to IPFS...
+2026-05-20 20:53:10,001 | INFO | backend.utils.ipfs | Phase 1 complete: cid=QmOrphanTest
+2026-05-20 20:53:10,002 | INFO | backend.utils.ipfs | Phase 2: Creating listing on-chain with CID=QmOrphanTest...
+2026-05-20 20:53:10,002 | ERROR | backend.utils.ipfs | Phase 2 execution failed for preparation_id=8a22489b-0fc0-4c74-9ec9-f2ea4a3879e0: seller_address is not a valid Algorand address
+2026-05-20 20:53:10,002 | INFO | backend.utils.ipfs | Cleaning up after execution failure: unpinning CID=QmOrphanTest
+2026-05-20 20:53:10,002 | INFO | backend.utils.ipfs | CID successfully unpinned
+------------------------------ Captured log call -------------------------------
+INFO     backend.utils.ipfs:config.py:25 Starting listing preparation: preparation_id=8a22489b-0fc0-4c74-9ec9-f2ea4a3879e0 seller=AAAAAAAA price=-100.0
+INFO     backend.utils.ipfs:config.py:25 Phase 1: Uploading insight to IPFS...
+INFO     backend.utils.ipfs:config.py:25 Phase 1 complete: cid=QmOrphanTest
+INFO     backend.utils.ipfs:config.py:25 Phase 2: Creating listing on-chain with CID=QmOrphanTest...
+ERROR    backend.utils.ipfs:config.py:25 Phase 2 execution failed for preparation_id=8a22489b-0fc0-4c74-9ec9-f2ea4a3879e0: seller_address is not a valid Algorand address
+INFO     backend.utils.ipfs:config.py:25 Cleaning up after execution failure: unpinning CID=QmOrphanTest
+INFO     backend.utils.ipfs:config.py:25 CID successfully unpinned
+________________ test_store_cid_in_listing_passes_box_reference ________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x129a4a930>
+
+    def test_store_cid_in_listing_passes_box_reference(monkeypatch):
+        """Ensure store_cid_in_listing constructs and passes the listing box reference."""
+        from types import SimpleNamespace
+        import os
+    
+        class DummyResult:
+            abi_return = 81
+    
+        sent = {}
+    
+        # Fake AlgorandClient with minimal interface
+        class FakeAlgorand:
+            def __init__(self):
+                self.account = SimpleNamespace()
+    
+            class account:
+                @staticmethod
+                def from_mnemonic(mnemonic, sender):
+                    return SimpleNamespace(address=sender)
+    
+            def set_default_signer(self, signer):
+                self._signer = signer
+    
+        monkeypatch.setattr('backend.utils.ipfs.AlgorandClient.from_environment', lambda: FakeAlgorand())
+    
+        class FakeAppClient:
+            def __init__(self, *args, **kwargs):
+                pass
+    
+            class send:
+                @staticmethod
+                def create_listing(args, params=None, send_params=None):
+                    sent['args'] = args
+                    sent['params'] = params
+                    return DummyResult()
+    
+            class state:
+                class global_state:
+                    next_listing_id = 80
+    
+                class box:
+                    class listings:
+                        @staticmethod
+                        def get_value(key):
+                            return SimpleNamespace(asa_id=999)
+    
+        monkeypatch.setattr('backend.utils.ipfs._load_insight_listing_client_class', lambda: FakeAppClient)
+    
+        listing_id, asa_id = store_cid_in_listing(
+            cid='QmTestCID',
+            listing_app_id=758025190,
+            seller_address='M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM',
+            price=1000000,
+            signer_mnemonic=os.environ.get('DEPLOYER_MNEMONIC', ''),
+        )
+    
+        assert listing_id == 81
+        assert asa_id == 999
+        assert 'params' in sent
+        params = sent['params']
+        assert hasattr(params, 'box_references')
+>       assert params.box_references, 'Expected at least one box reference'
+E       AssertionError: Expected at least one box reference
+E       assert None
+E        +  where None = CommonAppCallParams(account_references=None, app_references=None, asset_references=None, box_references=None, extra_fe...e, signer=None, static_fee=None, validity_window=None, first_valid_round=None, last_valid_round=None, on_complete=None).box_references
+
+backend/tests/test_listing_preparation.py:424: AssertionError
+_________________ test_list_endpoint_matrix[valid_upload_one] __________________
+
+client = <starlette.testclient.TestClient object at 0x1292513a0>
+list_call_mocks = <AsyncMock id='4986587232'>
+case = {'asa_id': 758196266, 'listing_id': 4, 'name': 'valid_upload_one', 'payload': {'insight_text': 'Sample trading insight: Buy NIFTY above 24500 with SL 24380', 'price': '1.00', 'seller_wallet': 'ADDR'}, ...}
+
+    @pytest.mark.parametrize("case", LISTING_CASES)
+    def test_list_endpoint_matrix(client, list_call_mocks, case):
+        prepared_mock = list_call_mocks
+        payload = case["payload"]
+    
+        if "prepared_result" in case:
+            prepared_mock.return_value = case["prepared_result"]
+        if "prepared_side_effect" in case:
+            prepared_mock.side_effect = case["prepared_side_effect"]
+    
+        response = client.post("/list", json=payload)
+>       assert response.status_code == case["status"]
+E       assert 400 == 200
+E        +  where 400 = <Response [400 Bad Request]>.status_code
+
+backend/tests/test_micropayment_cycle.py:302: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-05-20 20:53:10,029 | INFO | mercator.backend | Incoming /list request: seller_wallet=ADDR, price=1.0, insight_len=59
+------------------------------ Captured log call -------------------------------
+INFO     mercator.backend:config.py:25 Incoming /list request: seller_wallet=ADDR, price=1.0, insight_len=59
+_________________ test_list_endpoint_matrix[valid_upload_two] __________________
+
+client = <starlette.testclient.TestClient object at 0x1299d2420>
+list_call_mocks = <AsyncMock id='4989762208'>
+case = {'asa_id': 758196267, 'listing_id': 8, 'name': 'valid_upload_two', 'payload': {'insight_text': 'Sample trading insight: Sell NIFTY below 24500 on weakness', 'price': '2.50', 'seller_wallet': 'ADDR'}, ...}
+
+    @pytest.mark.parametrize("case", LISTING_CASES)
+    def test_list_endpoint_matrix(client, list_call_mocks, case):
+        prepared_mock = list_call_mocks
+        payload = case["payload"]
+    
+        if "prepared_result" in case:
+            prepared_mock.return_value = case["prepared_result"]
+        if "prepared_side_effect" in case:
+            prepared_mock.side_effect = case["prepared_side_effect"]
+    
+        response = client.post("/list", json=payload)
+>       assert response.status_code == case["status"]
+E       assert 400 == 200
+E        +  where 400 = <Response [400 Bad Request]>.status_code
+
+backend/tests/test_micropayment_cycle.py:302: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-05-20 20:53:10,051 | INFO | mercator.backend | Incoming /list request: seller_wallet=ADDR, price=2.5, insight_len=58
+------------------------------ Captured log call -------------------------------
+INFO     mercator.backend:config.py:25 Incoming /list request: seller_wallet=ADDR, price=2.5, insight_len=58
+____________ test_list_endpoint_matrix[simulation_failure_cleanup] _____________
+
+client = <starlette.testclient.TestClient object at 0x1299b6db0>
+list_call_mocks = <AsyncMock id='4993136976'>
+case = {'name': 'simulation_failure_cleanup', 'payload': {'insight_text': 'Sample trading insight: Buy NIFTY above 24500 with...ngStoreError('ASA creation simulation failed: agent not registered. IPFS content has been cleaned up.'), 'status': 500}
+
+    @pytest.mark.parametrize("case", LISTING_CASES)
+    def test_list_endpoint_matrix(client, list_call_mocks, case):
+        prepared_mock = list_call_mocks
+        payload = case["payload"]
+    
+        if "prepared_result" in case:
+            prepared_mock.return_value = case["prepared_result"]
+        if "prepared_side_effect" in case:
+            prepared_mock.side_effect = case["prepared_side_effect"]
+    
+        response = client.post("/list", json=payload)
+>       assert response.status_code == case["status"]
+E       assert 400 == 500
+E        +  where 400 = <Response [400 Bad Request]>.status_code
+
+backend/tests/test_micropayment_cycle.py:302: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-05-20 20:53:10,087 | INFO | mercator.backend | Incoming /list request: seller_wallet=ADDR, price=1.0, insight_len=59
+------------------------------ Captured log call -------------------------------
+INFO     mercator.backend:config.py:25 Incoming /list request: seller_wallet=ADDR, price=1.0, insight_len=59
+________________ test_list_endpoint_simulation_failure_cleanup _________________
+
+client = <starlette.testclient.TestClient object at 0x129ae1c10>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x12993e8d0>
+
+    def test_list_endpoint_simulation_failure_cleanup(client, monkeypatch):
+        cleanup_mock = AsyncMock(
+            side_effect=backend_main.ListingStoreError(
+                "ASA creation simulation failed: agent not registered. IPFS content has been cleaned up."
+            )
+        )
+        monkeypatch.setattr(backend_main, "create_listing_prepared", cleanup_mock)
+    
+        payload = {
+            "insight_text": "Sample trading insight: Buy NIFTY above 24500 with SL 24380",
+            "price": "1.00",
+            "seller_wallet": os.getenv("DEPLOYER_ADDRESS", "M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM"),
+        }
+    
+        response = client.post("/list", json=payload)
+>       assert response.status_code == 500
+E       assert 400 == 500
+E        +  where 400 = <Response [400 Bad Request]>.status_code
+
+backend/tests/test_micropayment_cycle.py:339: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-05-20 20:53:10,108 | INFO | mercator.backend | Incoming /list request: seller_wallet=ADDR, price=1.0, insight_len=59
+------------------------------ Captured log call -------------------------------
+INFO     mercator.backend:config.py:25 Incoming /list request: seller_wallet=ADDR, price=1.0, insight_len=59
+__________ test_semantic_search_ranking_and_cache[query_alpha_heavy] ___________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x129ae2b40>
+mock_env = OrderedDict()
+mock_indexer = <MagicMock name='mock_indexer' id='4994248208'>
+mock_insight_listing_client = namespace(state=namespace(box=namespace(listings=namespace(get_map=<MagicMock id='4992488208'>))))
+mock_reputation_client = namespace(state=namespace(box=namespace(seller_scores=namespace(get_value=<MagicMock id='4992490560'>))))
+mock_ipfs_fetch = <AsyncMock id='4992495072'>
+scenario = {'name': 'query_alpha_heavy', 'query': 'q_alpha_heavy', 'query_vector': array([1., 0.]), 'reputations': {'seller_a': 90, 'seller_b': 60, 'seller_c': 40, 'seller_d': 10}}
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("scenario", SEMANTIC_SCENARIOS, ids=[scenario["name"] for scenario in SEMANTIC_SCENARIOS])
+    async def test_semantic_search_ranking_and_cache(
+        monkeypatch,
+        mock_env,
+        mock_indexer,
+        mock_insight_listing_client,
+        mock_reputation_client,
+        mock_ipfs_fetch,
+        scenario,
+    ):
+        semantic_module._query_cache.clear()
+    
+        listings = _build_listing_map()
+        mock_insight_listing_client.state.box.listings.get_map.return_value = listings
+        monkeypatch.setattr(semantic_module, "get_insight_listing_client", lambda: mock_insight_listing_client)
+        monkeypatch.setattr(semantic_module, "get_reputation_client", lambda: mock_reputation_client)
+        monkeypatch.setattr(semantic_module, "get_indexer_client", lambda: mock_indexer)
+    
+        cid_to_text = {row["cid"]: row["text"] for row in BASE_LISTINGS}
+        mock_ipfs_fetch.side_effect = lambda cid: cid_to_text[cid]
+        monkeypatch.setattr(semantic_module, "fetch_insight_from_ipfs", mock_ipfs_fetch)
+    
+        vector_map = {scenario["query"]: scenario["query_vector"]}
+        vector_map.update({row["text"]: row["vector"] for row in BASE_LISTINGS})
+    
+        embed_mock = MagicMock(side_effect=lambda text: np.array(vector_map[text], dtype=float))
+        monkeypatch.setattr(semantic_module, "_embed_text", embed_mock)
+    
+        reputation_map = scenario["reputations"]
+        mock_reputation_client.state.box.seller_scores.get_value.side_effect = lambda seller: reputation_map[seller]
+    
+        first_result = await semantic_module.semantic_search.ainvoke({"query": scenario["query"]})
+>       first_payload = json.loads(first_result)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_micropayment_cycle.py:510: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py:338: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x1036f60f0>
+s = 'No retrievable insights found', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py:356: JSONDecodeError
+___________ test_semantic_search_ranking_and_cache[query_beta_bias] ____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1299111c0>
+mock_env = OrderedDict()
+mock_indexer = <MagicMock name='mock_indexer' id='4992340368'>
+mock_insight_listing_client = namespace(state=namespace(box=namespace(listings=namespace(get_map=<MagicMock id='4993713984'>))))
+mock_reputation_client = namespace(state=namespace(box=namespace(seller_scores=namespace(get_value=<MagicMock id='4993719456'>))))
+mock_ipfs_fetch = <AsyncMock id='4993726464'>
+scenario = {'name': 'query_beta_bias', 'query': 'q_beta_bias', 'query_vector': array([0.9, 0.1]), 'reputations': {'seller_a': 20, 'seller_b': 85, 'seller_c': 50, 'seller_d': 10}}
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("scenario", SEMANTIC_SCENARIOS, ids=[scenario["name"] for scenario in SEMANTIC_SCENARIOS])
+    async def test_semantic_search_ranking_and_cache(
+        monkeypatch,
+        mock_env,
+        mock_indexer,
+        mock_insight_listing_client,
+        mock_reputation_client,
+        mock_ipfs_fetch,
+        scenario,
+    ):
+        semantic_module._query_cache.clear()
+    
+        listings = _build_listing_map()
+        mock_insight_listing_client.state.box.listings.get_map.return_value = listings
+        monkeypatch.setattr(semantic_module, "get_insight_listing_client", lambda: mock_insight_listing_client)
+        monkeypatch.setattr(semantic_module, "get_reputation_client", lambda: mock_reputation_client)
+        monkeypatch.setattr(semantic_module, "get_indexer_client", lambda: mock_indexer)
+    
+        cid_to_text = {row["cid"]: row["text"] for row in BASE_LISTINGS}
+        mock_ipfs_fetch.side_effect = lambda cid: cid_to_text[cid]
+        monkeypatch.setattr(semantic_module, "fetch_insight_from_ipfs", mock_ipfs_fetch)
+    
+        vector_map = {scenario["query"]: scenario["query_vector"]}
+        vector_map.update({row["text"]: row["vector"] for row in BASE_LISTINGS})
+    
+        embed_mock = MagicMock(side_effect=lambda text: np.array(vector_map[text], dtype=float))
+        monkeypatch.setattr(semantic_module, "_embed_text", embed_mock)
+    
+        reputation_map = scenario["reputations"]
+        mock_reputation_client.state.box.seller_scores.get_value.side_effect = lambda seller: reputation_map[seller]
+    
+        first_result = await semantic_module.semantic_search.ainvoke({"query": scenario["query"]})
+>       first_payload = json.loads(first_result)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_micropayment_cycle.py:510: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py:338: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x1036f60f0>
+s = 'No retrievable insights found', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py:356: JSONDecodeError
+___________ test_semantic_search_ranking_and_cache[query_gamma_bias] ___________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x129910e30>
+mock_env = OrderedDict()
+mock_indexer = <MagicMock name='mock_indexer' id='4992346320'>
+mock_insight_listing_client = namespace(state=namespace(box=namespace(listings=namespace(get_map=<MagicMock id='4992494208'>))))
+mock_reputation_client = namespace(state=namespace(box=namespace(seller_scores=namespace(get_value=<MagicMock id='4992295680'>))))
+mock_ipfs_fetch = <AsyncMock id='4992302832'>
+scenario = {'name': 'query_gamma_bias', 'query': 'q_gamma_bias', 'query_vector': array([0.1, 0.9]), 'reputations': {'seller_a': 20, 'seller_b': 50, 'seller_c': 88, 'seller_d': 30}}
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("scenario", SEMANTIC_SCENARIOS, ids=[scenario["name"] for scenario in SEMANTIC_SCENARIOS])
+    async def test_semantic_search_ranking_and_cache(
+        monkeypatch,
+        mock_env,
+        mock_indexer,
+        mock_insight_listing_client,
+        mock_reputation_client,
+        mock_ipfs_fetch,
+        scenario,
+    ):
+        semantic_module._query_cache.clear()
+    
+        listings = _build_listing_map()
+        mock_insight_listing_client.state.box.listings.get_map.return_value = listings
+        monkeypatch.setattr(semantic_module, "get_insight_listing_client", lambda: mock_insight_listing_client)
+        monkeypatch.setattr(semantic_module, "get_reputation_client", lambda: mock_reputation_client)
+        monkeypatch.setattr(semantic_module, "get_indexer_client", lambda: mock_indexer)
+    
+        cid_to_text = {row["cid"]: row["text"] for row in BASE_LISTINGS}
+        mock_ipfs_fetch.side_effect = lambda cid: cid_to_text[cid]
+        monkeypatch.setattr(semantic_module, "fetch_insight_from_ipfs", mock_ipfs_fetch)
+    
+        vector_map = {scenario["query"]: scenario["query_vector"]}
+        vector_map.update({row["text"]: row["vector"] for row in BASE_LISTINGS})
+    
+        embed_mock = MagicMock(side_effect=lambda text: np.array(vector_map[text], dtype=float))
+        monkeypatch.setattr(semantic_module, "_embed_text", embed_mock)
+    
+        reputation_map = scenario["reputations"]
+        mock_reputation_client.state.box.seller_scores.get_value.side_effect = lambda seller: reputation_map[seller]
+    
+        first_result = await semantic_module.semantic_search.ainvoke({"query": scenario["query"]})
+>       first_payload = json.loads(first_result)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_micropayment_cycle.py:510: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py:338: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x1036f60f0>
+s = 'No retrievable insights found', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py:356: JSONDecodeError
+___________ test_semantic_search_ranking_and_cache[query_delta_bias] ___________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x129ae3590>
+mock_env = OrderedDict()
+mock_indexer = <MagicMock name='mock_indexer' id='4994250080'>
+mock_insight_listing_client = namespace(state=namespace(box=namespace(listings=namespace(get_map=<MagicMock id='4994356800'>))))
+mock_reputation_client = namespace(state=namespace(box=namespace(seller_scores=namespace(get_value=<MagicMock id='4994353968'>))))
+mock_ipfs_fetch = <AsyncMock id='4992528224'>
+scenario = {'name': 'query_delta_bias', 'query': 'q_delta_bias', 'query_vector': array([0., 1.]), 'reputations': {'seller_a': 10, 'seller_b': 30, 'seller_c': 60, 'seller_d': 95}}
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("scenario", SEMANTIC_SCENARIOS, ids=[scenario["name"] for scenario in SEMANTIC_SCENARIOS])
+    async def test_semantic_search_ranking_and_cache(
+        monkeypatch,
+        mock_env,
+        mock_indexer,
+        mock_insight_listing_client,
+        mock_reputation_client,
+        mock_ipfs_fetch,
+        scenario,
+    ):
+        semantic_module._query_cache.clear()
+    
+        listings = _build_listing_map()
+        mock_insight_listing_client.state.box.listings.get_map.return_value = listings
+        monkeypatch.setattr(semantic_module, "get_insight_listing_client", lambda: mock_insight_listing_client)
+        monkeypatch.setattr(semantic_module, "get_reputation_client", lambda: mock_reputation_client)
+        monkeypatch.setattr(semantic_module, "get_indexer_client", lambda: mock_indexer)
+    
+        cid_to_text = {row["cid"]: row["text"] for row in BASE_LISTINGS}
+        mock_ipfs_fetch.side_effect = lambda cid: cid_to_text[cid]
+        monkeypatch.setattr(semantic_module, "fetch_insight_from_ipfs", mock_ipfs_fetch)
+    
+        vector_map = {scenario["query"]: scenario["query_vector"]}
+        vector_map.update({row["text"]: row["vector"] for row in BASE_LISTINGS})
+    
+        embed_mock = MagicMock(side_effect=lambda text: np.array(vector_map[text], dtype=float))
+        monkeypatch.setattr(semantic_module, "_embed_text", embed_mock)
+    
+        reputation_map = scenario["reputations"]
+        mock_reputation_client.state.box.seller_scores.get_value.side_effect = lambda seller: reputation_map[seller]
+    
+        first_result = await semantic_module.semantic_search.ainvoke({"query": scenario["query"]})
+>       first_payload = json.loads(first_result)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_micropayment_cycle.py:510: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py:338: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x1036f60f0>
+s = 'No retrievable insights found', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py:356: JSONDecodeError
+__________ test_semantic_search_ranking_and_cache[query_midpoint_one] __________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x12993f6e0>
+mock_env = OrderedDict()
+mock_indexer = <MagicMock name='mock_indexer' id='4992521552'>
+mock_insight_listing_client = namespace(state=namespace(box=namespace(listings=namespace(get_map=<MagicMock id='4991203232'>))))
+mock_reputation_client = namespace(state=namespace(box=namespace(seller_scores=namespace(get_value=<MagicMock id='4993011248'>))))
+mock_ipfs_fetch = <AsyncMock id='4993019600'>
+scenario = {'name': 'query_midpoint_one', 'query': 'q_midpoint_one', 'query_vector': array([0.6, 0.4]), 'reputations': {'seller_a': 50, 'seller_b': 70, 'seller_c': 45, 'seller_d': 20}}
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("scenario", SEMANTIC_SCENARIOS, ids=[scenario["name"] for scenario in SEMANTIC_SCENARIOS])
+    async def test_semantic_search_ranking_and_cache(
+        monkeypatch,
+        mock_env,
+        mock_indexer,
+        mock_insight_listing_client,
+        mock_reputation_client,
+        mock_ipfs_fetch,
+        scenario,
+    ):
+        semantic_module._query_cache.clear()
+    
+        listings = _build_listing_map()
+        mock_insight_listing_client.state.box.listings.get_map.return_value = listings
+        monkeypatch.setattr(semantic_module, "get_insight_listing_client", lambda: mock_insight_listing_client)
+        monkeypatch.setattr(semantic_module, "get_reputation_client", lambda: mock_reputation_client)
+        monkeypatch.setattr(semantic_module, "get_indexer_client", lambda: mock_indexer)
+    
+        cid_to_text = {row["cid"]: row["text"] for row in BASE_LISTINGS}
+        mock_ipfs_fetch.side_effect = lambda cid: cid_to_text[cid]
+        monkeypatch.setattr(semantic_module, "fetch_insight_from_ipfs", mock_ipfs_fetch)
+    
+        vector_map = {scenario["query"]: scenario["query_vector"]}
+        vector_map.update({row["text"]: row["vector"] for row in BASE_LISTINGS})
+    
+        embed_mock = MagicMock(side_effect=lambda text: np.array(vector_map[text], dtype=float))
+        monkeypatch.setattr(semantic_module, "_embed_text", embed_mock)
+    
+        reputation_map = scenario["reputations"]
+        mock_reputation_client.state.box.seller_scores.get_value.side_effect = lambda seller: reputation_map[seller]
+    
+        first_result = await semantic_module.semantic_search.ainvoke({"query": scenario["query"]})
+>       first_payload = json.loads(first_result)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_micropayment_cycle.py:510: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py:338: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x1036f60f0>
+s = 'No retrievable insights found', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py:356: JSONDecodeError
+__________ test_semantic_search_ranking_and_cache[query_midpoint_two] __________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x12993d0d0>
+mock_env = OrderedDict()
+mock_indexer = <MagicMock name='mock_indexer' id='4992520496'>
+mock_insight_listing_client = namespace(state=namespace(box=namespace(listings=namespace(get_map=<MagicMock id='4994354208'>))))
+mock_reputation_client = namespace(state=namespace(box=namespace(seller_scores=namespace(get_value=<MagicMock id='4994364144'>))))
+mock_ipfs_fetch = <AsyncMock id='4994241440'>
+scenario = {'name': 'query_midpoint_two', 'query': 'q_midpoint_two', 'query_vector': array([0.4, 0.6]), 'reputations': {'seller_a': 30, 'seller_b': 40, 'seller_c': 75, 'seller_d': 80}}
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("scenario", SEMANTIC_SCENARIOS, ids=[scenario["name"] for scenario in SEMANTIC_SCENARIOS])
+    async def test_semantic_search_ranking_and_cache(
+        monkeypatch,
+        mock_env,
+        mock_indexer,
+        mock_insight_listing_client,
+        mock_reputation_client,
+        mock_ipfs_fetch,
+        scenario,
+    ):
+        semantic_module._query_cache.clear()
+    
+        listings = _build_listing_map()
+        mock_insight_listing_client.state.box.listings.get_map.return_value = listings
+        monkeypatch.setattr(semantic_module, "get_insight_listing_client", lambda: mock_insight_listing_client)
+        monkeypatch.setattr(semantic_module, "get_reputation_client", lambda: mock_reputation_client)
+        monkeypatch.setattr(semantic_module, "get_indexer_client", lambda: mock_indexer)
+    
+        cid_to_text = {row["cid"]: row["text"] for row in BASE_LISTINGS}
+        mock_ipfs_fetch.side_effect = lambda cid: cid_to_text[cid]
+        monkeypatch.setattr(semantic_module, "fetch_insight_from_ipfs", mock_ipfs_fetch)
+    
+        vector_map = {scenario["query"]: scenario["query_vector"]}
+        vector_map.update({row["text"]: row["vector"] for row in BASE_LISTINGS})
+    
+        embed_mock = MagicMock(side_effect=lambda text: np.array(vector_map[text], dtype=float))
+        monkeypatch.setattr(semantic_module, "_embed_text", embed_mock)
+    
+        reputation_map = scenario["reputations"]
+        mock_reputation_client.state.box.seller_scores.get_value.side_effect = lambda seller: reputation_map[seller]
+    
+        first_result = await semantic_module.semantic_search.ainvoke({"query": scenario["query"]})
+>       first_payload = json.loads(first_result)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_micropayment_cycle.py:510: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py:338: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x1036f60f0>
+s = 'No retrievable insights found', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py:356: JSONDecodeError
+___________ test_semantic_search_ranking_and_cache[query_spread_one] ___________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1299356d0>
+mock_env = OrderedDict()
+mock_indexer = <MagicMock name='mock_indexer' id='4992495648'>
+mock_insight_listing_client = namespace(state=namespace(box=namespace(listings=namespace(get_map=<MagicMock id='4992301104'>))))
+mock_reputation_client = namespace(state=namespace(box=namespace(seller_scores=namespace(get_value=<MagicMock id='4992298176'>))))
+mock_ipfs_fetch = <AsyncMock id='4992299808'>
+scenario = {'name': 'query_spread_one', 'query': 'q_spread_one', 'query_vector': array([0.75, 0.25]), 'reputations': {'seller_a': 80, 'seller_b': 65, 'seller_c': 35, 'seller_d': 15}}
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("scenario", SEMANTIC_SCENARIOS, ids=[scenario["name"] for scenario in SEMANTIC_SCENARIOS])
+    async def test_semantic_search_ranking_and_cache(
+        monkeypatch,
+        mock_env,
+        mock_indexer,
+        mock_insight_listing_client,
+        mock_reputation_client,
+        mock_ipfs_fetch,
+        scenario,
+    ):
+        semantic_module._query_cache.clear()
+    
+        listings = _build_listing_map()
+        mock_insight_listing_client.state.box.listings.get_map.return_value = listings
+        monkeypatch.setattr(semantic_module, "get_insight_listing_client", lambda: mock_insight_listing_client)
+        monkeypatch.setattr(semantic_module, "get_reputation_client", lambda: mock_reputation_client)
+        monkeypatch.setattr(semantic_module, "get_indexer_client", lambda: mock_indexer)
+    
+        cid_to_text = {row["cid"]: row["text"] for row in BASE_LISTINGS}
+        mock_ipfs_fetch.side_effect = lambda cid: cid_to_text[cid]
+        monkeypatch.setattr(semantic_module, "fetch_insight_from_ipfs", mock_ipfs_fetch)
+    
+        vector_map = {scenario["query"]: scenario["query_vector"]}
+        vector_map.update({row["text"]: row["vector"] for row in BASE_LISTINGS})
+    
+        embed_mock = MagicMock(side_effect=lambda text: np.array(vector_map[text], dtype=float))
+        monkeypatch.setattr(semantic_module, "_embed_text", embed_mock)
+    
+        reputation_map = scenario["reputations"]
+        mock_reputation_client.state.box.seller_scores.get_value.side_effect = lambda seller: reputation_map[seller]
+    
+        first_result = await semantic_module.semantic_search.ainvoke({"query": scenario["query"]})
+>       first_payload = json.loads(first_result)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_micropayment_cycle.py:510: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py:338: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x1036f60f0>
+s = 'No retrievable insights found', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py:356: JSONDecodeError
+___________ test_semantic_search_ranking_and_cache[query_spread_two] ___________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x129a4a7e0>
+mock_env = OrderedDict()
+mock_indexer = <MagicMock name='mock_indexer' id='4993624464'>
+mock_insight_listing_client = namespace(state=namespace(box=namespace(listings=namespace(get_map=<MagicMock id='4986590640'>))))
+mock_reputation_client = namespace(state=namespace(box=namespace(seller_scores=namespace(get_value=<MagicMock id='4992304240'>))))
+mock_ipfs_fetch = <AsyncMock id='4992308800'>
+scenario = {'name': 'query_spread_two', 'query': 'q_spread_two', 'query_vector': array([0.25, 0.75]), 'reputations': {'seller_a': 15, 'seller_b': 35, 'seller_c': 65, 'seller_d': 80}}
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("scenario", SEMANTIC_SCENARIOS, ids=[scenario["name"] for scenario in SEMANTIC_SCENARIOS])
+    async def test_semantic_search_ranking_and_cache(
+        monkeypatch,
+        mock_env,
+        mock_indexer,
+        mock_insight_listing_client,
+        mock_reputation_client,
+        mock_ipfs_fetch,
+        scenario,
+    ):
+        semantic_module._query_cache.clear()
+    
+        listings = _build_listing_map()
+        mock_insight_listing_client.state.box.listings.get_map.return_value = listings
+        monkeypatch.setattr(semantic_module, "get_insight_listing_client", lambda: mock_insight_listing_client)
+        monkeypatch.setattr(semantic_module, "get_reputation_client", lambda: mock_reputation_client)
+        monkeypatch.setattr(semantic_module, "get_indexer_client", lambda: mock_indexer)
+    
+        cid_to_text = {row["cid"]: row["text"] for row in BASE_LISTINGS}
+        mock_ipfs_fetch.side_effect = lambda cid: cid_to_text[cid]
+        monkeypatch.setattr(semantic_module, "fetch_insight_from_ipfs", mock_ipfs_fetch)
+    
+        vector_map = {scenario["query"]: scenario["query_vector"]}
+        vector_map.update({row["text"]: row["vector"] for row in BASE_LISTINGS})
+    
+        embed_mock = MagicMock(side_effect=lambda text: np.array(vector_map[text], dtype=float))
+        monkeypatch.setattr(semantic_module, "_embed_text", embed_mock)
+    
+        reputation_map = scenario["reputations"]
+        mock_reputation_client.state.box.seller_scores.get_value.side_effect = lambda seller: reputation_map[seller]
+    
+        first_result = await semantic_module.semantic_search.ainvoke({"query": scenario["query"]})
+>       first_payload = json.loads(first_result)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_micropayment_cycle.py:510: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py:338: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x1036f60f0>
+s = 'No retrievable insights found', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py:356: JSONDecodeError
+__________ test_semantic_search_ranking_and_cache[query_diagonal_one] __________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x129aeec00>
+mock_env = OrderedDict()
+mock_indexer = <MagicMock name='mock_indexer' id='4994300960'>
+mock_insight_listing_client = namespace(state=namespace(box=namespace(listings=namespace(get_map=<MagicMock id='4992301776'>))))
+mock_reputation_client = namespace(state=namespace(box=namespace(seller_scores=namespace(get_value=<MagicMock id='4992293472'>))))
+mock_ipfs_fetch = <AsyncMock id='4992494064'>
+scenario = {'name': 'query_diagonal_one', 'query': 'q_diagonal_one', 'query_vector': array([0.7, 0.7]), 'reputations': {'seller_a': 45, 'seller_b': 90, 'seller_c': 90, 'seller_d': 55}}
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("scenario", SEMANTIC_SCENARIOS, ids=[scenario["name"] for scenario in SEMANTIC_SCENARIOS])
+    async def test_semantic_search_ranking_and_cache(
+        monkeypatch,
+        mock_env,
+        mock_indexer,
+        mock_insight_listing_client,
+        mock_reputation_client,
+        mock_ipfs_fetch,
+        scenario,
+    ):
+        semantic_module._query_cache.clear()
+    
+        listings = _build_listing_map()
+        mock_insight_listing_client.state.box.listings.get_map.return_value = listings
+        monkeypatch.setattr(semantic_module, "get_insight_listing_client", lambda: mock_insight_listing_client)
+        monkeypatch.setattr(semantic_module, "get_reputation_client", lambda: mock_reputation_client)
+        monkeypatch.setattr(semantic_module, "get_indexer_client", lambda: mock_indexer)
+    
+        cid_to_text = {row["cid"]: row["text"] for row in BASE_LISTINGS}
+        mock_ipfs_fetch.side_effect = lambda cid: cid_to_text[cid]
+        monkeypatch.setattr(semantic_module, "fetch_insight_from_ipfs", mock_ipfs_fetch)
+    
+        vector_map = {scenario["query"]: scenario["query_vector"]}
+        vector_map.update({row["text"]: row["vector"] for row in BASE_LISTINGS})
+    
+        embed_mock = MagicMock(side_effect=lambda text: np.array(vector_map[text], dtype=float))
+        monkeypatch.setattr(semantic_module, "_embed_text", embed_mock)
+    
+        reputation_map = scenario["reputations"]
+        mock_reputation_client.state.box.seller_scores.get_value.side_effect = lambda seller: reputation_map[seller]
+    
+        first_result = await semantic_module.semantic_search.ainvoke({"query": scenario["query"]})
+>       first_payload = json.loads(first_result)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_micropayment_cycle.py:510: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py:338: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x1036f60f0>
+s = 'No retrievable insights found', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py:356: JSONDecodeError
+__________ test_semantic_search_ranking_and_cache[query_diagonal_two] __________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x129937770>
+mock_env = OrderedDict()
+mock_indexer = <MagicMock name='mock_indexer' id='4992491472'>
+mock_insight_listing_client = namespace(state=namespace(box=namespace(listings=namespace(get_map=<MagicMock id='4994354496'>))))
+mock_reputation_client = namespace(state=namespace(box=namespace(seller_scores=namespace(get_value=<MagicMock id='4994357856'>))))
+mock_ipfs_fetch = <AsyncMock id='4994361696'>
+scenario = {'name': 'query_diagonal_two', 'query': 'q_diagonal_two', 'query_vector': array([0.5, 0.5]), 'reputations': {'seller_a': 55, 'seller_b': 50, 'seller_c': 85, 'seller_d': 75}}
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("scenario", SEMANTIC_SCENARIOS, ids=[scenario["name"] for scenario in SEMANTIC_SCENARIOS])
+    async def test_semantic_search_ranking_and_cache(
+        monkeypatch,
+        mock_env,
+        mock_indexer,
+        mock_insight_listing_client,
+        mock_reputation_client,
+        mock_ipfs_fetch,
+        scenario,
+    ):
+        semantic_module._query_cache.clear()
+    
+        listings = _build_listing_map()
+        mock_insight_listing_client.state.box.listings.get_map.return_value = listings
+        monkeypatch.setattr(semantic_module, "get_insight_listing_client", lambda: mock_insight_listing_client)
+        monkeypatch.setattr(semantic_module, "get_reputation_client", lambda: mock_reputation_client)
+        monkeypatch.setattr(semantic_module, "get_indexer_client", lambda: mock_indexer)
+    
+        cid_to_text = {row["cid"]: row["text"] for row in BASE_LISTINGS}
+        mock_ipfs_fetch.side_effect = lambda cid: cid_to_text[cid]
+        monkeypatch.setattr(semantic_module, "fetch_insight_from_ipfs", mock_ipfs_fetch)
+    
+        vector_map = {scenario["query"]: scenario["query_vector"]}
+        vector_map.update({row["text"]: row["vector"] for row in BASE_LISTINGS})
+    
+        embed_mock = MagicMock(side_effect=lambda text: np.array(vector_map[text], dtype=float))
+        monkeypatch.setattr(semantic_module, "_embed_text", embed_mock)
+    
+        reputation_map = scenario["reputations"]
+        mock_reputation_client.state.box.seller_scores.get_value.side_effect = lambda seller: reputation_map[seller]
+    
+        first_result = await semantic_module.semantic_search.ainvoke({"query": scenario["query"]})
+>       first_payload = json.loads(first_result)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_micropayment_cycle.py:510: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py:338: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x1036f60f0>
+s = 'No retrievable insights found', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/json/decoder.py:356: JSONDecodeError
+_______________ test_trigger_x402_payment_success_after_approve ________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x129a20860>
+
+    @pytest.mark.asyncio
+    async def test_trigger_x402_payment_success_after_approve(monkeypatch):
+        buyer = os.getenv("DEPLOYER_ADDRESS", "M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM")
+        seller = buyer
+        listing_price_micro = 2_250_000
+    
+        listing = SimpleNamespace(seller=seller, price=listing_price_micro, ipfs_hash="QmCID")
+        listing_client = SimpleNamespace(
+            state=SimpleNamespace(
+                box=SimpleNamespace(
+                    listings=SimpleNamespace(get_value=MagicMock(return_value=listing))
+                )
+            )
+        )
+    
+        created_clients: list[SimpleNamespace] = []
+    
+        class FakeX402Client:
+            def __init__(self, _algorand):
+                self.simulate_payment = AsyncMock(return_value={"is_safe": True})
+                self.send_micropayment = AsyncMock(return_value="TX402")
+                self.ensure_asset_opt_in = MagicMock(return_value=None)
+                created_clients.append(self)
+    
+        monkeypatch.setattr(x402_module, "USDC_ASA_ID", 10458941)
+        monkeypatch.setattr(x402_module, "get_insight_listing_client", lambda: listing_client)
+        monkeypatch.setattr(x402_module, "get_algorand_client", lambda: MagicMock())
+        monkeypatch.setattr(x402_module, "X402Client", FakeX402Client)
+        monkeypatch.setattr(
+            x402_module,
+            "complete_purchase_flow",
+            AsyncMock(return_value="Insight delivered in full text"),
+        )
+    
+        response = await x402_module.trigger_x402_payment.ainvoke(
+            {
+                "listing_id": 7,
+                "buyer_address": buyer,
+                "amount_usdc": 999.0,
+                "user_approval_input": "approve",
+            }
+        )
+        payload = json.loads(response)
+>       client = created_clients[0]
+                 ^^^^^^^^^^^^^^^^^^
+E       IndexError: list index out of range
+
+backend/tests/test_micropayment_cycle.py:752: IndexError
+----------------------------- Captured stderr call -----------------------------
+2026-05-20 20:53:10,482 | WARNING | backend.tools.x402_payment | Subscription status check failed for ADDR: <urlopen error [Errno 61] Connection refused>
+2026-05-20 20:53:10,483 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-20 20:53:10,483 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-20 20:53:10,483 | INFO | demo.flow | Payment approved
+2026-05-20 20:53:10,483 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 7
+2026-05-20 20:53:10,483 | INFO | backend.tools.x402_payment | Buyer: ADDR, Amount: 999.0 USDC
+2026-05-20 20:53:10,483 | ERROR | backend.tools.x402_payment | Invalid buyer address: ADDR
+------------------------------ Captured log call -------------------------------
+WARNING  backend.tools.x402_payment:config.py:25 Subscription status check failed for ADDR: <urlopen error [Errno 61] Connection refused>
+INFO     backend.tools.x402_payment:config.py:25 Checking user approval...
+INFO     backend.tools.x402_payment:config.py:25 ✓ User approval confirmed: 'approve'
+INFO     demo.flow:config.py:25 Payment approved
+INFO     backend.tools.x402_payment:config.py:25 Initiating x402 payment for listing 7
+INFO     backend.tools.x402_payment:config.py:25 Buyer: ADDR, Amount: 999.0 USDC
+ERROR    backend.tools.x402_payment:config.py:25 Invalid buyer address: ADDR
+_________________ test_trigger_x402_payment_simulation_failure _________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x129a20980>
+
+    @pytest.mark.asyncio
+    async def test_trigger_x402_payment_simulation_failure(monkeypatch):
+        buyer = os.getenv("DEPLOYER_ADDRESS", "M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM")
+        listing = SimpleNamespace(seller=buyer, price=1_000_000, ipfs_hash="QmCID")
+        listing_client = SimpleNamespace(
+            state=SimpleNamespace(box=SimpleNamespace(listings=SimpleNamespace(get_value=MagicMock(return_value=listing))))
+        )
+    
+        class UnsafeSimulationClient:
+            def __init__(self, _algorand):
+                self.simulate_payment = AsyncMock(return_value={"is_safe": False, "reason": "unsafe"})
+                self.send_micropayment = AsyncMock(return_value="NEVER")
+                self.ensure_asset_opt_in = MagicMock(return_value=None)
+    
+        monkeypatch.setattr(x402_module, "USDC_ASA_ID", 10458941)
+        monkeypatch.setattr(x402_module, "get_insight_listing_client", lambda: listing_client)
+        monkeypatch.setattr(x402_module, "get_algorand_client", lambda: MagicMock())
+        monkeypatch.setattr(x402_module, "X402Client", UnsafeSimulationClient)
+    
+        response = await x402_module.trigger_x402_payment.ainvoke(
+            {
+                "listing_id": 3,
+                "buyer_address": buyer,
+                "amount_usdc": 1.0,
+                "user_approval_input": "approve",
+            }
+        )
+        payload = json.loads(response)
+    
+        assert payload["success"] is False
+>       assert payload["error"] == "SIMULATION_FAILED"
+E       AssertionError: assert 'INVALID_ADDRESS' == 'SIMULATION_FAILED'
+E         
+E         - SIMULATION_FAILED
+E         + INVALID_ADDRESS
+
+backend/tests/test_micropayment_cycle.py:823: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-05-20 20:53:10,504 | WARNING | backend.tools.x402_payment | Subscription status check failed for ADDR: <urlopen error [Errno 61] Connection refused>
+2026-05-20 20:53:10,504 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-20 20:53:10,504 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-20 20:53:10,504 | INFO | demo.flow | Payment approved
+2026-05-20 20:53:10,504 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 3
+2026-05-20 20:53:10,504 | INFO | backend.tools.x402_payment | Buyer: ADDR, Amount: 1.0 USDC
+2026-05-20 20:53:10,504 | ERROR | backend.tools.x402_payment | Invalid buyer address: ADDR
+------------------------------ Captured log call -------------------------------
+WARNING  backend.tools.x402_payment:config.py:25 Subscription status check failed for ADDR: <urlopen error [Errno 61] Connection refused>
+INFO     backend.tools.x402_payment:config.py:25 Checking user approval...
+INFO     backend.tools.x402_payment:config.py:25 ✓ User approval confirmed: 'approve'
+INFO     demo.flow:config.py:25 Payment approved
+INFO     backend.tools.x402_payment:config.py:25 Initiating x402 payment for listing 3
+INFO     backend.tools.x402_payment:config.py:25 Buyer: ADDR, Amount: 1.0 USDC
+ERROR    backend.tools.x402_payment:config.py:25 Invalid buyer address: ADDR
+_____________ test_trigger_x402_payment_insufficient_balance_edge ______________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x129a14800>
+
+    @pytest.mark.asyncio
+    async def test_trigger_x402_payment_insufficient_balance_edge(monkeypatch):
+        buyer = os.getenv("DEPLOYER_ADDRESS", "M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM")
+        listing = SimpleNamespace(seller=buyer, price=1_000_000, ipfs_hash="QmCID")
+        listing_client = SimpleNamespace(
+            state=SimpleNamespace(box=SimpleNamespace(listings=SimpleNamespace(get_value=MagicMock(return_value=listing))))
+        )
+    
+        class InsufficientBalanceClient:
+            def __init__(self, _algorand):
+                self.simulate_payment = AsyncMock(side_effect=ValueError("insufficient balance"))
+                self.send_micropayment = AsyncMock(return_value="NEVER")
+                self.ensure_asset_opt_in = MagicMock(return_value=None)
+    
+        monkeypatch.setattr(x402_module, "USDC_ASA_ID", 10458941)
+        monkeypatch.setattr(x402_module, "get_insight_listing_client", lambda: listing_client)
+        monkeypatch.setattr(x402_module, "get_algorand_client", lambda: MagicMock())
+        monkeypatch.setattr(x402_module, "X402Client", InsufficientBalanceClient)
+    
+        response = await x402_module.trigger_x402_payment.ainvoke(
+            {
+                "listing_id": 3,
+                "buyer_address": buyer,
+                "amount_usdc": 1.0,
+                "user_approval_input": "approve",
+            }
+        )
+        payload = json.loads(response)
+    
+        assert payload["success"] is False
+>       assert payload["error"] == "SIMULATION_ERROR"
+E       AssertionError: assert 'INVALID_ADDRESS' == 'SIMULATION_ERROR'
+E         
+E         - SIMULATION_ERROR
+E         + INVALID_ADDRESS
+
+backend/tests/test_micropayment_cycle.py:856: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-05-20 20:53:10,523 | WARNING | backend.tools.x402_payment | Subscription status check failed for ADDR: <urlopen error [Errno 61] Connection refused>
+2026-05-20 20:53:10,523 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-20 20:53:10,523 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-20 20:53:10,523 | INFO | demo.flow | Payment approved
+2026-05-20 20:53:10,523 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 3
+2026-05-20 20:53:10,523 | INFO | backend.tools.x402_payment | Buyer: ADDR, Amount: 1.0 USDC
+2026-05-20 20:53:10,523 | ERROR | backend.tools.x402_payment | Invalid buyer address: ADDR
+------------------------------ Captured log call -------------------------------
+WARNING  backend.tools.x402_payment:config.py:25 Subscription status check failed for ADDR: <urlopen error [Errno 61] Connection refused>
+INFO     backend.tools.x402_payment:config.py:25 Checking user approval...
+INFO     backend.tools.x402_payment:config.py:25 ✓ User approval confirmed: 'approve'
+INFO     demo.flow:config.py:25 Payment approved
+INFO     backend.tools.x402_payment:config.py:25 Initiating x402 payment for listing 3
+INFO     backend.tools.x402_payment:config.py:25 Buyer: ADDR, Amount: 1.0 USDC
+ERROR    backend.tools.x402_payment:config.py:25 Invalid buyer address: ADDR
+_________________ test_trigger_x402_payment_listing_not_found __________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x12993c230>
+
+    @pytest.mark.asyncio
+    async def test_trigger_x402_payment_listing_not_found(monkeypatch):
+        buyer = os.getenv("DEPLOYER_ADDRESS", "M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM")
+        listing_client = SimpleNamespace(
+            state=SimpleNamespace(box=SimpleNamespace(listings=SimpleNamespace(get_value=MagicMock(return_value=None))))
+        )
+    
+        monkeypatch.setattr(x402_module, "USDC_ASA_ID", 10458941)
+        monkeypatch.setattr(x402_module, "get_insight_listing_client", lambda: listing_client)
+        monkeypatch.setattr(x402_module, "get_algorand_client", lambda: MagicMock())
+    
+        response = await x402_module.trigger_x402_payment.ainvoke(
+            {
+                "listing_id": 999,
+                "buyer_address": buyer,
+                "amount_usdc": 1.0,
+                "user_approval_input": "approve",
+            }
+        )
+        payload = json.loads(response)
+    
+        assert payload["success"] is False
+>       assert payload["error"] == "LISTING_NOT_FOUND"
+E       AssertionError: assert 'INVALID_ADDRESS' == 'LISTING_NOT_FOUND'
+E         
+E         - LISTING_NOT_FOUND
+E         + INVALID_ADDRESS
+
+backend/tests/test_micropayment_cycle.py:882: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-05-20 20:53:10,541 | WARNING | backend.tools.x402_payment | Subscription status check failed for ADDR: <urlopen error [Errno 61] Connection refused>
+2026-05-20 20:53:10,541 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-20 20:53:10,541 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-20 20:53:10,542 | INFO | demo.flow | Payment approved
+2026-05-20 20:53:10,542 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 999
+2026-05-20 20:53:10,542 | INFO | backend.tools.x402_payment | Buyer: ADDR, Amount: 1.0 USDC
+2026-05-20 20:53:10,542 | ERROR | backend.tools.x402_payment | Invalid buyer address: ADDR
+------------------------------ Captured log call -------------------------------
+WARNING  backend.tools.x402_payment:config.py:25 Subscription status check failed for ADDR: <urlopen error [Errno 61] Connection refused>
+INFO     backend.tools.x402_payment:config.py:25 Checking user approval...
+INFO     backend.tools.x402_payment:config.py:25 ✓ User approval confirmed: 'approve'
+INFO     demo.flow:config.py:25 Payment approved
+INFO     backend.tools.x402_payment:config.py:25 Initiating x402 payment for listing 999
+INFO     backend.tools.x402_payment:config.py:25 Buyer: ADDR, Amount: 1.0 USDC
+ERROR    backend.tools.x402_payment:config.py:25 Invalid buyer address: ADDR
+___________________ test_trigger_x402_payment_invalid_amount ___________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x129afcd70>
+
+    @pytest.mark.asyncio
+    async def test_trigger_x402_payment_invalid_amount(monkeypatch):
+        buyer = os.getenv("DEPLOYER_ADDRESS", "M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM")
+        listing = SimpleNamespace(seller=buyer, price=1_000_000, ipfs_hash="QmCID")
+        listing_client = SimpleNamespace(
+            state=SimpleNamespace(box=SimpleNamespace(listings=SimpleNamespace(get_value=MagicMock(return_value=listing))))
+        )
+    
+        monkeypatch.setattr(x402_module, "USDC_ASA_ID", 10458941)
+        monkeypatch.setattr(x402_module, "get_insight_listing_client", lambda: listing_client)
+        monkeypatch.setattr(x402_module, "get_algorand_client", lambda: MagicMock())
+    
+        response = await x402_module.trigger_x402_payment.ainvoke(
+            {
+                "listing_id": 2,
+                "buyer_address": buyer,
+                "amount_usdc": 0.0,
+                "user_approval_input": "approve",
+            }
+        )
+        payload = json.loads(response)
+    
+        assert payload["success"] is False
+>       assert payload["error"] == "INVALID_AMOUNT"
+E       AssertionError: assert 'INVALID_ADDRESS' == 'INVALID_AMOUNT'
+E         
+E         - INVALID_AMOUNT
+E         + INVALID_ADDRESS
+
+backend/tests/test_micropayment_cycle.py:924: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-05-20 20:53:10,566 | WARNING | backend.tools.x402_payment | Subscription status check failed for ADDR: <urlopen error [Errno 61] Connection refused>
+2026-05-20 20:53:10,566 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-20 20:53:10,566 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-20 20:53:10,566 | INFO | demo.flow | Payment approved
+2026-05-20 20:53:10,567 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 2
+2026-05-20 20:53:10,567 | INFO | backend.tools.x402_payment | Buyer: ADDR, Amount: 0.0 USDC
+2026-05-20 20:53:10,567 | ERROR | backend.tools.x402_payment | Invalid buyer address: ADDR
+------------------------------ Captured log call -------------------------------
+WARNING  backend.tools.x402_payment:config.py:25 Subscription status check failed for ADDR: <urlopen error [Errno 61] Connection refused>
+INFO     backend.tools.x402_payment:config.py:25 Checking user approval...
+INFO     backend.tools.x402_payment:config.py:25 ✓ User approval confirmed: 'approve'
+INFO     demo.flow:config.py:25 Payment approved
+INFO     backend.tools.x402_payment:config.py:25 Initiating x402 payment for listing 2
+INFO     backend.tools.x402_payment:config.py:25 Buyer: ADDR, Amount: 0.0 USDC
+ERROR    backend.tools.x402_payment:config.py:25 Invalid buyer address: ADDR
+_________________ test_trigger_x402_payment_execution_failure __________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1299130e0>
+
+    @pytest.mark.asyncio
+    async def test_trigger_x402_payment_execution_failure(monkeypatch):
+        buyer = os.getenv("DEPLOYER_ADDRESS", "M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM")
+        listing = SimpleNamespace(seller=buyer, price=1_000_000, ipfs_hash="QmCID")
+        listing_client = SimpleNamespace(
+            state=SimpleNamespace(box=SimpleNamespace(listings=SimpleNamespace(get_value=MagicMock(return_value=listing))))
+        )
+    
+        class BrokenExecutionClient:
+            def __init__(self, _algorand):
+                self.simulate_payment = AsyncMock(return_value={"is_safe": True})
+                self.send_micropayment = AsyncMock(side_effect=RuntimeError("network submission failed"))
+                self.ensure_asset_opt_in = MagicMock(return_value=None)
+    
+        monkeypatch.setattr(x402_module, "USDC_ASA_ID", 10458941)
+        monkeypatch.setattr(x402_module, "get_insight_listing_client", lambda: listing_client)
+        monkeypatch.setattr(x402_module, "get_algorand_client", lambda: MagicMock())
+        monkeypatch.setattr(x402_module, "X402Client", BrokenExecutionClient)
+    
+        response = await x402_module.trigger_x402_payment.ainvoke(
+            {
+                "listing_id": 2,
+                "buyer_address": buyer,
+                "amount_usdc": 1.0,
+                "user_approval_input": "approve",
+            }
+        )
+        payload = json.loads(response)
+    
+        assert payload["success"] is False
+>       assert payload["error"] == "PAYMENT_EXECUTION_FAILED"
+E       AssertionError: assert 'INVALID_ADDRESS' == 'PAYMENT_EXECUTION_FAILED'
+E         
+E         - PAYMENT_EXECUTION_FAILED
+E         + INVALID_ADDRESS
+
+backend/tests/test_micropayment_cycle.py:957: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-05-20 20:53:10,588 | WARNING | backend.tools.x402_payment | Subscription status check failed for ADDR: <urlopen error [Errno 61] Connection refused>
+2026-05-20 20:53:10,588 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-20 20:53:10,588 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-20 20:53:10,588 | INFO | demo.flow | Payment approved
+2026-05-20 20:53:10,588 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 2
+2026-05-20 20:53:10,588 | INFO | backend.tools.x402_payment | Buyer: ADDR, Amount: 1.0 USDC
+2026-05-20 20:53:10,588 | ERROR | backend.tools.x402_payment | Invalid buyer address: ADDR
+------------------------------ Captured log call -------------------------------
+WARNING  backend.tools.x402_payment:config.py:25 Subscription status check failed for ADDR: <urlopen error [Errno 61] Connection refused>
+INFO     backend.tools.x402_payment:config.py:25 Checking user approval...
+INFO     backend.tools.x402_payment:config.py:25 ✓ User approval confirmed: 'approve'
+INFO     demo.flow:config.py:25 Payment approved
+INFO     backend.tools.x402_payment:config.py:25 Initiating x402 payment for listing 2
+INFO     backend.tools.x402_payment:config.py:25 Buyer: ADDR, Amount: 1.0 USDC
+ERROR    backend.tools.x402_payment:config.py:25 Invalid buyer address: ADDR
+_______________ test_complete_purchase_flow_confirmation_timeout _______________
+
+tx_id = 'PAY_TX', listing_id = 1, buyer_wallet = 'buyer'
+skip_escrow_redeem = False, escrow_tx_id = ''
+
+    async def complete_purchase_flow(
+        tx_id: str,
+        listing_id: int,
+        buyer_wallet: str,
+        skip_escrow_redeem: bool = False,
+        escrow_tx_id: str = "",
+    ) -> str:
+        """Complete post-payment fulfillment and return buyer-facing content message.
+    
+        Inputs: payment tx id, listing id, buyer wallet.
+        Output: formatted string with confirmation + insight body + tx references.
+        Micropayment role: terminal stage of commerce flow after x402 transfer succeeds.
+        """
+        if not tx_id.strip():
+            raise ValueError("tx_id is required")
+        if listing_id < 0:
+            raise ValueError("listing_id must be non-negative")
+        if not buyer_wallet.strip():
+            buyer_wallet = BUYER_WALLET
+        if not buyer_wallet.strip():
+            raise ValueError("buyer_wallet is required")
+    
+        logger.info(
+            "Starting post-payment confirmation polling | tx_id=%s listing_id=%s buyer=%s",
+            tx_id,
+            listing_id,
+            buyer_wallet,
+        )
+    
+        try:
+>           payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tools/post_payment_flow.py:428: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <AsyncMock id='4992484128'>, args = ()
+kwargs = {'timeout_seconds': 30, 'tx_id': 'PAY_TX'}
+_call = call(tx_id='PAY_TX', timeout_seconds=30)
+effect = RuntimeError('timed out waiting for confirmation')
+
+    async def _execute_mock_call(self, /, *args, **kwargs):
+        # This is nearly just like super(), except for special handling
+        # of coroutines
+    
+        _call = _Call((args, kwargs), two=True)
+        self.await_count += 1
+        self.await_args = _call
+        self.await_args_list.append(_call)
+    
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+>               raise effect
+E               RuntimeError: timed out waiting for confirmation
+
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py:2291: RuntimeError
+
+The above exception was the direct cause of the following exception:
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x129937740>
+
+    @pytest.mark.asyncio
+    async def test_complete_purchase_flow_confirmation_timeout(monkeypatch):
+        monkeypatch.setattr(
+            post_payment_module,
+            "_wait_for_confirmation",
+            AsyncMock(side_effect=RuntimeError("timed out waiting for confirmation")),
+        )
+    
+        with pytest.raises(RuntimeError, match="timed out"):
+>           await post_payment_module.complete_purchase_flow(
+                tx_id="PAY_TX",
+                listing_id=1,
+                buyer_wallet="buyer",
+            )
+
+backend/tests/test_micropayment_cycle.py:1005: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tx_id = 'PAY_TX', listing_id = 1, buyer_wallet = 'buyer'
+skip_escrow_redeem = False, escrow_tx_id = ''
+
+    async def complete_purchase_flow(
+        tx_id: str,
+        listing_id: int,
+        buyer_wallet: str,
+        skip_escrow_redeem: bool = False,
+        escrow_tx_id: str = "",
+    ) -> str:
+        """Complete post-payment fulfillment and return buyer-facing content message.
+    
+        Inputs: payment tx id, listing id, buyer wallet.
+        Output: formatted string with confirmation + insight body + tx references.
+        Micropayment role: terminal stage of commerce flow after x402 transfer succeeds.
+        """
+        if not tx_id.strip():
+            raise ValueError("tx_id is required")
+        if listing_id < 0:
+            raise ValueError("listing_id must be non-negative")
+        if not buyer_wallet.strip():
+            buyer_wallet = BUYER_WALLET
+        if not buyer_wallet.strip():
+            raise ValueError("buyer_wallet is required")
+    
+        logger.info(
+            "Starting post-payment confirmation polling | tx_id=%s listing_id=%s buyer=%s",
+            tx_id,
+            listing_id,
+            buyer_wallet,
+        )
+    
+        try:
+            payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+        except Exception as exc:  # noqa: BLE001
+            logger.error("Payment confirmation failed | tx_id=%s error=%s", tx_id, exc, exc_info=True)
+>           raise ErrorHandler.handle(exc, {"function": "complete_purchase_flow", "tx_id": tx_id}) from exc
+E           backend.utils.error_handler.SystemError: [ErrorCode.UNKNOWN_ERROR] An unexpected error occurred
+
+backend/tools/post_payment_flow.py:431: SystemError
+----------------------------- Captured stderr call -----------------------------
+2026-05-20 20:53:10,629 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=1 buyer=buyer
+2026-05-20 20:53:10,629 | ERROR | backend.tools.post_payment_flow | Payment confirmation failed | tx_id=PAY_TX error=timed out waiting for confirmation
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 428, in complete_purchase_flow
+    payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 2291, in _execute_mock_call
+    raise effect
+RuntimeError: timed out waiting for confirmation
+2026-05-20 20:53:10,629 | ERROR | mercator.errors | An unexpected error occurred
+------------------------------ Captured log call -------------------------------
+INFO     backend.tools.post_payment_flow:config.py:25 Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=1 buyer=buyer
+ERROR    backend.tools.post_payment_flow:config.py:25 Payment confirmation failed | tx_id=PAY_TX error=timed out waiting for confirmation
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 428, in complete_purchase_flow
+    payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 2291, in _execute_mock_call
+    raise effect
+RuntimeError: timed out waiting for confirmation
+ERROR    mercator.errors:config.py:25 An unexpected error occurred
+______________ test_complete_purchase_flow_buyer_wallet_fallback _______________
+
+tx_id = 'PAY_TX', listing_id = 1, buyer_wallet = 'FALLBACK_BUYER'
+skip_escrow_redeem = False, escrow_tx_id = ''
+
+    async def complete_purchase_flow(
+        tx_id: str,
+        listing_id: int,
+        buyer_wallet: str,
+        skip_escrow_redeem: bool = False,
+        escrow_tx_id: str = "",
+    ) -> str:
+        """Complete post-payment fulfillment and return buyer-facing content message.
+    
+        Inputs: payment tx id, listing id, buyer wallet.
+        Output: formatted string with confirmation + insight body + tx references.
+        Micropayment role: terminal stage of commerce flow after x402 transfer succeeds.
+        """
+        if not tx_id.strip():
+            raise ValueError("tx_id is required")
+        if listing_id < 0:
+            raise ValueError("listing_id must be non-negative")
+        if not buyer_wallet.strip():
+            buyer_wallet = BUYER_WALLET
+        if not buyer_wallet.strip():
+            raise ValueError("buyer_wallet is required")
+    
+        logger.info(
+            "Starting post-payment confirmation polling | tx_id=%s listing_id=%s buyer=%s",
+            tx_id,
+            listing_id,
+            buyer_wallet,
+        )
+    
+        try:
+>           payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tools/post_payment_flow.py:428: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <AsyncMock id='4993458224'>, args = ()
+kwargs = {'timeout_seconds': 30, 'tx_id': 'PAY_TX'}
+_call = call(tx_id='PAY_TX', timeout_seconds=30)
+effect = RuntimeError('stop after fallback check')
+
+    async def _execute_mock_call(self, /, *args, **kwargs):
+        # This is nearly just like super(), except for special handling
+        # of coroutines
+    
+        _call = _Call((args, kwargs), two=True)
+        self.await_count += 1
+        self.await_args = _call
+        self.await_args_list.append(_call)
+    
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+>               raise effect
+E               RuntimeError: stop after fallback check
+
+/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py:2291: RuntimeError
+
+The above exception was the direct cause of the following exception:
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x129afc650>
+
+    @pytest.mark.asyncio
+    async def test_complete_purchase_flow_buyer_wallet_fallback(monkeypatch):
+        monkeypatch.setattr(post_payment_module, "BUYER_WALLET", "FALLBACK_BUYER")
+        monkeypatch.setattr(post_payment_module, "_wait_for_confirmation", AsyncMock(side_effect=RuntimeError("stop after fallback check")))
+    
+        with pytest.raises(RuntimeError, match="stop after fallback check"):
+>           await post_payment_module.complete_purchase_flow("PAY_TX", 1, "")
+
+backend/tests/test_micropayment_cycle.py:1127: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tx_id = 'PAY_TX', listing_id = 1, buyer_wallet = 'FALLBACK_BUYER'
+skip_escrow_redeem = False, escrow_tx_id = ''
+
+    async def complete_purchase_flow(
+        tx_id: str,
+        listing_id: int,
+        buyer_wallet: str,
+        skip_escrow_redeem: bool = False,
+        escrow_tx_id: str = "",
+    ) -> str:
+        """Complete post-payment fulfillment and return buyer-facing content message.
+    
+        Inputs: payment tx id, listing id, buyer wallet.
+        Output: formatted string with confirmation + insight body + tx references.
+        Micropayment role: terminal stage of commerce flow after x402 transfer succeeds.
+        """
+        if not tx_id.strip():
+            raise ValueError("tx_id is required")
+        if listing_id < 0:
+            raise ValueError("listing_id must be non-negative")
+        if not buyer_wallet.strip():
+            buyer_wallet = BUYER_WALLET
+        if not buyer_wallet.strip():
+            raise ValueError("buyer_wallet is required")
+    
+        logger.info(
+            "Starting post-payment confirmation polling | tx_id=%s listing_id=%s buyer=%s",
+            tx_id,
+            listing_id,
+            buyer_wallet,
+        )
+    
+        try:
+            payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+        except Exception as exc:  # noqa: BLE001
+            logger.error("Payment confirmation failed | tx_id=%s error=%s", tx_id, exc, exc_info=True)
+>           raise ErrorHandler.handle(exc, {"function": "complete_purchase_flow", "tx_id": tx_id}) from exc
+E           backend.utils.error_handler.SystemError: [ErrorCode.UNKNOWN_ERROR] An unexpected error occurred
+
+backend/tools/post_payment_flow.py:431: SystemError
+----------------------------- Captured stderr call -----------------------------
+2026-05-20 20:53:13,123 | INFO | backend.tools.post_payment_flow | Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=1 buyer=FALLBACK_BUYER
+2026-05-20 20:53:13,123 | ERROR | backend.tools.post_payment_flow | Payment confirmation failed | tx_id=PAY_TX error=stop after fallback check
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 428, in complete_purchase_flow
+    payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 2291, in _execute_mock_call
+    raise effect
+RuntimeError: stop after fallback check
+2026-05-20 20:53:13,124 | ERROR | mercator.errors | An unexpected error occurred
+------------------------------ Captured log call -------------------------------
+INFO     backend.tools.post_payment_flow:config.py:25 Starting post-payment confirmation polling | tx_id=PAY_TX listing_id=1 buyer=FALLBACK_BUYER
+ERROR    backend.tools.post_payment_flow:config.py:25 Payment confirmation failed | tx_id=PAY_TX error=stop after fallback check
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/post_payment_flow.py", line 428, in complete_purchase_flow
+    payment_round = await _wait_for_confirmation(tx_id=tx_id, timeout_seconds=30)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 2291, in _execute_mock_call
+    raise effect
+RuntimeError: stop after fallback check
+ERROR    mercator.errors:config.py:25 An unexpected error occurred
+__________ test_send_micropayment_insufficient_maps_to_payment_error ___________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x129937440>
+
+    @pytest.mark.asyncio
+    async def test_send_micropayment_insufficient_maps_to_payment_error(monkeypatch):
+        # Replace PaymentTxn to a simple dummy with a sign method
+        class DummyPaymentTxn:
+            def __init__(self, sender, sp, receiver, amt):
+                pass
+    
+            def sign(self, pk):
+                return b"signed"
+    
+        # PaymentTxn is also imported as a top-level symbol in module; patch both
+        monkeypatch.setattr(x402, "PaymentTxn", DummyPaymentTxn)
+        monkeypatch.setattr(x402.transaction, "PaymentTxn", DummyPaymentTxn)
+    
+        dummy = DummyAlgod(send_raises="insufficient funds")
+        algorand = SimpleNamespace(client=SimpleNamespace(algod=dummy))
+        client = x402.X402Client(algorand=algorand)
+    
+        # Ensure key resolution returns a value so signing proceeds
+        monkeypatch.setattr(client, "_resolve_private_key_for_sender", lambda sender: "PRIVKEY")
+    
+        with pytest.raises(PaymentError) as exc:
+            await client.send_micropayment(sender="ADDR_SENDER", receiver="ADDR_RECV", amount=1, asset_id=0)
+    
+>       assert exc.value.code == ErrorCode.PAYMENT_INSUFFICIENT_BALANCE
+E       AssertionError: assert <ErrorCode.PA...DCAST_FAILED'> == <ErrorCode.PA...IENT_BALANCE'>
+E         
+E         - PAYMENT_INSUFFICIENT_BALANCE
+E         + PAYMENT_BROADCAST_FAILED
+
+backend/tests/test_payment_flow.py:98: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-05-20 20:53:13,253 | INFO | backend.tools.x402_payment | Sending x402 micropayment: ADDR_SENDER -> ADDR_RECV, amount=1
+2026-05-20 20:53:13,253 | ERROR | backend.tools.x402_payment | Signing error: 'DummyAlgod' object has no attribute 'send_raw_transaction'
+2026-05-20 20:53:13,253 | ERROR | mercator.errors | Payment was submitted but confirmation timed out
+------------------------------ Captured log call -------------------------------
+INFO     backend.tools.x402_payment:config.py:25 Sending x402 micropayment: ADDR_SENDER -> ADDR_RECV, amount=1
+ERROR    backend.tools.x402_payment:config.py:25 Signing error: 'DummyAlgod' object has no attribute 'send_raw_transaction'
+ERROR    mercator.errors:config.py:25 Payment was submitted but confirmation timed out
+________ TestSellerProfileNew.test_profile_new_seller_returns_defaults _________
+
+self = <test_seller_profile.TestSellerProfileNew object at 0x1292feb10>
+db_connection = <sqlite3.Connection object at 0x129695210>
+seller_service = <backend.utils.seller_profile.SellerProfileService object at 0x1299364b0>
+
+    async def test_profile_new_seller_returns_defaults(self, db_connection, seller_service):
+        """
+        Test that a new seller with no transaction history returns default values.
+        - total_purchases should be 0
+        - reputation_score_effective should be 0
+        - display_name should be empty string
+        - trust_summary should mention limited evaluation history
+        """
+        new_seller_wallet = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    
+        # Fetch profile for seller with no data
+>       profile = await seller_service.get_profile_tier1_tier2(new_seller_wallet)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_seller_profile.py:65: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/utils/seller_profile.py:121: in get_profile_tier1_tier2
+    sqlite_result, onchain_result = await asyncio.gather(sqlite_task, onchain_task)
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/utils/seller_profile.py:213: in _fetch_onchain_profile
+    reputation_box, agent_box = await asyncio.gather(reputation_task, agent_task)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/utils/seller_profile.py:238: in _read_box_json
+    raw_bytes = await self._read_box_raw(app_id, key_bytes)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/utils/seller_profile.py:283: in _read_box_raw
+    client = await get_http_client()
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def get_http_client() -> httpx.AsyncClient:
+        global _shared_client
+        if _shared_client is None:
+>           raise RuntimeError("HTTP client not initialised — call startup_http_client() first")
+E           RuntimeError: HTTP client not initialised — call startup_http_client() first
+
+backend/utils/http_client.py:19: RuntimeError
+_ TestSellerProfileAggregation.test_profile_after_three_purchases_aggregates_correctly _
+
+self = <test_seller_profile.TestSellerProfileAggregation object at 0x1292ff080>
+db_connection = <sqlite3.Connection object at 0x12939a020>
+seller_service = <backend.utils.seller_profile.SellerProfileService object at 0x1299347a0>
+
+    async def test_profile_after_three_purchases_aggregates_correctly(
+        self, db_connection, seller_service
+    ):
+        """
+        Test that after 3 purchases, stats are aggregated correctly.
+        - total_purchases should be 3
+        - total_usdc_earned should equal sum of amounts (10 + 11 + 12 = 33 USDC)
+        - avg_price should be 11 USDC
+        """
+        seller_wallet = "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+    
+        self.seed_purchases(db_connection, seller_wallet, 3)
+    
+>       profile = await seller_service.get_profile_tier1_tier2(seller_wallet)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+backend/tests/test_seller_profile.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/utils/seller_profile.py:121: in get_profile_tier1_tier2
+    sqlite_result, onchain_result = await asyncio.gather(sqlite_task, onchain_task)
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/utils/seller_profile.py:213: in _fetch_onchain_profile
+    reputation_box, agent_box = await asyncio.gather(reputation_task, agent_task)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/utils/seller_profile.py:238: in _read_box_json
+    raw_bytes = await self._read_box_raw(app_id, key_bytes)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/utils/seller_profile.py:283: in _read_box_raw
+    client = await get_http_client()
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def get_http_client() -> httpx.AsyncClient:
+        global _shared_client
+        if _shared_client is None:
+>           raise RuntimeError("HTTP client not initialised — call startup_http_client() first")
+E           RuntimeError: HTTP client not initialised — call startup_http_client() first
+
+backend/utils/http_client.py:19: RuntimeError
+___ TestListingHistoryPagination.test_listing_history_pagination_no_overlap ____
+
+self = <test_seller_profile.TestListingHistoryPagination object at 0x1292d78f0>
+db_connection = <sqlite3.Connection object at 0x1296957b0>
+seller_service = <backend.utils.seller_profile.SellerProfileService object at 0x129936660>
+
+    async def test_listing_history_pagination_no_overlap(
+        self, db_connection, seller_service
+    ):
+        """
+        Test pagination returns non-overlapping pages.
+        - Seed 15 listings
+        - Fetch page 1 (first 10)
+        - Fetch page 2 (next 10, but only 5 remain)
+        - Assert no listing_id appears in both pages
+        - Assert total_count is 15
+        """
+        seller_wallet = "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
+    
+        self.seed_listings(db_connection, seller_wallet, 15)
+    
+        page1_result = await seller_service.get_listing_history(
+            seller_wallet, page=1, page_size=10
+        )
+        page2_result = await seller_service.get_listing_history(
+            seller_wallet, page=2, page_size=10
+        )
+    
+>       page1_ids = {l.listing_id for l in page1_result['listings']}
+                     ^^^^^^^^^^^^
+E       AttributeError: 'dict' object has no attribute 'listing_id'
+
+backend/tests/test_seller_profile.py:179: AttributeError
+_ TestTrustSummaryGeneration.test_trust_summary_curator_agent_contains_curator_label _
+
+self = <test_seller_profile.TestTrustSummaryGeneration object at 0x1292fc560>
+db_connection = <sqlite3.Connection object at 0x129697a60>
+seller_service = <backend.utils.seller_profile.SellerProfileService object at 0x129a14080>
+
+    def test_trust_summary_curator_agent_contains_curator_label(
+        self, db_connection, seller_service
+    ):
+        """
+        Test that when registered_agent_role='curator', trust summary includes 'Curator Agent' label.
+        """
+        curator_wallet = "CURATORAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    
+        # For this test, we'd normally set up AgentRegistry Box data,
+        # but for simplicity we'll check that the trust_summary generation
+        # logic properly detects curator role
+    
+        # Note: In actual implementation, this would require seeding on-chain data
+        # For now, we verify the logic is in place
+        from backend.utils.seller_profile import build_trust_summary
+    
+        # Create a mock profile with curator role
+        mock_profile = {
+            'display_name': 'Test Curator',
+            'registered_agent_role': 'curator',
+            'registered_agent_name': 'CuratorBot',
+            'reputation_score_effective': 80,
+            'total_purchases': 10,
+            'recent_evaluations_avg_score': 85,
+        }
+    
+        summary = build_trust_summary(mock_profile)
+>       assert 'Curator Agent' in summary or 'curator' in summary.lower(), \
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+            "Trust summary should identify curator agent"
+E       TypeError: argument of type 'coroutine' is not iterable
+
+backend/tests/test_seller_profile.py:268: TypeError
+______________ test_new_listing_broadcast_triggered_by_post_list _______________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x129911640>
+
+    @pytest.mark.asyncio
+    async def test_new_listing_broadcast_triggered_by_post_list(monkeypatch):
+        seller_wallet = os.getenv(
+            "DEPLOYER_ADDRESS",
+            "M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM",
+        )
+    
+        broadcast_mock = AsyncMock()
+        monkeypatch.setattr(main_module.ws_manager, "broadcast", broadcast_mock)
+        monkeypatch.setattr(main_module, "_resolve_signer_for_wallet", lambda _wallet: ("mnemonic", seller_wallet, True))
+        monkeypatch.setattr(main_module, "upload_insight_to_ipfs", AsyncMock(return_value="CID123"))
+        monkeypatch.setattr(main_module, "store_cid_in_listing", lambda **_kwargs: (101, 202))
+        monkeypatch.setattr(main_module, "_poll_for_listing_confirmation", AsyncMock(return_value="TX123"))
+        monkeypatch.setattr(main_module, "_ensure_listing_app_funded", lambda *_args, **_kwargs: None)
+        monkeypatch.setattr(main_module, "clear_semantic_search_cache", lambda: None)
+        monkeypatch.setattr(main_module, "_fetch_fee_config_state", lambda: {"fee_rate_bps": 250})
+    
+        request = main_module.ListingRequest(
+            insight_text="This is a realtime listing update for websocket integration tests.",
+            price=1.25,
+            seller_wallet=seller_wallet,
+            source_type="curator_agent",
+        )
+    
+        response = await main_module.create_listing(request)
+    
+>       assert response["success"] is True
+               ^^^^^^^^^^^^^^^^^^^
+E       TypeError: 'JSONResponse' object is not subscriptable
+
+backend/tests/test_websocket.py:95: TypeError
+----------------------------- Captured stderr call -----------------------------
+2026-05-20 20:53:15,343 | INFO | mercator.backend | Incoming /list request: seller_wallet=ADDR, price=1.25, insight_len=66
+------------------------------ Captured log call -------------------------------
+INFO     mercator.backend:config.py:25 Incoming /list request: seller_wallet=ADDR, price=1.25, insight_len=66
+______________________ test_autonomous_decision_broadcast ______________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x129ae1130>
+
+    @pytest.mark.asyncio
+    async def test_autonomous_decision_broadcast(monkeypatch):
+        buyer_wallet = os.getenv(
+            "BUYER_WALLET",
+            "M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM",
+        )
+        seller_wallet = os.getenv(
+            "SELLER_ADDRESS",
+            "M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM",
+        )
+    
+        broadcast_mock = AsyncMock()
+        monkeypatch.setattr(x402_module.ws_manager, "broadcast", broadcast_mock)
+        monkeypatch.setattr(x402_module, "record_event", MagicMock())
+        monkeypatch.setattr(x402_module, "get_algorand_client", lambda: SimpleNamespace(client=SimpleNamespace(algod=None)))
+    
+        listing_obj = SimpleNamespace(seller=seller_wallet, price=1_000_000)
+        listing_client = SimpleNamespace(
+            state=SimpleNamespace(
+                box=SimpleNamespace(
+                    listings=SimpleNamespace(get_value=lambda _listing_id: listing_obj),
+                )
+            )
+        )
+        monkeypatch.setattr(x402_module, "get_insight_listing_client", lambda: listing_client)
+    
+        reputation_client = SimpleNamespace(
+            state=SimpleNamespace(
+                box=SimpleNamespace(
+                    seller_scores=SimpleNamespace(get_value=lambda _seller: 65),
+                )
+            )
+        )
+        monkeypatch.setattr(x402_module, "get_reputation_client", lambda: reputation_client)
+        monkeypatch.setattr(
+            x402_module,
+            "check_auto_conditions",
+            lambda **_kwargs: SimpleNamespace(
+                approved=False,
+                rejection_reason="relevance below threshold",
+                thresholds_used={
+                    "AUTO_MIN_RELEVANCE": 80,
+                    "AUTO_MIN_REPUTATION": 70,
+                    "AUTO_MAX_PRICE_USDC": 3.0,
+                },
+            ),
+        )
+    
+        await x402_module.trigger_x402_payment.ainvoke(
+            {
+                "listing_id": 77,
+                "buyer_address": buyer_wallet,
+                "amount_usdc": 1.0,
+                "autonomous_mode": True,
+                "relevance_score": 50,
+                "price_usdc": 1.0,
+            }
+        )
+    
+>       assert broadcast_mock.await_count >= 1
+E       AssertionError: assert 0 >= 1
+E        +  where 0 = <AsyncMock id='4994247344'>.await_count
+
+backend/tests/test_websocket.py:161: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-05-20 20:53:15,351 | WARNING | backend.tools.x402_payment | Subscription status check failed for ADDR: <urlopen error [Errno 61] Connection refused>
+2026-05-20 20:53:15,351 | INFO | backend.tools.x402_payment | Checking user approval...
+2026-05-20 20:53:15,351 | INFO | backend.tools.x402_payment | Autonomous mode enabled; skipping explicit approval gate
+2026-05-20 20:53:15,351 | INFO | backend.tools.x402_payment | ✓ User approval confirmed: 'approve'
+2026-05-20 20:53:15,351 | INFO | demo.flow | Payment approved
+2026-05-20 20:53:15,351 | INFO | backend.tools.x402_payment | Initiating x402 payment for listing 77
+2026-05-20 20:53:15,351 | INFO | backend.tools.x402_payment | Buyer: ADDR, Amount: 1.0 USDC
+2026-05-20 20:53:15,351 | ERROR | backend.tools.x402_payment | Invalid buyer address: ADDR
+------------------------------ Captured log call -------------------------------
+WARNING  backend.tools.x402_payment:config.py:25 Subscription status check failed for ADDR: <urlopen error [Errno 61] Connection refused>
+INFO     backend.tools.x402_payment:config.py:25 Checking user approval...
+INFO     backend.tools.x402_payment:config.py:25 Autonomous mode enabled; skipping explicit approval gate
+INFO     backend.tools.x402_payment:config.py:25 ✓ User approval confirmed: 'approve'
+INFO     demo.flow:config.py:25 Payment approved
+INFO     backend.tools.x402_payment:config.py:25 Initiating x402 payment for listing 77
+INFO     backend.tools.x402_payment:config.py:25 Buyer: ADDR, Amount: 1.0 USDC
+ERROR    backend.tools.x402_payment:config.py:25 Invalid buyer address: ADDR
+=============================== warnings summary ===============================
+backend/tests/test_atomic_groups.py:34
+  /Users/swanandibhende/Documents/Projects/mercator/backend/tests/test_atomic_groups.py:34: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+backend/tests/test_atomic_groups.py:46
+  /Users/swanandibhende/Documents/Projects/mercator/backend/tests/test_atomic_groups.py:46: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+backend/tests/test_atomic_groups.py:73
+  /Users/swanandibhende/Documents/Projects/mercator/backend/tests/test_atomic_groups.py:73: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+backend/tests/test_atomic_groups.py:81
+  /Users/swanandibhende/Documents/Projects/mercator/backend/tests/test_atomic_groups.py:81: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+backend/tests/test_api_v1.py::test_missing_api_key_returns_401
+backend/tests/test_api_v1.py::test_invalid_api_key_returns_403
+backend/tests/test_api_v1.py::test_rate_limit_enforced
+backend/tests/test_api_v1.py::test_search_and_purchase_invalid_wallet
+  /Users/swanandibhende/Documents/Projects/mercator/backend/api/v1/responses.py:28: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "timestamp": datetime.utcnow().isoformat() + "Z",
+
+backend/tests/test_api_v1.py: 15 warnings
+  /Users/swanandibhende/Documents/Projects/mercator/backend/api/v1/responses.py:18: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "timestamp": datetime.utcnow().isoformat() + "Z",
+
+backend/tests/test_critical_path_coverage.py::test_main_funding_and_signing
+  /Users/swanandibhende/Documents/Projects/mercator/backend/tests/test_critical_path_coverage.py:122: RuntimeWarning: coroutine '_ensure_listing_app_funded' was never awaited
+    main_module._ensure_listing_app_funded(10)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+backend/tests/test_critical_path_coverage.py::test_agent_misc_entrypoints
+  <frozen runpy>:128: RuntimeWarning: 'backend.agent' found in sys.modules after import of package 'backend', but prior to execution of 'backend.agent'; this may result in unpredictable behaviour
+
+backend/tests/test_critical_path_coverage.py::test_semantic_module_main_entry
+  <frozen runpy>:128: RuntimeWarning: 'backend.tools.semantic_search' found in sys.modules after import of package 'backend.tools', but prior to execution of 'backend.tools.semantic_search'; this may result in unpredictable behaviour
+
+backend/tests/test_critical_path_coverage.py::test_semantic_module_main_entry
+  /Users/swanandibhende/Documents/Projects/mercator/.venv312/lib/python3.12/site-packages/pydantic/fields.py:257: RuntimeWarning: coroutine '_run_cli' was never awaited
+    alias_is_set = any(alias is not None for alias in (self.alias, self.validation_alias, self.serialization_alias))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+backend/tests/test_critical_path_coverage.py: 1 warning
+backend/tests/test_error_handler.py: 6 warnings
+backend/tests/test_micropayment_cycle.py: 2 warnings
+backend/tests/test_payment_flow.py: 3 warnings
+  /Users/swanandibhende/Documents/Projects/mercator/backend/utils/error_handler.py:192: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    self.occurred_at = datetime.utcnow().isoformat() + "Z"
+
+backend/tests/test_curator_agent.py::test_gemini_parse_failure_retries_once
+  <string>:0: RuntimeWarning: coroutine 'X402Client.ensure_asset_opt_in' was never awaited
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+backend/tests/test_health_checker.py::test_check_usdc_volume_informational
+  /opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py:2217: RuntimeWarning: coroutine '_main' was never awaited
+    def __init__(self, name, parent):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+backend/tests/test_seller_profile.py::TestLeaderboardOrdering::test_leaderboard_ordered_by_earnings
+  backend/tests/test_seller_profile.py:192: PytestWarning: The test <Function test_leaderboard_ordered_by_earnings> is marked with '@pytest.mark.asyncio' but it is not an async function. Please remove the asyncio mark. If the test is not marked explicitly, check for global marks applied via 'pytestmark'.
+    def test_leaderboard_ordered_by_earnings(self, db_connection):
+
+backend/tests/test_seller_profile.py::TestTrustSummaryGeneration::test_trust_summary_curator_agent_contains_curator_label
+  backend/tests/test_seller_profile.py:241: PytestWarning: The test <Function test_trust_summary_curator_agent_contains_curator_label> is marked with '@pytest.mark.asyncio' but it is not an async function. Please remove the asyncio mark. If the test is not marked explicitly, check for global marks applied via 'pytestmark'.
+    def test_trust_summary_curator_agent_contains_curator_label(
+
+backend/tests/test_seller_profile.py::TestReputationHistoryLimit::test_reputation_sparkline_returns_20_entries_max
+  backend/tests/test_seller_profile.py:275: PytestWarning: The test <Function test_reputation_sparkline_returns_20_entries_max> is marked with '@pytest.mark.asyncio' but it is not an async function. Please remove the asyncio mark. If the test is not marked explicitly, check for global marks applied via 'pytestmark'.
+    def test_reputation_sparkline_returns_20_entries_max(self, db_connection):
+
+backend/tests/test_seller_profile.py::TestSellerCardCache::test_seller_card_uses_cached_profile
+  backend/tests/test_seller_profile.py:320: PytestWarning: The test <Function test_seller_card_uses_cached_profile> is marked with '@pytest.mark.asyncio' but it is not an async function. Please remove the asyncio mark. If the test is not marked explicitly, check for global marks applied via 'pytestmark'.
+    def test_seller_card_uses_cached_profile(self, db_connection):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_autonomous_mode.py::test_simulation_failure_aborts_autonomous_payment
+FAILED backend/tests/test_critical_path_coverage.py::test_main_funding_and_signing
+FAILED backend/tests/test_critical_path_coverage.py::test_main_demo_purchase_and_invalid_listing_paths
+FAILED backend/tests/test_critical_path_coverage.py::test_agent_module_import_time_branches
+FAILED backend/tests/test_critical_path_coverage.py::test_x402_client_methods_and_validate
+FAILED backend/tests/test_critical_path_coverage.py::test_post_payment_wait_and_tool
+FAILED backend/tests/test_health_checker.py::test_startup_shutdown - RuntimeE...
+FAILED backend/tests/test_health_checker.py::test_check_ipfs_gateway_successful
+FAILED backend/tests/test_health_checker.py::test_ipfs_gateway_wrong_content_is_down
+FAILED backend/tests/test_health_checker.py::test_status_change_triggers_broadcast
+FAILED backend/tests/test_health_checker.py::test_alert_banner_not_shown_when_all_healthy
+FAILED backend/tests/test_health_checker.py::test_snapshot_history_rolling_window
+FAILED backend/tests/test_health_checker.py::test_get_health_history_with_minutes
+FAILED backend/tests/test_health_checker.py::test_health_metric_previous_status_tracking
+FAILED backend/tests/test_listing_preparation.py::test_orphan_prevention_audit_trail
+FAILED backend/tests/test_listing_preparation.py::test_store_cid_in_listing_passes_box_reference
+FAILED backend/tests/test_micropayment_cycle.py::test_list_endpoint_matrix[valid_upload_one]
+FAILED backend/tests/test_micropayment_cycle.py::test_list_endpoint_matrix[valid_upload_two]
+FAILED backend/tests/test_micropayment_cycle.py::test_list_endpoint_matrix[simulation_failure_cleanup]
+FAILED backend/tests/test_micropayment_cycle.py::test_list_endpoint_simulation_failure_cleanup
+FAILED backend/tests/test_micropayment_cycle.py::test_semantic_search_ranking_and_cache[query_alpha_heavy]
+FAILED backend/tests/test_micropayment_cycle.py::test_semantic_search_ranking_and_cache[query_beta_bias]
+FAILED backend/tests/test_micropayment_cycle.py::test_semantic_search_ranking_and_cache[query_gamma_bias]
+FAILED backend/tests/test_micropayment_cycle.py::test_semantic_search_ranking_and_cache[query_delta_bias]
+FAILED backend/tests/test_micropayment_cycle.py::test_semantic_search_ranking_and_cache[query_midpoint_one]
+FAILED backend/tests/test_micropayment_cycle.py::test_semantic_search_ranking_and_cache[query_midpoint_two]
+FAILED backend/tests/test_micropayment_cycle.py::test_semantic_search_ranking_and_cache[query_spread_one]
+FAILED backend/tests/test_micropayment_cycle.py::test_semantic_search_ranking_and_cache[query_spread_two]
+FAILED backend/tests/test_micropayment_cycle.py::test_semantic_search_ranking_and_cache[query_diagonal_one]
+FAILED backend/tests/test_micropayment_cycle.py::test_semantic_search_ranking_and_cache[query_diagonal_two]
+FAILED backend/tests/test_micropayment_cycle.py::test_trigger_x402_payment_success_after_approve
+FAILED backend/tests/test_micropayment_cycle.py::test_trigger_x402_payment_simulation_failure
+FAILED backend/tests/test_micropayment_cycle.py::test_trigger_x402_payment_insufficient_balance_edge
+FAILED backend/tests/test_micropayment_cycle.py::test_trigger_x402_payment_listing_not_found
+FAILED backend/tests/test_micropayment_cycle.py::test_trigger_x402_payment_invalid_amount
+FAILED backend/tests/test_micropayment_cycle.py::test_trigger_x402_payment_execution_failure
+FAILED backend/tests/test_micropayment_cycle.py::test_complete_purchase_flow_confirmation_timeout
+FAILED backend/tests/test_micropayment_cycle.py::test_complete_purchase_flow_buyer_wallet_fallback
+FAILED backend/tests/test_payment_flow.py::test_send_micropayment_insufficient_maps_to_payment_error
+FAILED backend/tests/test_seller_profile.py::TestSellerProfileNew::test_profile_new_seller_returns_defaults
+FAILED backend/tests/test_seller_profile.py::TestSellerProfileAggregation::test_profile_after_three_purchases_aggregates_correctly
+FAILED backend/tests/test_seller_profile.py::TestListingHistoryPagination::test_listing_history_pagination_no_overlap
+FAILED backend/tests/test_seller_profile.py::TestTrustSummaryGeneration::test_trust_summary_curator_agent_contains_curator_label
+FAILED backend/tests/test_websocket.py::test_new_listing_broadcast_triggered_by_post_list
+FAILED backend/tests/test_websocket.py::test_autonomous_decision_broadcast - ...
+45 failed, 298 passed, 4 skipped, 45 warnings in 25.30s

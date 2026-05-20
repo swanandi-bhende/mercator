@@ -47,7 +47,7 @@ export default function Layout() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="mercator-shell">
       <Toaster position="top-center" />
       {systemAlert && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-red-50 border-b border-red-200 p-4">
@@ -86,20 +86,32 @@ export default function Layout() {
       <main className={`transition-opacity duration-300 ${systemAlert ? "pt-24" : ""}`}>
         <Outlet context={{ latestWsEvent } satisfies LayoutOutletContext} />
       </main>
-      <footer className="border-t border-gray-200 bg-white/90">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4 text-sm text-gray-600 sm:px-6 lg:px-8">
-          <p>Mercator auditability is always available.</p>
-          <div className="flex flex-wrap items-center gap-4">
-            <Link to="/activity" className="font-semibold text-gray-800 hover:text-gray-900">
+      <footer className="home-footer mercator-footer">
+        <div className="home-wrap home-footer-grid mercator-footer__grid">
+          <div>
+            <p className="home-kicker">Auditability</p>
+            <h3>Mercator keeps proof visible across every route.</h3>
+            <p>
+              Discover, subscribe, buy, and review activity from the same visual system used on the landing page.
+            </p>
+          </div>
+          <div className="home-footer-links mercator-footer__links">
+            <Link to="/activity" className="mercator-footer__link">
               Open Activity Ledger
             </Link>
-            <Link to="/operations" className="font-semibold text-gray-800 hover:text-gray-900">
+            <Link to="/operations" className="mercator-footer__link">
               Open Operations Dashboard
             </Link>
-            <Link to="/trust" className="hover:text-gray-900">
+            <Link to="/subscription" className="mercator-footer__link">
+              Subscription Manager
+            </Link>
+            <Link to="/agents" className="mercator-footer__link">
+              Registered Agents
+            </Link>
+            <Link to="/trust" className="mercator-footer__link">
               Trust Rules
             </Link>
-            <Link to="/about" className="hover:text-gray-900">
+            <Link to="/about" className="mercator-footer__link">
               About
             </Link>
           </div>

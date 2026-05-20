@@ -135,12 +135,12 @@ export default function AgentsPage() {
     : null
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-amber-50 px-4 py-10 text-slate-900 md:px-6">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
-        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.08)]">
+    <div className="agents-page mercator-themed-page px-4 py-10 md:px-6">
+      <div className="agents-shell mx-auto flex w-full max-w-7xl flex-col gap-6">
+        <section className="agents-hero-card mercator-elevated-card overflow-hidden">
           <div className="grid gap-8 p-6 lg:grid-cols-[1.5fr_1fr] lg:p-10">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.26em] text-amber-700">Agent Marketplace</p>
+              <p className="home-kicker">Agent Marketplace</p>
               <h1 className="mt-3 text-4xl font-black tracking-tight text-slate-950 md:text-5xl">Registered agents and a live demo purchase harness.</h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 md:text-lg">
                 Browse the on-chain AgentRegistry via <span className="font-semibold text-slate-900">/agents/registered</span>, inspect each agent&apos;s role and activity, and trigger a sample buyer flow against <span className="font-semibold text-slate-900">/demo_purchase</span> from the same page.
@@ -148,7 +148,7 @@ export default function AgentsPage() {
               <div className="mt-6 flex flex-wrap gap-3">
                 <button
                   type="button"
-                  className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                  className="home-btn home-btn--primary"
                   onClick={() => void loadAgents(false)}
                   disabled={refreshingAgents}
                 >
@@ -156,22 +156,19 @@ export default function AgentsPage() {
                 </button>
                 <button
                   type="button"
-                  className="rounded-full border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-950 hover:text-slate-950"
+                  className="home-btn home-btn--secondary"
                   onClick={runSampleDemoPurchase}
                   disabled={submittingDemo}
                 >
                   {submittingDemo ? 'Running demo purchase...' : 'Run sample demo purchase'}
                 </button>
-                <Link
-                  to="/discover"
-                  className="rounded-full border border-amber-200 bg-amber-50 px-5 py-3 text-sm font-semibold text-amber-900 transition hover:border-amber-300 hover:bg-amber-100"
-                >
+                <Link to="/discover" className="home-btn home-btn--secondary">
                   Explore listings
                 </Link>
               </div>
             </div>
 
-            <div className="grid gap-4 rounded-2xl bg-slate-950 p-5 text-white">
+            <div className="agents-snapshot-card mercator-dark-card grid gap-4 rounded-2xl bg-slate-950 p-5 text-white">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-xs uppercase tracking-[0.22em] text-slate-400">Registry Snapshot</p>
@@ -202,8 +199,8 @@ export default function AgentsPage() {
           </div>
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-[1.3fr_0.9fr]">
-          <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+        <section className="agents-grid grid gap-6 lg:grid-cols-[1.3fr_0.9fr]">
+          <article className="agents-list-card mercator-elevated-card rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Registered Agents</p>
@@ -277,7 +274,7 @@ export default function AgentsPage() {
             </div>
           </article>
 
-          <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+          <article className="agents-form-card mercator-elevated-card rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-700">Sample Purchase</p>
               <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950">Run /demo_purchase</h2>

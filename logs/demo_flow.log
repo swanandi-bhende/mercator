@@ -1,0 +1,136 @@
+2026-05-20 20:49:55,851 ERROR backend.tools.x402_payment: x402 payment error: boom
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 733, in trigger_x402_payment
+    normalize_network_env()
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tests/test_critical_path_coverage.py", line 631, in <lambda>
+    monkeypatch.setattr(x402_module, "normalize_network_env", lambda: (_ for _ in ()).throw(RuntimeError("boom")))
+                                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tests/test_critical_path_coverage.py", line 631, in <genexpr>
+    monkeypatch.setattr(x402_module, "normalize_network_env", lambda: (_ for _ in ()).throw(RuntimeError("boom")))
+RuntimeError: boom
+2026-05-20 20:49:55,855 WARNING backend.tools.x402_payment: Subscription status check failed for ADDR: <urlopen error [Errno 61] Connection refused>
+2026-05-20 20:49:55,855 INFO backend.tools.x402_payment: Checking user approval...
+2026-05-20 20:49:55,855 INFO backend.tools.x402_payment: ✓ User approval confirmed: 'approve'
+2026-05-20 20:49:55,855 INFO demo.flow: Payment approved
+2026-05-20 20:49:55,855 INFO backend.tools.x402_payment: Initiating x402 payment for listing 1
+2026-05-20 20:49:55,855 INFO backend.tools.x402_payment: Buyer: ADDR, Amount: 1.0 USDC
+2026-05-20 20:49:55,855 INFO backend.tools.x402_payment: Fetching listing details from InsightListing app...
+1970-01-01 05:30:02,000 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=TX error=temporary
+2026-05-20 20:49:55,892 INFO backend.agent: Starting agent run with user_approval=False, user_approval_input=approve, autonomous_mode=False, rounds=1, dry_run=False
+2026-05-20 20:49:55,892 INFO backend.agent: Decision is BUY and user approval confirmed ('approve'); triggering x402 payment
+2026-05-20 20:49:55,892 INFO backend.agent: Triggering x402 payment: listing 7, price 2.5, buyer ADDR_FROM_ENV
+2026-05-20 20:49:55,892 ERROR backend.agent: payment_rejected | details={'success': False, 'tx': 'T'}
+2026-05-20 20:49:55,892 INFO demo.flow: Payment approved
+2026-05-20 20:49:55,892 INFO backend.agent: Payment triggered: {'success': False, 'decision': 'BUY', 'evaluation': 'eval', 'payment_status': {'success': False, 'tx': 'T'}, 'message': 'Sorry, I encountered an issue: Payment was rejected by x402 - please check your wallet balance. Would you like to try a different insight or check your wallet balance?'}
+2026-05-20 20:49:55,894 INFO backend.agent: Starting agent run with user_approval=False, user_approval_input=, autonomous_mode=False, rounds=1, dry_run=False
+2026-05-20 20:49:55,894 INFO backend.agent: Decision is BUY but user approval is missing; payment blocked
+2026-05-20 20:49:55,938 ERROR backend.agents.curator_agent: Curator cycle failed for symbol=RELIANCE.NS
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/agents/curator_agent.py", line 272, in run_cycle_for_symbol
+    tx_id, listing_ipfs_cid = await _publish_listing(insight_text, insight.price_usdc)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 2291, in _execute_mock_call
+    raise effect
+RuntimeError: HTTP 500: boom
+2026-05-20 20:50:38,695 ERROR backend.tools.x402_payment: x402 payment error: boom
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 733, in trigger_x402_payment
+    normalize_network_env()
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tests/test_critical_path_coverage.py", line 631, in <lambda>
+    monkeypatch.setattr(x402_module, "normalize_network_env", lambda: (_ for _ in ()).throw(RuntimeError("boom")))
+                                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tests/test_critical_path_coverage.py", line 631, in <genexpr>
+    monkeypatch.setattr(x402_module, "normalize_network_env", lambda: (_ for _ in ()).throw(RuntimeError("boom")))
+RuntimeError: boom
+2026-05-20 20:50:38,699 WARNING backend.tools.x402_payment: Subscription status check failed for ADDR: <urlopen error [Errno 61] Connection refused>
+2026-05-20 20:50:38,699 INFO backend.tools.x402_payment: Checking user approval...
+2026-05-20 20:50:38,699 INFO backend.tools.x402_payment: ✓ User approval confirmed: 'approve'
+2026-05-20 20:50:38,699 INFO demo.flow: Payment approved
+2026-05-20 20:50:38,699 INFO backend.tools.x402_payment: Initiating x402 payment for listing 1
+2026-05-20 20:50:38,699 INFO backend.tools.x402_payment: Buyer: ADDR, Amount: 1.0 USDC
+2026-05-20 20:50:38,699 INFO backend.tools.x402_payment: Fetching listing details from InsightListing app...
+1970-01-01 05:30:02,000 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=TX error=temporary
+2026-05-20 20:50:38,733 INFO backend.agent: Starting agent run with user_approval=False, user_approval_input=approve, autonomous_mode=False, rounds=1, dry_run=False
+2026-05-20 20:50:38,733 INFO backend.agent: Decision is BUY and user approval confirmed ('approve'); triggering x402 payment
+2026-05-20 20:50:38,733 INFO backend.agent: Triggering x402 payment: listing 7, price 2.5, buyer ADDR_FROM_ENV
+2026-05-20 20:50:38,733 ERROR backend.agent: payment_rejected | details={'success': False, 'tx': 'T'}
+2026-05-20 20:50:38,733 INFO demo.flow: Payment approved
+2026-05-20 20:50:38,733 INFO backend.agent: Payment triggered: {'success': False, 'decision': 'BUY', 'evaluation': 'eval', 'payment_status': {'success': False, 'tx': 'T'}, 'message': 'Sorry, I encountered an issue: Payment was rejected by x402 - please check your wallet balance. Would you like to try a different insight or check your wallet balance?'}
+2026-05-20 20:50:38,735 INFO backend.agent: Starting agent run with user_approval=False, user_approval_input=, autonomous_mode=False, rounds=1, dry_run=False
+2026-05-20 20:50:38,735 INFO backend.agent: Decision is BUY but user approval is missing; payment blocked
+2026-05-20 20:50:38,778 ERROR backend.agents.curator_agent: Curator cycle failed for symbol=RELIANCE.NS
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/agents/curator_agent.py", line 272, in run_cycle_for_symbol
+    tx_id, listing_ipfs_cid = await _publish_listing(insight_text, insight.price_usdc)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 2291, in _execute_mock_call
+    raise effect
+RuntimeError: HTTP 500: boom
+2026-05-20 20:51:28,707 ERROR backend.tools.x402_payment: x402 payment error: boom
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 733, in trigger_x402_payment
+    normalize_network_env()
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tests/test_critical_path_coverage.py", line 631, in <lambda>
+    monkeypatch.setattr(x402_module, "normalize_network_env", lambda: (_ for _ in ()).throw(RuntimeError("boom")))
+                                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tests/test_critical_path_coverage.py", line 631, in <genexpr>
+    monkeypatch.setattr(x402_module, "normalize_network_env", lambda: (_ for _ in ()).throw(RuntimeError("boom")))
+RuntimeError: boom
+2026-05-20 20:51:28,711 WARNING backend.tools.x402_payment: Subscription status check failed for ADDR: <urlopen error [Errno 61] Connection refused>
+2026-05-20 20:51:28,711 INFO backend.tools.x402_payment: Checking user approval...
+2026-05-20 20:51:28,711 INFO backend.tools.x402_payment: ✓ User approval confirmed: 'approve'
+2026-05-20 20:51:28,711 INFO demo.flow: Payment approved
+2026-05-20 20:51:28,711 INFO backend.tools.x402_payment: Initiating x402 payment for listing 1
+2026-05-20 20:51:28,711 INFO backend.tools.x402_payment: Buyer: ADDR, Amount: 1.0 USDC
+2026-05-20 20:51:28,711 INFO backend.tools.x402_payment: Fetching listing details from InsightListing app...
+1970-01-01 05:30:02,000 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=TX error=temporary
+2026-05-20 20:51:28,747 INFO backend.agent: Starting agent run with user_approval=False, user_approval_input=approve, autonomous_mode=False, rounds=1, dry_run=False
+2026-05-20 20:51:28,747 INFO backend.agent: Decision is BUY and user approval confirmed ('approve'); triggering x402 payment
+2026-05-20 20:51:28,747 INFO backend.agent: Triggering x402 payment: listing 7, price 2.5, buyer ADDR_FROM_ENV
+2026-05-20 20:51:28,747 ERROR backend.agent: payment_rejected | details={'success': False, 'tx': 'T'}
+2026-05-20 20:51:28,747 INFO demo.flow: Payment approved
+2026-05-20 20:51:28,747 INFO backend.agent: Payment triggered: {'success': False, 'decision': 'BUY', 'evaluation': 'eval', 'payment_status': {'success': False, 'tx': 'T'}, 'message': 'Sorry, I encountered an issue: Payment was rejected by x402 - please check your wallet balance. Would you like to try a different insight or check your wallet balance?'}
+2026-05-20 20:51:28,748 INFO backend.agent: Starting agent run with user_approval=False, user_approval_input=, autonomous_mode=False, rounds=1, dry_run=False
+2026-05-20 20:51:28,749 INFO backend.agent: Decision is BUY but user approval is missing; payment blocked
+2026-05-20 20:51:28,793 ERROR backend.agents.curator_agent: Curator cycle failed for symbol=RELIANCE.NS
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/agents/curator_agent.py", line 272, in run_cycle_for_symbol
+    tx_id, listing_ipfs_cid = await _publish_listing(insight_text, insight.price_usdc)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 2291, in _execute_mock_call
+    raise effect
+RuntimeError: HTTP 500: boom
+2026-05-20 20:52:54,790 ERROR backend.tools.x402_payment: x402 payment error: boom
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tools/x402_payment.py", line 733, in trigger_x402_payment
+    normalize_network_env()
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tests/test_critical_path_coverage.py", line 631, in <lambda>
+    monkeypatch.setattr(x402_module, "normalize_network_env", lambda: (_ for _ in ()).throw(RuntimeError("boom")))
+                                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/tests/test_critical_path_coverage.py", line 631, in <genexpr>
+    monkeypatch.setattr(x402_module, "normalize_network_env", lambda: (_ for _ in ()).throw(RuntimeError("boom")))
+RuntimeError: boom
+2026-05-20 20:52:54,795 WARNING backend.tools.x402_payment: Subscription status check failed for ADDR: <urlopen error [Errno 61] Connection refused>
+2026-05-20 20:52:54,795 INFO backend.tools.x402_payment: Checking user approval...
+2026-05-20 20:52:54,795 INFO backend.tools.x402_payment: ✓ User approval confirmed: 'approve'
+2026-05-20 20:52:54,795 INFO demo.flow: Payment approved
+2026-05-20 20:52:54,795 INFO backend.tools.x402_payment: Initiating x402 payment for listing 1
+2026-05-20 20:52:54,795 INFO backend.tools.x402_payment: Buyer: ADDR, Amount: 1.0 USDC
+2026-05-20 20:52:54,795 INFO backend.tools.x402_payment: Fetching listing details from InsightListing app...
+1970-01-01 05:30:02,000 WARNING backend.tools.post_payment_flow: Indexer lookup retry | tx_id=TX error=temporary
+2026-05-20 20:52:54,832 INFO backend.agent: Starting agent run with user_approval=False, user_approval_input=approve, autonomous_mode=False, rounds=1, dry_run=False
+2026-05-20 20:52:54,832 INFO backend.agent: Decision is BUY and user approval confirmed ('approve'); triggering x402 payment
+2026-05-20 20:52:54,832 INFO backend.agent: Triggering x402 payment: listing 7, price 2.5, buyer ADDR_FROM_ENV
+2026-05-20 20:52:54,832 ERROR backend.agent: payment_rejected | details={'success': False, 'tx': 'T'}
+2026-05-20 20:52:54,832 INFO demo.flow: Payment approved
+2026-05-20 20:52:54,832 INFO backend.agent: Payment triggered: {'success': False, 'decision': 'BUY', 'evaluation': 'eval', 'payment_status': {'success': False, 'tx': 'T'}, 'message': 'Sorry, I encountered an issue: Payment was rejected by x402 - please check your wallet balance. Would you like to try a different insight or check your wallet balance?'}
+2026-05-20 20:52:54,834 INFO backend.agent: Starting agent run with user_approval=False, user_approval_input=, autonomous_mode=False, rounds=1, dry_run=False
+2026-05-20 20:52:54,834 INFO backend.agent: Decision is BUY but user approval is missing; payment blocked
+2026-05-20 20:52:54,886 ERROR backend.agents.curator_agent: Curator cycle failed for symbol=RELIANCE.NS
+Traceback (most recent call last):
+  File "/Users/swanandibhende/Documents/Projects/mercator/backend/agents/curator_agent.py", line 272, in run_cycle_for_symbol
+    tx_id, listing_ipfs_cid = await _publish_listing(insight_text, insight.price_usdc)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py", line 2291, in _execute_mock_call
+    raise effect
+RuntimeError: HTTP 500: boom

@@ -162,10 +162,10 @@ export default function SubscriptionManagerPage() {
   }, [loadingStatus, status?.active])
 
   return (
-    <div className="subscription-page">
+    <div className="subscription-page mercator-themed-page">
       <section className="subscription-hero">
         <div className="home-wrap subscription-shell">
-          <article className="subscription-intro-card">
+          <article className="subscription-intro-card mercator-elevated-card">
             <p className="home-kicker">Subscription Manager</p>
             <h1>Manage buyer access, monthly fee config, and atomic subscribe flow.</h1>
             <p>
@@ -182,7 +182,7 @@ export default function SubscriptionManagerPage() {
             </div>
           </article>
 
-          <article className={`subscription-status-card ${isActive ? 'is-active' : ''}`}>
+          <article className={`subscription-status-card mercator-elevated-card ${isActive ? 'is-active' : ''}`}>
             <div className="subscription-card-heading">
               <div>
                 <p className="home-kicker">Subscribe Status</p>
@@ -226,7 +226,7 @@ export default function SubscriptionManagerPage() {
             </p>
           </article>
 
-          <article className="subscription-fee-card">
+          <article className="subscription-fee-card mercator-elevated-card">
             <p className="home-kicker">Fee Config</p>
             <h2>Contract pricing and treasury config</h2>
             <div className="subscription-fee-grid">
@@ -260,7 +260,7 @@ export default function SubscriptionManagerPage() {
             </p>
           </article>
 
-          <article className="subscription-action-card">
+          <article className="subscription-action-card mercator-elevated-card">
             <p className="home-kicker">Subscribe Flow</p>
             <h2>{atomicSupported ? 'Choose standard or atomic subscribe' : 'Standard subscribe only'}</h2>
             <div className="subscription-action-controls">

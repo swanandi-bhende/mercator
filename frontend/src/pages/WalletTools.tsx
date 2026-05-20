@@ -140,9 +140,9 @@ export default function WalletToolsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(1100px_560px_at_0%_0%,rgba(203,137,107,0.22),transparent_58%),radial-gradient(860px_460px_at_100%_0%,rgba(83,121,141,0.18),transparent_54%),linear-gradient(180deg,#fffaf4_0%,#f9fdff_100%)] px-4 py-10 text-slate-900 md:px-6">
+    <div className="mercator-themed-page min-h-screen bg-[radial-gradient(1100px_560px_at_0%_0%,rgba(220,176,153,0.22),transparent_58%),radial-gradient(860px_460px_at_100%_0%,rgba(111,57,70,0.14),transparent_54%),linear-gradient(180deg,#fff8f4_0%,#fffdf8_100%)] px-4 py-10 text-slate-900 md:px-6">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] md:p-8">
+        <section className="mercator-elevated-card rounded-3xl border border-slate-200 bg-white p-6 md:p-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-700">Wallet Center</p>
@@ -163,7 +163,7 @@ export default function WalletToolsPage() {
         </section>
 
         <section className="grid gap-6 lg:grid-cols-3">
-          <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <article className="mercator-elevated-card rounded-3xl border border-slate-200 bg-white p-6">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Custodial check</p>
             <h2 className="mt-2 text-2xl font-black text-slate-950">Is this wallet custodial?</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -200,7 +200,7 @@ export default function WalletToolsPage() {
             )}
           </article>
 
-          <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <article className="mercator-elevated-card rounded-3xl border border-slate-200 bg-white p-6">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Export wallet</p>
             <h2 className="mt-2 text-2xl font-black text-slate-950">Recover the custodial mnemonic</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -264,7 +264,7 @@ export default function WalletToolsPage() {
             )}
           </article>
 
-          <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <article className="mercator-elevated-card rounded-3xl border border-slate-200 bg-white p-6">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Import wallet</p>
             <h2 className="mt-2 text-2xl font-black text-slate-950">Import a wallet locally</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">

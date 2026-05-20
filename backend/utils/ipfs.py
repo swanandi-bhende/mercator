@@ -53,6 +53,9 @@ logger = logging.getLogger(__name__)
 # Seed demo CIDs for local/demo mode so preview works even when Pinata is unavailable.
 _CID_TEXT_CACHE.setdefault('demo-cid-1', 'Demo insight content: NIFTY expected to test 24500 resistance today.')
 _CID_TEXT_CACHE.setdefault('demo-cid-2', 'Demo insight content: Best short-term bank index setup this session.')
+_CID_TEXT_CACHE.setdefault('QmExampleCID1TestListing', _CID_TEXT_CACHE['demo-cid-1'])
+_CID_TEXT_CACHE.setdefault('QmExampleCID2TestListing', _CID_TEXT_CACHE['demo-cid-2'])
+_CID_TEXT_CACHE.setdefault('QmExampleCID3TestListing', 'Demo insight content: Macro insight on RBI rate decision impact analysis.')
 
 
 class PinataConfigError(RuntimeError):

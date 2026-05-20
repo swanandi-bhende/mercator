@@ -23,6 +23,7 @@ import sqlite3
 from algosdk.atomic_transaction_composer import AtomicTransactionComposer, SimulateAtomicTransactionResponse
 from algosdk.v2client import algod
 from algosdk import account as algo_account, transaction
+import asyncio
 
 from backend.utils.db import get_db_path
 from backend.utils.flow_tracer import tracer

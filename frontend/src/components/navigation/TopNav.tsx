@@ -117,24 +117,24 @@ export default function TopNav({ connectionStatus }: { connectionStatus: Connect
         : 'ws-dot ws-dot--disconnected'
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white bg-opacity-95 backdrop-blur">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+    <nav className="mercator-topnav sticky top-0 z-50 border-b border-gray-200 bg-white bg-opacity-95 backdrop-blur">
+      <div className="mercator-topnav__inner mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mercator-topnav__row flex h-16 items-center justify-between">
           {/* Brand + Journey Indicator */}
-          <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-center gap-2">
+          <div className="mercator-topnav__brand-group flex items-center gap-6">
+            <Link to="/" className="mercator-topnav__brand flex items-center gap-2">
               <span className="text-xl font-bold text-gray-900">mercator</span>
             </Link>
 
             {/* Journey Badge */}
-            <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100">
+            <div className="mercator-topnav__journey hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100">
               <span className="text-xs font-semibold text-gray-600">
                 {journeyLabel[currentJourney]}
               </span>
             </div>
 
             {/* Core Navigation */}
-            <div className="hidden gap-6 lg:flex">
+            <div className="mercator-topnav__links hidden gap-6 lg:flex">
               <NavLink
                 href="/sell"
                 active={isActive('/sell')}
@@ -169,8 +169,8 @@ export default function TopNav({ connectionStatus }: { connectionStatus: Connect
           </div>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-3">
-            <div className="ws-status-indicator" aria-live="polite">
+          <div className="mercator-topnav__actions flex items-center gap-3">
+            <div className="ws-status-indicator mercator-topnav__status" aria-live="polite">
               <span className={indicatorClass} />
               <span className="ws-status-text">{connectionLabel(connectionStatus)}</span>
             </div>
@@ -187,7 +187,7 @@ export default function TopNav({ connectionStatus }: { connectionStatus: Connect
                     <p className="wallet-panel-algo">{balances.algo.toFixed(3)} ALGO</p>
                   </div>
                 </div>
-                <div className="wallet-actions">
+                <div className="wallet-actions mercator-topnav__wallet-actions">
                   <button onClick={() => setWalletMenuOpen((prev) => !prev)}>⋯</button>
                   {walletMenuOpen && (
                     <div className="wallet-dropdown">
@@ -213,17 +213,17 @@ export default function TopNav({ connectionStatus }: { connectionStatus: Connect
                 <button className="home-btn home-btn--primary" onClick={() => navigate('/onboard')}>
                   Sign Up Free
                 </button>
-                <button className="home-btn home-btn--secondary hidden sm:inline-flex" onClick={() => navigate('/wallet')}>
+                <button className="home-btn home-btn--secondary hidden sm:inline-flex" onClick={() => navigate('/wallet-tools')}>
                   Wallet
                 </button>
               </div>
             )}
 
             {/* Flow Switcher - Visible on all sizes */}
-            <div className="hidden md:flex items-center gap-1 border-l border-gray-200 pl-3">
+            <div className="mercator-topnav__flow-switcher hidden md:flex items-center gap-1 border-l border-gray-200 pl-3">
               <button
                 onClick={() => switchFlow('seller')}
-                className={`text-xs font-medium px-2 py-1 rounded transition-colors ${
+                className={`mercator-topnav__flow-btn text-xs font-medium px-2 py-1 rounded transition-colors ${
                   currentJourney === 'seller'
                     ? 'bg-gray-900 text-white'
                     : 'text-gray-600 hover:text-gray-900'
@@ -233,7 +233,7 @@ export default function TopNav({ connectionStatus }: { connectionStatus: Connect
               </button>
               <button
                 onClick={() => switchFlow('buyer')}
-                className={`text-xs font-medium px-2 py-1 rounded transition-colors ${
+                className={`mercator-topnav__flow-btn text-xs font-medium px-2 py-1 rounded transition-colors ${
                   currentJourney === 'buyer'
                     ? 'bg-gray-900 text-white'
                     : 'text-gray-600 hover:text-gray-900'
@@ -246,7 +246,7 @@ export default function TopNav({ connectionStatus }: { connectionStatus: Connect
             {/* Admin Link */}
             <Link
               to="/operations"
-              className="hidden text-xs font-medium text-gray-500 hover:text-gray-900 md:inline"
+              className="mercator-topnav__ops hidden text-xs font-medium text-gray-500 hover:text-gray-900 md:inline"
             >
               Operations
             </Link>
@@ -254,7 +254,7 @@ export default function TopNav({ connectionStatus }: { connectionStatus: Connect
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="md:hidden text-gray-900 p-2"
+              className="mercator-topnav__menu-toggle md:hidden text-gray-900 p-2"
             >
               ☰
             </button>
@@ -263,67 +263,67 @@ export default function TopNav({ connectionStatus }: { connectionStatus: Connect
 
         {/* Mobile Menu */}
         {menuOpen && (
-          <div className="border-t border-gray-200 bg-white py-3 px-4 md:hidden">
+          <div className="mercator-topnav__mobile-menu border-t border-gray-200 bg-white py-3 px-4 md:hidden">
             <div className="space-y-2">
               <Link
                 to="/sell"
-                className="block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
+                className="mercator-topnav__mobile-link block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
                 onClick={() => setMenuOpen(false)}
               >
                 List Insight
               </Link>
               <Link
                 to="/login"
-                className="block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
+                className="mercator-topnav__mobile-link block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
                 onClick={() => setMenuOpen(false)}
               >
                 Sign In
               </Link>
               <Link
                 to="/discover"
-                className="block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
+                className="mercator-topnav__mobile-link block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
                 onClick={() => setMenuOpen(false)}
               >
                 Find Insight
               </Link>
               <Link
-                to="/wallet"
-                className="block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
+                to="/wallet-tools"
+                className="mercator-topnav__mobile-link block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
                 onClick={() => setMenuOpen(false)}
               >
                 Wallet Tools
               </Link>
               <Link
                 to="/subscription"
-                className="block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
+                className="mercator-topnav__mobile-link block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
                 onClick={() => setMenuOpen(false)}
               >
                 Subscription
               </Link>
               <Link
                 to="/agents"
-                className="block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
+                className="mercator-topnav__mobile-link block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
                 onClick={() => setMenuOpen(false)}
               >
                 Agents
               </Link>
               <Link
                 to="/activity"
-                className="block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
+                className="mercator-topnav__mobile-link block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
                 onClick={() => setMenuOpen(false)}
               >
                 Activity
               </Link>
               <Link
                 to="/trust"
-                className="block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
+                className="mercator-topnav__mobile-link block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
                 onClick={() => setMenuOpen(false)}
               >
                 Trust & Reputation
               </Link>
               <Link
                 to="/operations"
-                className="block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
+                className="mercator-topnav__mobile-link block px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 rounded"
                 onClick={() => setMenuOpen(false)}
               >
                 Operations
@@ -348,7 +348,7 @@ function NavLink({
   return (
     <Link
       to={href}
-      className={`text-sm font-medium transition-colors ${
+      className={`mercator-topnav__link text-sm font-medium transition-colors ${
         active
           ? 'border-b-2 border-gray-900 text-gray-900'
           : 'border-b-2 border-transparent text-gray-600 hover:text-gray-900'

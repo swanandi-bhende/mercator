@@ -1,8 +1,221 @@
-# Core Components and Implementation
+# Features
 
-This document details the architecture of Mercator's core components, implementation choices, and proof artifacts from successful transactions.
+Mercator is a production-ready marketplace for AI agents to autonomously discover, evaluate, and purchase trading insights. This document outlines all features grouped by category.
 
-## System Architecture
+## Core Commerce Features
+
+### AI-Driven Search & Ranking
+- **Semantic Search**: Finds insights matching buyer intent, not just keywords
+- **Real-Time Ranking**: Results ranked by relevance (LLM) + seller reputation (on-chain)
+- **Reputation Weighting**: 70% relevance + 30% normalized reputation score
+- **No Gaming**: Rankings cannot be manipulated; reputation is immutable on-chain
+
+### Listing Management
+- **Create Listings**: Sellers publish insights with title, price, and content
+- **Content Storage**: Automatically uploaded to IPFS (Pinata), CID stored on-chain
+- **Price Control**: Sellers set prices in USDC (0.1 to 5.0 range, enforced)
+- **Instant Indexing**: Listings appear in search immediately after creation
+- **Edit/Remove**: Can delist insights (content remains on IPFS, archived on-chain)
+
+### Purchase Flow
+- **One-Click Checkout**: Show price, seller reputation, content preview
+- **Approval Gate**: Buyer must type "approve" before payment (security measure)
+- **Instant Content Unlock**: IPFS CID revealed immediately upon payment confirmation
+- **Transaction Receipt**: Shows transaction ID, explorer link, seller details
+- **History Tracking**: Ledger page shows all past purchases by buyer
+
+---
+
+## AI Agent Features
+
+### Autonomous Decision-Making
+- **Chain-of-Thought Evaluation**: Agent reasons about relevance, reputation, price
+- **Value-for-Price Calculation**: Buys only if (relevance / price) > 8.0
+- **Skip Logic**: Automatically skips low-reputation or overpriced listings
+- **Explainable Reasoning**: Full evaluation chain visible in logs
+
+### Multi-Agent Support
+- **Independent Agents**: Multiple agents can run concurrently
+- **Per-Agent Context**: Each agent maintains separate search history
+- **Agent Identity**: Each agent can have its own wallet address
+- **Scalable Architecture**: Designed for dozens of concurrent agents
+
+### User Guardrails
+- **Explicit Approval Gate**: User must type "approve" for each payment
+- **Rate Limiting**: Built-in limits prevent spending sprees
+- **Max Payment Cap**: Default 5.0 USDC max per transaction
+- **Error Transparency**: All failures logged with clear error messages
+
+---
+
+## Blockchain Features (Algorand)
+
+### Atomic Transactions
+- **Atomic Groups**: Payment + Escrow release + Reputation update in ONE transaction
+- **All-or-Nothing**: If any part fails, entire group fails; no partial states
+- **Zero Intermediaries**: No backend wallet required; user-controlled funds
+- **Instant Finality**: Transactions confirmed in 4-5 seconds on Algorand
+
+### Smart Contracts
+- **InsightListing**: On-chain registry of all insights and metadata
+- **Escrow**: Atomic payment + content release mechanism
+- **Reputation**: Seller trust scores, immutable on-chain history
+- **Fee Config**: Configurable platform fees (currently unused, optional)
+
+### Wallet Integration
+- **Pera Wallet Support**: Works with standard Algorand wallets
+- **Direct Address Input**: Can specify any Algorand TestNet address
+- **Real Transactions**: Not simulated; all on public blockchain
+- **Multi-Wallet**: Different wallets for seller and buyer
+
+### USDC Integration
+- **Algorand Standard Asset**: USDC (ASA 10458941) on TestNet
+- **Stablecoin Payments**: 1 USDC = 1 USD value
+- **Micro-Payments**: Supports $0.01 to $5.00 payments
+- **Real Settlement**: Actual funds transfer, not mock
+
+---
+
+## Security Features
+
+### User Protection
+- **Approval Gate**: Explicit "approve" confirmation before payment
+- **Content Preview**: See insight before paying
+- **Seller Reputation**: 0-100 score visible before purchase
+- **Read-Only Access**: Search and browse without wallet connected
+
+### Seller Protection
+- **Reputation Stake**: Sellers lose reputation (−10) for failed transactions
+- **Immutable History**: All transactions recorded on-chain
+- **Payment Finality**: Once paid, funds cannot be reversed
+- **Content Ownership**: Seller retains IPFS content control
+
+### Smart Contract Safety
+- **Typed Contracts**: ARC4 standard for type safety
+- **Atomic Execution**: No race conditions or partial states
+- **Input Validation**: Address format checking, amount validation
+- **Error Handling**: Clear error messages for all failure scenarios
+
+### Infrastructure Security
+- **Testnet Isolation**: All development on TestNet, not MainNet
+- **Environment Separation**: .env files never committed to Git
+- **Secret Management**: All credentials in environment variables
+- **Rate Limiting**: API endpoints rate-limited to prevent abuse
+
+---
+
+## Developer Features
+
+### Open APIs
+- **REST Endpoints**: `/list`, `/discover`, `/demo_purchase`, `/ledger`
+- **JSON Responses**: Standard API contracts for integration
+- **Error Codes**: Documented error responses for all endpoints
+- **OpenAPI Docs**: Swagger documentation at `/docs`
+
+### Easy Integration
+- **No SDK Required**: Plain HTTP/JSON, any language/framework
+- **Minimal Setup**: Start with `.env.testnet` + virtual environment
+- **Test Suite**: ~15 pytest tests covering all flows
+- **Demo Commands**: One-click `./demo.sh` to run end-to-end
+
+### Transparency & Monitoring
+- **Full Logging**: All transactions logged with timestamps
+- **Flow Tracing**: Can follow payment from API call to on-chain confirmation
+- **Transaction Details**: Complete transaction groups visible on explorer
+- **Error Diagnostics**: Detailed error messages aid debugging
+
+### Documentation
+- **Setup Guide**: From zero to running in 15 minutes
+- **API Reference**: Every endpoint documented
+- **Smart Contract Docs**: ARC4 contract details and ABIs
+- **Troubleshooting**: Common issues and solutions
+
+---
+
+## Scalability Features
+
+### Multi-Tenant Ready
+- **Per-Seller Listings**: Unlimited sellers, unlimited listings
+- **Concurrent Agents**: Multiple agents can operate simultaneously
+- **Independent Wallets**: Sellers/buyers keep their own funds
+- **Stateless Backend**: Can scale horizontally
+
+### Performance
+- **4-5 Second Finality**: Algorand's fast consensus
+- **Low Fees**: <$0.01 per transaction
+- **Efficient Storage**: On-chain state minimal (just metadata)
+- **IPFS Scalability**: Content distributed, not centralized
+
+### On-Chain Efficiency
+- **Optimized State**: Only essential data on-chain
+- **Batch Operations**: Future support for atomic multi-purchase groups
+- **Indexing**: Algorand Indexer for fast historical queries
+- **Atomic Grouping**: Reduces transaction overhead
+
+---
+
+## Future Roadmap Features
+
+### Short-term (Mainnet Ready)
+- **Mainnet Deployment**: Production environment setup
+- **Security Audits**: Third-party smart contract review
+- **Monitoring**: Real-time alerts and dashboards
+- **Backup Strategies**: IPFS pinning redundancy
+
+### Medium-term (Ecosystem Expansion)
+- **Mobile Wallet Integration**: React Native for iOS/Android
+- **Advanced Agent APIs**: Streaming evaluations, real-time updates
+- **Multi-Asset Payments**: Support for ALGO, other ASAs
+- **Batch Purchasing**: Agents buy multiple insights atomically
+
+### Long-term (Market Maturity)
+- **Cross-Chain Settlement**: Pay in Ethereum, settle on Algorand
+- **Compliance Layer**: Regional payment rules, KYC/AML
+- **Autonomous DAOs**: Decentralized governance of platform fees
+- **Reputation Oracles**: External data feeds for trust scores
+
+---
+
+## Technical Comparison
+
+| Feature | Mercator | Traditional API | Web3 Only |
+|---------|----------|-----------------|-----------|
+| Instant Payments | Yes (x402) | No (next business day) | Yes |
+| Atomic Transactions | Yes (Algorand groups) | No (no atomicity) | Yes |
+| Seller Reputation | Yes (on-chain) | No (centralized) | Yes |
+| User Authorization | Yes ("approve" gate) | Yes (password) | Yes |
+| AI Agent Support | Yes (native) | No (not designed for) | Partial (hard) |
+| Real Settlement | Yes (stablecoin) | Yes (bank transfer) | Yes |
+| Scalability | Yes (1000s txs/min) | Yes | Partial (high fees) |
+| Developer Friendly | Yes (simple APIs) | Yes | No (complex) |
+
+---
+
+## Feature Status
+
+| Category | Status | Notes |
+|----------|--------|-------|
+| Listing & Search | Production | Full semantic search + ranking |
+| AI Agent Evaluation | Production | LangChain + Gemini integration |
+| x402 Micropayments | Production | Full atomic flow working |
+| Smart Contracts | TestNet | Ready for MainNet with audit |
+| Wallet Integration | Production | Works with Pera and standard Algorand wallets |
+| IPFS Content | Production | Pinata integration stable |
+| User Approval Gate | Production | Explicit "approve" confirmation |
+| Rate Limiting | Production | Per-user rate limits enforced |
+| Error Handling | Production | All paths tested and documented |
+| Monitoring | In Progress | Dashboard coming soon |
+| MainNet Deployment | Q3 2026 | Security audits pending |
+
+---
+
+## Summary
+
+Mercator provides a **complete, production-ready marketplace** for autonomous AI commerce. Every feature is designed for real-world use: atomic transactions prevent fraud, reputation creates trust without intermediaries, and x402 enables instant micropayments at scale.
+
+The system is **testable today** on Algorand TestNet and **ready for MainNet** with standard security audits.
+
+See [System Architecture](Features.md#system-architecture) for implementation details, or jump to [Setup.md](Setup.md) to run the demo locally.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐

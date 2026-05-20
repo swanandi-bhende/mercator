@@ -39,7 +39,10 @@ except ImportError:
     create_tool_calling_agent = None
     AgentExecutor = None
 
-from langchain.agents import create_agent
+try:
+    from langchain.agents import create_agent
+except Exception:
+    create_agent = None
 
 from contracts.insight_listing import InsightListingClient
 from backend.contracts.escrow.smart_contracts.artifacts.escrow.escrow_client import EscrowClient
@@ -344,28 +347,36 @@ class AutonomousSessionResult:
     errors: int
     total_usdc_spent: float
 
-if create_tool_calling_agent and AgentExecutor:
-    # Preferred path: explicit tool-calling agent with intermediate steps and parsing safeguards.
-    agent = create_tool_calling_agent(llm, tools, prompt)
-    agent_executor = AgentExecutor(
-        agent=agent,
-        tools=tools,
-        verbose=True,
-        handle_parsing_errors=True,
-        return_intermediate_steps=True,
-    )
-else:
-    # Compatibility fallback for environments lacking create_tool_calling_agent APIs.
-    logger.info(
-        "LangChain create_tool_calling_agent/AgentExecutor not available; "
-        "using create_agent compatibility mode"
-    )
-    agent = create_agent(
-        model=llm,
-        tools=tools,
-        system_prompt=SYSTEM_PROMPT,
-    )
-    agent_executor = agent
+try:
+    if create_tool_calling_agent and AgentExecutor:
+        # Preferred path: explicit tool-calling agent with intermediate steps and parsing safeguards.
+        agent = create_tool_calling_agent(llm, tools, prompt)
+        agent_executor = AgentExecutor(
+            agent=agent,
+            tools=tools,
+            verbose=True,
+            handle_parsing_errors=True,
+            return_intermediate_steps=True,
+        )
+    else:
+        # Compatibility fallback for environments lacking create_tool_calling_agent APIs.
+        logger.info(
+            "LangChain create_tool_calling_agent/AgentExecutor not available; "
+            "using create_agent compatibility mode"
+        )
+        try:
+            agent = create_agent(
+                model=llm,
+                tools=tools,
+                system_prompt=SYSTEM_PROMPT,
+            )
+        except Exception:
+            agent = None
+        agent_executor = agent
+except Exception as e:
+    logger.warning("Agent creation failed during import: %s", e)
+    agent = None
+    agent_executor = None
 
 
 def _mercator_error_handler_async(fn):

@@ -22,7 +22,9 @@ export default defineConfig({
       },
       // Backend root endpoints
       '/auth': 'http://localhost:8000',
-      '/wallet': 'http://localhost:8000',
+      '/wallet/balance': 'http://localhost:8000',
+      '/wallet/is_custodial': 'http://localhost:8000',
+      '/wallet/export': 'http://localhost:8000',
       '/ipfs': 'http://localhost:8000',
     },
   }

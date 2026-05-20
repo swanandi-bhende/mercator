@@ -49,6 +49,7 @@ function parseListingId(value: unknown): number | undefined {
 }
 
 const APPROVAL_TEXT = 'I understand this is a paid insight and I approve this transaction.'
+const FORCE_BUY_FOR_TEST = import.meta.env.DEV || import.meta.env.VITE_FORCE_BUY_FOR_TEST === 'true'
 
 const CHECKOUT_STAGES: { key: CheckoutStageKey; label: string; detail: string }[] = [
   {
@@ -320,7 +321,7 @@ export default function CheckoutPage() {
         user_query: query,
         buyer_address: walletInput.trim(),
         user_approval_input: 'approve',
-        force_buy_for_test: false,
+        force_buy_for_test: FORCE_BUY_FOR_TEST,
         target_listing_id: targetListingId,
         user_id: sessionData.user_id,
         session_token: sessionData.session_token,

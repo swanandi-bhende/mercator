@@ -116,7 +116,7 @@ export default function OnboardPage() {
           <Link to="/login" className="font-semibold text-[#7d474f] underline underline-offset-4">
             Already onboarded? Sign in.
           </Link>
-          <Link to="/wallet" className="font-semibold text-[#1f707f] underline underline-offset-4">
+          <Link to="/wallet-tools" className="font-semibold text-[#1f707f] underline underline-offset-4">
             Need wallet export/import tools?
           </Link>
         </div>

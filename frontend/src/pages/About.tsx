@@ -1,18 +1,18 @@
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-white px-4 py-12">
-      <div className="mx-auto max-w-3xl space-y-12">
-        <div className="text-center">
-          <h1 className="mb-4 text-4xl font-bold text-gray-900">About Mercator</h1>
-          <p className="text-xl text-gray-600">
+    <div className="mercator-themed-page min-h-screen bg-[radial-gradient(1200px_560px_at_4%_0%,rgba(220,176,153,0.22),transparent_50%),radial-gradient(900px_500px_at_100%_14%,rgba(111,57,70,0.14),transparent_48%),linear-gradient(180deg,#fff8f4_0%,#fffdf8_100%)] px-4 py-12">
+      <div className="mx-auto max-w-3xl space-y-6">
+        <div className="mercator-elevated-card rounded-3xl bg-white p-8 text-center">
+          <h1 className="mb-4 text-4xl font-bold text-[#22191a]">About Mercator</h1>
+          <p className="text-xl text-[#5f4448]">
             A blockchain-powered marketplace for verified market intelligence
           </p>
         </div>
 
         {/* The Problem */}
-        <div>
-          <h2 className="mb-4 text-2xl font-bold text-gray-900">The Problem</h2>
-          <p className="text-gray-700">
+        <div className="mercator-elevated-card rounded-3xl bg-white p-8">
+          <h2 className="mb-4 text-2xl font-bold text-[#22191a]">The Problem</h2>
+          <p className="text-[#5f4448]">
             Market intelligence is fragmented, unverified, and expensive. Gated research reports,
             advisory calls, and insider tips cost thousands of dollars. Meanwhile, independent
             traders and analysts with valuable insights have no way to monetize or distribute them
@@ -21,23 +21,23 @@ export default function AboutPage() {
         </div>
 
         {/* The Solution */}
-        <div>
-          <h2 className="mb-4 text-2xl font-bold text-gray-900">The Solution</h2>
-          <p className="mb-4 text-gray-700">
+        <div className="mercator-elevated-card rounded-3xl bg-white p-8">
+          <h2 className="mb-4 text-2xl font-bold text-[#22191a]">The Solution</h2>
+          <p className="mb-4 text-[#5f4448]">
             Mercator is a peer-to-peer marketplace for market insights, powered by the Algorand
             blockchain. It connects sellers (analysts, traders, researchers) directly with buyers
             (institutions, funds, retail traders) without middlemen.
           </p>
-          <p className="text-gray-700">
+          <p className="text-[#5f4448]">
             Every transaction is verified on-chain, every seller has an auditable reputation score,
             and every insight is priced by the market, not by gatekeepers.
           </p>
         </div>
 
         {/* How It Works */}
-        <div>
-          <h2 className="mb-4 text-2xl font-bold text-gray-900">How It Works</h2>
-          <ol className="space-y-4 text-gray-700">
+        <div className="mercator-elevated-card rounded-3xl bg-white p-8">
+          <h2 className="mb-4 text-2xl font-bold text-[#22191a]">How It Works</h2>
+          <ol className="space-y-4 text-[#5f4448]">
             <li>
               <strong>1. Seller lists an insight</strong> – An analyst or trader writes a market
               insight (analysis, prediction, signal) and sets a price in USDC.
@@ -74,9 +74,9 @@ export default function AboutPage() {
         </div>
 
         {/* Key Principles */}
-        <div>
-          <h2 className="mb-4 text-2xl font-bold text-gray-900">Key Principles</h2>
-          <ul className="space-y-3 text-gray-700">
+        <div className="mercator-elevated-card rounded-3xl bg-white p-8">
+          <h2 className="mb-4 text-2xl font-bold text-[#22191a]">Key Principles</h2>
+          <ul className="space-y-3 text-[#5f4448]">
             <li>
               <strong>Trustless:</strong> All transactions are verified on-chain. No middleman can
               steal, corrupt, or censor.
@@ -97,9 +97,9 @@ export default function AboutPage() {
         </div>
 
         {/* The Future */}
-        <div>
-          <h2 className="mb-4 text-2xl font-bold text-gray-900">The Future</h2>
-          <p className="text-gray-700">
+        <div className="mercator-elevated-card rounded-3xl bg-white p-8">
+          <h2 className="mb-4 text-2xl font-bold text-[#22191a]">The Future</h2>
+          <p className="text-[#5f4448]">
             Mercator is the beginning of a new market structure. As the platform grows, insights
             will become a tradeable asset. Sellers will build reputation and brand. Buyers will
             have access to the world's best independent analysts without paying gatekeepers. The
