@@ -3619,6 +3619,41 @@ async def demo_purchase(request: DemoPurchaseRequest) -> dict[str, object]:
     if getattr(request, "force_buy_for_test", False):
         simulated_tx = f"SIMULATED_PAYMENT_{int(time.time())}"
         simulated_escrow = f"SIMULATED_ESCROW_{int(time.time())}"
+        
+        seller_wallet = "DEMO_SELLER"
+        new_rep = 85
+        listing_id = request.target_listing_id or "demo-listing-1"
+        if len(RECENT_LISTINGS) > 0:
+            target = RECENT_LISTINGS[0]
+            if request.target_listing_id:
+                for lst in RECENT_LISTINGS:
+                    if str(lst.get("listing_id")) == str(request.target_listing_id):
+                        target = lst
+                        break
+            seller_wallet = target.get("seller_wallet", "DEMO_SELLER")
+            current_rep = target.get("seller_reputation", 75)
+            new_rep = min(100, int(current_rep) + 10)
+            target["seller_reputation"] = new_rep
+            listing_id = target.get("listing_id", listing_id)
+
+        await ws_manager.broadcast("payment_confirmed", {
+            "tx_id": simulated_tx,
+            "buyer_wallet": buyer_address,
+            "listing_id": listing_id,
+            "amount_usdc": 1.0,
+        })
+        await ws_manager.broadcast("escrow_released", {
+            "tx_id": simulated_escrow,
+            "buyer_wallet": buyer_address,
+            "listing_id": listing_id,
+        })
+        await ws_manager.broadcast("reputation_updated", {
+            "seller_wallet": seller_wallet,
+            "score_delta": 10,
+            "new_score": new_rep,
+            "tx_id": simulated_escrow,
+        })
+
         simulated_result = {
             "success": True,
             "decision": "BUY",

@@ -1,302 +1,144 @@
 # Mercator
 
-Mercator is an agentic commerce platform on Algorand where sellers list trading insights, an autonomous agent discovers and evaluates them, and buyers complete micropayments atomically with instant content delivery.
+Agentic commerce platform on Algorand: sellers list trading insights, an autonomous agent discovers and evaluates them, and buyers complete micropayments atomically with instant content delivery.
 
+**Live**: [mercator-algorand.vercel.app](https://mercator-algorand.vercel.app/)  
+**Backend**: [mercator-reka.onrender.com](https://mercator-reka.onrender.com/)
 
-[mercator-algorand.vercel.app](https://mercator-algorand.vercel.app/)
-https://mercator-reka.onrender.com/
+---
 
 ## Quick Start
 
-### Run the Demo (2 minutes)
-
+### Run Demo (2 minutes)
 ```bash
 ./demo.sh
 ```
-
-This one-click command starts the backend (port 8000), frontend (port 5173), runs tests, and executes a full purchase scenario end-to-end.
+Starts backend (8000) + frontend (5173), runs tests, executes full purchase flow.
 
 ### Setup (First Time)
-
-Follow [Setup.md](docs/Setup.md) for detailed environment configuration.
+See [Setup.md](docs/Setup.md) for detailed configuration.
 
 ```bash
-# Quick setup overview
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r backend/requirements.txt
 cd frontend && npm install
-# Configure .env.testnet with Algorand and API keys
+# Configure .env.testnet with Algorand + API keys
 ./demo.sh
 ```
 
 ---
 
-## Frontend Development
+## How It Works
 
-From the `frontend/` directory:
+1. Seller lists trading insight with USDC price
+2. Backend uploads content to IPFS, registers on InsightListing contract
+3. Agent discovers insights via semantic search + Algorand reputation ranking
+4. Buyer approves payment (requires typing "approve")
+5. Atomic transaction: USDC transfer + escrow release + reputation update in single group
+6. Buyer receives content instantly
 
-```bash
-npm install
-npm run dev
-```
-
-Useful local commands:
-
-```bash
-npm run build
-npm run test
-```
-
-The dev server runs on Vite's default port `5173`. Set `VITE_API_BASE_URL` if you need to point the UI at a non-local backend.
+**Key**: All-or-nothing execution—no partial failures, instant settlement.
 
 ---
 
 ## Documentation
 
-The project is documented across the following primary guides:
-
-- **[Setup.md](docs/Setup.md)**: Environment setup, dependency installation, wallet configuration, smart contract deployment
-- **[Demo.md](docs/Demo.md)**: Interactive UI walkthrough, page-by-page feature guide, demo scenarios
-- **[Features.md](docs/Features.md)**: Core features and system capabilities
-- **[x402_Implementation.md](docs/x402_Implementation.md)**: Architecture, API endpoints, core implementations
-- **[Algorand_Implementation.md](docs/Algorand_Implementation.md)**: ARC4 smart contracts, atomic grouping, reputation system, transaction verification
-- **[Security.md](docs/Security.md)**: Security audit, compliance checklist, successful transaction IDs, edge case test results
-- **[Tests.md](docs/Tests.md)**: Regression test suite, test scenarios, performance benchmarks
-- **[Troubleshooting.md](docs/Troubleshooting.md)**: Common issues and solutions
-- **[Deploy.md](docs/Deploy.md)**: Production deployment to public URLs (Render + Vercel)
-
----
-
-## What It Does
-
-1. **Seller Creates Listing**: Submits insight text with USDC price via React UI
-2. **Backend Processes**: Uploads content to IPFS (Pinata), registers on InsightListing contract
-3. **Agent Discovers**: LangChain + Gemini ranks insights by relevance and seller reputation
-4. **Atomic Payment**: x402 executes USDC transfer + escrow release in single transaction group (all-or-nothing)
-5. **Reputation Updates**: Seller reputation increases by +10 on confirmation
-6. **Instant Delivery**: Buyer receives insight content immediately (no manual reconciliation)
+| Document | Purpose |
+|----------|---------|
+| [Setup.md](docs/Setup.md) | Environment setup, wallets, smart contract deployment |
+| [Demo.md](docs/Demo.md) | Interactive UI walkthrough, demo scenarios |
+| [Features.md](docs/Features.md) | Product features, feature matrix vs competitors |
+| [x402_Implementation.md](docs/x402_Implementation.md) | Payment architecture, API endpoints, approval gates |
+| [Algorand_Implementation.md](docs/Algorand_Implementation.md) | Smart contracts, atomic groups, reputation system |
+| [contracts.md](docs/contracts.md) | Deployed contract addresses, app IDs, transaction hashes |
+| [Security.md](docs/Security.md) | Security audit, threat model, compliance checklist |
+| [Tests.md](docs/Tests.md) | Test suite, coverage, performance benchmarks |
+| [Troubleshooting.md](docs/Troubleshooting.md) | Common issues and solutions |
+| [Deploy.md](docs/Deploy.md) | Production deployment (Vercel + Render) |
+| [business.md](docs/business.md) | Business model, GTM strategy, roadmap |
 
 ---
 
-## Core Features
+## Deployed Contracts (TestNet)
 
-### Atomic Micropayments
-- Payment + escrow release grouped in single Algorand transaction
-- 4-5 second finality (TestNet)
-- ~$0.0003 cost per transaction
-- Instant settlement without middleman
+| Contract | App ID | Address | Status |
+|----------|--------|---------|--------|
+| InsightListing | 758025190 | AVJELGX3NJ2C3ZXT6KWAHLJZRWRTN7CEOLYUBVKRTR5EWN2QE5L24Q37Q4 | Active |
+| Escrow | 761839258 | I6YCXMEWRAXGDQ2NAYNPEUWUA77WBHCHQ5O7AYASMJPQEDGPEK44N74ALE | Active |
+| Reputation | 758022459 | YDIVEMIG7AYBQ7U7ISU5ILNG5RPAIVCU2UUMUF2YTYH2SL6APF3KWQQL2Y | Active |
+| FeeConfig | 761839101 | BW4DVLKC2VKEH47TPWPCJG6GJEVXTG77VQWZONIV57F255UCV4TU3UKMQU | Active |
+| SubscriptionManager | 761863755 | N7SSOFF3NXB5E5XNR3AJHH54HR56XPBQ4GJ3Z3IBUHECTCJCZP5GKQAE3U | Active |
 
-### On-Chain Reputation
-- Seller trust scores stored immutably on blockchain
-- +10 per successful sale, never decreases
-- Agent uses reputation for buy/skip decisions
-- Queries by wallet address
+Treasury: `M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM`
 
-### Content Verification
-- IPFS CID stored with each listing (permanent, content-addressable)
-- Hash verification ensures buyer receives promised content
-- No centralized content server
-
-### Agent-Driven Commerce
-- Natural language queries ("latest NIFTY insight")
-- LLM evaluation with semantic search ranking
-- Automatic buy/skip decisions based on relevance + trust + price
-- User confirmation required before payment
+See [contracts.md](docs/contracts.md) for complete contract reference and deployment details.
 
 ---
 
-## Architecture
+## Latest Proof (2026-04-13)
 
+Successful atomic purchase cycle on TestNet:
+- Payment TX: `6RHL36IPWJDCZOYQ73VSCGRFGG5WPVT5XFWFZSGNXL63ZWHD6LKQ`
+- Escrow Release TX: `MNZCPDINK5LZF3SZSIIINUEFPTVGUCVY37BC6UBCAPQYH6RIXK6A`
+- Reputation Update TX: `YFHVORAUDXFB33JBWGIJWHJ7XSI54FYKVOALSR657DTW3EAPRX4A`
+- Seller Rep: 87 → 97 (+10)
+
+Verify on [AlgoExplorer TestNet](https://testnet.algoexplorer.io/tx/6RHL36IPWJDCZOYQ73VSCGRFGG5WPVT5XFWFZSGNXL63ZWHD6LKQ)
+
+---
+
+## Requirements
+
+- **Python**: 3.12+
+- **Node.js**: 18+
+- **Algorand TestNet**: Get ALGO from [dispenser](https://dispenser.testnet.algoexplorerapi.io/)
+- **API Keys**: Gemini (LangChain), Pinata JWT (IPFS)
+
+Full environment setup: [Setup.md](docs/Setup.md)
+
+---
+
+## Quick Commands
+
+```bash
+# Frontend dev server (Vite on 5173)
+cd frontend && npm run dev
+
+# Backend dev server (FastAPI on 8000)
+python backend/main.py
+
+# Run tests
+pytest backend/tests/ -v
+
+# Full integration test
+./demo.sh
 ```
-React Frontend    ←→    FastAPI Backend    ←→    Algorand Contracts
-                                ├─ IPFS (Pinata)
-                                ├─ LangChain + Gemini
-                                └─ x402 Payment Engine
-```
-
-**Key Components**:
-- `frontend/src/`: React + Vite UI (SellInsight, DiscoverInsights, Agents, Login, WalletTools, Checkout, Receipt, Ledger, Trust pages)
-- `backend/main.py`: FastAPI routing and orchestration
-- `backend/tools/x402_payment.py`: Atomic payment execution
-- `backend/tools/post_payment_flow.py`: Content delivery and reputation update
-- `backend/contracts/`: Three ARC4 smart contracts (InsightListing, Escrow, Reputation)
 
 ---
 
 ## API Endpoints
 
+See [x402_Implementation.md](docs/x402_Implementation.md) for schemas.
+
 | Method | Endpoint | Purpose |
 |--------|----------|---------|
-| POST | `/list` | Seller creates insight listing |
-| GET | `/discover` | Buyer discovers insights by query |
-| POST | `/demo_purchase` | Execute autonomous purchase flow |
-| POST | `/auth/login` | Authenticate an existing buyer session |
-| GET | `/wallet/is_custodial` | Check whether a wallet is custodial |
-| POST | `/wallet/export` | Export a custodial wallet mnemonic |
-| GET | `/agents/registered` | List registered AgentRegistry entries |
-| GET | `/ledger` | View activity audit trail |
-| GET | `/reputation/{address}` | Query seller reputation score |
-
-See [x402_Implementation.md](docs/x402_Implementation.md) for detailed request/response schemas.
+| POST | `/list` | Create insight listing |
+| GET | `/discover` | Search insights by query |
+| POST | `/demo_purchase` | Autonomous purchase flow |
+| GET | `/reputation/{address}` | Query seller score |
+| GET | `/ledger` | View activity trail |
 
 ---
 
-## Deployed Contracts
+## Stack
 
-| Contract | App ID | Network | Notes |
-|--------|----------|---------|---------|
-| InsightListing | 758025190 | TestNet | Existing listing registry |
-| Escrow | 761839258 | TestNet | Fee-aware settlement contract |
-| Reputation | 758022459 | TestNet | Existing reputation contract |
-| FeeConfig | 761839101 | TestNet | Fee configuration and revenue tracking |
-| SubscriptionManager | 761863755 | TestNet | Subscription entitlements and recurring revenue |
-
-Treasury wallet address: M7R55YRO2M7GL5FCEHXQN2Y63HTUTCFZQRLK6QF2SPRS6ZJ4CAMJV4DBTM
-
----
-
-## Latest Proof Artifacts
-
-**Latest Successful Purchase** (2026-04-13):
-- Payment TX: `6RHL36IPWJDCZOYQ73VSCGRFGG5WPVT5XFWFZSGNXL63ZWHD6LKQ`
-- Escrow Release TX: `MNZCPDINK5LZF3SZSIIINUEFPTVGUCVY37BC6UBCAPQYH6RIXK6A`
-- Reputation Update TX: `YFHVORAUDXFB33JBWGIJWHJ7XSI54FYKVOALSR657DTW3EAPRX4A`
-- Seller Reputation: 87 → 97 (+10)
-
-Full audit details in [Security.md](docs/Security.md).
-
----
-
-## Project Structure
-
-```
-mercator/
-├─ frontend/                    # React Vite app
-│  └─ src/
-│     ├─ SellInsight.tsx       # Seller listing interface
-│     ├─ pages/
-│     │  ├─ DiscoverInsights.tsx
-│     │  ├─ Agents.tsx
-│     │  ├─ Login.tsx
-│     │  ├─ WalletTools.tsx
-│     │  ├─ Checkout.tsx
-│     │  ├─ Receipt.tsx
-│     │  ├─ ActivityLedger.tsx
-│     │  └─ Trust.tsx
-│     └─ components/
-│
-├─ backend/                     # FastAPI server
-│  ├─ main.py                  # API endpoints
-│  ├─ agent.py                 # LangChain agent
-│  ├─ tools/
-│  │  ├─ x402_payment.py       # Atomic payment
-│  │  ├─ post_payment_flow.py  # Content + reputation
-│  │  └─ semantic_search.py    # Vector search
-│  ├─ contracts/               # Smart contracts
-│  │  ├─ insight_listing/
-│  │  ├─ escrow/
-│  │  └─ reputation/
-│  └─ tests/
-│     ├─ test_micropayment_cycle.py
-│     └─ test_critical_path_coverage.py
-│
-├─ scripts/                     # Utility scripts
-│  ├─ final_purchase_check.py
-│  └─ security_edge_cases.py
-│
-├─ docs/                        # Documentation
-│  ├─ Setup.md                 # Environment setup guide
-│  ├─ Demo.md                  # UI walkthrough guide
-│  ├─ Features.md              # Core features overview
-│  ├─ x402_Implementation.md   # Implementation details
-│  ├─ Algorand_Implementation.md # Blockchain details
-│  ├─ Security.md              # Audit report
-│  ├─ Tests.md                 # Testing guide
-│  └─ Troubleshooting.md       # Troubleshooting guide
-│
-├─ LICENSE
-├─ README.md
-└─ demo.sh                     # One-click demo
-```
-
----
-
-## Environment Requirements
-
-- **Python**: 3.12+
-- **Node.js**: 18+
-- **Algorand TestNet**: Account with funding from [dispenser](https://dispenser.testnet.algoexplorerapi.io/)
-- **API Keys**: Gemini (LangChain), Pinata JWT (IPFS)
-
-See [Setup.md](docs/Setup.md) for complete configuration.
-
-### Environment variables (quick reference)
-
-Front-end (Vite): set these in Vercel under Project → Settings → Environment Variables. Prefixed with `VITE_` so they are exposed to the client bundle.
-
-Example `frontend/.env` (or Vercel env):
-
-```
-VITE_API_BASE_URL=https://mercator-reka.onrender.com
-VITE_WS_BASE=mercator-reka.onrender.com
-```
-
-Back-end: set these in Render (or your host) as service environment variables.
-
-Example `backend/.env`:
-
-```
-FRONTEND_ORIGIN=https://mercator-algorand.vercel.app
-API_PUBLIC_URL=https://mercator-reka.onrender.com
-ADMIN_SIM_KEY=changeme
-```
-
-Notes:
-- After changing frontend env vars you must rebuild the frontend (`npm run build`) for production to pick up new `VITE_` values.
-- For local development you can create `frontend/.env.local` and `backend/.env` from the provided `.env.example` files.
-- To avoid CORS in dev, the project config includes a Vite dev `proxy` (see `frontend/vite.config.ts`) that forwards `/api`, `/ws` and related paths to `http://localhost:8000`.
-
----
-
-## Deploy to Public URL
-
-Use [Deploy.md](docs/Deploy.md) for full instructions.
-
-Quick summary:
-1. Deploy backend to Render using `backend/requirements.txt` and start command `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`.
-2. Deploy frontend to Vercel from `frontend` with `VITE_API_BASE_URL` set to your backend URL.
-3. Set backend `FRONTEND_ORIGIN` to your frontend URL and redeploy backend.
-
----
-
-## Testing
-
-```bash
-# Run all regression tests
-pytest backend/tests/ -v
-
-# Run specific test suite
-pytest backend/tests/test_micropayment_cycle.py -v
-
-# See docs/Tests.md for detailed testing guide
-```
-
-Test suites cover:
-- Full purchase flow (listing, payment, delivery, reputation)
-- Edge cases (low reputation, insufficient balance, invalid addresses)
-- Error handling (payment limit enforcement, atomic group failure)
-- Performance (< 2 sec per test)
-
----
-
-## Security
-
-All smart contracts follow ARC4 standards with:
-- Type-safe contract code
-- Atomic transaction grouping (no race conditions)
-- Access control per contract
-- Read-only methods for queries
+- **Frontend**: React + Vite + TypeScript
+- **Backend**: FastAPI + Python 3.12
+- **Blockchain**: Algorand TestNet (PyTeal smart contracts)
+- **Storage**: IPFS (Pinata)
+- **AI**: LangChain + Google Gemini
+- **Wallet**: Pera Wallet + algosdk
 
 Full security audit in [Security.md](docs/Security.md).
 

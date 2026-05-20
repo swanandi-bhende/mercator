@@ -146,7 +146,14 @@ export default function SellInsightPage() {
 
       const response = await api.listInsight(insight, price, wallet.toUpperCase(), customRounds)
 
-      if (!response.success || !response.txId) {
+      const actualData = response.data || response;
+      const txId = actualData.tx_id || actualData.txId || response.tx_id || response.txId;
+      const cid = actualData.cid || actualData.ipfs_cid || response.cid;
+      const listingId = actualData.listing_id || response.listing_id;
+      const asaId = actualData.asa_id || response.asa_id;
+      const explorerUrl = actualData.explorer_url || response.explorer_url;
+
+      if (!response.success || !txId) {
         throw new Error(response.error || 'No transaction ID returned from server.')
       }
 
@@ -157,23 +164,23 @@ export default function SellInsightPage() {
       setStage('receipt')
 
       // Store in context for transaction page
-      setLastListingTxId(response.txId)
+      setLastListingTxId(txId)
       setListingInsight({
         insight_text: insight,
         price: parseFloat(price as any),
         seller_wallet: wallet.toUpperCase(),
-        tx_id: response.txId,
-        cid: response.cid,
-        listing_id: response.listing_id,
-        asa_id: response.asa_id,
+        tx_id: txId,
+        cid: cid,
+        listing_id: listingId,
+        asa_id: asaId,
       })
 
       setReceipt({
-        txId: response.txId,
-        cid: response.cid,
-        listingId: response.listing_id,
-        asaId: response.asa_id,
-        explorerUrl: response.explorer_url || buildExplorerUrl(response.txId),
+        txId: txId,
+        cid: cid,
+        listingId: listingId,
+        asaId: asaId,
+        explorerUrl: explorerUrl || buildExplorerUrl(txId),
       })
 
       setInsight('')
